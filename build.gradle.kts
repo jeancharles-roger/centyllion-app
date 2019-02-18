@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
+//val serialization_version: String by project
 val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
@@ -19,12 +20,14 @@ version = "0.0.1"
 kotlin {
 
     sourceSets {
-        getting {
+        // commonMain is required for reflection name resolution
+        val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
             }
         }
-        getting {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
@@ -36,6 +39,7 @@ kotlin {
             compilations["main"].defaultSourceSet {
                 dependencies {
                     implementation(kotlin("stdlib-jdk8"))
+                    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
 
                     implementation("com.github.ajalt:clikt:$clikt_version")
 
@@ -61,6 +65,7 @@ kotlin {
             compilations["main"].defaultSourceSet {
                 dependencies {
                     implementation(kotlin("stdlib-js"))
+                    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
                 }
             }
             compilations["test"].defaultSourceSet {
@@ -73,7 +78,7 @@ kotlin {
                     moduleKind = "amd"
                     main = "noCall"
                     sourceMap = true
-                    sourceMapEmbedSources = "always"
+                    sourceMapEmbedSources = "inlining"
                 }
             }
         }
@@ -95,10 +100,10 @@ tasks {
             delete(jsDir)
         }
         from(
-            fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js","*.map")}
+            fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") }
         )
         configurations["jsMainImplementation"].all {
-            from(zipTree(it.absolutePath).matching { include("*.js","*.map") })
+            from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
             true
         }
         into(jsDir)
@@ -109,6 +114,7 @@ tasks {
 
             // Adds md5 sum in file name for cache purposes
             file(jsDir).listFiles().forEach {
+                val base = it.nameWithoutExtension
                 val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
                 val builder = StringBuilder()
                 for (b in bytes) builder.append(String.format("%02x", b))
@@ -116,7 +122,6 @@ tasks {
 
                 val extension = it.extension
                 if (extension == "js" && !name.contains(sum)) {
-                    val base = it.nameWithoutExtension
                     val newBase = "$base.$sum"
                     modules[base] = newBase
                     it.renameTo(file("${it.parent}/$newBase.$extension"))
@@ -127,7 +132,8 @@ tasks {
 
             // Constructs a requirejs.config
             val configFile = file("${jsDir}/requirejs.config.json")
-            configFile.writeText("""requirejs.config({
+            configFile.writeText(
+                """requirejs.config({
                 'baseUrl': 'js',
                 paths: {
                     'apexcharts': 'apexcharts/apexcharts',
@@ -138,7 +144,8 @@ tasks {
 
                 requirejs(['centyllion'], function(centyllion) {
                     centyllion.$mainFunction
-                })""".trimIndent())
+                })""".trimIndent()
+            )
         }
     }
 

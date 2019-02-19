@@ -5,14 +5,23 @@ import kotlin.random.Random
 data class ApplicableBehavior(
     val index: Int,
     val behaviour: Behaviour,
-    val usedNeighbours: List<Direction>
+    val usedNeighbours: List<Pair<Int, Grain>>
 ) {
 
     fun apply(simulation: Simulation) {
         // applies main reaction
         simulation.transform(index, index, behaviour.mainReaction.productId, behaviour.mainReaction.transform)
 
-        // TODO applies other reaction find each neighbour for each reaction
+        // applies other reaction find each neighbour for each reaction
+        val reactives = usedNeighbours.sortedBy { it.second.id }
+        val reactions = behaviour.reaction.sortedBy { it.reactiveId }
+
+        // reactives and reactions must have same size
+        for (i in 0 until reactives.size) {
+            val reactive = reactives[i]
+            val reaction = reactions[i]
+            simulation.transform(reactive.first, reactive.first, reaction.productId, reaction.transform)
+        }
     }
 }
 
@@ -35,7 +44,8 @@ class Simulator(
 
     fun oneStep() {
         val toExecute = mutableListOf<ApplicableBehavior>()
-        val notSelected = mutableSetOf<Pair<Int, Grain>>()
+        val all = mutableSetOf<Pair<Int, Grain>>()
+        val used = mutableListOf<Pair<Int, Grain>>()
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
@@ -53,11 +63,15 @@ class Simulator(
                 if (applicable.isNotEmpty()) {
                     // selects one at random
                     val behaviour = applicable[random.nextInt(applicable.size)]
-                    toExecute.add(ApplicableBehavior(i, behaviour, behaviour.usedAgents(neighbours)))
-                } else {
-                    // save the grain index as not selected
-                    notSelected.add(i to grain)
+                    val usedNeighbours = behaviour.usedAgents(neighbours)
+                        .map { simulation.model.moveIndex(i, it).let { it to simulation.grainAtIndex(it)!! } }
+
+                    toExecute.add(ApplicableBehavior(i, behaviour, usedNeighbours))
+                    used.add(i to grain)
+                    used.addAll(usedNeighbours)
                 }
+                // save the grain index for move
+                all.add(i to grain)
             }
         }
 
@@ -67,8 +81,7 @@ class Simulator(
         // execute behaviours
         toExecute.forEach { it.apply(simulation) }
 
-        // TODO moves all not-used
-        notSelected.forEach {
+        (all - used).forEach {
             val index = it.first
             val grain = it.second
             if (grain.canMove) {

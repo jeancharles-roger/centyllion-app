@@ -23,9 +23,9 @@ fun index() {
     )
 
     val simulation = Simulation(model)
-    for (i in 0 until 100) {
-        simulation.addGrainAtIndex(i*4, a)
-        simulation.addGrainAtIndex(i*4+2, b)
+    for (i in 0 until (model.dataSize/8) - 2 ) {
+        simulation.addGrainAtIndex(i*8, a)
+        simulation.addGrainAtIndex(i*8+2, b)
     }
 
     val simulator = Simulator(simulation)
@@ -41,7 +41,7 @@ fun index() {
     step.classList.add("button", "is-primary")
     step.innerText = "Step"
     step.onclick = {
-        (0 until 1).forEach { simulator.oneStep() }
+        (0 until 10).forEach { simulator.oneStep() }
         stepCount.innerText = "${simulator.step}"
         pre.innerText = toString(simulation)
         true
@@ -67,8 +67,9 @@ fun toString(simulation: Simulation): String {
     }
 
     builder.append("Grains:\n")
-    simulation.countGrains().forEach {
-        builder.append("- ${simulation.model.indexedGrains[it.key]?.name} = ${it.value}\n")
+    val counts =simulation.countGrains()
+    simulation.model.grains.forEach {
+        builder.append("- ${it.name} = ${counts[it.id]}\n")
     }
     return builder.toString()
 }

@@ -51,7 +51,7 @@ data class Grain(
 @Serializable
 data class Reaction(
     val reactiveId: Int,
-    val productId: Int?,
+    val productId: Int? = null,
     val transform: Boolean = false,
     val allowedDirection: List<Direction> = defaultDirection
 ) {
@@ -62,10 +62,10 @@ data class Reaction(
 @Serializable
 data class Behaviour(
     val name: String,
-    val mainReaction: Reaction,
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
+    val mainReaction: Reaction,
     val reaction: List<Reaction> = emptyList()
 ) {
 
@@ -146,6 +146,8 @@ data class Simulation(
         }
     }
 
+    fun indexIsFree(index: Int) = agents[index] < 0
+
     fun grainAtIndex(index: Int) = model.indexedGrains[agents[index]]
 
     fun ageAtIndex(index: Int) = ages[index]
@@ -172,12 +174,21 @@ data class Simulation(
         ages[index] = -1
     }
 
-
     fun neighbours(index: Int): Map<Direction, Grain> = model.toPosition(index).let { position ->
         Direction.values().asSequence()
             .map { it to position.move(it) }.filter { model.inside(it.second) }
             .mapNotNull { grainAtIndex(model.toIndex(it.second)).let { grain -> if (grain != null) it.first to grain else null } }
             .toMap()
+    }
+
+    fun countGrains(): Map<Int, Int> {
+        val result = mutableMapOf<Int, Int>()
+        for (i in agents) {
+            if (i >= 0) {
+                result[i] = 1 + (result[i] ?: 0)
+            }
+        }
+        return result
     }
 
     override fun equals(other: Any?): Boolean {

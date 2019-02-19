@@ -80,7 +80,7 @@ kotlin {
                     moduleKind = "amd"
                     main = "noCall"
                     sourceMap = true
-                    sourceMapEmbedSources = "inlining"
+                    sourceMapEmbedSources = "always"
                 }
             }
         }

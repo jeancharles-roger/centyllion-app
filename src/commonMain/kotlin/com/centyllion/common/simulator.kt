@@ -9,7 +9,10 @@ data class ApplicableBehavior(
 ) {
 
     fun apply(simulation: Simulation) {
+        // applies main reaction
         simulation.transform(index, index, behaviour.mainReaction.productId, behaviour.mainReaction.transform)
+
+        // TODO applies other reaction find each neighbour for each reaction
     }
 }
 
@@ -66,14 +69,19 @@ class Simulator(
 
         // TODO moves all not-used
         notSelected.forEach {
+            val index = it.first
             val grain = it.second
             if (grain.canMove) {
                 // applies random to do move
                 if (random.nextDouble() < grain.movementProbability) {
-                    val direction = grain.allowedDirection[random.nextInt(grain.allowedDirection.size)]
-                    val targetPosition = model.toPosition(it.first).move(direction)
-                    val targetIndex = model.toIndex(targetPosition)
-                    simulation.transform(it.first, targetIndex, grain.id, true)
+                    val position = model.toPosition(index)
+                    val directions = grain.allowedDirection.filter { simulation.indexIsFree(model.toIndex(position.move(it))) }
+                    if (directions.isNotEmpty()) {
+                        val direction = directions[random.nextInt(directions.size)]
+                        val targetPosition = model.toPosition(index).move(direction)
+                        val targetIndex = model.toIndex(targetPosition)
+                        simulation.transform(index, targetIndex, grain.id, true)
+                    }
                 }
             }
         }

@@ -1,17 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
-//val serialization_version: String by project
+val serialization_version: String by project
 val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
 
 plugins {
     kotlin("multiplatform") version "1.3.21"
+    id("kotlinx-serialization") version "1.3.21"
 }
 
 repositories {
     jcenter()
+    maven("https://kotlin.bintray.com/kotlinx")
 }
 
 group = "com.centyllion"
@@ -24,7 +26,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
             }
         }
         val commonTest by getting {
@@ -39,7 +41,7 @@ kotlin {
             compilations["main"].defaultSourceSet {
                 dependencies {
                     implementation(kotlin("stdlib-jdk8"))
-                    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
 
                     implementation("com.github.ajalt:clikt:$clikt_version")
 
@@ -65,7 +67,7 @@ kotlin {
             compilations["main"].defaultSourceSet {
                 dependencies {
                     implementation(kotlin("stdlib-js"))
-                    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
                 }
             }
             compilations["test"].defaultSourceSet {

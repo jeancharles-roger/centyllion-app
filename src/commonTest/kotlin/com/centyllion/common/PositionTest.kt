@@ -19,7 +19,7 @@ class PositionTest {
     }
 
     private fun checkInside(position: Position, vararg tests: Pair<Model, Boolean>) = tests.forEach {
-        assertEquals(it.second, it.first.inside(position))
+        assertEquals(it.second, it.first.positionInside(position))
     }
 
     @Test

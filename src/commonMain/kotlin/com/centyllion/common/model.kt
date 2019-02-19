@@ -111,8 +111,22 @@ data class Model(
 
     val dataSize = width * height * depth
 
+    /** Move [index] on given [direction] of [step] cases. */
+    fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int = when (direction) {
+        Direction.Left -> index - step
+        Direction.Right -> index + step
+        Direction.Up -> index + (step * width)
+        Direction.Down -> index - (step * width)
+        Direction.Front -> index - (step * width*height)
+        Direction.Back -> index + (step * width*height)
+    }
+
+    /** Transform given [position] to index. */
     fun toIndex(position: Position) = position.z * (height * width) + position.y * width + position.x
 
+    fun indexInside(index: Int) = index in 0..dataSize
+
+    /** Transforms index to position, only to be used for printing, it's slow */
     fun toPosition(index: Int): Position {
         val zDelta = height * width
         val z = index / zDelta
@@ -121,7 +135,8 @@ data class Model(
         return Position(yRest - y * width, y, z)
     }
 
-    fun inside(position: Position) = position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
+    fun positionInside(position: Position) =
+        position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
 
     val valid
         get() =
@@ -174,12 +189,11 @@ data class Simulation(
         ages[index] = -1
     }
 
-    fun neighbours(index: Int): Map<Direction, Grain> = model.toPosition(index).let { position ->
-        Direction.values().asSequence()
-            .map { it to position.move(it) }.filter { model.inside(it.second) }
-            .mapNotNull { grainAtIndex(model.toIndex(it.second)).let { grain -> if (grain != null) it.first to grain else null } }
+    fun neighbours(index: Int): Map<Direction, Grain> = Direction.values().asSequence()
+            .map { it to model.moveIndex(index, it) }.filter { model.indexInside(it.second) }
+            .mapNotNull { grainAtIndex(it.second).let { grain -> if (grain != null) it.first to grain else null } }
             .toMap()
-    }
+
 
     fun countGrains(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()

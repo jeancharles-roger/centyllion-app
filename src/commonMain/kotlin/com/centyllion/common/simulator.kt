@@ -48,30 +48,39 @@ class Simulator(
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
-                val selected = all.getOrPut(i) { mutableListOf() }
 
-                val age = simulation.ageAtIndex(i)
+                // does the grain dies ?
+                if (grain.halfLife > 0 && random.nextDouble() < 1.0 / (1.45 * grain.halfLife)) {
+                    // it dies
+                    simulation.transform(i, i, null, false)
 
-                // a grain is present, a behaviour can be triggered
-                val neighbours = simulation.neighbours(i)
+                } else {
+                    // is the
+                    val selected = all.getOrPut(i) { mutableListOf() }
 
-                // searches for applicable behaviours
-                val applicable = model.behaviours
-                    .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
-                    .filter { random.nextDouble() < it.probability } // filters by probability
+                    val age = simulation.ageAtIndex(i)
 
-                // selects behaviour if any is applicable
-                if (applicable.isNotEmpty()) {
-                    // selects one at random
-                    val behaviour = applicable[random.nextInt(applicable.size)]
-                    val usedNeighbours = behaviour.usedAgents(neighbours)
-                        .map { simulation.model.moveIndex(i, it).let { it to simulation.grainAtIndex(it)!! } }
+                    // a grain is present, a behaviour can be triggered
+                    val neighbours = simulation.neighbours(i)
 
-                    val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
-                    selected.add(behavior)
-                    usedNeighbours.forEach {
-                        val neighboursSelected =  all.getOrPut(it.first) { mutableListOf() }
-                        neighboursSelected.add(behavior)
+                    // searches for applicable behaviours
+                    val applicable = model.behaviours
+                        .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
+                        .filter { random.nextDouble() < it.probability } // filters by probability
+
+                    // selects behaviour if any is applicable
+                    if (applicable.isNotEmpty()) {
+                        // selects one at random
+                        val behaviour = applicable[random.nextInt(applicable.size)]
+                        val usedNeighbours = behaviour.usedAgents(neighbours)
+                            .map { simulation.model.moveIndex(i, it).let { it to simulation.grainAtIndex(it)!! } }
+
+                        val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
+                        selected.add(behavior)
+                        usedNeighbours.forEach {
+                            val neighboursSelected = all.getOrPut(it.first) { mutableListOf() }
+                            neighboursSelected.add(behavior)
+                        }
                     }
                 }
             }
@@ -102,8 +111,6 @@ class Simulator(
         }
 
         // TODO updates age by one for all
-
-        // TODO apply dying process
 
         // count a step
         step += 1

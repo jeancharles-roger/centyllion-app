@@ -8,8 +8,8 @@ import kotlin.browser.document
 fun index() {
     console.log("Starting function")
 
-    val a = Grain(0, "a", "red")
-    val b = Grain(1, "b", "green")
+    val a = Grain(0, "a", "red", halfLife = 100)
+    val b = Grain(1, "b", "green", halfLife = 200)
     val c = Grain(2, "c", "yellow")
     val d = Grain(3, "d", "blue")
 
@@ -24,13 +24,13 @@ fun index() {
 
     val model = Model(
         "m1", 80, 80, 1, "test model",
-        listOf(a, b, c, d), listOf(r1, r2)
+        listOf(a, b, c, d), listOf(/*r1, r2*/)
     )
 
     val simulation = Simulation(model)
-    for (i in 0 until (model.dataSize / 13) - 2) {
-        simulation.addGrainAtIndex(i * 13, a)
-        simulation.addGrainAtIndex(i * 13 + 2, b)
+    for (i in 0 until (model.dataSize / 5) - 2) {
+        simulation.addGrainAtIndex(i * 5, a)
+        simulation.addGrainAtIndex(i * 5 + 2, b)
     }
 
     val simulator = Simulator(simulation)
@@ -46,7 +46,7 @@ fun index() {
     step.classList.add("button", "is-primary")
     step.innerText = "Step"
     step.onclick = {
-        repeat(500) { simulator.oneStep() }
+        repeat(100) { simulator.oneStep() }
         stepCount.innerText = "${simulator.step}"
         pre.innerText = toString(simulation)
         true

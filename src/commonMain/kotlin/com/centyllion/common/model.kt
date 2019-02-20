@@ -38,7 +38,7 @@ data class Grain(
     val color: String,
     val figure: Figure = Figure.Square,
     val description: String = "",
-    val halfLife: Double = 0.0,
+    val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
     val allowedDirection: List<Direction> = defaultDirection
 ) {

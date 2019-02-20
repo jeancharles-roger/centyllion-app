@@ -10,22 +10,27 @@ fun index() {
 
     val a = Grain(0, "a", "red")
     val b = Grain(1, "b", "green")
-    val c = Grain(2, "c", "yellow", movementProbability =  0.0)
+    val c = Grain(2, "c", "yellow")
+    val d = Grain(3, "d", "blue")
 
-    val r = Behaviour("r", "", 0.1,
-        mainReaction = Reaction(a.id, c.id, false),
-        reaction = listOf(Reaction(b.id))
+    val r1 = Behaviour(
+        "r1", "", 0.2,
+        mainReaction = Reaction(a.id, c.id), reaction = listOf(Reaction(b.id))
+    )
+    val r2 = Behaviour(
+        "r2", "", 0.6,
+        mainReaction = Reaction(b.id, d.id), reaction = listOf(Reaction(a.id))
     )
 
     val model = Model(
-        "m1", 20, 20, 1, "test model",
-        listOf(a,b, c), listOf(r)
+        "m1", 80, 80, 1, "test model",
+        listOf(a, b, c, d), listOf(r1, r2)
     )
 
     val simulation = Simulation(model)
-    for (i in 0 until (model.dataSize/8) - 2 ) {
-        simulation.addGrainAtIndex(i*8, a)
-        simulation.addGrainAtIndex(i*8+2, b)
+    for (i in 0 until (model.dataSize / 13) - 2) {
+        simulation.addGrainAtIndex(i * 13, a)
+        simulation.addGrainAtIndex(i * 13 + 2, b)
     }
 
     val simulator = Simulator(simulation)
@@ -41,7 +46,7 @@ fun index() {
     step.classList.add("button", "is-primary")
     step.innerText = "Step"
     step.onclick = {
-        (0 until 10).forEach { simulator.oneStep() }
+        repeat(500) { simulator.oneStep() }
         stepCount.innerText = "${simulator.step}"
         pre.innerText = toString(simulation)
         true
@@ -55,21 +60,22 @@ fun index() {
 
 fun toString(simulation: Simulation): String {
     val builder = StringBuilder()
-    for (i in 0 until simulation.model.width) {
-        for (j in 0 until simulation.model.height) {
-            val position = Position(j, i, 0)
+    builder.append("Grains:\n")
+    val counts = simulation.countGrains()
+    simulation.model.grains.forEach {
+        builder.append("- ${it.name} = ${counts[it.id]}\n")
+    }
+    for (j in 0 until simulation.model.height) {
+        for (i in 0 until simulation.model.width) {
+            val position = Position(i, j, 0)
             val index = simulation.model.toIndex(position)
             val grain = simulation.grainAtIndex(index)
             builder.append(grain?.name ?: "_")
-            builder.append("\t")
+            builder.append(" ")
         }
         builder.append("\n")
     }
 
-    builder.append("Grains:\n")
-    val counts =simulation.countGrains()
-    simulation.model.grains.forEach {
-        builder.append("- ${it.name} = ${counts[it.id]}\n")
-    }
+
     return builder.toString()
 }

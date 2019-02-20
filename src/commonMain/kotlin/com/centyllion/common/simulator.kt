@@ -19,8 +19,9 @@ data class ApplicableBehavior(
         // reactives and reactions must have same size
         for (i in 0 until reactives.size) {
             val reactive = reactives[i]
+            val sourceIndex = reactive.first
             val reaction = reactions[i]
-            simulation.transform(reactive.first, reactive.first, reaction.productId, reaction.transform)
+            simulation.transform(sourceIndex, sourceIndex, reaction.productId, reaction.transform)
         }
     }
 }
@@ -43,12 +44,12 @@ class Simulator(
     var step = 0
 
     fun oneStep() {
-        val toExecute = mutableListOf<ApplicableBehavior>()
-        val all = mutableSetOf<Pair<Int, Grain>>()
-        val used = mutableListOf<Pair<Int, Grain>>()
+        val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
+                val selected = all.getOrPut(i) { mutableListOf() }
+
                 val age = simulation.ageAtIndex(i)
 
                 // a grain is present, a behaviour can be triggered
@@ -66,25 +67,28 @@ class Simulator(
                     val usedNeighbours = behaviour.usedAgents(neighbours)
                         .map { simulation.model.moveIndex(i, it).let { it to simulation.grainAtIndex(it)!! } }
 
-                    toExecute.add(ApplicableBehavior(i, behaviour, usedNeighbours))
-                    used.add(i to grain)
-                    used.addAll(usedNeighbours)
+                    val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
+                    selected.add(behavior)
+                    usedNeighbours.forEach {
+                        val neighboursSelected =  all.getOrPut(it.first) { mutableListOf() }
+                        neighboursSelected.add(behavior)
+                    }
                 }
-                // save the grain index for move
-                all.add(i to grain)
             }
         }
 
-        // TODO needs to filter behaviors that uses the same grains
-
+        // filters behaviors that uses the same grains
+        val concurrentApplicableBehaviours = all.filter { it.value.size > 1 }
+            .map { it.value[random.nextInt(it.value.size)] }.toSet()
 
         // execute behaviours
+        val toExecute = all.flatMap { it.value }.toSet() - concurrentApplicableBehaviours
         toExecute.forEach { it.apply(simulation) }
 
-        (all - used).forEach {
-            val index = it.first
-            val grain = it.second
-            if (grain.canMove) {
+        all.filter { it.value.isEmpty() }.forEach {
+            val index = it.key
+            val grain = simulation.grainAtIndex(index)
+            if (grain != null && grain.canMove) {
                 // applies random to do move
                 if (random.nextDouble() < grain.movementProbability) {
                     val directions = grain.allowedDirection.filter { simulation.indexIsFree(model.moveIndex(index, it)) }

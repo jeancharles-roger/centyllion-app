@@ -100,7 +100,8 @@ class Simulator(
             if (grain != null && grain.canMove) {
                 // applies random to do move
                 if (random.nextDouble() < grain.movementProbability) {
-                    val directions = grain.allowedDirection.filter { simulation.indexIsFree(model.moveIndex(index, it)) }
+                    val directions = grain.allowedDirection
+                        .filter { model.moveIndex(index, it).let { index -> model.indexInside(index) && simulation.indexIsFree(index) } }
                     if (directions.isNotEmpty()) {
                         val direction = directions[random.nextInt(directions.size)]
                         val targetIndex = model.moveIndex(index, direction)

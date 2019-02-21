@@ -124,7 +124,7 @@ data class Model(
     /** Transform given [position] to index. */
     fun toIndex(position: Position) = position.z * (height * width) + position.y * width + position.x
 
-    fun indexInside(index: Int) = index in 0..dataSize
+    fun indexInside(index: Int) = index in 0 until dataSize
 
     /** Transforms index to position, only to be used for printing, it's slow */
     fun toPosition(index: Int): Position {

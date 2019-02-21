@@ -45,19 +45,24 @@ class Simulator(
 
     fun oneStep() {
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
+
+        // applies agents dying process
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
-
                 // does the grain dies ?
                 if (grain.halfLife > 0 && random.nextDouble() < 1.0 / (1.45 * grain.halfLife)) {
                     // it dies
                     simulation.transform(i, i, null, false)
+                }
+            }
+        }
 
-                } else {
-                    // is the
-                    val selected = all.getOrPut(i) { mutableListOf() }
-
+        for (i in 0 until model.dataSize) {
+            val grain = simulation.grainAtIndex(i)
+            if (grain != null) {
+                val selected = all.getOrPut(i) { mutableListOf() }
+                if (model.mainReactiveGrains.contains(grain)) {
                     val age = simulation.ageAtIndex(i)
 
                     // a grain is present, a behaviour can be triggered

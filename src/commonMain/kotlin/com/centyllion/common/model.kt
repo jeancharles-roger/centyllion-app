@@ -138,6 +138,9 @@ data class Model(
     fun positionInside(position: Position) =
         position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
 
+    /** Main reactive grains are all the grains that are main component for a behaviour */
+    val mainReactiveGrains: Set<Grain> = behaviours.map { indexedGrains[it.mainReaction.reactiveId] }.filterNotNull().toSet()
+
     val valid
         get() =
             id.isNotBlank() && width > 0 && height > 0 && depth > 0 &&

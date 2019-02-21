@@ -33,9 +33,9 @@ data class Predicate<C : Comparable<C>>(
 
 @Serializable
 data class Grain(
-    val id: Int,
-    val name: String,
-    val color: String,
+    val id: Int = 0,
+    val name: String = "",
+    val color: String = "red",
     val figure: Figure = Figure.Square,
     val description: String = "",
     val halfLife: Int = 0,
@@ -50,7 +50,7 @@ data class Grain(
 
 @Serializable
 data class Reaction(
-    val reactiveId: Int,
+    val reactiveId: Int = 0,
     val productId: Int? = null,
     val transform: Boolean = false,
     val allowedDirection: List<Direction> = defaultDirection
@@ -61,11 +61,11 @@ data class Reaction(
 
 @Serializable
 data class Behaviour(
-    val name: String,
+    val name: String = "",
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
-    val mainReaction: Reaction,
+    val mainReaction: Reaction = Reaction(),
     val reaction: List<Reaction> = emptyList()
 ) {
 

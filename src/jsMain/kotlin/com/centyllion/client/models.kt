@@ -9,11 +9,11 @@ fun emptyModelAndSimulation(width: Int = 100, height: Int = 100): Simulation {
 }
 
 fun dendriteModel(width: Int = 100, height: Int = 100): Model {
-    val ms = Grain(0, "ms", "blue")
-    val mc = Grain(1, "mc", "red", movementProbability = 0.0)
+    val ms = Grain(0, "ms", "blue", description = "Manganèse soluble")
+    val mc = Grain(1, "mc", "red", description = "Manganèse cristallisé", movementProbability = 0.0)
 
     val r1 = Behaviour(
-        "crystalisation", "", 1.0,
+        "cristalisation", "Cristalisation du Manganèse", 1.0,
         mainReaction = Reaction(mc.id, mc.id), reaction = listOf(Reaction(ms.id, mc.id))
     )
 

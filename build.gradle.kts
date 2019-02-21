@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
 val serialization_version: String by project
+val coroutine_version: String by project
 val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
@@ -68,6 +69,8 @@ kotlin {
                 dependencies {
                     implementation(kotlin("stdlib-js"))
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
+                    implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
                 }
             }
             compilations["test"].defaultSourceSet {

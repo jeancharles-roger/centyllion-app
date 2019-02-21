@@ -1,6 +1,8 @@
 package com.centyllion.client
 
-import com.centyllion.common.*
+import com.centyllion.common.Position
+import com.centyllion.common.Simulation
+import com.centyllion.common.Simulator
 import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.div
@@ -8,7 +10,6 @@ import kotlinx.html.js.onClickFunction
 import org.w3c.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.random.Random
 
 @JsName("index")
 fun index() {
@@ -17,6 +18,7 @@ fun index() {
     val main = document.querySelector("section.cent-main") as HTMLElement
 
     val controller = SimulationController()
+    controller.data = dendriteSimulation(200, 200)
     main.appendChild(controller.container)
 }
 
@@ -42,42 +44,34 @@ fun toString(simulation: Simulation): String {
     return builder.toString()
 }
 
-class SimulationController {
+interface Controller<Data> {
 
-    val a = Grain(0, "a", "red")
-    val b = Grain(1, "b", "green")
-    val c = Grain(2, "c", "yellow", halfLife = 50)
-    val d = Grain(3, "d", "blue", halfLife = 100)
+    var data: Data
 
-    val r1 = Behaviour(
-        "r1", "", 0.2,
-        mainReaction = Reaction(a.id, c.id), reaction = listOf(Reaction(b.id))
-    )
-    val r2 = Behaviour(
-        "r2", "", 0.6,
-        mainReaction = Reaction(b.id, d.id), reaction = listOf(Reaction(a.id))
-    )
+    val container: HTMLElement
 
-    val model = Model(
-        "m1", 300, 300, 1, "test model",
-        listOf(a, b, c, d), listOf(r1, r2)
-    )
+    fun refresh()
+}
 
-    val simulation: Simulation = Simulation(model).apply {
-        for (i in 0 until model.dataSize) {
-            val p = Random.nextDouble()
-            when {
-                p < 0.01 -> addGrainAtIndex(i, a)
-                p < 0.02 -> addGrainAtIndex(i, b)
+class SimulationController: Controller<Simulation> {
+
+    override var data: Simulation = emptyModelAndSimulation()
+        set(value) {
+            if (value != field) {
+                field = value
+                simulator = Simulator(data)
+                running = false
+                refresh()
             }
         }
-    }
 
-    val simulator = Simulator(simulation)
+    inline val model get() = data.model
+
+    var simulator = Simulator(data)
 
     var running = false
 
-    val container: HTMLElement = document.create.div {
+    override val container: HTMLElement = document.create.div {
         div("level") {
             div("level-left buttons") {
                 a(classes = "button is-rounded is-primary cent-run") {
@@ -137,7 +131,7 @@ class SimulationController {
         refresh()
 
         if (running) {
-            window.setTimeout(this::runningCallback, 1)
+            window.setTimeout(this::runningCallback, 0)
         }
     }
 
@@ -155,7 +149,7 @@ class SimulationController {
         }
     }
 
-    fun refresh() {
+    override fun refresh() {
 
         runButton.classList.toggle("is-loading", running)
         if (running) {
@@ -176,8 +170,8 @@ class SimulationController {
         val xSize = canvasWidth / model.width
         val ySize = canvasHeight / model.height
         context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
-        for (i in 0 until simulation.agents.size) {
-            val grain = simulation.grainAtIndex(i)
+        for (i in 0 until data.agents.size) {
+            val grain = data.grainAtIndex(i)
             if (grain != null) {
                 val position = model.toPosition(i)
                 context.fillStyle = grain.color
@@ -188,8 +182,8 @@ class SimulationController {
 
         val builder = StringBuilder()
         builder.append("Grains:\n")
-        val counts = simulation.countGrains()
-        simulation.model.grains.forEach {
+        val counts = data.countGrains()
+        data.model.grains.forEach {
             builder.append("- ${it.name} = ${counts[it.id]}\n")
         }
         info.innerText = builder.toString()

@@ -160,7 +160,6 @@ class SimulationController: Controller<Simulation> {
             runButton.removeAttribute("disabled")
             stepButton.removeAttribute("disabled")
             stopButton.setAttribute("disabled", "")
-
         }
 
         stepCount.innerText = "${simulator.step}"
@@ -168,17 +167,24 @@ class SimulationController: Controller<Simulation> {
         val canvasWidth = canvas.width.toDouble()
         val canvasHeight = canvas.height.toDouble()
         val xSize = canvasWidth / model.width
+        val xMax = model.width * xSize
         val ySize = canvasHeight / model.height
         context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
+        var currentX = 0.0
+        var currentY = 0.0
         for (i in 0 until data.agents.size) {
             val grain = data.grainAtIndex(i)
             if (grain != null) {
-                val position = model.toPosition(i)
                 context.fillStyle = grain.color
-                context.fillRect(position.x.toDouble() * xSize, position.y.toDouble() * ySize, xSize, ySize)
+                context.fillRect(currentX, currentY, xSize, ySize)
+            }
+
+            currentX += xSize
+            if (currentX >= xMax) {
+                currentX = 0.0
+                currentY += ySize
             }
         }
-
 
         val builder = StringBuilder()
         builder.append("Grains:\n")

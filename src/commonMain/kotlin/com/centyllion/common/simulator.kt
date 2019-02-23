@@ -54,6 +54,8 @@ class Simulator(
                 if (grain.halfLife > 0 && random.nextDouble() < 1.0 / (1.45 * grain.halfLife)) {
                     // it dies
                     simulation.transform(i, i, null, false)
+                } else {
+                    simulation.ageGrain(i)
                 }
             }
         }

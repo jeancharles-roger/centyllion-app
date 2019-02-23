@@ -6,7 +6,7 @@ enum class Direction {
     Left, Right, Up, Down, Front, Back
 }
 
-val defaultDirection = listOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
+val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 
 enum class Figure {
     Square, Triangle, Disk, Diamond, Star
@@ -40,7 +40,7 @@ data class Grain(
     val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
-    val allowedDirection: List<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = defaultDirection
 ) {
     /** True if an agent of this Grain can move */
     val canMove = movementProbability > 0.0 && allowedDirection.isNotEmpty()
@@ -53,7 +53,7 @@ data class Reaction(
     val reactiveId: Int = 0,
     val productId: Int? = null,
     val transform: Boolean = false,
-    val allowedDirection: List<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = defaultDirection
 ) {
     fun validForModel(model: Model) = model.indexedGrains.containsKey(reactiveId) &&
             if (productId != null) model.indexedGrains.containsKey(productId) else true
@@ -170,6 +170,10 @@ data class Simulation(
 
     fun ageAtIndex(index: Int) = ages[index]
 
+    fun ageGrain(index: Int) {
+        ages[index]+= 1
+    }
+
     fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, keepAge: Boolean) {
         val age = ages[sourceIndex]
         agents[sourceIndex] = -1
@@ -181,6 +185,7 @@ data class Simulation(
             else -> -1
         }
     }
+
 
     fun addGrainAtIndex(index: Int, grain: Grain) {
         agents[index] = grain.id

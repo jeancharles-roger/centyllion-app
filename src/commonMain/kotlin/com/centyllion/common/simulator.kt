@@ -59,8 +59,8 @@ class Simulator(
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
-                val deathProbality = 1.0 - 2.0.pow(-1/grain.halfLife)
-                if (grain.halfLife > 0 && random.nextDouble() < deathProbality) {
+                val deathProbability = 1.0 - 2.0.pow(-1 / grain.halfLife)
+                if (grain.halfLife > 0 && random.nextDouble() < deathProbability) {
                     // it dies, does't count
                     simulation.transform(i, i, null, false)
                 } else {

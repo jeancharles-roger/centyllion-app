@@ -10,6 +10,7 @@ fun index() {
     val main = document.querySelector("section.cent-main") as HTMLElement
 
     val controller = SimulationController()
-    controller.data = dendriteSimulation(200, 200)
+    //controller.data = dendriteSimulation(100, 100)
+    controller.data = carSimulation(100, 100)
     main.appendChild(controller.container)
 }

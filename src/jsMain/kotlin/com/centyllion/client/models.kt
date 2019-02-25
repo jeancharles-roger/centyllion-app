@@ -33,7 +33,41 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
         }
 
         for (i in -2 until 2) {
-            addGrainAtIndex(model.dataSize/2 + i*167, this.model.grains[1])
+            addGrainAtIndex(model.dataSize / 2 + i * 167, this.model.grains[1])
         }
     }
+}
+
+
+fun carModel(width: Int = 100, height: Int = 100): Model {
+    val road = Grain(0, "road", "#DDDDDD", description = "Road", movementProbability = 0.0)
+    val carFront = Grain(1, "f", "blue", description = "Car front", movementProbability = 0.0)
+    val carBack = Grain(2, "b", "red", description = "Car back", movementProbability = 0.0)
+
+    val behaviour = Behaviour(
+        "Move", "move car", 1.0,
+        mainReaction = Reaction(carFront.id, carBack.id),
+        reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
+    )
+    return Model("cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
+}
+
+fun carSimulation(width: Int = 100, height: Int = 100) = Simulation(carModel(width, height)).apply {
+    for (i in 1 until width - 1) {
+        for (j in 1 until height - 1) {
+            if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
+                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+            }
+            if (i < width - 4 && j == height/2) {
+                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+            }
+            if (j < height - 2 && i == width/2) {
+                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+            }
+        }
+    }
+
+    addGrainAtIndex(model.toIndex(Position(width - 3, height / 2, 0)), model.grains[1])
+    addGrainAtIndex(model.toIndex(Position(width - 4, height / 2, 0)), model.grains[2])
+
 }

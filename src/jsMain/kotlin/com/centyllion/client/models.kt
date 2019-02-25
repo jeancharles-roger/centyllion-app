@@ -52,17 +52,20 @@ fun carModel(width: Int = 100, height: Int = 100): Model {
     return Model("cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
 }
 
-fun carSimulation(width: Int = 100, height: Int = 100) = Simulation(carModel(width, height)).apply {
+fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = Simulation(carModel(width, height)).apply {
     for (i in 1 until width - 1) {
         for (j in 1 until height - 1) {
             if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
                 addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
             }
-            if (i < width - 4 && j == height/2) {
-                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
-            }
-            if (j < height - 2 && i == width/2) {
-                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+
+            for (k in 0..insideLines) {
+                if (i < width - 2 && j == (k * height / (insideLines+1))) {
+                    addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+                }
+                if (j < height - 2 && i == (k * width / (insideLines+1))) {
+                    addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+                }
             }
         }
     }

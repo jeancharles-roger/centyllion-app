@@ -2,10 +2,13 @@ package com.centyllion.client
 
 import com.centyllion.common.Simulation
 import com.centyllion.common.Simulator
-import kotlinx.html.*
+import kotlinx.html.a
+import kotlinx.html.canvas
+import kotlinx.html.div
 import kotlinx.html.dom.create
 import kotlinx.html.js.div
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.span
 import org.w3c.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
@@ -78,9 +81,13 @@ class SimulationController : Controller<Simulation> {
                         height = "${model.height * canvasWidth / model.width}"
                     }
                 }
-                pre("cent-info")
             }
             column(size(3), "cent-relations")
+        }
+        columns("is-centered") {
+            column(size(10)) {
+
+            }
         }
     }
 
@@ -90,7 +97,6 @@ class SimulationController : Controller<Simulation> {
 
     val stepCount = container.querySelector(".cent-stepcount > span") as HTMLSpanElement
     val canvas = container.querySelector(".cent-rendering") as HTMLCanvasElement
-    val info = container.querySelector(".cent-info") as HTMLElement
 
     val context = canvas.getContext("2d") as CanvasRenderingContext2D
 
@@ -167,14 +173,6 @@ class SimulationController : Controller<Simulation> {
                 currentY += ySize
             }
         }
-
-        val builder = StringBuilder()
-        builder.append("Grains:\n")
-        val counts = data.countGrains()
-        data.model.grains.forEach {
-            builder.append("- ${it.name} = ${counts[it.id]}\n")
-        }
-        info.innerText = builder.toString()
     }
 
 }

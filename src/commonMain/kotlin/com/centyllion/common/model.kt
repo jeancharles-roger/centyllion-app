@@ -203,7 +203,7 @@ data class Simulation(
             .toMap()
 
 
-    fun countGrains(): Map<Int, Int> {
+    fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()
         for (i in agents) {
             if (i >= 0) {

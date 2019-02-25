@@ -41,23 +41,35 @@ class Simulator(
 
     val random = Random.Default
 
+    private val grainCountHistory = simulation.grainsCounts().let { counts ->
+        model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
+    }
+
     var step = 0
+
+    fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
     fun oneStep() {
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
 
         // applies agents dying process
+        val currentCount = mutableMapOf<Grain, Int>()
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
                 if (grain.halfLife > 0 && random.nextDouble() < 1.0 / (1.45 * grain.halfLife)) {
-                    // it dies
+                    // it dies, does't count
                     simulation.transform(i, i, null, false)
                 } else {
+                    currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
                     simulation.ageGrain(i)
                 }
             }
+        }
+        // stores count for each grain
+        currentCount.forEach {
+            grainCountHistory[it.key]?.add(it.value)
         }
 
         for (i in 0 until model.dataSize) {
@@ -122,6 +134,5 @@ class Simulator(
 
         // count a step
         step += 1
-
     }
 }

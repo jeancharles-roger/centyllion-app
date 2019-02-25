@@ -1,8 +1,9 @@
 
-.dot {
-  margin-top: 20px;
-  margin-left: 20px;
+body {
+  font-family: Avenir;
+}
 
+.dot {
   height: 15px;
   width: 15px;
   border-radius: 50%;

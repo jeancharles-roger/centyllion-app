@@ -1,5 +1,6 @@
 package com.centyllion.common
 
+import kotlin.math.pow
 import kotlin.random.Random
 
 data class ApplicableBehavior(
@@ -58,7 +59,8 @@ class Simulator(
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
-                if (grain.halfLife > 0 && random.nextDouble() < 1.0 / (1.45 * grain.halfLife)) {
+                val deathProbality = 1.0 - 2.0.pow(-1/grain.halfLife)
+                if (grain.halfLife > 0 && random.nextDouble() < deathProbality) {
                     // it dies, does't count
                     simulation.transform(i, i, null, false)
                 } else {

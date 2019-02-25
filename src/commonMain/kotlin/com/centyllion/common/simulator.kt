@@ -109,6 +109,7 @@ class Simulator(
 
         // filters behaviors that uses the same grains
         val concurrentApplicableBehaviours = all.filter { it.value.size > 1 }
+            // TODO removes all concurrent behaviour not just one
             .map { it.value[random.nextInt(it.value.size)] }.toSet()
 
         // execute behaviours
@@ -131,8 +132,6 @@ class Simulator(
                 }
             }
         }
-
-        // TODO updates age by one for all
 
         // count a step
         step += 1

@@ -76,7 +76,8 @@ data class Behaviour(
 
     /** To used only if behaviour is [applicable], returns the used agents directions to complete behavior. */
     fun usedAgents(neighbours: Map<Direction, Grain>) =
-        reaction.map { r -> r.allowedDirection.find { (neighbours[it]?.id == r.reactiveId) } }.filterNotNull()
+        // TODO make sure to use each direction only once
+        reaction.mapNotNull { r -> r.allowedDirection.find { (neighbours[it]?.id == r.reactiveId) } }
 
 
     fun validForModel(model: Model) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&

@@ -60,17 +60,27 @@ fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = S
             }
 
             for (k in 0..insideLines) {
-                if (i < width - 2 && j == (k * height / (insideLines+1))) {
+                if (i < width - 2 && j == (k * height / (insideLines + 1))) {
                     addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
                 }
-                if (j < height - 2 && i == (k * width / (insideLines+1))) {
+                if (j < height - 2 && i == (k * width / (insideLines + 1))) {
                     addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
                 }
             }
         }
     }
 
+    // car 0
     addGrainAtIndex(model.toIndex(Position(width - 3, height / 2, 0)), model.grains[1])
     addGrainAtIndex(model.toIndex(Position(width - 4, height / 2, 0)), model.grains[2])
+    // car 1
+    addGrainAtIndex(model.toIndex(Position(2, height / 2, 0)), model.grains[1])
+    addGrainAtIndex(model.toIndex(Position(3, height / 2, 0)), model.grains[2])
+    // car 2
+    addGrainAtIndex(model.toIndex(Position(width / 2, height - 3, 0)), model.grains[1])
+    addGrainAtIndex(model.toIndex(Position(width / 2, height - 4, 0)), model.grains[2])
+    // car 3
+    addGrainAtIndex(model.toIndex(Position(width / 2,  2, 0)), model.grains[1])
+    addGrainAtIndex(model.toIndex(Position(width / 2,  3, 0)), model.grains[2])
 
 }

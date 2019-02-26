@@ -1,5 +1,6 @@
 package com.centyllion.client
 
+import chartjs.*
 import com.centyllion.common.Simulation
 import com.centyllion.common.Simulator
 import kotlinx.html.a
@@ -92,7 +93,7 @@ class SimulationController : Controller<Simulation> {
         }
         columns("is-centered") {
             column(size(10)) {
-
+                canvas("cent-graph") {}
             }
         }
     }
@@ -106,6 +107,17 @@ class SimulationController : Controller<Simulation> {
     val canvas = container.querySelector(".cent-rendering") as HTMLCanvasElement
 
     val context = canvas.getContext("2d") as CanvasRenderingContext2D
+
+    val graphCanvas = container.querySelector("canvas.cent-graph") as HTMLCanvasElement
+
+    val chart = Chart(graphCanvas, LineChartConfig(
+            options = LineChartOptions().apply {
+                animation.duration = 0
+                scales.xAxes = arrayOf(LinearAxisOptions())
+                scales.yAxes = arrayOf(LinearAxisOptions())
+            }
+        )
+    )
 
     init {
         container.querySelector("div.cent-grains")?.appendChild(grainsController.container)
@@ -168,6 +180,8 @@ class SimulationController : Controller<Simulation> {
 
         stepCount.innerText = "${simulator.step}"
 
+
+        // refreshes simulation view
         val canvasWidth = canvas.width.toDouble()
         val canvasHeight = canvas.height.toDouble()
         val xSize = canvasWidth / model.width
@@ -189,6 +203,15 @@ class SimulationController : Controller<Simulation> {
                 currentY += ySize
             }
         }
+
+        // refreshes charts
+        chart.data.datasets = simulator.grainCountHistory.map {
+            LineDataSet(
+                it.key.name, it.value.mapIndexed { index, i -> LineChartPlot(index, i)}.toTypedArray(),
+                borderColor = it.key.color, fill = "false"
+            )
+        }.toTypedArray()
+        chart.update()
     }
 
 }

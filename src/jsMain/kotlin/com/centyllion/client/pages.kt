@@ -19,6 +19,7 @@ fun index() {
     val simulations = listOf(
         dendriteSimulation(100, 100),
         dendriteSimulation(200, 200),
+        carSimulation(10, 10),
         carSimulation(100, 100, 5),
         carSimulation(200, 200, 5)
     )

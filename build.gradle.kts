@@ -141,13 +141,12 @@ tasks {
                 """requirejs.config({
                 'baseUrl': 'js',
                 paths: {
-                    'apexcharts': 'apexcharts/apexcharts',
-
+                    'chartjs': 'Chart.js-2.7.2/Chart',
                     $moduleJoined
                     }
                 })
 
-                requirejs(['centyllion'], function(centyllion) {
+                requirejs(['chartjs', 'centyllion'], function(chartjs, centyllion) {
                     centyllion.$mainFunction
                 })""".trimIndent()
             )

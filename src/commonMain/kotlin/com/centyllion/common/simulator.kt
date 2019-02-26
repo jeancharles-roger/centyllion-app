@@ -39,7 +39,7 @@ class Simulator(
 
     val random = Random.Default
 
-    private val grainCountHistory = simulation.grainsCounts().let { counts ->
+    val grainCountHistory = simulation.grainsCounts().let { counts ->
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
     }
 

@@ -16,13 +16,9 @@ data class ApplicableBehavior(
         val reactives = usedNeighbours.sortedBy { it.second.id }
         val reactions = behaviour.reaction.sortedBy { it.reactiveId }
 
-
-        // TODO checks if [zip] function can help
-        // reactives and reactions must have same size
-        for (i in 0 until reactives.size) {
-            val reactive = reactives[i]
+        // applies reactions
+        reactions.zip(reactives).forEach { (reaction, reactive) ->
             val sourceIndex = reactive.first
-            val reaction = reactions[i]
             simulation.transform(sourceIndex, sourceIndex, reaction.productId, reaction.transform)
         }
     }
@@ -147,5 +143,10 @@ class Simulator(
 
         // count a step
         step += 1
+    }
+
+    fun reset() {
+        simulation.reset()
+        step = 0
     }
 }

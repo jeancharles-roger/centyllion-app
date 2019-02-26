@@ -111,12 +111,12 @@ class SimulationController : Controller<Simulation> {
     val graphCanvas = container.querySelector("canvas.cent-graph") as HTMLCanvasElement
 
     val chart = Chart(graphCanvas, LineChartConfig(
-            options = LineChartOptions().apply {
-                animation.duration = 0
-                scales.xAxes = arrayOf(LinearAxisOptions())
-                scales.yAxes = arrayOf(LinearAxisOptions())
-            }
-        )
+        options = LineChartOptions().apply {
+            animation.duration = 0
+            scales.xAxes = arrayOf(LinearAxisOptions())
+            scales.yAxes = arrayOf(LinearAxisOptions())
+        }
+    )
     )
 
     init {
@@ -207,8 +207,10 @@ class SimulationController : Controller<Simulation> {
         // refreshes charts
         chart.data.datasets = simulator.grainCountHistory.map {
             LineDataSet(
-                it.key.name, it.value.mapIndexed { index, i -> LineChartPlot(index, i)}.toTypedArray(),
-                borderColor = it.key.color, fill = "false"
+                it.key.name, it.value
+                    .mapIndexed { index, i -> LineChartPlot(index, i) }
+                    .toTypedArray(),
+                borderColor = it.key.color, backgroundColor = it.key.color, fill = "false", showLine = false
             )
         }.toTypedArray()
         chart.update()

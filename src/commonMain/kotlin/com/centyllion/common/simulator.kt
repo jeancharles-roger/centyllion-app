@@ -50,7 +50,6 @@ class Simulator(
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
     fun oneStep() {
-        val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
 
         // applies agents dying process
         val currentCount = mutableMapOf<Grain, Int>()
@@ -72,6 +71,10 @@ class Simulator(
             grainCountHistory[it.key]?.add(it.value)
         }
 
+        // all will contains index of agents as keys associated to a list of applicable behaviors
+        // if an agent doesn't contain any applicable behavior it will have an empty list.
+        // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
+        val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
         for (i in 0 until model.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
@@ -92,7 +95,7 @@ class Simulator(
                         // selects one at random
                         val behaviour = applicable[random.nextInt(applicable.size)]
                         val usedNeighbours = behaviour.usedAgents(neighbours)
-                            .map { simulation.model.moveIndex(i, it).let { it to simulation.grainAtIndex(it)!! } }
+                            .map { simulation.model.moveIndex(i, it).let { index -> index to simulation.grainAtIndex(index)!! } }
 
                         val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
                         selected.add(behavior)

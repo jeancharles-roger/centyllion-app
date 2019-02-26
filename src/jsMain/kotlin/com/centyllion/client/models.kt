@@ -35,6 +35,8 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
         for (i in -2 until 2) {
             addGrainAtIndex(model.dataSize / 2 + i * 167, this.model.grains[1])
         }
+
+        saveState()
     }
 }
 
@@ -83,4 +85,5 @@ fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = S
     addGrainAtIndex(model.toIndex(Position(width / 2,  2, 0)), model.grains[1])
     addGrainAtIndex(model.toIndex(Position(width / 2,  3, 0)), model.grains[2])
 
+    saveState()
 }

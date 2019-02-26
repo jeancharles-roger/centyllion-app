@@ -69,6 +69,12 @@ class SimulationController : Controller<Simulation> {
                                 stop()
                             }
                         }
+                        a(classes = "button is-rounded is-warning cent-reset") {
+                            +"Reset"
+                            onClickFunction = {
+                                reset()
+                            }
+                        }
                     }
                     div("level-item cent-stepcount") {
                         span("label")
@@ -94,6 +100,7 @@ class SimulationController : Controller<Simulation> {
     val runButton = container.querySelector("a.cent-run") as HTMLAnchorElement
     val stepButton = container.querySelector("a.cent-step") as HTMLAnchorElement
     val stopButton = container.querySelector("a.cent-stop") as HTMLAnchorElement
+    val resetButton = container.querySelector("a.cent-reset") as HTMLAnchorElement
 
     val stepCount = container.querySelector(".cent-stepcount > span") as HTMLSpanElement
     val canvas = container.querySelector(".cent-rendering") as HTMLCanvasElement
@@ -137,6 +144,13 @@ class SimulationController : Controller<Simulation> {
         }
     }
 
+    fun reset() {
+        if (!running) {
+            simulator.reset()
+            refresh()
+        }
+    }
+
     override fun refresh() {
 
         runButton.classList.toggle("is-loading", running)
@@ -144,10 +158,12 @@ class SimulationController : Controller<Simulation> {
             runButton.setAttribute("disabled", "")
             stepButton.setAttribute("disabled", "")
             stopButton.removeAttribute("disabled")
+            resetButton.setAttribute("disabled", "")
         } else {
             runButton.removeAttribute("disabled")
             stepButton.removeAttribute("disabled")
             stopButton.setAttribute("disabled", "")
+            resetButton.removeAttribute("disabled")
         }
 
         stepCount.innerText = "${simulator.step}"

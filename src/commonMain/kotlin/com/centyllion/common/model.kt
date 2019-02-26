@@ -170,6 +170,10 @@ data class Simulation(
         }
     }
 
+    fun saveState() {
+        agents.copyInto(initialAgents)
+    }
+
     fun indexIsFree(index: Int) = agents[index] < 0
 
     fun grainAtIndex(index: Int) = model.indexedGrains[agents[index]]

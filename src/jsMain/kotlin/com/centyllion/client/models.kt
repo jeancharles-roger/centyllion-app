@@ -18,7 +18,7 @@ fun dendriteModel(width: Int = 100, height: Int = 100): Model {
     )
 
     return Model(
-        "m1", width, height, 1, "test model",
+        "Dendrite", width, height, 1, "test model",
         listOf(ms, mc), listOf(r1)
     )
 }
@@ -49,7 +49,7 @@ fun carModel(width: Int = 100, height: Int = 100): Model {
         mainReaction = Reaction(carFront.id, carBack.id),
         reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
     )
-    return Model("cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
+    return Model("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
 }
 
 fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = Simulation(carModel(width, height)).apply {

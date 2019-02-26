@@ -82,12 +82,6 @@ data class Behaviour(
         mainReaction.reactiveId == grain.id && agePredicate.check(age) &&
                 reaction.fold(true) { a, r -> a && r.allowedDirection.any { (neighbours[it]?.id == r.reactiveId) } }
 
-    /** To used only if behaviour is [applicable], returns the used agents directions to complete behavior. */
-    fun usedAgents(neighbours: Map<Direction, Grain>) =
-    // TODO make sure to use each direction only once
-        reaction.mapNotNull { r -> r.allowedDirection.find { (neighbours[it]?.id == r.reactiveId) } }
-
-
     fun validForModel(model: Model) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
             mainReaction.validForModel(model) && reaction.fold(true) { a, r -> a && r.validForModel(model) }
 }

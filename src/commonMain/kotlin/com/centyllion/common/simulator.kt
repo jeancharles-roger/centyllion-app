@@ -16,6 +16,8 @@ data class ApplicableBehavior(
         val reactives = usedNeighbours.sortedBy { it.second.id }
         val reactions = behaviour.reaction.sortedBy { it.reactiveId }
 
+
+        // TODO checks if [zip] function can help
         // reactives and reactions must have same size
         for (i in 0 until reactives.size) {
             val reactive = reactives[i]
@@ -94,8 +96,21 @@ class Simulator(
                     if (applicable.isNotEmpty()) {
                         // selects one at random
                         val behaviour = applicable[random.nextInt(applicable.size)]
-                        val usedNeighbours = behaviour.usedAgents(neighbours)
-                            .map { simulation.model.moveIndex(i, it).let { index -> index to simulation.grainAtIndex(index)!! } }
+
+                        // for each reactions, find all possible reactives
+                        val possibleReactions = behaviour.reaction.map { reaction ->
+                            neighbours
+                                .filter { (d, g) -> reaction.reactiveId == g.id && reaction.allowedDirection.contains(d) }
+                                .map { it.key to it.value }
+                        }
+
+                        // combines possibilities
+                        val allCombinations = possibleReactions.allCombinations()
+
+                        // chooses one randomly
+                        val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map {
+                            simulation.model.moveIndex(i, it.first) to it.second
+                        }
 
                         val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
                         selected.add(behavior)

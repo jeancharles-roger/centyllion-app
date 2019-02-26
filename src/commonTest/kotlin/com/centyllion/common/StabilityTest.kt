@@ -15,7 +15,7 @@ class StabilityTest {
         val frontCount = count[frontGrain]
         val backCount = count[backGrain]
 
-        repeat(500) { simulator.oneStep() }
+        repeat(100) { simulator.oneStep() }
         val lastCount = simulator.lastGrainsCount()
         assertEquals(frontCount, lastCount[frontGrain])
         assertEquals(backCount, lastCount[backGrain])

@@ -1,6 +1,8 @@
 package com.centyllion.common
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlin.math.pow
 
 enum class Direction {
     Left, Right, Up, Down, Front, Back
@@ -43,9 +45,15 @@ data class Grain(
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     /** True if an agent of this Grain can move */
+    @Transient
     val canMove = movementProbability > 0.0 && allowedDirection.isNotEmpty()
 
-    val valid get() = id > 0 && name.isNotBlank()
+    @Transient
+    val deathProbability = if (halfLife > 0) 1.0 - 2.0.pow(-1 / halfLife) else 0.0
+
+    @Transient
+    val valid
+        get() = id > 0 && name.isNotBlank()
 }
 
 @Serializable
@@ -76,7 +84,7 @@ data class Behaviour(
 
     /** To used only if behaviour is [applicable], returns the used agents directions to complete behavior. */
     fun usedAgents(neighbours: Map<Direction, Grain>) =
-        // TODO make sure to use each direction only once
+    // TODO make sure to use each direction only once
         reaction.mapNotNull { r -> r.allowedDirection.find { (neighbours[it]?.id == r.reactiveId) } }
 
 
@@ -100,7 +108,7 @@ data class Position(
 
 @Serializable
 data class Model(
-    val id: String,
+    val name: String,
     val width: Int = 100,
     val height: Int = 100,
     val depth: Int = 1,
@@ -108,8 +116,10 @@ data class Model(
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList()
 ) {
+    @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
+    @Transient
     val dataSize = width * height * depth
 
     /** Move [index] on given [direction] of [step] cases. */
@@ -118,8 +128,8 @@ data class Model(
         Direction.Right -> index + step
         Direction.Up -> index + (step * width)
         Direction.Down -> index - (step * width)
-        Direction.Front -> index - (step * width*height)
-        Direction.Back -> index + (step * width*height)
+        Direction.Front -> index - (step * width * height)
+        Direction.Back -> index + (step * width * height)
     }
 
     /** Transform given [position] to index. */
@@ -140,11 +150,12 @@ data class Model(
         position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
 
     /** Main reactive grains are all the grains that are main component for a behaviour */
-    val mainReactiveGrains: Set<Grain> = behaviours.map { indexedGrains[it.mainReaction.reactiveId] }.filterNotNull().toSet()
+    val mainReactiveGrains: Set<Grain> = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
 
+    @Transient
     val valid
         get() =
-            id.isNotBlank() && width > 0 && height > 0 && depth > 0 &&
+            name.isNotBlank() && width > 0 && height > 0 && depth > 0 &&
                     grains.fold(true) { a, g -> a && g.valid } &&
                     behaviours.fold(true) { a, g -> a && g.validForModel(this) }
 
@@ -172,7 +183,7 @@ data class Simulation(
     fun ageAtIndex(index: Int) = ages[index]
 
     fun ageGrain(index: Int) {
-        ages[index]+= 1
+        ages[index] += 1
     }
 
     fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, keepAge: Boolean) {
@@ -199,9 +210,9 @@ data class Simulation(
     }
 
     fun neighbours(index: Int): Map<Direction, Grain> = Direction.values().asSequence()
-            .map { it to model.moveIndex(index, it) }.filter { model.indexInside(it.second) }
-            .mapNotNull { grainAtIndex(it.second).let { grain -> if (grain != null) it.first to grain else null } }
-            .toMap()
+        .map { it to model.moveIndex(index, it) }.filter { model.indexInside(it.second) }
+        .mapNotNull { grainAtIndex(it.second).let { grain -> if (grain != null) it.first to grain else null } }
+        .toMap()
 
 
     fun grainsCounts(): Map<Int, Int> {

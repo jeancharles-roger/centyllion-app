@@ -1,6 +1,5 @@
 package com.centyllion.common
 
-import kotlin.math.pow
 import kotlin.random.Random
 
 data class ApplicableBehavior(
@@ -59,8 +58,7 @@ class Simulator(
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
-                val deathProbability = 1.0 - 2.0.pow(-1 / grain.halfLife)
-                if (grain.halfLife > 0 && random.nextDouble() < deathProbability) {
+                if (grain.halfLife > 0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
                     simulation.transform(i, i, null, false)
                 } else {
@@ -107,13 +105,9 @@ class Simulator(
             }
         }
 
-        // filters behaviors that uses the same grains
-        val concurrentApplicableBehaviours = all.filter { it.value.size > 1 }
-            // TODO removes all concurrent behaviour not just one
+        // filters behaviors that aren't concurrent
+        val toExecute = all.filter { it.value.isNotEmpty() }
             .map { it.value[random.nextInt(it.value.size)] }.toSet()
-
-        // execute behaviours
-        val toExecute = all.flatMap { it.value }.toSet() - concurrentApplicableBehaviours
         toExecute.forEach { it.apply(simulation) }
 
         all.filter { it.value.isEmpty() }.forEach {

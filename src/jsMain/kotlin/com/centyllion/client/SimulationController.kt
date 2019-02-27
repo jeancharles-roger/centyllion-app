@@ -225,7 +225,7 @@ class SimulationController : Controller<Simulator> {
         // refreshes charts
         chart.data.datasets = data.grainCountHistory.map {
             LineDataSet(
-                it.key.name, it.value
+                it.key.description, it.value
                     .mapIndexed { index, i -> LineChartPlot(index, i) }
                     .toTypedArray(),
                 borderColor = it.key.color, backgroundColor = it.key.color, fill = "false", showLine = false

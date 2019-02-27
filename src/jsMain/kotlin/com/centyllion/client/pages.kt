@@ -1,5 +1,6 @@
 package com.centyllion.client
 
+import com.centyllion.common.Simulator
 import kotlinx.html.dom.create
 import kotlinx.html.js.div
 import kotlinx.html.js.onChangeFunction
@@ -17,11 +18,11 @@ fun index() {
 
     val controller = SimulationController()
     val simulations = listOf(
-        dendriteSimulation(100, 100),
-        dendriteSimulation(200, 200),
-        carSimulation(10, 10),
-        carSimulation(100, 100, 5),
-        carSimulation(200, 200, 5)
+        Simulator(dendriteSimulation(100, 100)),
+        Simulator(dendriteSimulation(200, 200)),
+        Simulator(carSimulation(10, 10)),
+        Simulator(carSimulation(100, 100, 5)),
+        Simulator(carSimulation(200, 200, 5))
     )
 
     controller.data = simulations[0]

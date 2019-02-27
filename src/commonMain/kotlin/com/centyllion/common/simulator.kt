@@ -148,5 +148,6 @@ class Simulator(
     fun reset() {
         simulation.reset()
         step = 0
+        grainCountHistory.forEach { it.value.clear() }
     }
 }

@@ -1,7 +1,6 @@
 package com.centyllion.client
 
 import chartjs.*
-import com.centyllion.common.Simulation
 import com.centyllion.common.Simulator
 import kotlinx.html.a
 import kotlinx.html.canvas
@@ -14,25 +13,26 @@ import org.w3c.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
 
-class SimulationController : Controller<Simulation> {
+class SimulationController : Controller<Simulator> {
 
-    override var data: Simulation = emptyModelAndSimulation()
+    override var data: Simulator = Simulator(emptyModelAndSimulation())
         set(value) {
             if (value != field) {
                 field = value
                 grainsController.data = value.model.grains
                 behaviourController.data = value.model.behaviours
-                simulator = Simulator(data)
                 running = false
                 refresh()
+                refreshChart()
             }
         }
 
     inline val model get() = data.model
 
-    var simulator = Simulator(data)
+    inline val simulation get() = data.simulation
 
     var running = false
+    var lastRefresh = 0
 
     val grainsController = ListController(
         model.grains, "", size(12)
@@ -134,18 +134,16 @@ class SimulationController : Controller<Simulation> {
     }
 
     fun runningCallback() {
-        simulator.oneStep()
-        refresh()
-
         if (running) {
+            executeStep(lastRefresh >= 5)
+            lastRefresh += 1
             window.setTimeout(this::runningCallback, 0)
         }
     }
 
     fun step() {
         if (!running) {
-            simulator.oneStep()
-            refresh()
+            executeStep(true)
         }
     }
 
@@ -158,8 +156,26 @@ class SimulationController : Controller<Simulation> {
 
     fun reset() {
         if (!running) {
-            simulator.reset()
+            data.reset()
             refresh()
+            refreshChart()
+        }
+    }
+
+    private fun executeStep(update: Boolean) {
+        data.oneStep()
+        refresh()
+
+        chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+            val data = set.data
+            if (data != null) {
+                val index = if (data.isEmpty()) 0 else data.lastIndex
+                data.push(LineChartPlot(index, i))
+            }
+        }
+        if (update) {
+            chart.update(ChartUpdateConfig(duration = 0, lazy = true))
+            lastRefresh = 0
         }
     }
 
@@ -178,7 +194,7 @@ class SimulationController : Controller<Simulation> {
             resetButton.removeAttribute("disabled")
         }
 
-        stepCount.innerText = "${simulator.step}"
+        stepCount.innerText = "${data.step}"
 
 
         // refreshes simulation view
@@ -190,8 +206,8 @@ class SimulationController : Controller<Simulation> {
         context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0
-        for (i in 0 until data.agents.size) {
-            val grain = data.grainAtIndex(i)
+        for (i in 0 until simulation.agents.size) {
+            val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 context.fillStyle = grain.color
                 context.fillRect(currentX, currentY, xSize, ySize)
@@ -203,9 +219,11 @@ class SimulationController : Controller<Simulation> {
                 currentY += ySize
             }
         }
+    }
 
+    fun refreshChart() {
         // refreshes charts
-        chart.data.datasets = simulator.grainCountHistory.map {
+        chart.data.datasets = data.grainCountHistory.map {
             LineDataSet(
                 it.key.name, it.value
                     .mapIndexed { index, i -> LineChartPlot(index, i) }
@@ -214,6 +232,6 @@ class SimulationController : Controller<Simulation> {
             )
         }.toTypedArray()
         chart.update()
+        lastRefresh = 0
     }
-
 }

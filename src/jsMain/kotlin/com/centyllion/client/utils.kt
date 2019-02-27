@@ -38,3 +38,7 @@ fun FlowContent.column(size: ColumnSize = ColumnSize(4), classes: String = "", b
 @HtmlTagMarker
 fun <T, C : TagConsumer<T>> C.column(size: ColumnSize = ColumnSize(4), classes: String = "", block: DIV.() -> Unit = {}) =
     DIV(attributesMapOf("class", "columns ${size.classes} $classes"), this).visitAndFinalize(this, block)
+
+
+fun <T> Array<T>.push(e: T): Int = asDynamic().push(e) as Int
+fun <T> Array<T>.pop(): T = asDynamic().pop() as T

@@ -114,16 +114,34 @@ data class Model(
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
     @Transient
-    val dataSize = width * height * depth
+    val levelSize = width * height
 
-    /** Move [index] on given [direction] of [step] cases. */
-    fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int = when (direction) {
-        Direction.Left -> index - step
-        Direction.Right -> index + step
-        Direction.Up -> index + (step * width)
-        Direction.Down -> index - (step * width)
-        Direction.Front -> index - (step * width * height)
-        Direction.Back -> index + (step * width * height)
+    @Transient
+    val dataSize = levelSize * depth
+
+
+    /** Move [index] on given [direction] of [step] cases, whatever the index, it will always remains inside the simulation. */
+    fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int {
+        // TODO find a faster way to move index
+        var z = index / levelSize
+        val yRest = index - z * levelSize
+        var y = yRest / width
+        var x = yRest - y * width
+
+        when (direction) {
+            Direction.Left -> x = (x + step) % width
+            Direction.Right -> x = (x - step) % width
+            Direction.Up -> y = (y + step) % height
+            Direction.Down -> y = (y - step) % height
+            Direction.Front -> z = (z - step) % depth
+            Direction.Back -> z = (z + step) % depth
+        }
+
+        if (x < 0) x += width
+        if (y < 0) y += height
+        if (z < 0) z += depth
+
+        return z * levelSize + y * width + x
     }
 
     /** Transform given [position] to index. */

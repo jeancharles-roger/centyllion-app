@@ -108,7 +108,7 @@ fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
             }
         }
 
-        addGrainAtIndex(model.dataSize / 2 + width/2, this.model.grains[0])
+        addGrainAtIndex(model.dataSize / 4 + width/2, this.model.grains[0])
 
         saveState()
     }
@@ -133,7 +133,6 @@ fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
                 p < 0.002 -> addGrainAtIndex(i, this.model.grains[1])
             }
         }
-
 
         saveState()
     }

@@ -57,4 +57,20 @@ class PositionTest {
         checkInside(Position(49, 2, 1), m1 to false, m2 to false, m3 to true)
     }
 
+    @Test
+    fun testMove() {
+        assertEquals(211, m1.moveIndex(210, Direction.Left))
+        assertEquals(209, m1.moveIndex(210, Direction.Right))
+        assertEquals(310, m1.moveIndex(210, Direction.Up))
+        assertEquals(110, m1.moveIndex(210, Direction.Down))
+    }
+
+    @Test
+    fun testMoveTorus() {
+        assertEquals(0, m1.moveIndex(99, Direction.Left))
+        assertEquals(99, m1.moveIndex(0, Direction.Right))
+        assertEquals(10, m1.moveIndex(9910, Direction.Up))
+        assertEquals(9910, m1.moveIndex(10, Direction.Down))
+    }
+
 }

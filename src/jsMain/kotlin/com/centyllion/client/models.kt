@@ -46,12 +46,18 @@ fun carModel(width: Int = 100, height: Int = 100): Model {
     val carFront = Grain(1, "f", "blue", description = "Car front", movementProbability = 0.0)
     val carBack = Grain(2, "b", "red", description = "Car back", movementProbability = 0.0)
 
-    val behaviour = Behaviour(
-        "Move", "move car", 1.0,
+    val move = Behaviour(
+        "Move", "Move car", 1.0,
         mainReaction = Reaction(carFront.id, carBack.id),
         reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
     )
-    return Model("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
+    val reverse
+            = Behaviour(
+        "Reverse", "Reverse car", 1.0,
+        mainReaction = Reaction(carFront.id, carBack.id),
+        reaction = listOf(Reaction(carFront.id, carFront.id), Reaction(carBack.id, carFront.id))
+    )
+    return Model("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(move, reverse))
 }
 
 fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = Simulation(carModel(width, height)).apply {
@@ -81,4 +87,54 @@ fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = S
         }
     }
     saveState()
+}
+
+fun bacteriaModel(width: Int = 100, height: Int = 100): Model {
+    val bacteria = Grain(0, "b", "red", Figure.Square, "Bacteria")
+    val sugar = Grain(1, "s", "blue", Figure.Square, "Sugar", allowedDirection = emptySet())
+
+    val division = Behaviour("Division", "Bacteria division", 1.0,
+        mainReaction = Reaction(0, 0), reaction = listOf(Reaction(1, 0))
+    )
+    return Model("Bacteria", width, height, 1, "", listOf(bacteria, sugar), listOf(division))
+}
+
+fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
+    return Simulation(bacteriaModel(width, height)).apply {
+        for (i in 0 until model.dataSize) {
+            val p = Random.nextDouble()
+            when {
+                p < 0.15 -> addGrainAtIndex(i, this.model.grains[1])
+            }
+        }
+
+        addGrainAtIndex(model.dataSize / 2 + width/2, this.model.grains[0])
+
+        saveState()
+    }
+}
+
+fun immunityModel(width: Int = 100, height: Int = 100): Model {
+    val si = Grain(0, "si", "green", Figure.Square, "Immunity system")
+    val bacteria = Grain(1, "b", "rea", Figure.Square, "Bacteria")
+
+    val division = Behaviour("Division", "Bacteria division", 0.01,
+        mainReaction = Reaction(1, 1), reaction = listOf(Reaction(-1, 1))
+    )
+    return Model("Immunity system", width, height, 1, "", listOf(si, bacteria), listOf(division))
+}
+
+fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
+    return Simulation(immunityModel(width, height)).apply {
+        for (i in 0 until model.dataSize) {
+            val p = Random.nextDouble()
+            when {
+                p < 0.001 -> addGrainAtIndex(i, this.model.grains[0])
+                p < 0.002 -> addGrainAtIndex(i, this.model.grains[1])
+            }
+        }
+
+
+        saveState()
+    }
 }

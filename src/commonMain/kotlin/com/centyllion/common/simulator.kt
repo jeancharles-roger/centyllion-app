@@ -120,10 +120,12 @@ class Simulator(
         }
 
         // filters behaviors that aren't concurrent
-        val toExecute = all.filter { it.value.isNotEmpty() }
-            .map { it.value[random.nextInt(it.value.size)] }.toSet()
+        val toExclude = all.filter { it.value.size > 1 }
+            .flatMap { it.value - it.value[random.nextInt(it.value.size)] }.toSet()
+        val toExecute = all.filter { it.value.isNotEmpty() }.flatMap {it.value} - toExclude
         toExecute.forEach { it.apply(simulation) }
 
+        // moves grains that aren't used in a reaction
         all.filter { it.value.isEmpty() }.forEach {
             val index = it.key
             val grain = simulation.grainAtIndex(index)

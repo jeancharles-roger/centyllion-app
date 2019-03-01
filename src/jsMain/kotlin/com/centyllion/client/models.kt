@@ -115,7 +115,7 @@ fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
 }
 
 fun immunityModel(width: Int = 100, height: Int = 100): Model {
-    val si = Grain(0, "si", "green", Figure.Square, "Immunity system")
+    val si = Grain(0, "si", "lightgreen", Figure.Square, "Immunity system")
     val bacteria = Grain(1, "b", "rea", Figure.Square, "Bacteria")
 
     val division = Behaviour("Division", "Bacteria division", 0.01,

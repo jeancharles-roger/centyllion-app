@@ -58,13 +58,13 @@ data class Grain(
 
 @Serializable
 data class Reaction(
-    val reactiveId: Int = 0,
-    val productId: Int? = null,
+    val reactiveId: Int = -1,
+    val productId: Int = -1,
     val transform: Boolean = false,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     fun validForModel(model: Model) = model.indexedGrains.containsKey(reactiveId) &&
-            if (productId != null) model.indexedGrains.containsKey(productId) else true
+            if (productId >= 0) model.indexedGrains.containsKey(productId) else true
 }
 
 @Serializable
@@ -73,17 +73,23 @@ data class Behaviour(
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
+    // TODO inline main reaction
     val mainReaction: Reaction = Reaction(),
     val reaction: List<Reaction> = emptyList()
 ) {
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
-    fun applicable(grain: Grain, age: Int, neighbours: Map<Direction, Grain>): Boolean =
+    fun applicable(grain: Grain, age: Int, neighbours: Map<Direction, Int>): Boolean =
         mainReaction.reactiveId == grain.id && agePredicate.check(age) &&
-                reaction.fold(true) { a, r -> a && r.allowedDirection.any { (neighbours[it]?.id == r.reactiveId) } }
+                reaction.fold(true) { a, r ->
+                    a && r.allowedDirection.any {
+                        (neighbours[it] == r.reactiveId)
+                    }
+                }
 
     fun validForModel(model: Model) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
-            mainReaction.validForModel(model) && reaction.fold(true) { a, r -> a && r.validForModel(model) }
+            mainReaction.reactiveId >= 0 && mainReaction.validForModel(model) &&
+            reaction.fold(true) { a, r -> a && r.validForModel(model) }
 }
 
 @Serializable
@@ -214,7 +220,6 @@ data class Simulation(
         }
     }
 
-
     fun addGrainAtIndex(index: Int, grain: Grain) {
         agents[index] = grain.id
         ages[index] = 0
@@ -225,11 +230,7 @@ data class Simulation(
         ages[index] = -1
     }
 
-    fun neighbours(index: Int): Map<Direction, Grain> = Direction.values().asSequence()
-        .map { it to model.moveIndex(index, it) }.filter { model.indexInside(it.second) }
-        .mapNotNull { grainAtIndex(it.second).let { grain -> if (grain != null) it.first to grain else null } }
-        .toMap()
-
+    fun neighbours(index: Int): Map<Direction, Int> = Direction.values().map { it to agents[model.moveIndex(index, it)] }.toMap()
 
     fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()

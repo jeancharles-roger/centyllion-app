@@ -5,7 +5,7 @@ import kotlin.random.Random
 data class ApplicableBehavior(
     val index: Int,
     val behaviour: Behaviour,
-    val usedNeighbours: List<Pair<Int, Grain>>
+    val usedNeighbours: List<Pair<Int, Int>>
 ) {
 
     fun apply(simulation: Simulation) {
@@ -13,7 +13,7 @@ data class ApplicableBehavior(
         simulation.transform(index, index, behaviour.mainReaction.productId, behaviour.mainReaction.transform)
 
         // applies other reaction find each neighbour for each reaction
-        val reactives = usedNeighbours.sortedBy { it.second.id }
+        val reactives = usedNeighbours.sortedBy { it.second }
         val reactions = behaviour.reaction.sortedBy { it.reactiveId }
 
         // applies reactions
@@ -96,7 +96,7 @@ class Simulator(
                         // for each reactions, find all possible reactives
                         val possibleReactions = behaviour.reaction.map { reaction ->
                             neighbours
-                                .filter { (d, g) -> reaction.reactiveId == g.id && reaction.allowedDirection.contains(d) }
+                                .filter { (d, id) -> reaction.reactiveId == id && reaction.allowedDirection.contains(d) }
                                 .map { it.key to it.value }
                         }
 

@@ -1,3 +1,5 @@
+import org._10ne.gradle.rest.RestTask
+import org.apache.xerces.impl.dv.util.Base64
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
@@ -10,6 +12,7 @@ val kotlinx_html_version: String by project
 plugins {
     kotlin("multiplatform") version "1.3.21"
     id("kotlinx-serialization") version "1.3.21"
+    id("org.tenne.rest") version "0.4.2"
 }
 
 repositories {
@@ -97,7 +100,7 @@ tasks {
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
 
-    val allJs by creating(Copy::class) {
+    val allJs by register<Copy>("allJs") {
         dependsOn(compileKotlinJs)
         group = "build"
 
@@ -153,14 +156,14 @@ tasks {
         }
     }
 
-    val syncJs by creating(Sync::class) {
+    val syncJs by register<Sync>("syncJs") {
         dependsOn(allJs)
         group = "build"
         from(jsDir)
         into("$webRoot/js/centyllion")
     }
 
-    val syncAssets by creating(Sync::class) {
+    val syncAssets by register<Sync>("syncAssets") {
         dependsOn(allJs)
         group = "build"
         from("$buildDir/resources/main")
@@ -169,4 +172,30 @@ tasks {
 
     val jsMainClasses by existing
     jsMainClasses.get().dependsOn(syncJs, syncAssets)
+
+    val assemble by existing
+
+    val distribution = register<Tar>("distribution") {
+        group = "deployment"
+        dependsOn(assemble)
+        from(webRoot)
+        compression = Compression.GZIP
+    }
+
+    register<RestTask>("deployBeta") {
+        group = "deployment"
+        dependsOn(distribution)
+
+        httpMethod = "post"
+        uri = "https://deploy.centyllion.com/hooks/deploy-beta"
+        contentType = groovyx.net.http.ContentType.JSON
+        requestHeaders = mapOf("X-Token" to System.getProperty("deploy.key"))
+
+        val content = provider {
+            val bytes = distribution.get().archiveFile.get().asFile.readBytes()
+            """{ "binary": "${Base64.encode(bytes)}"} """
+        }
+        requestBody = content
+    }
+
 }

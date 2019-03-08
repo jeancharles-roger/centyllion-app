@@ -3,20 +3,15 @@ workflow "Push" {
   resolves = ["GitHub Action for Slack"]
 }
 
-action "Test JVM" {
+action "Test JVM and Deploy" {
   uses = "MrRamych/gradle-actions@master"
-  args = "jvmTest"
-}
-
-action "Slack notification" {
-  uses = "Ilshidur/action-slack@master"
-  secrets = ["SLACK_WEBHOOK"]
-  args = "A new commit has been pushed."
+  secrets = ["DEPLOY_KEY"]
+  args = "jvmTest deployBeta"
 }
 
 action "GitHub Action for Slack" {
   uses = "Ilshidur/action-slack@1ee0e72f5aea6d97f26d4a67da8f4bc5774b6cc7"
-  needs = ["Test JVM"]
+  needs = ["Test JVM and Deploy"]
   secrets = ["SLACK_WEBHOOK"]
-  args = "Test ran"
+  args = "Centyllion deployed"
 }

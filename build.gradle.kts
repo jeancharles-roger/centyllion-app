@@ -1,5 +1,14 @@
-import org._10ne.gradle.rest.RestTask
-import org.apache.xerces.impl.dv.util.Base64
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.URLProtocol
+import io.ktor.http.content.TextContent
+import kotlinx.coroutines.runBlocking
+import org.apache.commons.codec.binary.Base64
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
@@ -9,10 +18,18 @@ val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("io.ktor:ktor-client-apache:1.1.2")
+    }
+}
+
 plugins {
     kotlin("multiplatform") version "1.3.21"
     id("kotlinx-serialization") version "1.3.21"
-    id("org.tenne.rest") version "0.4.2"
 }
 
 repositories {
@@ -182,20 +199,41 @@ tasks {
         compression = Compression.GZIP
     }
 
-    register<RestTask>("deployBeta") {
+    register("deployBeta") {
         group = "deployment"
         dependsOn(distribution)
 
-        httpMethod = "post"
-        uri = "https://deploy.centyllion.com/hooks/deploy-beta"
-        contentType = groovyx.net.http.ContentType.JSON
-        requestHeaders = mapOf("X-Token" to System.getProperty("deploy.key"))
+        doLast {
+            runBlocking {
+                val client = HttpClient(Apache)
 
-        val content = provider {
-            val bytes = distribution.get().archiveFile.get().asFile.readBytes()
-            """{ "binary": "${Base64.encode(bytes)}"} """
+                val request = HttpRequestBuilder().apply {
+                    method = HttpMethod.Post
+                    url.protocol = URLProtocol.HTTPS
+                    url.host = "deploy.centyllion.com"
+                    url.path("hooks","deploy-beta")
+
+                    val key = System.getenv("DEPLOY_KEY").let {
+                        if (it != null) it else  System.getProperty("deploy.key")
+                    }
+                    header("X-Token", key)
+
+                    val bytes = distribution.get().archiveFile.get().asFile.readBytes()
+                    val payload = """{ "content": "${Base64.encodeBase64String(bytes)}" }"""
+                    body = TextContent(payload, ContentType.Application.Json)
+                }
+
+                val result = client.post<String>(request)
+                client.close()
+
+                if (result.isNotEmpty()) {
+                    throw GradleException("Deploy failed due to: $result")
+                }
+
+            }
         }
-        requestBody = content
+
+
     }
 
 }

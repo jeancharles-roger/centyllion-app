@@ -7,6 +7,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.TextContent
+import io.ktor.http.toHttpDate
+import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base64
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
@@ -117,6 +119,17 @@ tasks {
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
 
+    val generateVersion by register("generateVersion") {
+        doLast {
+            val version =  System.getenv("GITHUB_REF") ?: "localrepository"
+            val build = System.getenv("GITHUB_SHA") ?: "dev"
+            val date = GMTDate().toHttpDate()
+            val file = file("$webRoot/version.json").writeText(
+                """{ "version": "${version}", "build": "${build}", "date": "${date}" }"""
+            )
+        }
+    }
+
     val allJs by register<Copy>("allJs") {
         dependsOn(compileKotlinJs)
         group = "build"
@@ -134,7 +147,6 @@ tasks {
         into(jsDir)
 
         doLast {
-
             val modules = mutableMapOf<String, String>()
 
             // Adds md5 sum in file name for cache purposes
@@ -181,7 +193,7 @@ tasks {
     }
 
     val syncAssets by register<Sync>("syncAssets") {
-        dependsOn(allJs)
+        dependsOn(allJs, generateVersion)
         group = "build"
         from("$buildDir/resources/main")
         into("$webRoot/assets/centyllion")

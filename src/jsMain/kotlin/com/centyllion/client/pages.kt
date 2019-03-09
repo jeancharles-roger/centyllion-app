@@ -13,6 +13,7 @@ import kotlin.browser.document
 @JsName("index")
 fun index() {
     console.log("Starting function")
+    showVersion()
 
     val main = document.querySelector("section.cent-main") as HTMLElement
 

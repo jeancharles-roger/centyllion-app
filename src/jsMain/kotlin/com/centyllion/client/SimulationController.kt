@@ -83,7 +83,7 @@ class SimulationController : Controller<Simulator> {
                 }
                 div("has-text-centered") {
                     canvas("cent-rendering") {
-                        val canvasWidth = (window.innerWidth - 200).coerceAtMost(500)
+                        val canvasWidth = (window.innerWidth - 20).coerceAtMost(500)
                         width = "$canvasWidth"
                         height = "${model.height * canvasWidth / model.width}"
                     }
@@ -116,8 +116,7 @@ class SimulationController : Controller<Simulator> {
             scales.xAxes = arrayOf(LinearAxisOptions())
             scales.yAxes = arrayOf(LinearAxisOptions())
         }
-    )
-    )
+    ))
 
     init {
         container.querySelector("div.cent-grains")?.appendChild(grainsController.container)

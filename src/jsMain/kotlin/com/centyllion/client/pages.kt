@@ -12,38 +12,38 @@ import kotlin.browser.document
 
 @JsName("index")
 fun index() {
-    console.log("Starting function")
-    showVersion()
+    initialize().then {
+        console.log("Starting function")
+        val main = document.querySelector("section.cent-main") as HTMLElement
 
-    val main = document.querySelector("section.cent-main") as HTMLElement
+        val controller = SimulationController()
+        val simulations = listOf(
+            Simulator(dendriteSimulation(100, 100)),
+            Simulator(dendriteSimulation(200, 200)),
+            Simulator(bacteriaSimulation(100, 100)),
+            Simulator(bacteriaSimulation(200, 200)),
+            Simulator(immunitySimulation(100, 100)),
+            Simulator(immunitySimulation(200, 200)),
+            Simulator(carSimulation(10, 10)),
+            Simulator(carSimulation(100, 100, 5)),
+            Simulator(carSimulation(200, 200, 5))
+        )
 
-    val controller = SimulationController()
-    val simulations = listOf(
-        Simulator(dendriteSimulation(100, 100)),
-        Simulator(dendriteSimulation(200, 200)),
-        Simulator(bacteriaSimulation(100, 100)),
-        Simulator(bacteriaSimulation(200, 200)),
-        Simulator(immunitySimulation(100, 100)),
-        Simulator(immunitySimulation(200, 200)),
-        Simulator(carSimulation(10, 10)),
-        Simulator(carSimulation(100, 100, 5)),
-        Simulator(carSimulation(200, 200, 5))
-    )
+        controller.data = simulations[0]
 
-    controller.data = simulations[0]
-
-    main.appendChild(document.create.div("select") {
-        select {
-            simulations.forEach {
-                option { +"${it.model.name} ${it.model.width}x${it.model.height}" }
-            }
-            onChangeFunction = {
-                val target = it.target
-                if (target is HTMLSelectElement) {
-                    controller.data = simulations[target.selectedIndex]
+        main.appendChild(document.create.div("select") {
+            select {
+                simulations.forEach {
+                    option { +"${it.model.name} ${it.model.width}x${it.model.height}" }
+                }
+                onChangeFunction = {
+                    val target = it.target
+                    if (target is HTMLSelectElement) {
+                        controller.data = simulations[target.selectedIndex]
+                    }
                 }
             }
-        }
-    })
-    main.appendChild(controller.container)
+        })
+        main.appendChild(controller.container)
+    }
 }

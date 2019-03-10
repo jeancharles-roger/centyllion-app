@@ -1,0 +1,8 @@
+{
+  "realm": "Centyllion",
+  "auth-server-url": "https://login.centyllion.com/auth",
+  "ssl-required": "external",
+  "resource": "webclient",
+  "public-client": true,
+  "confidential-port": 0
+}

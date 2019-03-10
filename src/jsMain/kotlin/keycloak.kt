@@ -71,7 +71,13 @@ class KeycloakInitOptions(
      * Set the OpenID Connect flow ('standard'|'implicit'|'hybrid')
      * @default standard
      */
-    var flow: String = "standard"
+    var flow: String = "standard",
+
+    /**
+     * If set to native all methods returning a promise will return a native JavaScript promise. If not set will return Keycloak specific promise objects.
+     */
+    var promiseType: String? = null
+
 )
 
 interface KeycloakLoginOptions {

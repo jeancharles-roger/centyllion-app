@@ -1,10 +1,15 @@
 package com.centyllion.client
 
+import Keycloak
+import KeycloakInitOptions
+import KeycloakInstance
 import kotlinx.html.*
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import kotlin.browser.document
+import kotlin.js.Promise
 
 fun activateNavBar() {
     val all = document.querySelectorAll(".navbar-burger")
@@ -19,6 +24,34 @@ fun activateNavBar() {
                 targetElement.classList.toggle("is-active")
             }
         })
+    }
+}
+
+fun authenticate(required: Boolean): Promise<KeycloakInstance?> {
+    val keycloak = Keycloak()
+    val options = KeycloakInitOptions(/*checkLoginIframe = false, */ promiseType = "native")
+    options.onLoad = if (required) "login-required" else "check-sso"
+    val promise = keycloak.init(options)
+    return promise.then(onFulfilled = { keycloak }, onRejected = { null })
+}
+
+fun initialize(vararg roles: String): Promise<KeycloakInstance?> {
+    activateNavBar()
+    showVersion()
+    val userName = document.querySelector("a.cent-user") as HTMLAnchorElement?
+    return authenticate(roles.isNotEmpty()).then { keycloak ->
+        if (keycloak != null) {
+            if (keycloak.tokenParsed != null) {
+                userName?.innerText = keycloak.tokenParsed.asDynamic().name as String
+                userName?.href = keycloak.createAccountUrl()
+            }
+            val granted = keycloak.authenticated &&
+                    roles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
+
+            if (granted) keycloak else null
+        } else {
+            null
+        }
     }
 }
 

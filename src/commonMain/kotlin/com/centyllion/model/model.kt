@@ -1,4 +1,4 @@
-package com.centyllion.common
+package com.centyllion.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

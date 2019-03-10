@@ -1,6 +1,6 @@
 package com.centyllion.client
 
-import com.centyllion.common.Behaviour
+import com.centyllion.model.Behaviour
 import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.dom.create

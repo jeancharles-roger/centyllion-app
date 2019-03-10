@@ -1,4 +1,4 @@
-package com.centyllion.common
+package com.centyllion.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

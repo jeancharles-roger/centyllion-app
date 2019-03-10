@@ -1,7 +1,7 @@
 package com.centyllion.client
 
 import chartjs.*
-import com.centyllion.common.Simulator
+import com.centyllion.model.Simulator
 import kotlinx.html.a
 import kotlinx.html.canvas
 import kotlinx.html.div

@@ -1,6 +1,6 @@
 package com.centyllion.client
 
-import com.centyllion.common.*
+import com.centyllion.model.*
 import kotlin.random.Random
 
 fun emptyModelAndSimulation(width: Int = 100, height: Int = 100): Simulation {

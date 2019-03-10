@@ -1,6 +1,6 @@
 package com.centyllion.client
 
-import com.centyllion.common.Simulator
+import com.centyllion.model.Simulator
 import kotlinx.html.dom.create
 import kotlinx.html.js.div
 import kotlinx.html.js.onChangeFunction

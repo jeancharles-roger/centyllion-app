@@ -1,4 +1,4 @@
-package com.centyllion.common
+package com.centyllion.model
 
 import kotlin.random.Random
 
@@ -26,7 +26,7 @@ data class ApplicableBehavior(
 
 class Simulator(
     val simulation: Simulation,
-    val fromInitial: Boolean = false
+    fromInitial: Boolean = false
 ) {
 
     init {

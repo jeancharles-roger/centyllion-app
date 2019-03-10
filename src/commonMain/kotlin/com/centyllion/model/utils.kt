@@ -1,4 +1,4 @@
-package com.centyllion.common
+package com.centyllion.model
 
 
 fun <T> List<List<T>>.allCombinations(): List<List<T>> = combine(emptyList())

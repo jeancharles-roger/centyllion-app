@@ -1,6 +1,6 @@
 package com.centyllion.client
 
-import com.centyllion.common.Grain
+import com.centyllion.model.Grain
 import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.article

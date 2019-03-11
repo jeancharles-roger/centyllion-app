@@ -11,6 +11,7 @@ import io.ktor.http.toHttpDate
 import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base64
+import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
@@ -69,7 +70,7 @@ kotlin {
                     implementation("com.github.ajalt:clikt:$clikt_version")
 
                     implementation("io.ktor:ktor-html-builder:$ktor_version")
-                    implementation("io.ktor:ktor-client-apache:$ktor_version")
+                    //implementation("io.ktor:ktor-client-apache:$ktor_version")
                     implementation("io.ktor:ktor-auth:$ktor_version")
                     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
                     implementation("io.ktor:ktor-network-tls:$ktor_version")
@@ -115,6 +116,7 @@ kotlin {
 tasks {
     val jsDir = "$buildDir/assemble/js"
     val webRoot = rootProject.file("webroot")
+    val deploy = rootProject.file("deploy")
     val mainFunction = "com.centyllion.client.index()"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
@@ -202,12 +204,23 @@ tasks {
     val jsMainClasses by existing
     jsMainClasses.get().dependsOn(syncJs, syncAssets)
 
-    val assemble by existing
 
+    val assemble by existing
+    val jvmJar by existing(Jar::class)
     val distribution = register<Tar>("distribution") {
         group = "deployment"
         dependsOn(assemble)
-        from(webRoot)
+
+        // web assets and javascript
+        from(webRoot) { into("webroot") }
+
+        // start/stop scripts
+        from(deploy)
+
+        // jars for server
+        from(project.configurations["jvmDefault"].resolve()) { into("libs") }
+        from(jvmJar.get().archiveFile.get()) { into("libs") }
+
         compression = Compression.GZIP
     }
 

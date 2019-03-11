@@ -1,4 +1,4 @@
-package com.centyllion.client
+package com.centyllion.client.controller
 
 import kotlinx.html.*
 import org.w3c.dom.HTMLDivElement

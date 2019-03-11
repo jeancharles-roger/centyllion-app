@@ -1,17 +1,17 @@
-package com.centyllion.client
+package com.centyllion.client.controller
 
-import com.centyllion.model.Grain
-import kotlinx.html.*
+import com.centyllion.model.Behaviour
+import kotlinx.html.div
 import kotlinx.html.dom.create
 import kotlinx.html.js.article
+import kotlinx.html.p
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLParagraphElement
-import org.w3c.dom.HTMLSpanElement
 import kotlin.browser.document
 
-class GrainController: Controller<Grain> {
+class BehaviourDisplayController: Controller<Behaviour> {
 
-    override var data: Grain = Grain()
+    override var data: Behaviour = Behaviour()
         set(value) {
             if (value != field) {
                 field = value
@@ -20,27 +20,18 @@ class GrainController: Controller<Grain> {
         }
 
     override val container: HTMLElement = document.create.article("media") {
-        figure("media-left") {
-            span("dot")
-        }
         div("media-content") {
             div("content") {
                 p("label cent-title")
                 p("cent-description")
             }
         }
-        div("media-right") {
-            button(classes = "delete")
-        }
     }
-
-    val dot = container.querySelector(".dot") as HTMLSpanElement
 
     val title = container.querySelector("p.cent-title") as HTMLParagraphElement
     val description = container.querySelector("p.cent-description") as HTMLParagraphElement
 
     override fun refresh() {
-        dot.style.backgroundColor = data.color
         title.innerText = data.name
         description.innerText = data.description
     }

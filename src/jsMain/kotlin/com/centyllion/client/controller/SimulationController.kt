@@ -1,11 +1,13 @@
-package com.centyllion.client
+package com.centyllion.client.controller
 
 import chartjs.*
+import com.centyllion.client.emptyModelAndSimulation
 import com.centyllion.model.Simulator
 import kotlinx.html.a
 import kotlinx.html.canvas
 import kotlinx.html.div
 import kotlinx.html.dom.create
+import kotlinx.html.h2
 import kotlinx.html.js.div
 import kotlinx.html.js.onClickFunction
 import kotlinx.html.span
@@ -37,19 +39,18 @@ class SimulationController : Controller<Simulator> {
     val grainsController = ListController(
         model.grains, "", size(12)
     ) { _, grain ->
-        GrainController().apply { data = grain }
+        GrainDisplayController().apply { data = grain }
     }
 
     val behaviourController = ListController(
         model.behaviours, "", size(12)
     ) { _, behaviour ->
-        BehaviourController().apply { data = behaviour }
+        BehaviourDisplayController().apply { data = behaviour }
     }
 
     override val container: HTMLElement = document.create.div {
         columns {
-            column(size(3), "cent-grains")
-            column(size(6, centered = true)) {
+            column(size(8, centered = true)) {
                 div("level") {
                     div("level-left buttons") {
                         a(classes = "button is-rounded is-primary cent-run") {
@@ -83,13 +84,18 @@ class SimulationController : Controller<Simulator> {
                 }
                 div("has-text-centered") {
                     canvas("cent-rendering") {
-                        val canvasWidth = (window.innerWidth - 20).coerceAtMost(500)
+                        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
                         width = "$canvasWidth"
                         height = "${model.height * canvasWidth / model.width}"
                     }
                 }
             }
-            column(size(3), "cent-relations")
+            column(size(4)) {
+                h2("subtitle") { +"Grains"}
+                div( "cent-grains")
+                h2("subtitle") { +"Behaviors"}
+                div("cent-behaviors")
+            }
         }
         columns("is-centered") {
             column(size(10)) {
@@ -120,7 +126,7 @@ class SimulationController : Controller<Simulator> {
 
     init {
         container.querySelector("div.cent-grains")?.appendChild(grainsController.container)
-        container.querySelector("div.cent-relations")?.appendChild(behaviourController.container)
+        container.querySelector("div.cent-behaviors")?.appendChild(behaviourController.container)
 
         refresh()
     }
@@ -165,11 +171,17 @@ class SimulationController : Controller<Simulator> {
         data.oneStep()
         refresh()
 
-        chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+        val counts = data.lastGrainsCount().values
+        chart.data.datasets.zip(counts) { set: LineDataSet, i: Int ->
             val data = set.data
             if (data != null) {
                 val index = if (data.isEmpty()) 0 else data.lastIndex
                 data.push(LineChartPlot(index, i))
+            }
+        }
+        grainsController.dataControllers.zip(counts) { controller, count ->
+            if (controller is GrainDisplayController) {
+                controller.count = count
             }
         }
         if (update) {

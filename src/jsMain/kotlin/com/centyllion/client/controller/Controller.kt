@@ -1,4 +1,4 @@
-package com.centyllion.client
+package com.centyllion.client.controller
 
 import org.w3c.dom.HTMLElement
 

@@ -24,7 +24,6 @@ fun index() {
             Simulator(bacteriaSimulation(200, 200)),
             Simulator(immunitySimulation(100, 100)),
             Simulator(immunitySimulation(200, 200)),
-            Simulator(carSimulation(10, 10)),
             Simulator(carSimulation(100, 100, 5)),
             Simulator(carSimulation(200, 200, 5))
         )

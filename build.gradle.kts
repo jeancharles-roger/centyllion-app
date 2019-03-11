@@ -251,7 +251,7 @@ tasks {
                 val result = client.post<String>(request)
                 client.close()
 
-                if (result.isNotEmpty()) {
+                if (result.contains("failed", true)) {
                     throw GradleException("Deploy failed due to: $result")
                 }
 

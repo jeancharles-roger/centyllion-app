@@ -9,13 +9,18 @@ import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.config.MapApplicationConfig
 import io.ktor.features.*
+import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.*
+import io.ktor.http.content.CachingOptions
+import io.ktor.http.content.TextContent
+import io.ktor.http.content.files
+import io.ktor.http.content.static
 import io.ktor.http.withCharset
 import io.ktor.network.tls.certificates.generateCertificate
 import io.ktor.response.respond
+import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
@@ -145,9 +150,10 @@ fun Application.centyllion() {
     }
 
     routing {
+        get("/") { context.respondHtml { index() } }
+
         static {
             files("webroot")
-            default("index.html")
         }
 
     }

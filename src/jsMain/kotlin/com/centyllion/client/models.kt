@@ -115,13 +115,24 @@ fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
 }
 
 fun immunityModel(width: Int = 100, height: Int = 100): Model {
-    val si = Grain(0, "si", "lightgreen", Figure.Square, "Immunity system")
-    val bacteria = Grain(1, "b", "rea", Figure.Square, "Bacteria")
+    val si = Grain(0, "si", "lightgreen", Figure.Square, "Immunity system", 50)
+    val bacteria = Grain(1, "b", "red", Figure.Square, "Bacteria")
+    val boneMarrow = Grain(2, "bm", "blue", Figure.Square, "Bone marrow", movementProbability = 0.0)
 
     val division = Behaviour("Division", "Bacteria division", 0.01,
         mainReaction = Reaction(1, 1), reaction = listOf(Reaction(-1, 1))
     )
-    return Model("Immunity system", width, height, 1, "", listOf(si, bacteria), listOf(division))
+    val defense = Behaviour("Defense", "System defense", 1.0,
+        mainReaction = Reaction(0, 0), reaction = listOf(Reaction(1, 0))
+    )
+    val siProduction = Behaviour("Production", "Bone marrow si production", 0.1,
+        mainReaction = Reaction(2, 2), reaction = listOf(Reaction(-1, 0))
+    )
+
+    return Model("Immunity system", width, height, 1, "",
+        listOf(si, bacteria, boneMarrow),
+        listOf(division, defense, siProduction)
+    )
 }
 
 fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
@@ -133,6 +144,9 @@ fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
                 p < 0.002 -> addGrainAtIndex(i, this.model.grains[1])
             }
         }
+
+        addGrainAtIndex(model.toIndex(Position(width/2 - 5, height/2 - 5, 0)), this.model.grains[2])
+        addGrainAtIndex(model.toIndex(Position(width/2 + 5, height/2 + 5, 0)), this.model.grains[2])
 
         saveState()
     }

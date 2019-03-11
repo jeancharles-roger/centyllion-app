@@ -29,18 +29,18 @@ class Simulator(
     fromInitial: Boolean = false
 ) {
 
-    init {
-        if (fromInitial) {
-            simulation.reset()
-        }
-    }
-
     val model = simulation.model
 
     val random = Random.Default
 
     val grainCountHistory = simulation.grainsCounts().let { counts ->
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
+    }
+
+    init {
+        if (fromInitial) {
+            simulation.reset()
+        }
     }
 
     var step = 0
@@ -55,8 +55,9 @@ class Simulator(
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
-                if (grain.halfLife > 0 && random.nextDouble() < grain.deathProbability) {
+                if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
+                    println("Grain $i dies")
                     simulation.transform(i, i, null, false)
                 } else {
                     currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1

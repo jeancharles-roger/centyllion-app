@@ -49,7 +49,7 @@ data class Grain(
     val canMove = movementProbability > 0.0 && allowedDirection.isNotEmpty()
 
     @Transient
-    val deathProbability = if (halfLife > 0) 1.0 - 2.0.pow(-1 / halfLife) else 0.0
+    val deathProbability = if (halfLife > 0.0) 1.0 - 2.0.pow(-1.0 / halfLife) else 0.0
 
     @Transient
     val valid

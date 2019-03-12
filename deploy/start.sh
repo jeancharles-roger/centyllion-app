@@ -15,6 +15,6 @@ fi
 echo "Starting server from $PWD"
 
 nohup \
-    java -cp `find libs | xargs | sed "s/ /:/g"` com.centyllion.MainKt $DEBUG --port $PORT > $LOGFILE 2>&1 &
+    java -cp `find libs | xargs | sed "s/ /:/g"` com.centyllion.backend.MainKt $DEBUG --port $PORT > $LOGFILE 2>&1 &
 
 echo $! > $PIDFILE

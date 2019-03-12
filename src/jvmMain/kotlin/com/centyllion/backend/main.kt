@@ -1,4 +1,4 @@
-package com.centyllion
+package com.centyllion.backend
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default

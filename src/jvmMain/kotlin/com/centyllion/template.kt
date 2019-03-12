@@ -7,7 +7,7 @@ fun HTML.centyllionHead(title: String) =
     head {
         title { +title }
         meta("viewport", "width=device-width, initial-scale=1", "UTF-8")
-        link("css/bulma.min.css", "stylesheet")
+        link("css/centyllion-bulma.css", "stylesheet")
         link("css/centyllion.css", "stylesheet")
 
         script(src = "https://login.centyllion.com/auth/js/keycloak.js") {}

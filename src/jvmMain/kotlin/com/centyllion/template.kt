@@ -36,16 +36,6 @@ fun BODY.centyllionHeader() =
                     id = navBarId
                     div("navbar-start")
                     div("navbar-end") {
-                        div("navbar-item") {
-                            div("field is-grouped") {
-                                p("control") {
-                                    span("tag is-primary") { id = "build"; +"Build" }
-                                }
-                                p("control") {
-                                    span("tag is-info") { id = "date"; +"Date" }
-                                }
-                            }
-                        }
                         a("/", classes = "cent-user navbar-item") { +"Not connected" }
                     }
                 }
@@ -60,6 +50,17 @@ fun BODY.centyllionFooter() {
             div("level-item has-text-centered") {
                 img("Centyllion", "images/logo.png") { width = "300px" }
                 strong { +"platform" }
+            }
+            div("level-right") {
+                // deployment info
+                div("level-item field is-grouped") {
+                    p("control") {
+                        span("tag is-primary") { id = "build"; +"Build" }
+                    }
+                    p("control") {
+                        span("tag is-info") { id = "date"; +"Date" }
+                    }
+                }
             }
         }
     }

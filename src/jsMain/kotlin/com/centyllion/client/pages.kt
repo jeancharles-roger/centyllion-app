@@ -94,9 +94,11 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
 
 @JsName("index")
 fun index() {
-    initialize().then {
+    initialize().then { (instance, page) ->
         console.log("Starting function")
-        //activatePage(pages.find{it.id == "simulation"}!!, it)
+        if (page == null) {
+            activatePage(pages.find { it.id == "simulation" }!!, instance)
+        }
     }
 }
 
@@ -108,7 +110,7 @@ fun authenticate(required: Boolean): Promise<KeycloakInstance?> {
     return promise.then(onFulfilled = { keycloak }, onRejected = { null })
 }
 
-fun initialize(vararg roles: String): Promise<KeycloakInstance?> {
+fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     activateNavBar()
     showVersion()
 
@@ -127,16 +129,13 @@ fun initialize(vararg roles: String): Promise<KeycloakInstance?> {
 
             // gets params active page if any to activate it is allowed
             val params = URLSearchParams(window.location.search)
-            params.get("page")?.let { id ->
-                pages.find { it.id == id }?.let { page ->
-                    activatePage(page, keycloak)
-                }
-            }
+            val page = params.get("page")?.let { id -> pages.find { it.id == id } }
+            if (page != null) activatePage(page, keycloak)
 
             addMenu(isCentyllionHost, keycloak)
-            if (granted) keycloak else null
+            (if (granted) keycloak else null) to page
         } else {
-            null
+            null to null
         }
     }
 }
@@ -150,7 +149,7 @@ fun updateActivePage(page: Page) {
         }
     }
     // adds active status to current menu
-    val item = menu.querySelector("a.td-${page.id}")
+    val item = menu.querySelector("a.cent-${page.id}")
     if (item is HTMLElement) {
         item.classList.add("has-text-weight-bold")
     }
@@ -160,7 +159,7 @@ fun updateActivePage(page: Page) {
         val params = URLSearchParams(it.search)
         params.set("page", page.id)
         val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
-        window.history.pushState(null, "I3deal ${page.title}", newUrl)
+        window.history.pushState(null, "Centyllion ${page.title}", newUrl)
     }
 }
 
@@ -199,7 +198,7 @@ fun addMenu(isCentyllionHost: Boolean, keycloak: KeycloakInstance) {
         val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
         pages.filter { page -> page.authorized(keycloak) }
             .forEach { page ->
-                menu.appendChild(document.create.a(classes = "navbar-item td-${page.id}") {
+                menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
                     +page.title
                     onClickFunction = {
                         activatePage(page, keycloak)

@@ -8,3 +8,5 @@ certificate.jks
 
 webroot/js/centyllion
 webroot/version.json
+
+db/**

@@ -140,18 +140,6 @@ interface KeycloakLoginOptions {
 
 typealias KeycloakPromiseCallback<T> = (result: T) -> Unit
 
-external class KeycloakPromise<TSuccess, TError>: Promise<TSuccess> {
-    /**
-     * Function to call if the promised action succeeds.
-     */
-    fun success(callback: KeycloakPromiseCallback<TSuccess>): KeycloakPromise<TSuccess, TError>
-
-    /**
-     * Function to call if the promised action throws an error.
-     */
-    fun error(callback: KeycloakPromiseCallback<TError>): KeycloakPromise<TSuccess, TError>
-}
-
 interface KeycloakError {
     var error: String
     var description: String
@@ -160,10 +148,10 @@ interface KeycloakError {
 class RedirectUriOptions(val redirectUri: String)
 
 interface KeycloakAdapter {
-    var login: ((options: KeycloakLoginOptions?) -> KeycloakPromise<Any, Any>)?
-    var logout: ((options: Any?) -> KeycloakPromise<Any, Any>)?
-    var register: ((options: KeycloakLoginOptions?) -> KeycloakPromise<Any, Any>)?
-    var accountManagement: (() -> KeycloakPromise<Any, Any>)?
+    var login: ((options: KeycloakLoginOptions?) -> Promise<Any>)?
+    var logout: ((options: Any?) -> Promise<Any>)?
+    var register: ((options: KeycloakLoginOptions?) -> Promise<Any>)?
+    var accountManagement: (() -> Promise<Any>)?
     var redirectUri: ((options: RedirectUriOptions, encodeHash: Boolean) -> String)?
 }
 
@@ -365,31 +353,31 @@ external interface KeycloakInstance {
      * @param initOptions Initialization options.
      * @returns A promise to set functions to be invoked on success or error.
      */
-    fun init(initOptions: KeycloakInitOptions): KeycloakPromise<Boolean, KeycloakError>
+    fun init(initOptions: KeycloakInitOptions): Promise<Boolean>
 
     /**
      * Redirects to login form.
      * @param options Login options.
      */
-    fun login(options: KeycloakLoginOptions?): KeycloakPromise<Nothing, Nothing>
+    fun login(options: KeycloakLoginOptions?): Promise<Nothing>
 
     /**
      * Redirects to logout.
      * @param options Logout options. `options?.redirectUri` Specifies the uri to redirect to after logout.
      */
-    fun logout(options: RedirectUriOptions?): KeycloakPromise<Nothing, Nothing>
+    fun logout(options: RedirectUriOptions?): Promise<Nothing>
 
     /**
      * Redirects to registration form.
      * @param options Supports same options as Keycloak#login but `action` is
      *                set to `'register'`.
      */
-    fun register(options: Any?): KeycloakPromise<Nothing, Nothing>
+    fun register(options: Any?): Promise<Nothing>
 
     /**
      * Redirects to the Account Management Console.
      */
-    fun accountManagement(): KeycloakPromise<Nothing, Nothing>
+    fun accountManagement(): Promise<Nothing>
 
     /**
      * Returns the URL to login form.
@@ -440,7 +428,7 @@ external interface KeycloakInstance {
      *   alert('Failed to refresh the token, or the session has expired');
      * });
      */
-    fun updateToken(minValidity: Number): KeycloakPromise<Boolean, Boolean>
+    fun updateToken(minValidity: Number): Promise<Boolean>
 
     /**
      * Clears authentication state, including tokens. This can be useful if
@@ -467,12 +455,12 @@ external interface KeycloakInstance {
      * Loads the user's profile.
      * @returns A promise to set functions to be invoked on success or error.
      */
-    fun loadUserProfile(): KeycloakPromise<KeycloakProfile, Nothing>
+    fun loadUserProfile(): Promise<KeycloakProfile>
 
     /**
      * @private Undocumented.
      */
-    fun loadUserInfo(): KeycloakPromise<Any, Nothing>
+    fun loadUserInfo(): Promise<Any>
 }
 
 external fun Keycloak(config: String? = definedExternally): KeycloakInstance

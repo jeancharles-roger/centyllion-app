@@ -63,7 +63,7 @@ data class Reaction(
     val transform: Boolean = false,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
-    fun validForModel(model: Model) = model.indexedGrains.containsKey(reactiveId) &&
+    fun validForModel(model: GrainModel) = model.indexedGrains.containsKey(reactiveId) &&
             if (productId >= 0) model.indexedGrains.containsKey(productId) else true
 }
 
@@ -87,7 +87,7 @@ data class Behaviour(
                     }
                 }
 
-    fun validForModel(model: Model) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
+    fun validForModel(model: GrainModel) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
             mainReaction.reactiveId >= 0 && mainReaction.validForModel(model) &&
             reaction.fold(true) { a, r -> a && r.validForModel(model) }
 }
@@ -107,7 +107,7 @@ data class Position(
 }
 
 @Serializable
-data class Model(
+data class GrainModel(
     val name: String,
     val width: Int = 100,
     val height: Int = 100,
@@ -181,7 +181,7 @@ data class Model(
 
 @Serializable
 data class Simulation(
-    val model: Model,
+    val model: GrainModel,
     val initialAgents: Array<Int> = Array(model.dataSize) { -1 },
     val agents: Array<Int> = initialAgents.copyOf(),
     val ages: Array<Int> = Array(model.dataSize) { -1 }
@@ -265,4 +265,13 @@ data class Simulation(
     }
 }
 
+/** Model saved in a list of models */
+@Serializable
+data class ModelNode<Model>(
+    val _id: String,
+    val previousId: String?,
+    val nextId: String?,
+    val date: String,
+    val model: Model
+)
 

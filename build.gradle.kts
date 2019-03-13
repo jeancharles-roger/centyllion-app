@@ -20,17 +20,19 @@ val coroutine_version: String by project
 val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
+val kmongo_version: String by project
 
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath("io.ktor:ktor-client-apache:1.1.2")
+        classpath("io.ktor:ktor-client-apache:1.1.3")
     }
 }
 
 plugins {
+    java
     kotlin("multiplatform") version "1.3.21"
     id("kotlinx-serialization") version "1.3.21"
 }
@@ -44,7 +46,7 @@ group = "com.centyllion"
 version = "0.0.1"
 
 kotlin {
-
+    
     sourceSets {
         // commonMain is required for reflection name resolution
         val commonMain by getting {
@@ -69,20 +71,34 @@ kotlin {
 
                     implementation("com.github.ajalt:clikt:$clikt_version")
 
+                    // needed by ktor-auth-jwt (strange since it was included at some time ...
+                    implementation("com.google.guava:guava:27.1-jre")
+
                     implementation("io.ktor:ktor-html-builder:$ktor_version")
-                    //implementation("io.ktor:ktor-client-apache:$ktor_version")
+                    implementation("io.ktor:ktor-client-apache:$ktor_version")
                     implementation("io.ktor:ktor-auth:$ktor_version")
                     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
                     implementation("io.ktor:ktor-network-tls:$ktor_version")
                     implementation("io.ktor:ktor-server-netty:$ktor_version")
 
                     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
+
+                    implementation("org.litote.kmongo:kmongo:$kmongo_version")
+
+                    //implementation("ch.qos.logback:logback-classic:1.2.1")
                 }
             }
             // JVM-specific tests and their dependencies:
             compilations["test"].defaultSourceSet {
                 dependencies {
                     implementation(kotlin("test-junit"))
+                }
+            }
+
+            compilations.forEach {
+                it.kotlinOptions {
+                    jvmTarget = "1.8"
+
                 }
             }
         }
@@ -112,6 +128,8 @@ kotlin {
         }
     }
 }
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 tasks {
     val jsDir = "$buildDir/assemble/js"

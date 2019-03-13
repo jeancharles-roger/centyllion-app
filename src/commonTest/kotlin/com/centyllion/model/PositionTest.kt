@@ -6,19 +6,19 @@ import kotlin.test.assertEquals
 
 class PositionTest {
 
-    val m1 = Model("m1")
-    val m2 = Model("m2", 256, 100)
-    val m3 = Model("m3", 50, 20, 3)
+    val m1 = GrainModel("m1")
+    val m2 = GrainModel("m2", 256, 100)
+    val m3 = GrainModel("m3", 50, 20, 3)
 
-    private fun checkPosition(position: Position, vararg tests: Pair<Model, Int>) = tests.forEach {
+    private fun checkPosition(position: Position, vararg tests: Pair<GrainModel, Int>) = tests.forEach {
         assertEquals(it.second, it.first.toIndex(position))
     }
 
-    private fun checkIndex(index: Int, vararg tests: Pair<Model, Position>) = tests.forEach {
+    private fun checkIndex(index: Int, vararg tests: Pair<GrainModel, Position>) = tests.forEach {
         assertEquals(it.second, it.first.toPosition(index))
     }
 
-    private fun checkInside(position: Position, vararg tests: Pair<Model, Boolean>) = tests.forEach {
+    private fun checkInside(position: Position, vararg tests: Pair<GrainModel, Boolean>) = tests.forEach {
         assertEquals(it.second, it.first.positionInside(position))
     }
 

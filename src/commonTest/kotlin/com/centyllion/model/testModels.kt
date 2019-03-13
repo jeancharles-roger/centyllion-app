@@ -2,7 +2,7 @@ package com.centyllion.model
 
 import kotlin.random.Random
 
-fun dendriteModel(width: Int = 100, height: Int = 100): Model {
+fun dendriteModel(width: Int = 100, height: Int = 100): GrainModel {
     val ms = Grain(0, "ms", "blue")
     val mc = Grain(1, "mc", "red", movementProbability = 0.0)
 
@@ -11,7 +11,7 @@ fun dendriteModel(width: Int = 100, height: Int = 100): Model {
         mainReaction = Reaction(mc.id, mc.id), reaction = listOf(Reaction(ms.id, mc.id))
     )
 
-    return Model(
+    return GrainModel(
         "m1", width, height, 1, "test model",
         listOf(ms, mc), listOf(r1)
     )
@@ -32,7 +32,7 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
     }
 }
 
-fun carModel(width: Int = 100, height: Int = 100): Model {
+fun carModel(width: Int = 100, height: Int = 100): GrainModel {
     val road = Grain(0, "road", "#DDDDDD", description = "Road", movementProbability = 0.0)
     val carFront = Grain(1, "f", "blue", description = "Car front", movementProbability = 0.0)
     val carBack = Grain(2, "b", "red", description = "Car back", movementProbability = 0.0)
@@ -42,7 +42,7 @@ fun carModel(width: Int = 100, height: Int = 100): Model {
         mainReaction = Reaction(carFront.id, carBack.id),
         reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
     )
-    return Model("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
+    return GrainModel("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
 }
 
 fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = Simulation(carModel(width, height)).apply {

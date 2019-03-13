@@ -3,7 +3,7 @@ package com.centyllion.client
 import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
-import com.centyllion.client.controller.SimulationController
+import com.centyllion.client.controller.*
 import com.centyllion.common.betaRole
 import com.centyllion.common.centyllionHost
 import com.centyllion.model.Simulator
@@ -35,11 +35,27 @@ const val contentSelector = "section.cent-main"
 
 val pages = listOf(
     Page("Model", "model", "", ::model),
-    Page("Simulation", "simulation", "", ::simulation) /*,
-    Page("Profile", "profile", "", ::profile)*/
+    Page("Simulation", "simulation", "", ::simulation),
+    Page("Profile", "profile", "", ::profile)
 )
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
+
+    val userController = UserController()
+    val container = document.create.columns {
+        column(ColumnSize(8), "cent-user")
+    }
+    container.querySelector(".cent-user")?.appendChild(userController.container)
+    root.appendChild(container)
+
+    // initialize controller
+    fetchUser(instance).then { userController.data = it }
+
+    // sets callbacks for update
+    userController.onUpdate = { _, new, _ ->
+        if (new != null) saveUser(new, instance) else null
+    }
+
 }
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
@@ -80,7 +96,7 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
 fun index() {
     initialize().then {
         console.log("Starting function")
-        activatePage(pages.find{it.id == "simulation"}!!, it)
+        //activatePage(pages.find{it.id == "simulation"}!!, it)
     }
 }
 
@@ -161,7 +177,6 @@ fun activatePage(page: Page, instance: KeycloakInstance?) {
         })
     }
 }
-
 
 fun activateNavBar() {
     val all = document.querySelectorAll(".navbar-burger")

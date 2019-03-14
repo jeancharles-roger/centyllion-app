@@ -26,7 +26,6 @@ class SimulationController : Controller<Simulator> {
                 behaviourController.data = value.model.behaviours
                 running = false
                 refresh()
-                refreshChart()
             }
         }
 
@@ -135,13 +134,14 @@ class SimulationController : Controller<Simulator> {
     fun run() {
         if (!running) {
             running = true
+            refreshButtons()
             runningCallback()
         }
     }
 
     fun runningCallback() {
         if (running) {
-            executeStep(lastRefresh >= 5)
+            executeStep(lastRefresh >= 10)
             lastRefresh += 1
             window.setTimeout(this::runningCallback, 0)
         }
@@ -170,8 +170,10 @@ class SimulationController : Controller<Simulator> {
 
     private fun executeStep(updateChart: Boolean) {
         data.oneStep()
-        refresh()
+        refreshCanvas()
+        refreshCounts()
 
+        // appends data to charts
         chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
             val data = set.data
             if (data != null) {
@@ -186,9 +188,7 @@ class SimulationController : Controller<Simulator> {
         }
     }
 
-
-    override fun refresh() {
-
+    fun refreshButtons() {
         runButton.classList.toggle("is-loading", running)
         if (running) {
             runButton.setAttribute("disabled", "")
@@ -201,10 +201,9 @@ class SimulationController : Controller<Simulator> {
             stopButton.setAttribute("disabled", "")
             resetButton.removeAttribute("disabled")
         }
+    }
 
-        stepCount.innerText = "${data.step}"
-
-
+    fun refreshCanvas() {
         // refreshes simulation view
         val canvasWidth = canvas.width.toDouble()
         val canvasHeight = canvas.height.toDouble()
@@ -227,14 +226,26 @@ class SimulationController : Controller<Simulator> {
                 currentY += ySize
             }
         }
+    }
 
-        // refreshes counts
+    fun refreshCounts() {
+        // refreshes step count
+        stepCount.innerText = "${data.step}"
+
+        // refreshes grain counts
         val counts = data.lastGrainsCount().values
         grainsController.dataControllers.zip(counts) { controller, count ->
             if (controller is GrainDisplayController) {
                 controller.count = count
             }
         }
+    }
+
+    override fun refresh() {
+        refreshButtons()
+        refreshCanvas()
+        refreshCounts()
+        refreshChart()
     }
 
     fun refreshChart() {
@@ -244,7 +255,8 @@ class SimulationController : Controller<Simulator> {
                 it.key.description, it.value
                     .mapIndexed { index, i -> LineChartPlot(index, i) }
                     .toTypedArray(),
-                borderColor = it.key.color, backgroundColor = it.key.color, fill = "false", showLine = false
+                borderColor = it.key.color, backgroundColor = it.key.color, fill = "false",
+                showLine = true, pointRadius = 1
             )
         }.toTypedArray()
         chart.update()

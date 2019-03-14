@@ -86,7 +86,7 @@ class SimulationController : Controller<Simulator> {
                     canvas("cent-rendering") {
                         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
                         width = "$canvasWidth"
-                        height = "${model.height * canvasWidth / model.width}"
+                        height = "${simulation.height * canvasWidth / simulation.width}"
                     }
                 }
             }
@@ -211,9 +211,9 @@ class SimulationController : Controller<Simulator> {
         // refreshes simulation view
         val canvasWidth = canvas.width.toDouble()
         val canvasHeight = canvas.height.toDouble()
-        val xSize = canvasWidth / model.width
-        val xMax = model.width * xSize
-        val ySize = canvasHeight / model.height
+        val xSize = canvasWidth / simulation.width
+        val xMax = simulation.width * xSize
+        val ySize = canvasHeight / simulation.height
         context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0

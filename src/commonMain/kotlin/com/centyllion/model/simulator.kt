@@ -51,7 +51,7 @@ class Simulator(
 
         // applies agents dying process
         val currentCount = mutableMapOf<Grain, Int>()
-        for (i in 0 until model.dataSize) {
+        for (i in 0 until simulation.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
@@ -73,7 +73,7 @@ class Simulator(
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
-        for (i in 0 until model.dataSize) {
+        for (i in 0 until simulation.dataSize) {
             val grain = simulation.grainAtIndex(i)
             if (grain != null) {
                 val selected = all.getOrPut(i) { mutableListOf() }
@@ -105,7 +105,7 @@ class Simulator(
 
                         // chooses one randomly
                         val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map {
-                            simulation.model.moveIndex(i, it.first) to it.second
+                            simulation.moveIndex(i, it.first) to it.second
                         }
 
                         val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
@@ -133,10 +133,10 @@ class Simulator(
                 // applies random to do move
                 if (random.nextDouble() < grain.movementProbability) {
                     val directions = grain.allowedDirection
-                        .filter { model.moveIndex(index, it).let { index -> model.indexInside(index) && simulation.indexIsFree(index) } }
+                        .filter { simulation.moveIndex(index, it).let { index -> simulation.indexInside(index) && simulation.indexIsFree(index) } }
                     if (directions.isNotEmpty()) {
                         val direction = directions[random.nextInt(directions.size)]
-                        val targetIndex = model.moveIndex(index, direction)
+                        val targetIndex = simulation.moveIndex(index, direction)
                         simulation.transform(index, targetIndex, grain.id, true)
                     }
                 }

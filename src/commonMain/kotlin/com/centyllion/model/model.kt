@@ -108,16 +108,36 @@ data class Position(
 
 @Serializable
 data class GrainModel(
-    val name: String,
-    val width: Int = 100,
-    val height: Int = 100,
-    val depth: Int = 1,
+    val name: String = "",
     val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList()
 ) {
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
+
+    /** Main reactive grains are all the grains that are main component for a behaviour */
+    val mainReactiveGrains: Set<Grain> = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
+
+    @Transient
+    val valid
+        get() =
+            name.isNotBlank() &&
+                    grains.fold(true) { a, g -> a && g.valid } &&
+                    behaviours.fold(true) { a, g -> a && g.validForModel(this) }
+
+}
+
+@Serializable
+data class Simulation(
+    val width: Int = 100,
+    val height: Int = 100,
+    val depth: Int = 1,
+    val model: GrainModel = GrainModel(),
+    val initialAgents: Array<Int> = Array(width * height * depth) { -1 },
+    val agents: Array<Int> = initialAgents.copyOf(),
+    val ages: Array<Int> = Array(initialAgents.size) { -1 }
+) {
 
     @Transient
     val levelSize = width * height
@@ -167,26 +187,6 @@ data class GrainModel(
     fun positionInside(position: Position) =
         position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
 
-    /** Main reactive grains are all the grains that are main component for a behaviour */
-    val mainReactiveGrains: Set<Grain> = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
-
-    @Transient
-    val valid
-        get() =
-            name.isNotBlank() && width > 0 && height > 0 && depth > 0 &&
-                    grains.fold(true) { a, g -> a && g.valid } &&
-                    behaviours.fold(true) { a, g -> a && g.validForModel(this) }
-
-}
-
-@Serializable
-data class Simulation(
-    val model: GrainModel,
-    val initialAgents: Array<Int> = Array(model.dataSize) { -1 },
-    val agents: Array<Int> = initialAgents.copyOf(),
-    val ages: Array<Int> = Array(model.dataSize) { -1 }
-) {
-
     fun reset() {
         initialAgents.copyInto(agents)
         for (i in 0 until ages.size) {
@@ -230,7 +230,7 @@ data class Simulation(
         ages[index] = -1
     }
 
-    fun neighbours(index: Int): Map<Direction, Int> = Direction.values().map { it to agents[model.moveIndex(index, it)] }.toMap()
+    fun neighbours(index: Int): Map<Direction, Int> = Direction.values().map { it to agents[moveIndex(index, it)] }.toMap()
 
     fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()
@@ -263,6 +263,11 @@ data class Simulation(
         result = 31 * result + ages.contentHashCode()
         return result
     }
+
+    @Transient
+    val valid
+        get() = model.valid && width > 0 && height > 0 && depth > 0
+
 }
 
 /** Model saved in a list of models */

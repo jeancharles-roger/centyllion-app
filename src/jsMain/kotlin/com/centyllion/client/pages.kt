@@ -79,7 +79,7 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
     root.appendChild(document.create.div("select") {
         select {
             simulations.forEach {
-                option { +"${it.model.name} ${it.model.width}x${it.model.height}" }
+                option { +"${it.model.name} ${it.simulation.width}x${it.simulation.height}" }
             }
             onChangeFunction = {
                 val target = it.target

@@ -2,7 +2,7 @@ package com.centyllion.model
 
 import kotlin.random.Random
 
-fun dendriteModel(width: Int = 100, height: Int = 100): GrainModel {
+fun dendriteModel(): GrainModel {
     val ms = Grain(0, "ms", "blue")
     val mc = Grain(1, "mc", "red", movementProbability = 0.0)
 
@@ -12,14 +12,14 @@ fun dendriteModel(width: Int = 100, height: Int = 100): GrainModel {
     )
 
     return GrainModel(
-        "m1", width, height, 1, "test model",
+        "m1", "test model",
         listOf(ms, mc), listOf(r1)
     )
 }
 
 fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation(dendriteModel(width, height)).apply {
-        for (i in 0 until model.dataSize) {
+    return Simulation(width, height, 1, dendriteModel()).apply {
+        for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
                 p < 0.15 -> addGrainAtIndex(i, this.model.grains[0])
@@ -27,12 +27,12 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
         }
 
         for (i in -2 until 2) {
-            addGrainAtIndex(model.dataSize/2 + i*167, this.model.grains[1])
+            addGrainAtIndex(dataSize / 2 + i * 167, this.model.grains[1])
         }
     }
 }
 
-fun carModel(width: Int = 100, height: Int = 100): GrainModel {
+fun carModel(): GrainModel {
     val road = Grain(0, "road", "#DDDDDD", description = "Road", movementProbability = 0.0)
     val carFront = Grain(1, "f", "blue", description = "Car front", movementProbability = 0.0)
     val carBack = Grain(2, "b", "red", description = "Car back", movementProbability = 0.0)
@@ -42,38 +42,39 @@ fun carModel(width: Int = 100, height: Int = 100): GrainModel {
         mainReaction = Reaction(carFront.id, carBack.id),
         reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
     )
-    return GrainModel("Cars", width, height, 1, "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
+    return GrainModel("Cars", "On the road again", listOf(road, carFront, carBack), listOf(behaviour))
 }
 
-fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) = Simulation(carModel(width, height)).apply {
-    for (i in 1 until width - 1) {
-        for (j in 1 until height - 1) {
-            if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
-                addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
-            }
-
-            for (k in 0..insideLines) {
-                if (i < width - 2 && j == (k * height / (insideLines + 1))) {
-                    addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) =
+    Simulation(width, height, 1, carModel()).apply {
+        for (i in 1 until width - 1) {
+            for (j in 1 until height - 1) {
+                if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
+                    addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
                 }
-                if (j < height - 2 && i == (k * width / (insideLines + 1))) {
-                    addGrainAtIndex(model.toIndex(Position(i, j, 0)), model.grains[0])
+
+                for (k in 0..insideLines) {
+                    if (i < width - 2 && j == (k * height / (insideLines + 1))) {
+                        addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
+                    }
+                    if (j < height - 2 && i == (k * width / (insideLines + 1))) {
+                        addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
+                    }
                 }
             }
         }
+
+        // car 0
+        addGrainAtIndex(toIndex(Position(width - 3, height / 2, 0)), model.grains[1])
+        addGrainAtIndex(toIndex(Position(width - 4, height / 2, 0)), model.grains[2])
+        // car 1
+        addGrainAtIndex(toIndex(Position(2, height / 2, 0)), model.grains[1])
+        addGrainAtIndex(toIndex(Position(3, height / 2, 0)), model.grains[2])
+        // car 2
+        addGrainAtIndex(toIndex(Position(width / 2, height - 3, 0)), model.grains[1])
+        addGrainAtIndex(toIndex(Position(width / 2, height - 4, 0)), model.grains[2])
+        // car 3
+        addGrainAtIndex(toIndex(Position(width / 2, 2, 0)), model.grains[1])
+        addGrainAtIndex(toIndex(Position(width / 2, 3, 0)), model.grains[2])
+
     }
-
-    // car 0
-    addGrainAtIndex(model.toIndex(Position(width - 3, height / 2, 0)), model.grains[1])
-    addGrainAtIndex(model.toIndex(Position(width - 4, height / 2, 0)), model.grains[2])
-    // car 1
-    addGrainAtIndex(model.toIndex(Position(2, height / 2, 0)), model.grains[1])
-    addGrainAtIndex(model.toIndex(Position(3, height / 2, 0)), model.grains[2])
-    // car 2
-    addGrainAtIndex(model.toIndex(Position(width / 2, height - 3, 0)), model.grains[1])
-    addGrainAtIndex(model.toIndex(Position(width / 2, height - 4, 0)), model.grains[2])
-    // car 3
-    addGrainAtIndex(model.toIndex(Position(width / 2,  2, 0)), model.grains[1])
-    addGrainAtIndex(model.toIndex(Position(width / 2,  3, 0)), model.grains[2])
-
-}

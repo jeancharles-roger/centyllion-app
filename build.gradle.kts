@@ -193,7 +193,7 @@ tasks {
                 """requirejs.config({
                 'baseUrl': 'js',
                 paths: {
-                    'chartjs': 'Chart.js-2.7.2/Chart',
+                    'chartjs': 'Chart.js-2.7.3/Chart',
                     $moduleJoined
                     }
                 })

@@ -1,12 +1,10 @@
-package com.centyllion.client
+package com.centyllion.model.sample
 
 import com.centyllion.model.*
 import kotlin.random.Random
 
-fun emptyModelAndSimulation(width: Int = 100, height: Int = 100): Simulation {
-    val model = GrainModel("empty")
-    return Simulation(width, height, 1, model)
-}
+val emptyModel = GrainModel("empty")
+val emptySimulation = Simulation(100, 100, 1)
 
 fun dendriteModel(): GrainModel {
     val ms = Grain(0, "ms", "blue", description = "Manganèse soluble")
@@ -21,16 +19,16 @@ fun dendriteModel(): GrainModel {
 }
 
 fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation(width, height, 1, dendriteModel()).apply {
+    return Simulation(width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
-                p < 0.15 -> addGrainAtIndex(i, this.model.grains[0])
+                p < 0.15 -> setIdAtIndex(i, 0)
             }
         }
 
         for (i in -2 until 2) {
-            addGrainAtIndex(dataSize / 2 + i * 167, this.model.grains[1])
+            setIdAtIndex(dataSize / 2 + i * 167, 1)
         }
 
         saveState()
@@ -57,27 +55,27 @@ fun carModel(): GrainModel {
 }
 
 fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) =
-    Simulation(width, height, 1, carModel()).apply {
+    Simulation(width, height, 1).apply {
         for (i in 1 until width - 1) {
             for (j in 1 until height - 1) {
                 if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
-                    addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
+                    setIdAtIndex(toIndex(Position(i, j, 0)), 0)
                 }
 
                 for (k in 0..insideLines) {
                     if (i < width - 2 && j == (k * height / (insideLines + 1))) {
                         when (i) {
-                            1 -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[2])
-                            2 -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[1])
-                            else -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
+                            1 -> setIdAtIndex(toIndex(Position(i, j, 0)), 2)
+                            2 -> setIdAtIndex(toIndex(Position(i, j, 0)), 1)
+                            else -> setIdAtIndex(toIndex(Position(i, j, 0)), 0)
                         }
 
                     }
                     if (j < height - 2 && i == (k * width / (insideLines + 1))) {
                         when (j) {
-                            1 -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[2])
-                            2 -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[1])
-                            else -> addGrainAtIndex(toIndex(Position(i, j, 0)), model.grains[0])
+                            1 -> setIdAtIndex(toIndex(Position(i, j, 0)), 2)
+                            2 -> setIdAtIndex(toIndex(Position(i, j, 0)), 1)
+                            else -> setIdAtIndex(toIndex(Position(i, j, 0)), 0)
                         }
                     }
                 }
@@ -98,15 +96,15 @@ fun bacteriaModel(): GrainModel {
 }
 
 fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation(width, height, 1, bacteriaModel()).apply {
+    return Simulation(width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
-                p < 0.15 -> addGrainAtIndex(i, this.model.grains[1])
+                p < 0.15 -> setIdAtIndex(i, 1)
             }
         }
 
-        addGrainAtIndex(dataSize / 4 + width / 2, this.model.grains[0])
+        setIdAtIndex(dataSize / 4 + width / 2, 0)
 
         saveState()
     }
@@ -138,17 +136,17 @@ fun immunityModel(): GrainModel {
 }
 
 fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation(width, height, 1, immunityModel()).apply {
+    return Simulation(width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
-                p < 0.001 -> addGrainAtIndex(i, this.model.grains[0])
-                p < 0.002 -> addGrainAtIndex(i, this.model.grains[1])
+                p < 0.001 -> setIdAtIndex(i, 0)
+                p < 0.002 -> setIdAtIndex(i, 1)
             }
         }
 
-        addGrainAtIndex(toIndex(Position(width / 2 - 5, height / 2 - 5, 0)), this.model.grains[2])
-        addGrainAtIndex(toIndex(Position(width / 2 + 5, height / 2 + 5, 0)), this.model.grains[2])
+        setIdAtIndex(toIndex(Position(width / 2 - 5, height / 2 - 5, 0)), 2)
+        setIdAtIndex(toIndex(Position(width / 2 + 5, height / 2 + 5, 0)), 2)
 
         saveState()
     }

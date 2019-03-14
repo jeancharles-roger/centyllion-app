@@ -133,7 +133,6 @@ data class Simulation(
     val width: Int = 100,
     val height: Int = 100,
     val depth: Int = 1,
-    val model: GrainModel = GrainModel(),
     val initialAgents: Array<Int> = Array(width * height * depth) { -1 },
     val agents: Array<Int> = initialAgents.copyOf(),
     val ages: Array<Int> = Array(initialAgents.size) { -1 }
@@ -200,7 +199,7 @@ data class Simulation(
 
     fun indexIsFree(index: Int) = agents[index] < 0
 
-    fun grainAtIndex(index: Int) = model.indexedGrains[agents[index]]
+    fun idAtIndex(index: Int) = agents[index]
 
     fun ageAtIndex(index: Int) = ages[index]
 
@@ -220,12 +219,12 @@ data class Simulation(
         }
     }
 
-    fun addGrainAtIndex(index: Int, grain: Grain) {
-        agents[index] = grain.id
+    fun setIdAtIndex(index: Int, id: Int) {
+        agents[index] = id
         ages[index] = 0
     }
 
-    fun removeGrainAtIndex(index: Int) {
+    fun resetIndex(index: Int) {
         agents[index] = -1
         ages[index] = -1
     }
@@ -248,35 +247,34 @@ data class Simulation(
 
         other as Simulation
 
-        if (model != other.model) return false
+        if (width != other.width) return false
+        if (height != other.height) return false
+        if (depth != other.depth) return false
         if (!initialAgents.contentEquals(other.initialAgents)) return false
         if (!agents.contentEquals(other.agents)) return false
         if (!ages.contentEquals(other.ages)) return false
+        if (levelSize != other.levelSize) return false
+        if (dataSize != other.dataSize) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = model.hashCode()
+        var result = width
+        result = 31 * result + height
+        result = 31 * result + depth
         result = 31 * result + initialAgents.contentHashCode()
         result = 31 * result + agents.contentHashCode()
         result = 31 * result + ages.contentHashCode()
+        result = 31 * result + levelSize
+        result = 31 * result + dataSize
         return result
     }
 
     @Transient
     val valid
-        get() = model.valid && width > 0 && height > 0 && depth > 0
+        get() = width > 0 && height > 0 && depth > 0
 
 }
 
-/** Model saved in a list of models */
-@Serializable
-data class ModelNode<Model>(
-    val _id: String,
-    val previousId: String?,
-    val nextId: String?,
-    val date: String,
-    val model: Model
-)
 

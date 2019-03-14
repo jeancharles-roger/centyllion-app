@@ -1,8 +1,9 @@
 package com.centyllion.client.controller
 
 import chartjs.*
-import com.centyllion.client.emptyModelAndSimulation
 import com.centyllion.model.Simulator
+import com.centyllion.model.sample.emptyModel
+import com.centyllion.model.sample.emptySimulation
 import kotlinx.html.a
 import kotlinx.html.canvas
 import kotlinx.html.div
@@ -17,7 +18,7 @@ import kotlin.browser.window
 
 class SimulationController : Controller<Simulator> {
 
-    override var data: Simulator = Simulator(emptyModelAndSimulation())
+    override var data: Simulator = Simulator(emptyModel, emptySimulation)
         set(value) {
             if (value != field) {
                 field = value
@@ -214,7 +215,7 @@ class SimulationController : Controller<Simulator> {
         var currentX = 0.0
         var currentY = 0.0
         for (i in 0 until simulation.agents.size) {
-            val grain = simulation.grainAtIndex(i)
+            val grain = data.grainAtIndex(i)
             if (grain != null) {
                 context.fillStyle = grain.color
                 context.fillRect(currentX, currentY, xSize, ySize)

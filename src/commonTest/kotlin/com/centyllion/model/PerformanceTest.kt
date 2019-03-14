@@ -1,12 +1,14 @@
 package com.centyllion.model
 
+import com.centyllion.model.sample.dendriteModel
+import com.centyllion.model.sample.dendriteSimulation
 import kotlin.test.Test
 
 class PerformanceTest {
 
     @Test
     fun testDendritePerformance() {
-        val simulator = Simulator(dendriteSimulation(200, 200))
+        val simulator = Simulator(dendriteModel(), dendriteSimulation(200, 200))
         repeat(500) { simulator.oneStep() }
     }
 

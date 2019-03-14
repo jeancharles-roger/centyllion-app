@@ -25,11 +25,10 @@ data class ApplicableBehavior(
 }
 
 class Simulator(
+    val model: GrainModel,
     val simulation: Simulation,
     fromInitial: Boolean = false
 ) {
-
-    val model = simulation.model
 
     val random = Random.Default
 
@@ -45,6 +44,8 @@ class Simulator(
 
     var step = 0
 
+    fun grainAtIndex(index: Int) = model.indexedGrains[simulation.idAtIndex(index)]
+
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
     fun oneStep() {
@@ -52,7 +53,7 @@ class Simulator(
         // applies agents dying process
         val currentCount = mutableMapOf<Grain, Int>()
         for (i in 0 until simulation.dataSize) {
-            val grain = simulation.grainAtIndex(i)
+            val grain = grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
                 if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
@@ -74,7 +75,7 @@ class Simulator(
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
         for (i in 0 until simulation.dataSize) {
-            val grain = simulation.grainAtIndex(i)
+            val grain = grainAtIndex(i)
             if (grain != null) {
                 val selected = all.getOrPut(i) { mutableListOf() }
                 if (model.mainReactiveGrains.contains(grain)) {
@@ -128,7 +129,7 @@ class Simulator(
         // moves grains that aren't used in a reaction
         all.filter { it.value.isEmpty() }.forEach {
             val index = it.key
-            val grain = simulation.grainAtIndex(index)
+            val grain = grainAtIndex(index)
             if (grain != null && grain.canMove) {
                 // applies random to do move
                 if (random.nextDouble() < grain.movementProbability) {

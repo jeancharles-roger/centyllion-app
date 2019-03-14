@@ -7,6 +7,7 @@ import com.centyllion.client.controller.*
 import com.centyllion.common.betaRole
 import com.centyllion.common.centyllionHost
 import com.centyllion.model.Simulator
+import com.centyllion.model.sample.*
 import kotlinx.html.a
 import kotlinx.html.dom.create
 import kotlinx.html.js.div
@@ -64,14 +65,14 @@ fun model(root: HTMLElement, instance: KeycloakInstance) {
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {
     val controller = SimulationController()
     val simulations = listOf(
-        Simulator(dendriteSimulation(100, 100)),
-        Simulator(dendriteSimulation(200, 200)),
-        Simulator(bacteriaSimulation(100, 100)),
-        Simulator(bacteriaSimulation(200, 200)),
-        Simulator(immunitySimulation(100, 100)),
-        Simulator(immunitySimulation(200, 200)),
-        Simulator(carSimulation(100, 100, 5)),
-        Simulator(carSimulation(200, 200, 5))
+        Simulator(dendriteModel(), dendriteSimulation(100, 100)),
+        Simulator(dendriteModel(), dendriteSimulation(200, 200)),
+        Simulator(bacteriaModel(), bacteriaSimulation(100, 100)),
+        Simulator(bacteriaModel(), bacteriaSimulation(200, 200)),
+        Simulator(immunityModel(), immunitySimulation(100, 100)),
+        Simulator(immunityModel(), immunitySimulation(200, 200)),
+        Simulator(carModel(), carSimulation(100, 100, 5)),
+        Simulator(carModel(), carSimulation(200, 200, 5))
     )
 
     controller.data = simulations[0]

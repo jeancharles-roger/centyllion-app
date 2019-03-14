@@ -167,28 +167,24 @@ class SimulationController : Controller<Simulator> {
         }
     }
 
-    private fun executeStep(update: Boolean) {
+    private fun executeStep(updateChart: Boolean) {
         data.oneStep()
         refresh()
 
-        val counts = data.lastGrainsCount().values
-        chart.data.datasets.zip(counts) { set: LineDataSet, i: Int ->
+        chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
             val data = set.data
             if (data != null) {
                 val index = if (data.isEmpty()) 0 else data.lastIndex
                 data.push(LineChartPlot(index, i))
             }
         }
-        grainsController.dataControllers.zip(counts) { controller, count ->
-            if (controller is GrainDisplayController) {
-                controller.count = count
-            }
-        }
-        if (update) {
+
+        if (updateChart) {
             chart.update(ChartUpdateConfig(duration = 0, lazy = true))
             lastRefresh = 0
         }
     }
+
 
     override fun refresh() {
 
@@ -228,6 +224,14 @@ class SimulationController : Controller<Simulator> {
             if (currentX >= xMax) {
                 currentX = 0.0
                 currentY += ySize
+            }
+        }
+
+        // refreshes counts
+        val counts = data.lastGrainsCount().values
+        grainsController.dataControllers.zip(counts) { controller, count ->
+            if (controller is GrainDisplayController) {
+                controller.count = count
             }
         }
     }

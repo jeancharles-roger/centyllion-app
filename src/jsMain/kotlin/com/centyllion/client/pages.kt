@@ -2,6 +2,9 @@ package com.centyllion.client
 
 import KeycloakInstance
 import com.centyllion.client.controller.*
+import com.centyllion.common.adminRole
+import com.centyllion.common.modelRole
+import com.centyllion.common.simulationRole
 import com.centyllion.model.Action
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.*
@@ -25,10 +28,10 @@ data class Page(
 const val contentSelector = "section.cent-main"
 
 val pages = listOf(
-    Page("Model", "model", "", ::model),
-    Page("Simulation", "simulation", "", ::simulation),
+    Page("Model", "model", modelRole, ::model),
+    Page("Simulation", "simulation", simulationRole, ::simulation),
     Page("Profile", "profile", "", ::profile),
-    Page("Administration", "administration", "", ::administration)
+    Page("Administration", "administration", adminRole, ::administration)
 )
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {

@@ -1,8 +1,6 @@
 package com.centyllion.backend
 
-import com.centyllion.model.Event
-import com.centyllion.model.EventType
-import com.centyllion.model.User
+import com.centyllion.model.*
 import com.mongodb.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
@@ -10,11 +8,14 @@ import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import org.bson.Document
+import org.litote.kmongo.deleteOneById
+import org.litote.kmongo.find
 import org.litote.kmongo.findOne
 import org.litote.kmongo.newId
 import org.litote.kmongo.save
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.toList
 
 class Data(
     host: String = "localhost",
@@ -27,16 +28,14 @@ class Data(
 
     val usersCollectionName = "users"
     val grainModelsCollectionName = "grainModels"
-    val grainModelHistoriesCollectionName = "grainModelHistories"
+
     val eventsCollectionName = "events"
 
-    val users = db.getCollection(usersCollectionName)
+    val users: MongoCollection<Document> = db.getCollection(usersCollectionName)
 
     val grainModels: MongoCollection<Document> = db.getCollection(grainModelsCollectionName)
 
-    val grainModelsHistory: MongoCollection<Document> = db.getCollection(grainModelHistoriesCollectionName)
-
-    val events = db.getCollection(eventsCollectionName)
+    val events: MongoCollection<Document> = db.getCollection(eventsCollectionName)
 
     private val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
 
@@ -56,7 +55,7 @@ class Data(
                             val email = claims["email"]?.asString() ?: ""
                             val new = User(newId<User>().toString(), id, name, email)
                             users.insertOne(createDocument(User.serializer(), new))
-                            insertEvent(EventType.CreateUser, new._id, new.name)
+                            insertEvent(Action.Create, new, usersCollectionName, new.name)
                             new
                         } else {
                             // user was created
@@ -74,7 +73,38 @@ class Data(
     fun saveUser(user: User) {
         val document = createDocument(User.serializer(), user)
         users.save(document)
-        insertEvent(EventType.SaveUser, user._id, user.name)
+        insertEvent(Action.Save, user, usersCollectionName, user.name)
+    }
+
+    fun grainModelsForUser(user: User): List<GrainModelDescription> {
+        val result = grainModels.find("{userId: '${user._id}'}")
+        return result.map { parseDocument(GrainModelDescription.serializer(), it) }.toList()
+    }
+
+    fun getGrainModel(id: String): GrainModelDescription? {
+        val result = grainModels.findOne("{_id: '$id'}")
+        return result?.let { parseDocument(GrainModelDescription.serializer(), result) }
+    }
+
+    fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription {
+        val date = rfc1123Format.format(Date())
+        val model = GrainModelDescription(
+            newId<GrainModelDescription>().toString(),
+            user._id, null, null, date, sent
+        )
+        grainModels.save(createDocument(GrainModelDescription.serializer(), model))
+        insertEvent(Action.Create, user, grainModelsCollectionName, model._id, model.model.name)
+        return model
+    }
+
+    fun saveGrainModel(user: User, model: GrainModelDescription) {
+        grainModels.save(createDocument(GrainModelDescription.serializer(), model))
+        insertEvent(Action.Save, user, grainModelsCollectionName, model._id)
+    }
+
+    fun deleteGrainModel(user: User, model: GrainModelDescription) {
+        grainModels.deleteOneById(model._id)
+        insertEvent(Action.Delete, user,  model._id)
     }
 
     fun getEvents(): List<Event> {
@@ -84,9 +114,9 @@ class Data(
         }.toList()
     }
 
-    private fun insertEvent(type: EventType, vararg arguments: String) {
+    private fun insertEvent(action: Action, user: User, collection: String, vararg arguments: String) {
         val date = rfc1123Format.format(Date())
-        val event = Event(newId<Event>().toString(), type, arguments.toList(), date)
+        val event = Event(newId<Event>().toString(), date, user._id, action, collection, arguments.toList())
         events.insertOne(createDocument(Event.serializer(), event))
     }
 

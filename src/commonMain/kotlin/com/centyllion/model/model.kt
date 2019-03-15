@@ -117,7 +117,7 @@ data class GrainModel(
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
     /** Main reactive grains are all the grains that are main component for a behaviour */
-    val mainReactiveGrains: Set<Grain> = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
+    val mainReactiveGrains get() = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
 
     @Transient
     val valid
@@ -224,11 +224,6 @@ data class Simulation(
         ages[index] = 0
     }
 
-    fun resetIndex(index: Int) {
-        agents[index] = -1
-        ages[index] = -1
-    }
-
     fun neighbours(index: Int): Map<Direction, Int> = Direction.values().map { it to agents[moveIndex(index, it)] }.toMap()
 
     fun grainsCounts(): Map<Int, Int> {
@@ -277,4 +272,22 @@ data class Simulation(
 
 }
 
+@Serializable
+data class GrainModelDescription(
+    val _id: String,
+    val userId: String,
+    val previousId: String?,
+    val nextId: String?,
+    val date: String,
+    val model: GrainModel
+)
 
+@Serializable
+data class SimulationDescription(
+    val _id: String,
+    val previousId: String?,
+    val nextId: String?,
+    val date: String,
+    val modelId: String,
+    val simulation: Simulation
+)

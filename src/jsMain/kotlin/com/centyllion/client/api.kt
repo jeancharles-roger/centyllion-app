@@ -1,8 +1,11 @@
 package com.centyllion.client
 
 import KeycloakInstance
+import com.centyllion.model.Event
+import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.User
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.list
 import org.w3c.xhr.XMLHttpRequest
 import kotlin.js.Promise
 
@@ -35,10 +38,41 @@ fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance, block: (bearer: 
         }
     }
 
-fun fetchUser(instance: KeycloakInstance): Promise<User> = executeWithRefreshedIdToken(instance) { bearer ->
-    fetch("GET", "/api/me", bearer).then { Json.parse(User.serializer(), it) }
-}
+fun fetchUser(instance: KeycloakInstance): Promise<User> =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/me", bearer).then { Json.parse(User.serializer(), it) }
+    }
 
-fun saveUser(user: User, instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->
-    fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
+fun saveUser(user: User, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
+    }
+
+fun fetchGrainModels(instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
+    }
+
+fun saveGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("POST", "/api/me/model", bearer, Json.stringify(GrainModelDescription.serializer(), model))
+    }
+
+fun deleteGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("DELETE", "/api/me/model/${model._id}", bearer)
+    }
+
+fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch(
+            "PATCH",
+            "/api/me/model/${model._id}",
+            bearer,
+            Json.stringify(GrainModelDescription.serializer(), model)
+        )
+    }
+
+fun fetchEvents(instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->
+    fetch("GET", "/api/event", bearer).then { Json.parse(Event.serializer().list, it) }
 }

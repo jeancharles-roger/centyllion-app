@@ -44,6 +44,8 @@ class Simulator(
 
     var step = 0
 
+    private val reactiveGrains = model.mainReactiveGrains
+
     fun grainAtIndex(index: Int) = model.indexedGrains[simulation.idAtIndex(index)]
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
@@ -78,7 +80,7 @@ class Simulator(
             val grain = grainAtIndex(i)
             if (grain != null) {
                 val selected = all.getOrPut(i) { mutableListOf() }
-                if (model.mainReactiveGrains.contains(grain)) {
+                if (reactiveGrains.contains(grain)) {
                     val age = simulation.ageAtIndex(i)
 
                     // a grain is present, a behaviour can be triggered

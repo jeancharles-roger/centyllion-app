@@ -10,15 +10,16 @@ data class User(
     val email: String
 )
 
-enum class EventType {
-    CreateUser, SaveUser
+enum class Action {
+    Create, Save, Delete
 }
 
 @Serializable
 data class Event(
     val _id: String,
-    val type: EventType,
-    val arguments: List<String>,
-    val date: String
-
+    val date: String,
+    val userId: String,
+    val action: Action,
+    val collection: String,
+    val arguments: List<String>
 )

@@ -2,6 +2,10 @@ package com.centyllion.backend
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
+import com.centyllion.common.adminRole
+import com.centyllion.common.modelRole
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -28,10 +32,9 @@ import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.withCharset
 import io.ktor.network.tls.certificates.generateCertificate
+import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.routing.*
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
@@ -203,6 +206,92 @@ fun Application.centyllion() {
                     get {
                         withPrincipal {
                             context.respond(data.getOrCreateUserFromPrincipal(it))
+                        }
+                    }
+
+                    route("model") {
+
+                        // get all user's saved dives
+                        get {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val dives = data.grainModelsForUser(user)
+                                context.respond(dives)
+                            }
+                        }
+
+                        // post a new dive for user
+                        post {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val newModel = call.receive(GrainModel::class)
+                                data.createGrainModel(user, newModel)
+                                context.respond(HttpStatusCode.OK)
+                            }
+                        }
+
+                        route("{id}") {
+                            get {
+                                withPrincipal(setOf(modelRole)) {
+                                    val user = data.getOrCreateUserFromPrincipal(it)
+                                    val id = call.parameters["id"]!!
+                                    val model = data.getGrainModel(id)
+                                    context.respond(
+                                        when {
+                                            model == null -> HttpStatusCode.NotFound
+                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            else -> model
+                                        }
+                                    )
+                                }
+                            }
+
+                            // patch an existing dive for user
+                            patch {
+                                withPrincipal(setOf(modelRole)) {
+                                    val user = data.getOrCreateUserFromPrincipal(it)
+                                    val id = call.parameters["id"]!!
+                                    val model = call.receive(GrainModelDescription::class)
+                                    context.respond(
+                                        when {
+                                            model._id != id -> HttpStatusCode.Forbidden
+                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            else -> {
+                                                data.saveGrainModel(user, model)
+                                                HttpStatusCode.OK
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            delete {
+                                withPrincipal(setOf(modelRole)) {
+                                    val user = data.getOrCreateUserFromPrincipal(it)
+                                    val id = call.parameters["id"]!!
+                                    val model = data.getGrainModel(id)
+                                    context.respond(
+                                        when {
+                                            model == null -> HttpStatusCode.NotFound
+                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            else -> {
+                                                data.deleteGrainModel(user, model)
+                                                HttpStatusCode.OK
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                route("event") {
+                    get {
+                        withPrincipal(setOf(adminRole)) {
+                            val events = data.getEvents()
+                            context.respond(events)
                         }
                     }
                 }

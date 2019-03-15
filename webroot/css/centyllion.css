@@ -4,8 +4,14 @@ body {
 }
 
 .dot {
-  height: 15px;
-  width: 15px;
+  height: 1rem;
+  width: 1rem;
   border-radius: 50%;
   display: inline-block;
+}
+
+
+.cent-main {
+    margin-left: 2rem;
+    margin-right: 2rem;
 }

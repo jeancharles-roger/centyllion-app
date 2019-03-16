@@ -15,7 +15,6 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLSelectElement
 import kotlin.browser.document
 
-
 data class Page(
     val title: String,
     val id: String,
@@ -54,6 +53,8 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 }
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
+    val controller = ModelPageController(instance)
+    root.appendChild(controller.container)
 }
 
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {

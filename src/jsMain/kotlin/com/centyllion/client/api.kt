@@ -2,6 +2,7 @@ package com.centyllion.client
 
 import KeycloakInstance
 import com.centyllion.model.Event
+import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.User
 import kotlinx.serialization.json.Json
@@ -53,9 +54,10 @@ fun fetchGrainModels(instance: KeycloakInstance) =
         fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
-fun saveGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+fun saveGrainModel(model: GrainModel, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("POST", "/api/me/model", bearer, Json.stringify(GrainModelDescription.serializer(), model))
+        fetch("POST", "/api/me/model", bearer, Json.stringify(GrainModel.serializer(), model))
+            .then { Json.parse(GrainModelDescription.serializer(), it)}
     }
 
 fun deleteGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =

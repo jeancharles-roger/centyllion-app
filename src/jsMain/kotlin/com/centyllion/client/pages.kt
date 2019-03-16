@@ -92,7 +92,7 @@ fun administration(root: HTMLElement, instance: KeycloakInstance) {
     fetchEvents(instance).then { events ->
         events.forEach {
             val color = when (it.action) {
-                Action.Create -> "is-success"
+                Action.Create -> "is-primary"
                 Action.Save -> "is-info"
                 Action.Delete -> "is-warning"
             }

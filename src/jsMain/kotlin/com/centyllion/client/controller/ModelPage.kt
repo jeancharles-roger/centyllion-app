@@ -23,7 +23,7 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<Unit> {
 
     override var data: Unit = Unit
 
-    val myModelController = ListController<GrainModelDescription>(
+    val modelListController = ListController<GrainModelDescription>(
         emptyList(), "is-multiline", size(12)
     ) { i, model -> ModelDisplayController().apply { data = model } }
 
@@ -50,8 +50,8 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<Unit> {
     }
 
     init {
-        container.querySelector("div.cent-my-models")?.appendChild(myModelController.container)
-        fetchGrainModels(instance).then { myModelController.data = it }
+        container.querySelector("div.cent-my-models")?.appendChild(modelListController.container)
+        fetchGrainModels(instance).then { modelListController.data = it }
         refresh()
     }
 
@@ -67,7 +67,7 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<Unit> {
         }
 
         saveGrainModel(model, instance).then {
-            myModelController.data = myModelController.data + it
+            modelListController.data = modelListController.data + it
         }
     }
 }

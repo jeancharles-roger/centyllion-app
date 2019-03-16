@@ -18,7 +18,7 @@ fun size(desktop: Int, tablet: Int = desktop, mobile: Int? = null, centered: Boo
 
 fun column(content: HTMLElement, size: ColumnSize = size(4)): HTMLDivElement {
     val result = document.createElement("div") as HTMLDivElement
-    result.className = "column ${size.classes}"
+    result.className = size.classes
     result.appendChild(content)
     return result
 }

@@ -1,4 +1,26 @@
-
+/*
+$color1: rgba(240, 101, 67, 1);
+$color2: rgba(232, 233, 235, 1);
+$color3: rgba(224, 223, 213, 1);
+$color4: rgba(49, 54, 56, 1);
+$color5: rgba(240, 157, 81, 1);
+*/
+/*
+// 6. Moonlight Bytes 6 
+$color1: #4a4e4d;
+$color2: #0e9aa7;
+$color3: #3da4ab ;
+$color4: #f6cd61;
+$color5: #fe8a71;
+*/
+/*
+// 10. Rainbow dash
+$color1: #ee4035;
+$color2: #f37736;
+$color3: #fdf498 ;
+$color4: #7bc043;
+$color5: #0392cf;
+*/
 body {
   font-family: Avenir;
 }
@@ -10,8 +32,25 @@ body {
   display: inline-block;
 }
 
-
 .cent-main {
-    margin-left: 2rem;
-    margin-right: 2rem;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+article.cent-model {
+  border-color: rgba(1, 31, 75, 0.3);
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.is-selected {
+  border-color: #b3cde0;
+  border-width: 1px;
+  border-style: dashed;
+}
+
+.delete {
+  background-color: #b3cde0;
 }

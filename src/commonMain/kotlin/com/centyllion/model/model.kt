@@ -117,6 +117,7 @@ data class GrainModel(
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
     /** Main reactive grains are all the grains that are main component for a behaviour */
+    @Transient
     val mainReactiveGrains get() = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
 
     @Transient

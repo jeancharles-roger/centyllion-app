@@ -225,8 +225,8 @@ fun Application.centyllion() {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val newModel = call.receive(GrainModel::class)
-                                data.createGrainModel(user, newModel)
-                                context.respond(HttpStatusCode.OK)
+                                val newDescription = data.createGrainModel(user, newModel)
+                                context.respond(newDescription)
                             }
                         }
 

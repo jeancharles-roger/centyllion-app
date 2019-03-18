@@ -69,7 +69,7 @@ class BulmaElementProperty<T : BulmaElement>(
     }
 }
 
-fun <T : BulmaElement> bulma(initialValue: T, parent: HTMLElement, prepare: (newValue: T) -> Unit) =
+fun <T : BulmaElement> bulma(initialValue: T, parent: HTMLElement, prepare: (newValue: T) -> Unit = {}) =
     BulmaElementProperty(initialValue, parent, prepare)
 
 fun <T : BulmaElement> html(initialValue: T, parent: HTMLElement, vararg classes: String) =

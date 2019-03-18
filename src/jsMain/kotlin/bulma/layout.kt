@@ -1,18 +1,18 @@
 package bulma
 
-import kotlinx.html.article
-import kotlinx.html.div
+import kotlinx.html.*
 import kotlinx.html.dom.create
-import kotlinx.html.figure
-import kotlinx.html.section
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
-
-class Container: BulmaElement {
+/** [Container](https://bulma.io/documentation/layout/container) element */
+class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     override val root: HTMLElement = document.create.div("container")
+
+    var body by bulmaList(initialBody, root)
 }
 
+/** [Level](https://bulma.io/documentation/layout/level) element */
 class Level: BulmaElement {
     override val root: HTMLElement = document.create.div("level") {
         div("level-left")
@@ -27,6 +27,7 @@ class Level: BulmaElement {
     var right by bulmaList(emptyList(), rightNode)
 }
 
+/** [Media](https://bulma.io/documentation/layout/media) element */
 class Media: BulmaElement {
     override val root: HTMLElement = document.create.article("media") {
         figure("media-left")
@@ -43,6 +44,7 @@ class Media: BulmaElement {
     var right by bulmaList(emptyList(), rightNode)
 }
 
+/** [Hero](https://bulma.io/documentation/layout/hero) element */
 class Hero: BulmaElement {
     override val root: HTMLElement = document.create.section("hero") {
         div("hero-head")
@@ -63,5 +65,20 @@ class Hero: BulmaElement {
     var head by bulmaList(emptyList(), headNode)
     var body by bulmaList(emptyList(), bodyNode)
     var foot by bulmaList(emptyList(), footNode)
-
 }
+
+/** [Section](https://bulma.io/documentation/layout/section) element */
+class Section(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
+    override val root: HTMLElement = document.create.div("section")
+
+    var body by bulmaList(initialBody, root)
+}
+
+/** [Footer](https://bulma.io/documentation/layout/footer) element */
+class Footer(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
+    override val root: HTMLElement = document.create.footer("footer")
+
+    var body by bulmaList(initialBody, root)
+}
+
+// TODO support

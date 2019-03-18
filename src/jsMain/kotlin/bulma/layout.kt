@@ -5,6 +5,10 @@ import kotlinx.html.dom.create
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
+class HtmlWrapper(override val root: HTMLElement): BulmaElement
+
+fun wrap(classes : String? = null, block : DIV.() -> Unit = {}) = HtmlWrapper(document.create.div(classes, block))
+
 /** [Container](https://bulma.io/documentation/layout/container) element */
 class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     override val root: HTMLElement = document.create.div("container")
@@ -21,6 +25,8 @@ class Level: BulmaElement {
 
     private val leftNode = root.querySelector(".level-left") as HTMLElement
     private val rightNode = root.querySelector(".level-right") as HTMLElement
+
+    var mobile by className(false, "is-mobile", root)
 
     var left by bulmaList(emptyList(), leftNode)
     var center by bulmaList(emptyList(), root, rightNode)

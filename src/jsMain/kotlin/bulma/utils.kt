@@ -168,7 +168,9 @@ class StringClassProperty(
 /** Property class delegate that handle an [HasClassName] property value to set css class. */
 class ClassProperty<T : HasClassName>(
     initialValue: T,
-    private val node: HTMLElement
+    private val node: HTMLElement,
+    private val prefix: String = "",
+    private val suffix: String = ""
 ) : ReadWriteProperty<Any?, T> {
 
     private var value = initialValue
@@ -179,18 +181,21 @@ class ClassProperty<T : HasClassName>(
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
-            if (oldValue.className.isNotEmpty()) {
-                node.classList.toggle(oldValue.className, false)
+            val oldClassName = "$prefix${oldValue.className}$suffix"
+            if (oldClassName.isNotEmpty()) {
+                node.classList.toggle(oldClassName, false)
             }
-            if (value.className.isNotEmpty()) {
-                node.classList.toggle(value.className, true)
+            val className = "$prefix${value.className}$suffix"
+            if (className.isNotEmpty()) {
+                node.classList.toggle(className, true)
             }
         }
     }
 
     init {
-        if (value.className.isNotEmpty()) {
-            node.classList.toggle(value.className, true)
+        val className = "$prefix${value.className}$suffix"
+        if (className.isNotEmpty()) {
+            node.classList.toggle(className, true)
         }
     }
 }
@@ -198,8 +203,8 @@ class ClassProperty<T : HasClassName>(
 fun className(initialValue: Boolean, className: String, node: HTMLElement) =
     BooleanClassProperty(initialValue, className, node)
 
-fun <T : HasClassName> className(initialValue: T, node: HTMLElement) =
-    ClassProperty(initialValue, node)
+fun <T : HasClassName> className(initialValue: T, node: HTMLElement, prefix: String = "", suffix: String = "") =
+    ClassProperty(initialValue, node, prefix, suffix)
 
 fun className(initialValue: String, node: HTMLElement, prefix: String = "") =
     StringClassProperty(initialValue, node, prefix)

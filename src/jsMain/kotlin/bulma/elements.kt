@@ -13,14 +13,14 @@ import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
 /** [Box](https://bulma.io/documentation/elements/box) element. */
-class Box: BulmaElement {
+class Box : BulmaElement {
     override val root: HTMLElement = document.create.div("box")
 
     var body by bulmaList(emptyList(), root)
 }
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
-class Button(initialText: String, val onClick: (Button) -> Unit = {}) : BulmaElement {
+class Button(initialText: String, initialColor: ElementColor = ElementColor.None, val onClick: (Button) -> Unit = {}) : BulmaElement {
 
     override val root: HTMLElement = document.create.a(classes = "button") {
         +initialText
@@ -41,7 +41,7 @@ class Button(initialText: String, val onClick: (Button) -> Unit = {}) : BulmaEle
 
     var inverted by className(false, "is-inverted", root)
 
-    var color by className(ElementColor.None, root)
+    var color by className(initialColor, root)
 
     var size by className(Size.None, root)
 
@@ -59,7 +59,7 @@ class Button(initialText: String, val onClick: (Button) -> Unit = {}) : BulmaEle
 }
 
 /** [Content](https://bulma.io/documentation/elements/content) element. */
-class Content(block : DIV.() -> Unit = {}): BulmaElement {
+class Content(block: DIV.() -> Unit = {}) : BulmaElement {
     override val root: HTMLElement = document.create.div("content") {
         block()
     }
@@ -67,7 +67,7 @@ class Content(block : DIV.() -> Unit = {}): BulmaElement {
 
 /** [Delete](https://bulma.io/documentation/elements/delete) element. */
 class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
-    override val root: HTMLElement = document.create.button (classes = "delete") {
+    override val root: HTMLElement = document.create.button(classes = "delete") {
         onClickFunction = { if (!disabled) onClick(this@Delete) }
     }
 
@@ -90,7 +90,7 @@ class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
 
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */
 class Icon(initialIcon: String) : BulmaElement {
-    override val root: HTMLElement = document.create.span ("icon") {
+    override val root: HTMLElement = document.create.span("icon") {
         i("fas fa-$initialIcon")
     }
 
@@ -98,7 +98,8 @@ class Icon(initialIcon: String) : BulmaElement {
 
     var icon by className(initialIcon, iconNode, "fa-")
 
-    var size get() = outerSize
+    var size
+        get() = outerSize
         set(value) {
             outerSize = value
             iconSize = value.toFas()
@@ -113,10 +114,10 @@ class Icon(initialIcon: String) : BulmaElement {
 }
 
 /** [Notification](https://bulma.io/documentation/elements/notification) element. */
-class Notification(val onDelete: (Notification) -> Unit = {}): BulmaElement {
+class Notification(val onDelete: (Notification) -> Unit = {}) : BulmaElement {
 
-    override val root: HTMLElement = document.create.div ("notification") {
-        button (classes = "delete") {
+    override val root: HTMLElement = document.create.div("notification") {
+        button(classes = "delete") {
             onClickFunction = { onDelete(this@Notification) }
         }
     }
@@ -127,9 +128,9 @@ class Notification(val onDelete: (Notification) -> Unit = {}): BulmaElement {
 }
 
 /** [Progress Bar](https://bulma.io/documentation/elements/progress) element. */
-class ProgressBar: BulmaElement {
+class ProgressBar : BulmaElement {
 
-    override val root: HTMLElement = document.create.progress ("progress")
+    override val root: HTMLElement = document.create.progress("progress")
 
     var color by className(ElementColor.None, root)
 
@@ -150,9 +151,9 @@ class Tag(
     initialText: String,
     initialColor: ElementColor = ElementColor.None,
     initialSize: Size = Size.None
-): BulmaElement {
+) : BulmaElement {
 
-    override val root: HTMLElement = document.create.span ("tag") {
+    override val root: HTMLElement = document.create.span("tag") {
         +initialText
     }
 
@@ -174,9 +175,9 @@ class Tag(
 }
 
 /** [Tags](https://bulma.io/documentation/elements/tag/#list-of-tags) element */
-class Tags(initialTags: List<Tag> = emptyList()): BulmaElement {
+class Tags(initialTags: List<Tag> = emptyList()) : BulmaElement {
 
-    override val root: HTMLElement = document.create.div ("tags")
+    override val root: HTMLElement = document.create.div("tags")
 
     var tags by bulmaList<Tag>(initialTags, root)
 }

@@ -58,6 +58,7 @@ class BulmaElementProperty<T : BulmaElement>(
             if (parent.contains(oldValue.root)) {
                 parent.replaceChild(oldValue.root, value.root)
             } else {
+                parent.removeChild(oldValue.root)
                 parent.appendChild(value.root)
             }
         }
@@ -72,13 +73,11 @@ class BulmaElementProperty<T : BulmaElement>(
 fun <T : BulmaElement> bulma(initialValue: T, parent: HTMLElement, prepare: (newValue: T) -> Unit = {}) =
     BulmaElementProperty(initialValue, parent, prepare)
 
-fun <T : BulmaElement> html(initialValue: T, parent: HTMLElement, vararg classes: String) =
-    BulmaElementProperty(initialValue, parent) { node -> classes.forEach { node.root.classList.toggle(it, true) } }
-
 class BulmaElementListProperty<T : BulmaElement>(
     initialValue: List<T>,
     private val parent: HTMLElement,
-    private val before: HTMLElement?
+    private val before: HTMLElement?,
+    private val prepare: (List<T>) -> Unit = {}
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
@@ -90,6 +89,7 @@ class BulmaElementListProperty<T : BulmaElement>(
         if (oldValue != value) {
             this.value = value
             oldValue.forEach { parent.removeChild(it.root) }
+            prepare(value)
             if (before != null) {
                 value.forEach { parent.insertBefore(it.root, before) }
             } else {
@@ -99,6 +99,7 @@ class BulmaElementListProperty<T : BulmaElement>(
     }
 
     init {
+        prepare(value)
         if (before != null) {
             value.forEach { parent.insertBefore(it.root, before) }
         } else {
@@ -107,8 +108,11 @@ class BulmaElementListProperty<T : BulmaElement>(
     }
 }
 
-fun <T : BulmaElement> bulmaList(initialValue: List<T> = emptyList(), parent: HTMLElement, before: HTMLElement? = null) =
-    BulmaElementListProperty(initialValue, parent, before)
+fun <T : BulmaElement> bulmaList(
+    initialValue: List<T> = emptyList(), parent: HTMLElement,
+    before: HTMLElement? = null, prepare: (List<T>) -> Unit = {}
+) =
+    BulmaElementListProperty(initialValue, parent, before, prepare)
 
 /** Property class delegate that handle a boolean property that set or reset a css class. */
 class BooleanClassProperty(
@@ -243,6 +247,41 @@ class StringAttributeProperty<T>(
         }
     }
 }
+
+/** Property class delegate that handle a string property that set or reset an attribute. */
+class BooleanAttributeProperty(
+    initialValue: Boolean,
+    private val attributeName: String,
+    private val node: HTMLElement
+) : ReadWriteProperty<Any?, Boolean> {
+
+    private var value = initialValue
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): Boolean = value
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
+        val oldValue = this.value
+        if (oldValue != value) {
+            this.value = value
+            if (value) {
+                node.setAttribute(attributeName, "")
+            } else {
+                node.removeAttribute(attributeName)
+            }
+        }
+    }
+
+    init {
+        if (value) {
+            node.setAttribute(attributeName, "")
+        } else {
+            node.removeAttribute(attributeName)
+        }
+    }
+}
+
+fun booleanAttribute(initialValue: Boolean, attribute: String, node: HTMLElement) =
+    BooleanAttributeProperty(initialValue, attribute, node)
 
 fun <T> attribute(initialValue: T, attribute: String, node: HTMLElement) =
     StringAttributeProperty(initialValue, attribute, node)

@@ -45,17 +45,8 @@ class Button(initialText: String, initialColor: ElementColor = ElementColor.None
 
     var size by className(Size.None, root)
 
-    var disabled: Boolean = false
-        set(value) {
-            if (value != field) {
-                field = value
-                if (field) {
-                    root.setAttribute("disabled", "")
-                } else {
-                    root.removeAttribute("disabled")
-                }
-            }
-        }
+    var disabled by booleanAttribute(false, "disabled", root)
+
 }
 
 /** [Content](https://bulma.io/documentation/elements/content) element. */
@@ -75,17 +66,8 @@ class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
 
     var color by className(ElementColor.None, root)
 
-    var disabled: Boolean = false
-        set(value) {
-            if (value != field) {
-                field = value
-                if (field) {
-                    root.setAttribute("disabled", "")
-                } else {
-                    root.removeAttribute("disabled")
-                }
-            }
-        }
+    var disabled by booleanAttribute(false, "disabled", root)
+
 }
 
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */

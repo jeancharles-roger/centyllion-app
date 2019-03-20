@@ -1,19 +1,19 @@
 package bulma
 
-import kotlinx.html.InputType
-import kotlinx.html.div
+import kotlinx.html.*
 import kotlinx.html.dom.create
-import kotlinx.html.js.div
-import kotlinx.html.js.input
-import kotlinx.html.js.label
-import kotlinx.html.js.p
+import kotlinx.html.js.onInputFunction
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.HTMLSelectElement
+import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.events.InputEvent
 import kotlin.browser.document
 
 interface FieldElement : BulmaElement
 
 /** [Field](https://bulma.io/documentation/form/general) */
-class Field(initialBody: List<FieldElement> = emptyList()): BulmaElement {
+class Field(initialBody: List<FieldElement> = emptyList()) : BulmaElement {
     override val root: HTMLElement = document.create.div("field")
 
     var body by bulmaList(initialBody, root)
@@ -43,8 +43,11 @@ class Field(initialBody: List<FieldElement> = emptyList()): BulmaElement {
     var groupedMultiline by className(false, "is-grouped-multiline", root)
 }
 
+fun simpleField(label: Label? = null, element: FieldElement, help: Help? = null) =
+    Field(listOf(label, element, help).filterNotNull())
+
 /** [Horizontal Field](https://bulma.io/documentation/form/general/#horizontal-form) */
-class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList()): BulmaElement {
+class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList()) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("field is-horizontal") {
         div("field-label")
@@ -62,7 +65,7 @@ class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList(
 
 }
 
-class Label(initialText: String): FieldElement {
+class Label(initialText: String) : FieldElement {
     override val root: HTMLElement = document.create.label("label") {
         +initialText
     }
@@ -76,7 +79,7 @@ class Label(initialText: String): FieldElement {
         }
 }
 
-class Help(initialText: String): FieldElement {
+class Help(initialText: String) : FieldElement {
     override val root: HTMLElement = document.create.p("help") {
         +initialText
     }
@@ -96,7 +99,7 @@ class Help(initialText: String): FieldElement {
 interface ControlElement : BulmaElement
 
 /** [Control](https://bulma.io/documentation/form/general/#form-control) */
-class Control(initialElement: ControlElement): FieldElement {
+class Control(initialElement: ControlElement) : FieldElement {
     override val root: HTMLElement = document.create.div("control")
 
     var body by bulma(initialElement, root)
@@ -139,8 +142,16 @@ class Control(initialElement: ControlElement): FieldElement {
 }
 
 /** [Input](https://bulma.io/documentation/form/input/) */
-class Input: ControlElement {
-    override val root: HTMLElement = document.create.input(InputType.text, classes = "input")
+class Input(onChange: (event: InputEvent, value: String) -> Unit = { e, v -> }) : ControlElement {
+
+    override val root: HTMLElement = document.create.input(InputType.text, classes = "input") {
+        onInputFunction = {
+            val target = it.target
+            if (it is InputEvent && target is HTMLInputElement) {
+                onChange(it, target.value)
+            }
+        }
+    }
 
     var value by attribute("", "value", root)
 
@@ -163,3 +174,120 @@ class Input: ControlElement {
     var static by className(false, "is-static", root)
 
 }
+
+/** [Text Area](https://bulma.io/documentation/form/textarea). */
+class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { e, v -> }) : FieldElement {
+    override val root: HTMLElement = document.create.textArea(classes = "textarea") {
+        onInputFunction = {
+            val target = it.target
+            if (it is InputEvent && target is HTMLTextAreaElement) {
+                onChange(it, target.value)
+            }
+        }
+    }
+
+    var rows by attribute("", "rows", root)
+
+    var value: String = ""
+        set(value) {
+            if (value != field) {
+                field = value
+                root.innerText = field
+            }
+        }
+
+    var placeholder by attribute("", "placeholder", root)
+
+    var color by className(ElementColor.None, root)
+
+    var size by className(Size.None, root)
+
+    var fixedSize by className(false, "has-fixed-size", root)
+
+    var readonly by booleanAttribute(false, "readonly", root)
+
+    var disabled by booleanAttribute(false, "disabled", root)
+}
+
+class Option(initialText: String) : BulmaElement {
+    override val root: HTMLElement = document.create.option {
+        +initialText
+    }
+
+    var text = initialText
+        set(value) {
+            if (value != field) {
+                field = value
+                root.innerText = field
+            }
+        }
+}
+
+/** [Select](http://bulma.io/documentation/form/select/) */
+class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: Option) -> Unit = { e, v -> }) : ControlElement {
+    override val root: HTMLElement = document.create.div("select") {
+        select() {
+            onInputFunction = {
+                val target = it.target
+                if (it is InputEvent && target is HTMLSelectElement) {
+                    // TODO support multiple
+                    onChange(it, options[target.selectedIndex])
+                }
+            }
+        }
+    }
+
+    private val selectNode = root.querySelector("select") as HTMLElement
+
+    var options by bulmaList(initialOptions, root)
+
+    var color by className(ElementColor.None, root)
+
+    var size by className(Size.None, root)
+
+    var rounded by className(false, "is-rounded", root)
+
+    var loading by className(false, "is-loading", root)
+
+    var multiple get() = rootMultiple
+        set(value) {
+            rootMultiple = value
+            selectMultiple = value
+        }
+
+    private var rootMultiple by className(false, "is-multiple", root)
+    private var selectMultiple by booleanAttribute(false, "multiple", selectNode)
+
+}
+
+/** [Checkbox](https://bulma.io/documentation/form/checkbox) */
+class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean) -> Unit = { e, v -> }) : BulmaElement {
+    override val root: HTMLElement = document.create.label("checkbox") {
+        input(type=InputType.checkBox) {
+            onInputFunction = {
+                val target = it.target
+                if (it is InputEvent && target is HTMLInputElement) {
+                    onChange(it, target.checked)
+                }
+            }
+        }
+    }
+
+    private val inputNode = root.querySelector("checkbox") as HTMLElement
+
+    var disable
+        get() = disabledRoot
+        set(value) {
+            disabledInput = true
+            disabledRoot = true
+        }
+
+    private var disabledInput by booleanAttribute(false, "disabled", inputNode)
+    private var disabledRoot by booleanAttribute(false, "disabled", inputNode)
+
+}
+
+
+// TODO radio groups http://bulma.io/documentation/form/radio/
+
+// TODO file https://bulma.io/documentation/form/file/

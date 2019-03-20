@@ -20,7 +20,7 @@ class Box : BulmaElement {
 }
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
-class Button(initialText: String, initialColor: ElementColor = ElementColor.None, val onClick: (Button) -> Unit = {}) : BulmaElement {
+class Button(initialText: String, initialColor: ElementColor = ElementColor.None, val onClick: (Button) -> Unit = {}) : ControlElement {
 
     override val root: HTMLElement = document.create.a(classes = "button") {
         +initialText
@@ -71,7 +71,7 @@ class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
 }
 
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */
-class Icon(initialIcon: String) : BulmaElement {
+class Icon(initialIcon: String) : ControlElement {
     override val root: HTMLElement = document.create.span("icon") {
         i("fas fa-$initialIcon")
     }

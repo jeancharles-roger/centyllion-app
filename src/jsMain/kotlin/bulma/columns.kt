@@ -47,16 +47,22 @@ class Columns(initialColumn: List<Column> = emptyList()) : BulmaElement {
     /** Removes [gap](https://bulma.io/documentation/columns/gap/#gapless) between columns */
     var gapless by className(false, "is-gapless", root)
 
-
     /** [Centering](https://bulma.io/documentation/columns/options/#centering-columns) */
     var centering by className(false, "is-centering", root)
-
 
     // TODO variable gap  https://bulma.io/documentation/columns/gap/#variable-gap
 
     var columns by bulmaList<Column>(initialColumn, root)
 }
 
+fun columns(
+    vararg columns: Column,
+    multiline: Boolean = false,
+    mobile: Boolean = false
+) = Columns(columns.toList()).apply {
+    this.multiline = multiline
+    this.mobile = mobile
+}
 
 /** [Column](https://bulma.io/documentation/columns/basics) element */
 class Column(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
@@ -88,3 +94,14 @@ class Column(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
     var body by bulmaList(initialBody, root)
 }
 
+fun column(
+    vararg elements: BulmaElement,
+    size: ColumnSize = ColumnSize.None,
+    mobileSize: ColumnSize = ColumnSize.None,
+    tabletSize: ColumnSize = ColumnSize.None,
+    desktopSize: ColumnSize = ColumnSize.None,
+    wideScreenSize: ColumnSize = ColumnSize.None,
+    fullHdSize: ColumnSize = ColumnSize.None
+) = Column(elements.toList()).apply {
+    this.size = size
+}

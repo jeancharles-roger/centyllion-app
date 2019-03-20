@@ -9,6 +9,10 @@ class HtmlWrapper(override val root: HTMLElement): BulmaElement
 
 fun wrap(classes : String? = null, block : DIV.() -> Unit = {}) = HtmlWrapper(document.create.div(classes, block))
 
+fun div(vararg body: BulmaElement) = HtmlWrapper(document.create.div()).apply {
+    body.forEach { root.appendChild(it.root) }
+}
+
 /** [Container](https://bulma.io/documentation/layout/container) element */
 class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     override val root: HTMLElement = document.create.div("container")

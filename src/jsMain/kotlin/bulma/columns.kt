@@ -104,4 +104,9 @@ fun column(
     fullHdSize: ColumnSize = ColumnSize.None
 ) = Column(elements.toList()).apply {
     this.size = size
+    this.mobileSize = mobileSize
+    this.tabletSize = tabletSize
+    this.desktopSize = desktopSize
+    this.wideScreenSize = wideScreenSize
+    this.fullHdSize = fullHdSize
 }

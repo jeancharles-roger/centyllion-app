@@ -69,14 +69,6 @@ class Label(initialText: String = "") : FieldElement {
     override val root: HTMLElement = document.create.label("label") {
         +initialText
     }
-
-    var text = initialText
-        set(value) {
-            if (value != field) {
-                field = value
-                root.innerText = field
-            }
-        }
 }
 
 class Help(initialText: String) : FieldElement {
@@ -84,16 +76,7 @@ class Help(initialText: String) : FieldElement {
         +initialText
     }
 
-    var text = initialText
-        set(value) {
-            if (value != field) {
-                field = value
-                root.innerText = field
-            }
-        }
-
     var color by className(ElementColor.None, root)
-
 }
 
 interface ControlElement : BulmaElement
@@ -142,7 +125,7 @@ class Control(initialElement: ControlElement) : FieldElement {
 }
 
 /** [Input](https://bulma.io/documentation/form/input/) */
-class Input(onChange: (event: InputEvent, value: String) -> Unit = { e, v -> }) : ControlElement {
+class Input(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }) : ControlElement {
 
     override val root: HTMLElement = document.create.input(InputType.text, classes = "input") {
         onInputFunction = {
@@ -176,7 +159,7 @@ class Input(onChange: (event: InputEvent, value: String) -> Unit = { e, v -> }) 
 }
 
 /** [Text Area](https://bulma.io/documentation/form/textarea). */
-class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { e, v -> }) : FieldElement {
+class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }) : FieldElement {
     override val root: HTMLElement = document.create.textArea(classes = "textarea") {
         onInputFunction = {
             val target = it.target
@@ -213,18 +196,10 @@ class Option(initialText: String) : BulmaElement {
     override val root: HTMLElement = document.create.option {
         +initialText
     }
-
-    var text = initialText
-        set(value) {
-            if (value != field) {
-                field = value
-                root.innerText = field
-            }
-        }
 }
 
 /** [Select](http://bulma.io/documentation/form/select/) */
-class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: Option) -> Unit = { e, v -> }) : ControlElement {
+class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: Option) -> Unit = { _, _ -> }) : ControlElement {
     override val root: HTMLElement = document.create.div("select") {
         select() {
             onInputFunction = {
@@ -261,7 +236,7 @@ class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: 
 }
 
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */
-class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean) -> Unit = { e, v -> }) : BulmaElement {
+class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean) -> Unit = { _, _ -> }) : BulmaElement {
     override val root: HTMLElement = document.create.label("checkbox") {
         input(type=InputType.checkBox) {
             onInputFunction = {
@@ -271,13 +246,14 @@ class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean
                 }
             }
         }
+        +initialText
     }
 
     private val inputNode = root.querySelector("checkbox") as HTMLElement
 
     var disable
         get() = disabledRoot
-        set(value) {
+        set(_) {
             disabledInput = true
             disabledRoot = true
         }

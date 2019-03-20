@@ -5,6 +5,10 @@ import org.w3c.dom.HTMLElement
 
 interface BulmaElement {
     val root: HTMLElement
+
+    var text: String
+        get() = root.innerText
+        set(value) { root.innerText = value }
 }
 
 interface HasClassName {

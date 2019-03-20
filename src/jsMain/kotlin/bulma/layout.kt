@@ -17,6 +17,10 @@ fun span(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document
     body.forEach { root.appendChild(it.root) }
 }
 
+fun p(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
+    body.forEach { root.appendChild(it.root) }
+}
+
 /** [Container](https://bulma.io/documentation/layout/container) element */
 class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     override val root: HTMLElement = document.create.div("container")

@@ -27,14 +27,6 @@ class Button(initialText: String, initialColor: ElementColor = ElementColor.None
         onClickFunction = { if (!disabled) onClick(this@Button) }
     }
 
-    var text = initialText
-        set(value) {
-            if (value != field) {
-                field = value
-                root.innerText = field
-            }
-        }
-
     var rounded by className(false, "is-rounded", root)
 
     var outlined by className(false, "is-outlined", root)
@@ -46,7 +38,6 @@ class Button(initialText: String, initialColor: ElementColor = ElementColor.None
     var size by className(Size.None, root)
 
     var disabled by booleanAttribute(false, "disabled", root)
-
 }
 
 /** [Content](https://bulma.io/documentation/elements/content) element. */
@@ -138,14 +129,6 @@ class Tag(
     override val root: HTMLElement = document.create.span("tag") {
         +initialText
     }
-
-    var text = initialText
-        set(value) {
-            if (value != field) {
-                field = value
-                root.innerText = field
-            }
-        }
 
     var color by className(initialColor, root)
 

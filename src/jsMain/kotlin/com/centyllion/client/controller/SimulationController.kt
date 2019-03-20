@@ -1,5 +1,7 @@
 package com.centyllion.client.controller
 
+import bulma.ColumnSize
+import bulma.ColumnsController
 import chartjs.*
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
@@ -36,14 +38,13 @@ class SimulationController : Controller<Simulator> {
     var running = false
     var lastRefresh = 0
 
-    val grainsController = ListController(
-        model.grains, "", size(12)
-    ) { _, grain ->
+    val grainsController = ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
         GrainDisplayController().apply { data = grain }
     }
 
+
     val behaviourController = ListController(
-        model.behaviours, "", size(12)
+        model.behaviours, columnSize = size(12)
     ) { _, behaviour ->
         BehaviourDisplayController().apply { data = behaviour }
     }
@@ -125,7 +126,7 @@ class SimulationController : Controller<Simulator> {
     ))
 
     init {
-        container.querySelector("div.cent-grains")?.appendChild(grainsController.container)
+        container.querySelector("div.cent-grains")?.appendChild(grainsController.root)
         container.querySelector("div.cent-behaviors")?.appendChild(behaviourController.container)
 
         refresh()

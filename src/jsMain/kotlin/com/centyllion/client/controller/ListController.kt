@@ -1,14 +1,13 @@
 package com.centyllion.client.controller
 
-import kotlinx.html.dom.create
-import kotlinx.html.js.div
+import bulma.Columns
 import org.w3c.dom.HTMLElement
-import kotlin.browser.document
 import kotlin.properties.Delegates.observable
+
 
 class ListController<Data>(
     initialList: List<Data>,
-    extraColumnsClasses: String = "",
+    val holder: Columns = Columns().apply { multiline = true },
     val columnSize: ColumnSize = size(4),
     val controllerBuilder: (Int, Data) -> Controller<Data>
 ): Controller<List<Data>> {
@@ -19,7 +18,7 @@ class ListController<Data>(
 
     val dataControllers: List<Controller<Data>> get() = internalControllers
 
-    override val container: HTMLElement = document.create.div("columns is-multiline $extraColumnsClasses")
+    override val container: HTMLElement = holder.root
 
     init {
         refresh()

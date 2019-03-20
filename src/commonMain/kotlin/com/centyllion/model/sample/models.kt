@@ -93,7 +93,7 @@ fun bacteriaModel(): GrainModel {
         "Division", "Bacteria division", 1.0,
         mainReaction = Reaction(0, 0), reaction = listOf(Reaction(1, 0))
     )
-    return GrainModel("Bacteria", "", listOf(bacteria, sugar), listOf(division))
+    return GrainModel("Bacteria", "Bacteria model", listOf(bacteria, sugar), listOf(division))
 }
 
 fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
@@ -130,7 +130,7 @@ fun immunityModel(): GrainModel {
     )
 
     return GrainModel(
-        "Immunity system", "",
+        "Immunity system", "Immunity system model with a bacteria to test it",
         listOf(si, bacteria, boneMarrow),
         listOf(division, defense, siProduction)
     )

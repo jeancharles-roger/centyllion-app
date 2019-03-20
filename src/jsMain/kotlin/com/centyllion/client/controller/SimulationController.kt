@@ -10,7 +10,7 @@ import kotlinx.html.a
 import kotlinx.html.canvas
 import kotlinx.html.div
 import kotlinx.html.dom.create
-import kotlinx.html.h2
+import kotlinx.html.h1
 import kotlinx.html.js.div
 import kotlinx.html.js.onClickFunction
 import kotlinx.html.span
@@ -38,16 +38,15 @@ class SimulationController : Controller<Simulator> {
     var running = false
     var lastRefresh = 0
 
-    val grainsController = ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
-        GrainDisplayController().apply { data = grain }
-    }
+    val grainsController =
+        ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
+            GrainDisplayController().apply { data = grain }
+        }
 
-
-    val behaviourController = ListController(
-        model.behaviours, columnSize = size(12)
-    ) { _, behaviour ->
-        BehaviourDisplayController().apply { data = behaviour }
-    }
+    val behaviourController =
+        ColumnsController(model.behaviours, columnSize = ColumnSize.Full) { _, behaviour ->
+            BehaviourDisplayController(model).apply { data = behaviour }
+        }
 
     override val container: HTMLElement = document.create.div {
         columns {
@@ -92,9 +91,9 @@ class SimulationController : Controller<Simulator> {
                 }
             }
             column(size(4)) {
-                h2("subtitle") { +"Grains"}
-                div( "cent-grains")
-                h2("subtitle") { +"Behaviors"}
+                h1("title") { +"Grains" }
+                div("cent-grains")
+                h1("title") { +"Behaviors" }
                 div("cent-behaviors")
             }
         }
@@ -127,7 +126,7 @@ class SimulationController : Controller<Simulator> {
 
     init {
         container.querySelector("div.cent-grains")?.appendChild(grainsController.root)
-        container.querySelector("div.cent-behaviors")?.appendChild(behaviourController.container)
+        container.querySelector("div.cent-behaviors")?.appendChild(behaviourController.root)
 
         refresh()
     }

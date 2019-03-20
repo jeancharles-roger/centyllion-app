@@ -3,9 +3,6 @@ package com.centyllion.client.controller
 import bulma.*
 import bulma.Controller
 import com.centyllion.model.Grain
-import kotlinx.html.p
-import org.w3c.dom.HTMLParagraphElement
-import org.w3c.dom.HTMLSpanElement
 import kotlin.properties.Delegates.observable
 
 class GrainDisplayController: Controller<Grain, Media> {
@@ -18,26 +15,21 @@ class GrainDisplayController: Controller<Grain, Media> {
         countLabel.text = if (new < 0) "" else "$new"
     }
 
+    val dot = span(classes = "dot")
+    val titleLabel = Label()
+    val descriptionLabel = p()
     val countLabel = Label()
 
     override val container = Media().apply {
-        left = listOf(span(classes="dot"))
-        center = listOf(Content {
-            p("label cent-title")
-            p("cent-description")
-        })
+        left = listOf(dot)
+        center = listOf(titleLabel, descriptionLabel)
         right = listOf(countLabel)
     }
 
-    val dot = container.root.querySelector(".dot") as HTMLSpanElement
-
-    val title = container.root.querySelector("p.cent-title") as HTMLParagraphElement
-    val description = container.root.querySelector("p.cent-description") as HTMLParagraphElement
-
     override fun refresh() {
-        dot.style.backgroundColor = data.color
-        title.innerText = data.name
-        description.innerText = data.description
+        dot.root.style.backgroundColor = data.color
+        titleLabel.text = data.name
+        descriptionLabel.text = data.description
     }
 
 }

@@ -14,11 +14,11 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<GrainMode
         refresh()
     }
 
-    val name = Input { e, v ->
+    val name = Input { _, v ->
         data = data.copy(name = v)
     }
 
-    val description = TextArea { e, v ->
+    val description = TextArea { _, v ->
         data = data.copy(description = v)
     }
 

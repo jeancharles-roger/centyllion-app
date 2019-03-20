@@ -9,7 +9,11 @@ class HtmlWrapper(override val root: HTMLElement): BulmaElement
 
 fun wrap(classes : String? = null, block : DIV.() -> Unit = {}) = HtmlWrapper(document.create.div(classes, block))
 
-fun div(vararg body: BulmaElement) = HtmlWrapper(document.create.div()).apply {
+fun div(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.div(classes)).apply {
+    body.forEach { root.appendChild(it.root) }
+}
+
+fun span(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
     body.forEach { root.appendChild(it.root) }
 }
 

@@ -65,7 +65,7 @@ class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList(
 
 }
 
-class Label(initialText: String) : FieldElement {
+class Label(initialText: String = "") : FieldElement {
     override val root: HTMLElement = document.create.label("label") {
         +initialText
     }

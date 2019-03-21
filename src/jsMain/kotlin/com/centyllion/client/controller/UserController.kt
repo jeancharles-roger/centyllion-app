@@ -1,7 +1,6 @@
 package com.centyllion.client.controller
 
 import bulma.*
-import bulma.Controller
 import com.centyllion.model.User
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
@@ -36,11 +35,7 @@ class UserController : Controller<User?, BulmaElement> {
     override val container = div(
         simpleField(Label("Name"), nameValue, Help()),
         simpleField(Label("Email"), emailValue, Help()),
-        // TODO find a simpler way for level
-        Level().apply {
-            left = listOf(saveButton)
-            center = listOf(saveResult)
-        }
+        Level(listOf(saveButton), listOf(saveResult))
     )
 
 

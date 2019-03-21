@@ -5,7 +5,6 @@ import chartjs.*
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
-import kotlinx.html.canvas
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.browser.window
@@ -37,6 +36,12 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     val stepLabel = Label()
 
+    val simulationCanvas: HtmlWrapper = canvas {
+        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
+        width = "$canvasWidth"
+        height = "${simulation.height * canvasWidth / simulation.width}"
+    }
+
     val grainsController =
         ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
             GrainDisplayController().apply { data = grain }
@@ -47,6 +52,8 @@ class SimulationController : Controller<Simulator, BulmaElement> {
             BehaviourDisplayController(model).apply { data = behaviour }
         }
 
+    val graphCanvas = canvas {}
+
     override val container = div(
         Columns(
             Column(
@@ -54,36 +61,27 @@ class SimulationController : Controller<Simulator, BulmaElement> {
                     left = listOf(runButton, stepButton, stopButton, resetButton),
                     center = listOf(stepLabel)
                 ),
-                wrap("has-text-centered") {
-                    canvas("cent-rendering") {
-                        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
-                        width = "$canvasWidth"
-                        height = "${simulation.height * canvasWidth / simulation.width}"
-                    }
-                },
+                simulationCanvas,
                 desktopSize = ColumnSize.TwoThirds
             ),
             Column(
                 Title("Grains"), grainsController,
                 Title("Behaviours"), behaviourController,
                 desktopSize = ColumnSize.OneThird
-            )
+            ),
+            centered = true
         ),
         Columns(
-            Column(wrap {
-                canvas("cent-graph") {}
-            }),
+            Column(graphCanvas),
             centered = true
         )
     )
 
-    val canvas = root.querySelector(".cent-rendering") as HTMLCanvasElement
+    val canvas = simulationCanvas.root as HTMLCanvasElement
 
     val context = canvas.getContext("2d") as CanvasRenderingContext2D
 
-    val graphCanvas = root.querySelector("canvas.cent-graph") as HTMLCanvasElement
-
-    val chart = Chart(graphCanvas, LineChartConfig(
+    val chart = Chart(graphCanvas.root as HTMLCanvasElement, LineChartConfig(
         options = LineChartOptions().apply {
             animation.duration = 0
             scales.xAxes = arrayOf(LinearAxisOptions())

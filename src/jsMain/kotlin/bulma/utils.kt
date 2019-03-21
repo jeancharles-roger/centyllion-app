@@ -163,7 +163,7 @@ class StringClassProperty(
     }
 
     init {
-        if ((prefix + value).isNotEmpty()) {
+        if (value.isNotEmpty()) {
             node.classList.toggle(prefix + value, true)
         }
     }
@@ -185,21 +185,18 @@ class ClassProperty<T : HasClassName>(
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
-            val oldClassName = "$prefix${oldValue.className}$suffix"
-            if (oldClassName.isNotEmpty()) {
-                node.classList.toggle(oldClassName, false)
+            if (oldValue.className.isNotEmpty()) {
+                node.classList.toggle("$prefix${oldValue.className}$suffix", false)
             }
-            val className = "$prefix${value.className}$suffix"
-            if (className.isNotEmpty()) {
-                node.classList.toggle(className, true)
+            if (value.className.isNotEmpty()) {
+                node.classList.toggle("$prefix${value.className}$suffix", true)
             }
         }
     }
 
     init {
-        val className = "$prefix${value.className}$suffix"
-        if (className.isNotEmpty()) {
-            node.classList.toggle(className, true)
+        if (value.className.isNotEmpty()) {
+            node.classList.toggle("$prefix${value.className}$suffix", true)
         }
     }
 }

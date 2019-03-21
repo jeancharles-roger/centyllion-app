@@ -21,6 +21,8 @@ fun p(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.cr
     body.forEach { root.appendChild(it.root) }
 }
 
+fun canvas(classes : String? = null, block : CANVAS.() -> Unit = {}) = HtmlWrapper(document.create.canvas(classes, block))
+
 /** [Container](https://bulma.io/documentation/layout/container) element */
 class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     override val root: HTMLElement = document.create.div("container")

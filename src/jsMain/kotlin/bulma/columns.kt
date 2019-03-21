@@ -71,7 +71,6 @@ class Column(
     desktopSize: ColumnSize = ColumnSize.None,
     wideScreenSize: ColumnSize = ColumnSize.None,
     fullHdSize: ColumnSize = ColumnSize.None,
-    centered: Boolean = false,
     narrow: Boolean = false
 ) : BulmaElement {
 
@@ -98,8 +97,6 @@ class Column(
     var fullHdSize by className(fullHdSize, root, suffix = "-fullhd")
 
     var narrow by className(narrow, "is-narrow", root)
-
-    var centered by className(centered, "is-centered", root)
 
     var body by bulmaList(body.toList(), root)
 }

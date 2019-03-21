@@ -65,7 +65,9 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
         Simulator(immunityModel(), immunitySimulation(100, 100)),
         Simulator(immunityModel(), immunitySimulation(200, 200)),
         Simulator(carModel(), carSimulation(100, 100, 5)),
-        Simulator(carModel(), carSimulation(200, 200, 5))
+        Simulator(carModel(), carSimulation(200, 200, 5)),
+        Simulator(fishRespirationModel(true), fishRespirationSimulation()),
+        Simulator(fishRespirationModel(false), fishRespirationSimulation())
     )
 
     val controller = SimulationController()

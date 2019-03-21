@@ -59,18 +59,18 @@ class PositionTest {
 
     @Test
     fun testMove() {
-        assertEquals(211, s1.moveIndex(210, Direction.Left))
-        assertEquals(209, s1.moveIndex(210, Direction.Right))
-        assertEquals(310, s1.moveIndex(210, Direction.Up))
-        assertEquals(110, s1.moveIndex(210, Direction.Down))
+        assertEquals(209, s1.moveIndex(210, Direction.Left))
+        assertEquals(211, s1.moveIndex(210, Direction.Right))
+        assertEquals(110, s1.moveIndex(210, Direction.Up))
+        assertEquals(310, s1.moveIndex(210, Direction.Down))
     }
 
     @Test
     fun testMoveTorus() {
-        assertEquals(0, s1.moveIndex(99, Direction.Left))
-        assertEquals(99, s1.moveIndex(0, Direction.Right))
-        assertEquals(10, s1.moveIndex(9910, Direction.Up))
-        assertEquals(9910, s1.moveIndex(10, Direction.Down))
+        assertEquals(0, s1.moveIndex(99, Direction.Right))
+        assertEquals(99, s1.moveIndex(0, Direction.Left))
+        assertEquals(10, s1.moveIndex(9910, Direction.Down))
+        assertEquals(9910, s1.moveIndex(10, Direction.Up))
     }
 
 }

@@ -36,7 +36,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     val stepLabel = Label()
 
-    val simulationCanvas: HtmlWrapper = canvas {
+    val simulationCanvas = canvas {
         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
         width = "$canvasWidth"
         height = "${simulation.height * canvasWidth / simulation.width}"
@@ -77,9 +77,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         )
     )
 
-    val canvas = simulationCanvas.root as HTMLCanvasElement
-
-    val context = canvas.getContext("2d") as CanvasRenderingContext2D
+    val context = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
     val chart = Chart(graphCanvas.root as HTMLCanvasElement, LineChartConfig(
         options = LineChartOptions().apply {
@@ -160,8 +158,8 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     fun refreshCanvas() {
         // refreshes simulation view
-        val canvasWidth = canvas.width.toDouble()
-        val canvasHeight = canvas.height.toDouble()
+        val canvasWidth = simulationCanvas.root.width.toDouble()
+        val canvasHeight = simulationCanvas.root.height.toDouble()
         val xSize = canvasWidth / simulation.width
         val xMax = simulation.width * xSize
         val ySize = canvasHeight / simulation.height

@@ -2,29 +2,36 @@ package bulma
 
 import kotlinx.html.*
 import kotlinx.html.dom.create
+import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLSpanElement
 import kotlin.browser.document
 
-class HtmlWrapper(override val root: HTMLElement): BulmaElement
+class HtmlWrapper<Html : HTMLElement>(override val root: Html) : BulmaElement
 
-fun wrap(classes : String? = null, block : DIV.() -> Unit = {}) = HtmlWrapper(document.create.div(classes, block))
+fun wrap(classes: String? = null, block: DIV.() -> Unit = {}) =
+    HtmlWrapper(document.create.div(classes, block) as HTMLDivElement)
 
-fun div(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.div(classes)).apply {
-    body.forEach { root.appendChild(it.root) }
-}
+fun div(vararg body: BulmaElement, classes: String = "") =
+    HtmlWrapper(document.create.div(classes)).apply {
+        body.forEach { root.appendChild(it.root) }
+    }
 
-fun span(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
-    body.forEach { root.appendChild(it.root) }
-}
+fun span(vararg body: BulmaElement, classes: String = "") =
+    HtmlWrapper(document.create.span(classes) as HTMLSpanElement).apply {
+        body.forEach { root.appendChild(it.root) }
+    }
 
 fun p(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
     body.forEach { root.appendChild(it.root) }
 }
 
-fun canvas(classes : String? = null, block : CANVAS.() -> Unit = {}) = HtmlWrapper(document.create.canvas(classes, block))
+fun canvas(classes: String? = null, block: CANVAS.() -> Unit = {}) =
+    HtmlWrapper(document.create.canvas(classes, block) as HTMLCanvasElement)
 
 /** [Container](https://bulma.io/documentation/layout/container) element */
-class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
+class Container(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
     override val root: HTMLElement = document.create.div("container")
 
     var body by bulmaList(initialBody, root)
@@ -34,7 +41,7 @@ class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
 class Level(
     left: List<BulmaElement> = emptyList(), center: List<BulmaElement> = emptyList(),
     right: List<BulmaElement> = emptyList(), mobile: Boolean = false
-): BulmaElement {
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("level") {
         div("level-left")
@@ -52,7 +59,7 @@ class Level(
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */
-class Media: BulmaElement {
+class Media : BulmaElement {
     override val root: HTMLElement = document.create.article("media") {
         figure("media-left")
         div("media-content")
@@ -69,7 +76,7 @@ class Media: BulmaElement {
 }
 
 /** [Hero](https://bulma.io/documentation/layout/hero) element */
-class Hero: BulmaElement {
+class Hero : BulmaElement {
     override val root: HTMLElement = document.create.section("hero") {
         div("hero-head")
         div("hero-body")
@@ -92,14 +99,14 @@ class Hero: BulmaElement {
 }
 
 /** [Section](https://bulma.io/documentation/layout/section) element */
-class Section(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
+class Section(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
     override val root: HTMLElement = document.create.div("section")
 
     var body by bulmaList(initialBody, root)
 }
 
 /** [Footer](https://bulma.io/documentation/layout/footer) element */
-class Footer(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
+class Footer(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
     override val root: HTMLElement = document.create.footer("footer")
 
     var body by bulmaList(initialBody, root)

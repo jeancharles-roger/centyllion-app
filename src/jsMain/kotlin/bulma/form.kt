@@ -44,7 +44,7 @@ class Field(initialBody: List<FieldElement> = emptyList()) : BulmaElement {
 }
 
 fun simpleField(label: Label? = null, element: FieldElement, help: Help? = null) =
-    Field(listOf(label, element, help).filterNotNull())
+    Field(listOfNotNull(label, element, help))
 
 /** [Horizontal Field](https://bulma.io/documentation/form/general/#horizontal-form) */
 class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList()) : BulmaElement {
@@ -71,7 +71,13 @@ class Label(initialText: String = "") : FieldElement {
     }
 }
 
-class Help(initialText: String) : FieldElement {
+class Value(initialText: String = "") : FieldElement {
+    override val root: HTMLElement = document.create.span("value") {
+        +initialText
+    }
+}
+
+class Help(initialText: String = "") : FieldElement {
     override val root: HTMLElement = document.create.p("help") {
         +initialText
     }
@@ -224,7 +230,8 @@ class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: 
 
     var loading by className(false, "is-loading", root)
 
-    var multiple get() = rootMultiple
+    var multiple
+        get() = rootMultiple
         set(value) {
             rootMultiple = value
             selectMultiple = value
@@ -238,7 +245,7 @@ class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: 
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */
 class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean) -> Unit = { _, _ -> }) : BulmaElement {
     override val root: HTMLElement = document.create.label("checkbox") {
-        input(type=InputType.checkBox) {
+        input(type = InputType.checkBox) {
             onInputFunction = {
                 val target = it.target
                 if (it is InputEvent && target is HTMLInputElement) {

@@ -1,19 +1,12 @@
 package com.centyllion.client.controller
 
+import bulma.*
+import bulma.Controller
 import com.centyllion.model.User
-import kotlinx.html.*
-import kotlinx.html.dom.create
-import kotlinx.html.js.div
-import kotlinx.html.js.onClickFunction
-import org.w3c.dom.HTMLAnchorElement
-import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLParagraphElement
-import org.w3c.dom.HTMLSpanElement
-import kotlin.browser.document
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class UserController : Controller<User?> {
+class UserController : Controller<User?, BulmaElement> {
 
     override var data: User? by observable<User?>(null) { _, _, _ ->
         newData = data
@@ -25,40 +18,31 @@ class UserController : Controller<User?> {
     var onUpdate: ((old: User?, new: User?, UserController) -> Promise<Any>?) =
         { _, _, _ -> null }
 
-    override val container: HTMLDivElement = document.create.div {
-        div("field cent-user-name") {
-            label("label") { +"Name" }
-            span("value") {}
-            p("help") {}
-        }
-        div("field cent-user-email") {
-            label("label") { +"Email" }
-            span("value") {}
-            p("help") {}
-        }
 
-        div("level cent-save") {
-            a(classes = "button is-primary") {
-                +"Save changes"
-                onClickFunction = {
-                    val result = onUpdate(data, newData, this@UserController)
-                    result?.then {
-                        data = newData
-                        saveResult.innerText = "Saved"
-                    }?.catch {
-                        saveResult.innerText = it.toString()
-                    }
-                }
-            }
-            p("help")
+    val nameValue = Value()
+    val emailValue = Value()
+
+    val saveResult = Help()
+    val saveButton = Button("Save Changes", ElementColor.Primary) {
+        val result = onUpdate(data, newData, this@UserController)
+        result?.then {
+            data = newData
+            saveResult.text = "Saved"
+        }?.catch {
+            saveResult.text = it.toString()
         }
     }
 
-    val name = container.querySelector("div.cent-user-name > .value") as HTMLSpanElement
-    val email = container.querySelector("div.cent-user-email > .value") as HTMLSpanElement
+    override val container = div(
+        simpleField(Label("Name"), nameValue, Help()),
+        simpleField(Label("Email"), emailValue, Help()),
+        // TODO find a simpler way for level
+        Level().apply {
+            left = listOf(saveButton)
+            center = listOf(saveResult)
+        }
+    )
 
-    val save = container.querySelector("div.cent-save > a") as HTMLAnchorElement
-    val saveResult = container.querySelector("div.cent-save > .help") as HTMLParagraphElement
 
     init {
         refresh()
@@ -66,18 +50,14 @@ class UserController : Controller<User?> {
 
     override fun refresh() {
         if (newData == null) {
-            name.innerText = ""
-            email.innerText = ""
-            save.setAttribute("disabled", "")
+            nameValue.text = ""
+            emailValue.text = ""
+            saveButton.disabled = true
 
         } else newData?.let {
-            name.innerText = it.name
-            email.innerText = it.email
-            if (data == newData) {
-                save.setAttribute("disabled", "")
-            } else {
-                save.removeAttribute("disabled")
-            }
+            nameValue.text = it.name
+            emailValue.text = it.email
+            saveButton.disabled = data == newData
         }
     }
 }

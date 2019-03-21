@@ -99,4 +99,4 @@ class Footer(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
     var body by bulmaList(initialBody, root)
 }
 
-// TODO support
+/** TODO [Tile](https://bulma.io/documentation/layout/tiles) element */

@@ -4,7 +4,7 @@ workflow "Push" {
 }
 
 action "Test JVM and Deploy" {
-  uses = "MrRamych/gradle-actions@master"
+  uses = "MrRamych/gradle-actions/openjdk-8@2.0"
   secrets = ["DEPLOY_KEY"]
   args = "jvmTest deployBeta"
 }

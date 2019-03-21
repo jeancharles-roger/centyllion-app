@@ -6,7 +6,6 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
 import org.w3c.dom.CanvasRenderingContext2D
-import org.w3c.dom.HTMLCanvasElement
 import kotlin.browser.window
 
 class SimulationController : Controller<Simulator, BulmaElement> {
@@ -79,7 +78,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     val context = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
-    val chart = Chart(graphCanvas.root as HTMLCanvasElement, LineChartConfig(
+    val chart = Chart(graphCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
             animation.duration = 0
             scales.xAxes = arrayOf(LinearAxisOptions())

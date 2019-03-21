@@ -3,10 +3,8 @@ package bulma
 import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.onInputFunction
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.HTMLSelectElement
-import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.*
+import org.w3c.dom.events.Event
 import org.w3c.dom.events.InputEvent
 import kotlin.browser.document
 
@@ -202,15 +200,31 @@ class Option(initialText: String) : BulmaElement {
     override val root: HTMLElement = document.create.option {
         +initialText
     }
+
+    private val optionNode = root as HTMLOptionElement
+
+    var value
+        get() = optionNode.value
+        set(value) { optionNode.value = value}
+
+    val index get() = optionNode.index
 }
 
 /** [Select](http://bulma.io/documentation/form/select/) */
-class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: Option) -> Unit = { _, _ -> }) : ControlElement {
+class Select(
+    options: List<Option>, color: ElementColor = ElementColor.None,
+    size: Size = Size.None, rounded: Boolean = false,
+    loading: Boolean = false, multiple: Boolean = false,
+    onChange: (event: Event, value: Option) -> Unit = { _, _ -> }
+) : ControlElement {
+
     override val root: HTMLElement = document.create.div("select") {
-        select() {
+        select {
             onInputFunction = {
                 val target = it.target
-                if (it is InputEvent && target is HTMLSelectElement) {
+                println("Target -> $target")
+                println("it -> $it")
+                if (target is HTMLSelectElement) {
                     // TODO support multiple
                     onChange(it, options[target.selectedIndex])
                 }
@@ -220,15 +234,15 @@ class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: 
 
     private val selectNode = root.querySelector("select") as HTMLElement
 
-    var options by bulmaList(initialOptions, root)
+    var options by bulmaList(options, selectNode)
 
-    var color by className(ElementColor.None, root)
+    var color by className(color, root)
 
-    var size by className(Size.None, root)
+    var size by className(size, root)
 
-    var rounded by className(false, "is-rounded", root)
+    var rounded by className(rounded, "is-rounded", root)
 
-    var loading by className(false, "is-loading", root)
+    var loading by className(loading, "is-loading", root)
 
     var multiple
         get() = rootMultiple
@@ -237,8 +251,8 @@ class Select(initialOptions: List<Option>, onChange: (event: InputEvent, value: 
             selectMultiple = value
         }
 
-    private var rootMultiple by className(false, "is-multiple", root)
-    private var selectMultiple by booleanAttribute(false, "multiple", selectNode)
+    private var rootMultiple by className(multiple, "is-multiple", root)
+    private var selectMultiple by booleanAttribute(multiple, "multiple", selectNode)
 
 }
 

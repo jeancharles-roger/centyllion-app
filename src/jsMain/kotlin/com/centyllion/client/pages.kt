@@ -1,9 +1,7 @@
 package com.centyllion.client
 
 import KeycloakInstance
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
+import bulma.*
 import com.centyllion.client.controller.ModelPageController
 import com.centyllion.client.controller.SimulationController
 import com.centyllion.client.controller.UserController
@@ -12,11 +10,11 @@ import com.centyllion.common.simulationRole
 import com.centyllion.model.Action
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.*
-import kotlinx.html.*
+import kotlinx.html.article
+import kotlinx.html.div
 import kotlinx.html.dom.create
-import kotlinx.html.js.onChangeFunction
+import kotlinx.html.p
 import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLSelectElement
 import kotlin.browser.document
 
 data class Page(
@@ -59,7 +57,6 @@ fun model(root: HTMLElement, instance: KeycloakInstance) {
 }
 
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {
-    val controller = SimulationController()
     val simulations = listOf(
         Simulator(dendriteModel(), dendriteSimulation(100, 100)),
         Simulator(dendriteModel(), dendriteSimulation(200, 200)),
@@ -71,22 +68,14 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
         Simulator(carModel(), carSimulation(200, 200, 5))
     )
 
+    val controller = SimulationController()
     controller.data = simulations[0]
 
-    root.appendChild(document.create.div("select") {
-        select {
-            simulations.forEach {
-                option { +"${it.model.name} ${it.simulation.width}x${it.simulation.height}" }
-            }
-            onChangeFunction = {
-                val target = it.target
-                if (target is HTMLSelectElement) {
-                    controller.data = simulations[target.selectedIndex]
-                }
-            }
-        }
-    })
-    root.appendChild(controller.root)
+    val options = simulations.map { Option("${it.model.name} ${it.simulation.width}x${it.simulation.height}") }
+    val select = Select(options, rounded = true) { _, o ->
+        controller.data = simulations[o.index]
+    }
+    root.appendChild(div(select, controller).root)
 }
 
 fun administration(root: HTMLElement, instance: KeycloakInstance) {

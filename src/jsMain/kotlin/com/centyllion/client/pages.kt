@@ -1,7 +1,12 @@
 package com.centyllion.client
 
 import KeycloakInstance
-import com.centyllion.client.controller.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import com.centyllion.client.controller.ModelPageController
+import com.centyllion.client.controller.SimulationController
+import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
 import com.centyllion.common.simulationRole
 import com.centyllion.model.Action
@@ -35,11 +40,8 @@ val pages = listOf(
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
 
     val userController = UserController()
-    val container = document.create.columns {
-        column(ColumnSize(8), "cent-user")
-    }
-    container.querySelector(".cent-user")?.appendChild(userController.container)
-    root.appendChild(container)
+    val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))
+    root.appendChild(columns.root)
 
     // initialize controller
     fetchUser(instance).then { userController.data = it }
@@ -53,7 +55,7 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
     val controller = ModelPageController(instance)
-    root.appendChild(controller.container)
+    root.appendChild(controller.root)
 }
 
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {
@@ -84,7 +86,7 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
             }
         }
     })
-    root.appendChild(controller.container)
+    root.appendChild(controller.root)
 }
 
 fun administration(root: HTMLElement, instance: KeycloakInstance) {

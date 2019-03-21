@@ -33,80 +33,73 @@ enum class ColumnSize(override val className: String) : HasClassName {
 }
 
 /** [Columns](https://bulma.io/documentation/columns) element */
-class Columns(initialColumn: List<Column> = emptyList()) : BulmaElement {
+class Columns(
+    vararg columns: Column,
+    multiline: Boolean = false, mobile: Boolean = false, desktop: Boolean = false,
+    gapless: Boolean = false, centered: Boolean = false, vcentered: Boolean = false
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("columns")
 
     /** [Multiline](https://bulma.io/documentation/columns/options/#multiline) */
-    var multiline by className(false, "is-multiline", root)
+    var multiline by className(multiline, "is-multiline", root)
 
-    var mobile by className(false, "is-mobile", root)
+    var mobile by className(mobile, "is-mobile", root)
 
-    var desktop by className(false, "is-desktop", root)
+    var desktop by className(desktop, "is-desktop", root)
 
     /** Removes [gap](https://bulma.io/documentation/columns/gap/#gapless) between columns */
-    var gapless by className(false, "is-gapless", root)
+    var gapless by className(gapless, "is-gapless", root)
 
     /** [Centering](https://bulma.io/documentation/columns/options/#centering-columns) */
-    var centering by className(false, "is-centering", root)
+    var centered by className(centered, "is-centered", root)
+
+    /** [VCentered](https://bulma.io/documentation/columns/options/#vertical-alignment) */
+    var vcentered by className(vcentered, "is-vcentered", root)
 
     // TODO variable gap  https://bulma.io/documentation/columns/gap/#variable-gap
 
-    var columns by bulmaList<Column>(initialColumn, root)
-}
-
-fun columns(
-    vararg columns: Column,
-    multiline: Boolean = false,
-    mobile: Boolean = false
-) = Columns(columns.toList()).apply {
-    this.multiline = multiline
-    this.mobile = mobile
+    var columns by bulmaList<Column>(columns.toList(), root)
 }
 
 /** [Column](https://bulma.io/documentation/columns/basics) element */
-class Column(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
+class Column(
+    vararg body: BulmaElement,
+    size: ColumnSize = ColumnSize.None,
+    mobileSize: ColumnSize = ColumnSize.None,
+    tabletSize: ColumnSize = ColumnSize.None,
+    desktopSize: ColumnSize = ColumnSize.None,
+    wideScreenSize: ColumnSize = ColumnSize.None,
+    fullHdSize: ColumnSize = ColumnSize.None,
+    centered: Boolean = false,
+    narrow: Boolean = false
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("column")
 
     // TODO support offset
 
     /** [Size](https://bulma.io/documentation/columns/sizes) */
-    var size by className(ColumnSize.None, root)
+    var size by className(size, root)
 
     /** Mobile [Responsiveness size](http://bulma.io/documentation/columns/responsiveness/) */
-    var mobileSize by className(ColumnSize.None, root, suffix = "-mobile")
+    var mobileSize by className(mobileSize, root, suffix = "-mobile")
 
     /** Tablet [Responsiveness size](http://bulma.io/documentation/columns/responsiveness/) */
-    var tabletSize by className(ColumnSize.None, root, suffix = "-tablet")
+    var tabletSize by className(tabletSize, root, suffix = "-tablet")
 
     /** Desktop [Responsiveness size](http://bulma.io/documentation/columns/responsiveness/) */
-    var desktopSize by className(ColumnSize.None, root, suffix = "-desktop")
+    var desktopSize by className(desktopSize, root, suffix = "-desktop")
 
     /** Wide screen [Responsiveness size](http://bulma.io/documentation/columns/responsiveness/) */
-    var wideScreenSize by className(ColumnSize.None, root, suffix = "-widescreen")
+    var wideScreenSize by className(wideScreenSize, root, suffix = "-widescreen")
 
     /** Full HD [Responsiveness size](http://bulma.io/documentation/columns/responsiveness/) */
-    var fullHdSize by className(ColumnSize.None, root, suffix = "-fullhd")
+    var fullHdSize by className(fullHdSize, root, suffix = "-fullhd")
 
-    var narrow by className(false, "is-narrow", root)
+    var narrow by className(narrow, "is-narrow", root)
 
-    var body by bulmaList(initialBody, root)
-}
+    var centered by className(centered, "is-centered", root)
 
-fun column(
-    vararg elements: BulmaElement,
-    size: ColumnSize = ColumnSize.None,
-    mobileSize: ColumnSize = ColumnSize.None,
-    tabletSize: ColumnSize = ColumnSize.None,
-    desktopSize: ColumnSize = ColumnSize.None,
-    wideScreenSize: ColumnSize = ColumnSize.None,
-    fullHdSize: ColumnSize = ColumnSize.None
-) = Column(elements.toList()).apply {
-    this.size = size
-    this.mobileSize = mobileSize
-    this.tabletSize = tabletSize
-    this.desktopSize = desktopSize
-    this.wideScreenSize = wideScreenSize
-    this.fullHdSize = fullHdSize
+    var body by bulmaList(body.toList(), root)
 }

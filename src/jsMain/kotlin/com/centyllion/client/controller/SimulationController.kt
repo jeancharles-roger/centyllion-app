@@ -1,24 +1,16 @@
 package com.centyllion.client.controller
 
-import bulma.ColumnSize
-import bulma.ColumnsController
+import bulma.*
 import chartjs.*
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
-import kotlinx.html.a
 import kotlinx.html.canvas
-import kotlinx.html.div
-import kotlinx.html.dom.create
-import kotlinx.html.h1
-import kotlinx.html.js.div
-import kotlinx.html.js.onClickFunction
-import kotlinx.html.span
-import org.w3c.dom.*
-import kotlin.browser.document
+import org.w3c.dom.CanvasRenderingContext2D
+import org.w3c.dom.HTMLCanvasElement
 import kotlin.browser.window
 
-class SimulationController : Controller<Simulator> {
+class SimulationController : Controller<Simulator, BulmaElement> {
 
     override var data: Simulator = Simulator(emptyModel, emptySimulation)
         set(value) {
@@ -38,6 +30,13 @@ class SimulationController : Controller<Simulator> {
     var running = false
     var lastRefresh = 0
 
+    val runButton = Button("Run", ElementColor.Primary, rounded = true) { run() }
+    val stepButton = Button("Step", ElementColor.Info, rounded = true) { step() }
+    val stopButton = Button("Stop", ElementColor.Danger, rounded = true) { stop() }
+    val resetButton = Button("Reset", ElementColor.Warning, rounded = true) { reset() }
+
+    val stepLabel = Label()
+
     val grainsController =
         ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
             GrainDisplayController().apply { data = grain }
@@ -48,73 +47,41 @@ class SimulationController : Controller<Simulator> {
             BehaviourDisplayController(model).apply { data = behaviour }
         }
 
-    override val container: HTMLElement = document.create.div {
-        columns {
-            column(size(8, centered = true)) {
-                div("level") {
-                    div("level-left buttons") {
-                        a(classes = "button is-rounded is-primary cent-run") {
-                            +"Run"
-                            onClickFunction = {
-                                run()
-                            }
-                        }
-                        a(classes = "button is-rounded is-info cent-step") {
-                            +"Step"
-                            onClickFunction = {
-                                step()
-                            }
-                        }
-                        a(classes = "button is-rounded is-danger cent-stop") {
-                            +"Stop"
-                            onClickFunction = {
-                                stop()
-                            }
-                        }
-                        a(classes = "button is-rounded is-warning cent-reset") {
-                            +"Reset"
-                            onClickFunction = {
-                                reset()
-                            }
-                        }
-                    }
-                    div("level-item cent-stepcount") {
-                        span("label")
-                    }
-                }
-                div("has-text-centered") {
+    override val container = div(
+        Columns(
+            Column(
+                Level(
+                    left = listOf(runButton, stepButton, stopButton, resetButton),
+                    center = listOf(stepLabel)
+                ),
+                wrap("has-text-centered") {
                     canvas("cent-rendering") {
                         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
                         width = "$canvasWidth"
                         height = "${simulation.height * canvasWidth / simulation.width}"
                     }
-                }
-            }
-            column(size(4)) {
-                h1("title") { +"Grains" }
-                div("cent-grains")
-                h1("title") { +"Behaviors" }
-                div("cent-behaviors")
-            }
-        }
-        columns("is-centered") {
-            column(size(10)) {
+                },
+                desktopSize = ColumnSize.TwoThirds
+            ),
+            Column(
+                Title("Grains"), grainsController,
+                Title("Behaviours"), behaviourController,
+                desktopSize = ColumnSize.OneThird
+            )
+        ),
+        Columns(
+            Column(wrap {
                 canvas("cent-graph") {}
-            }
-        }
-    }
+            }),
+            centered = true
+        )
+    )
 
-    val runButton = container.querySelector("a.cent-run") as HTMLAnchorElement
-    val stepButton = container.querySelector("a.cent-step") as HTMLAnchorElement
-    val stopButton = container.querySelector("a.cent-stop") as HTMLAnchorElement
-    val resetButton = container.querySelector("a.cent-reset") as HTMLAnchorElement
-
-    val stepCount = container.querySelector(".cent-stepcount > span") as HTMLSpanElement
-    val canvas = container.querySelector(".cent-rendering") as HTMLCanvasElement
+    val canvas = root.querySelector(".cent-rendering") as HTMLCanvasElement
 
     val context = canvas.getContext("2d") as CanvasRenderingContext2D
 
-    val graphCanvas = container.querySelector("canvas.cent-graph") as HTMLCanvasElement
+    val graphCanvas = root.querySelector("canvas.cent-graph") as HTMLCanvasElement
 
     val chart = Chart(graphCanvas, LineChartConfig(
         options = LineChartOptions().apply {
@@ -125,9 +92,6 @@ class SimulationController : Controller<Simulator> {
     ))
 
     init {
-        container.querySelector("div.cent-grains")?.appendChild(grainsController.root)
-        container.querySelector("div.cent-behaviors")?.appendChild(behaviourController.root)
-
         refresh()
     }
 
@@ -189,18 +153,11 @@ class SimulationController : Controller<Simulator> {
     }
 
     fun refreshButtons() {
-        runButton.classList.toggle("is-loading", running)
-        if (running) {
-            runButton.setAttribute("disabled", "")
-            stepButton.setAttribute("disabled", "")
-            stopButton.removeAttribute("disabled")
-            resetButton.setAttribute("disabled", "")
-        } else {
-            runButton.removeAttribute("disabled")
-            stepButton.removeAttribute("disabled")
-            stopButton.setAttribute("disabled", "")
-            resetButton.removeAttribute("disabled")
-        }
+        runButton.loading = running
+        runButton.disabled = running
+        stepButton.disabled = running
+        stopButton.disabled = !running
+        resetButton.disabled = running
     }
 
     fun refreshCanvas() {
@@ -230,7 +187,7 @@ class SimulationController : Controller<Simulator> {
 
     fun refreshCounts() {
         // refreshes step count
-        stepCount.innerText = "${data.step}"
+        stepLabel.text = "${data.step}"
 
         // refreshes grain counts
         val counts = data.lastGrainsCount().values

@@ -35,7 +35,7 @@ class ColumnsController<Data, Element: BulmaElement>(
     // TODO implements controller re-use
     override fun refresh() {
         controllers = data.mapIndexed { index, data -> controllerBuilder(index, data) }.toMutableList()
-        container.columns = controllers.map { column(it.container, size = columnSize) }
+        container.columns = controllers.map { Column(it.container, size = columnSize) }
     }
 }
 

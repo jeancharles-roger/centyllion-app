@@ -29,7 +29,11 @@ class Container(initialBody: List<BulmaElement> = emptyList()): BulmaElement {
 }
 
 /** [Level](https://bulma.io/documentation/layout/level) element */
-class Level: BulmaElement {
+class Level(
+    left: List<BulmaElement> = emptyList(), center: List<BulmaElement> = emptyList(),
+    right: List<BulmaElement> = emptyList(), mobile: Boolean = false
+): BulmaElement {
+
     override val root: HTMLElement = document.create.div("level") {
         div("level-left")
         div("level-right")
@@ -38,11 +42,11 @@ class Level: BulmaElement {
     private val leftNode = root.querySelector(".level-left") as HTMLElement
     private val rightNode = root.querySelector(".level-right") as HTMLElement
 
-    var mobile by className(false, "is-mobile", root)
+    var mobile by className(mobile, "is-mobile", root)
 
-    var left by bulmaList(emptyList(), leftNode)
-    var center by bulmaList(emptyList(), root, rightNode)
-    var right by bulmaList(emptyList(), rightNode)
+    var left by bulmaList(left, leftNode)
+    var center by bulmaList(center, root, rightNode)
+    var right by bulmaList(right, rightNode)
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */

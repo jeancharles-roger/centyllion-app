@@ -5,10 +5,7 @@ import kotlinx.html.a
 import kotlinx.html.button
 import kotlinx.html.dom.create
 import kotlinx.html.i
-import kotlinx.html.js.div
-import kotlinx.html.js.onClickFunction
-import kotlinx.html.js.progress
-import kotlinx.html.js.span
+import kotlinx.html.js.*
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
@@ -20,22 +17,29 @@ class Box : BulmaElement {
 }
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
-class Button(initialText: String, initialColor: ElementColor = ElementColor.None, val onClick: (Button) -> Unit = {}) : ControlElement {
+class Button(
+    text: String, color: ElementColor = ElementColor.None,
+    rounded: Boolean = false, outlined: Boolean = false,
+    inverted: Boolean = false, size: Size = Size.None,
+    val onClick: (Button) -> Unit = {}
+) : ControlElement {
 
     override val root: HTMLElement = document.create.a(classes = "button") {
-        +initialText
+        +text
         onClickFunction = { if (!disabled) onClick(this@Button) }
     }
 
-    var rounded by className(false, "is-rounded", root)
+    var rounded by className(rounded, "is-rounded", root)
 
-    var outlined by className(false, "is-outlined", root)
+    var outlined by className(outlined, "is-outlined", root)
 
-    var inverted by className(false, "is-inverted", root)
+    var inverted by className(inverted, "is-inverted", root)
 
-    var color by className(initialColor, root)
+    var loading by className(inverted, "is-loading", root)
 
-    var size by className(Size.None, root)
+    var color by className(color, root)
+
+    var size by className(size, root)
 
     var disabled by booleanAttribute(false, "disabled", root)
 }
@@ -121,29 +125,41 @@ class ProgressBar : BulmaElement {
 
 /** [Tag](https://bulma.io/documentation/elements/tag) element. */
 class Tag(
-    initialText: String,
-    initialColor: ElementColor = ElementColor.None,
-    initialSize: Size = Size.None
+    text: String, color: ElementColor = ElementColor.None,
+    size: Size = Size.None, rounded: Boolean = false
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.span("tag") {
-        +initialText
+        +text
     }
 
-    var color by className(initialColor, root)
+    var color by className(color, root)
 
-    var size by className(initialSize, root)
+    var size by className(size, root)
 
-    var rounded by className(false, "is-rounded", root)
+    var rounded by className(rounded, "is-rounded", root)
 
     // TODO adds support for delete button
 }
 
 /** [Tags](https://bulma.io/documentation/elements/tag/#list-of-tags) element */
-class Tags(initialTags: List<Tag> = emptyList()) : BulmaElement {
+class Tags(tags: List<Tag> = emptyList()) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("tags")
 
-    var tags by bulmaList<Tag>(initialTags, root)
+    var tags by bulmaList<Tag>(tags, root)
 }
 
+class Title(text: String, size: TextSize = TextSize.None): BulmaElement {
+
+    override val root: HTMLElement = document.create.h1("title") { +text }
+
+    var size by className(size, root)
+}
+
+class SubTitle(text: String, size: TextSize = TextSize.None): BulmaElement {
+
+    override val root: HTMLElement = document.create.h1("subtitle") { +text }
+
+    var size by className(size, root)
+}

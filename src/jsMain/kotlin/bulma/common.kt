@@ -46,6 +46,12 @@ enum class ElementColor(override val className: String) : HasClassName {
     fun next() = values().let { it[(ordinal + 1) % it.count()] }
 }
 
+enum class TextSize(override val className: String) : HasClassName {
+    None(""),
+    S1("is-1"), S2("is-2"), S3("is-3"),
+    S4("is-4"), S5("is-5"), S6("is-6");
+}
+
 enum class TextColor(override val className: String) : HasClassName {
     None(""), White("has-text-white"),
     Black("has-text-black"), Light("has-text-light"),

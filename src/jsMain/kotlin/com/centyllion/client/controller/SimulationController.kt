@@ -155,6 +155,8 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     fun toggleCharts() {
         presentCharts = !presentCharts
+        toggleChartsButton.text = if (presentCharts) "Hide Charts" else "Show Charts"
+        toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
         refresh()
     }
 

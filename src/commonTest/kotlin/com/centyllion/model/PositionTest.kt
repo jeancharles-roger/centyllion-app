@@ -11,7 +11,7 @@ class PositionTest {
     val s3 = Simulation(50, 20, 3)
 
     private fun checkPosition(position: Position, vararg tests: Pair<Simulation, Int>) = tests.forEach {
-        assertEquals(it.second, it.first.toIndex(position))
+        assertEquals(it.second, it.first.toIndex(position.x, position.y, position.z))
     }
 
     private fun checkIndex(index: Int, vararg tests: Pair<Simulation, Position>) = tests.forEach {

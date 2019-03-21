@@ -28,10 +28,13 @@ class SimulationController : Controller<Simulator, BulmaElement> {
     var running = false
     var lastRefresh = 0
 
+    var presentCharts = true
+
     val runButton = Button("Run", ElementColor.Primary, rounded = true) { run() }
     val stepButton = Button("Step", ElementColor.Info, rounded = true) { step() }
     val stopButton = Button("Stop", ElementColor.Danger, rounded = true) { stop() }
     val resetButton = Button("Reset", ElementColor.Warning, rounded = true) { reset() }
+    val toggleChartsButton = Button("Hide Charts", ElementColor.Link, rounded = true) { toggleCharts() }
 
     val stepLabel = Label()
 
@@ -51,16 +54,17 @@ class SimulationController : Controller<Simulator, BulmaElement> {
             BehaviourDisplayController(model).apply { data = behaviour }
         }
 
-    val graphCanvas = canvas {}
+    val chartCanvas = canvas {}
 
     override val container = div(
         Columns(
             Column(
                 Level(
                     left = listOf(runButton, stepButton, stopButton, resetButton),
-                    center = listOf(stepLabel)
+                    center = listOf(stepLabel),
+                    right = listOf(toggleChartsButton)
                 ),
-                simulationCanvas,
+                div(simulationCanvas, classes = "has-text-centered"),
                 desktopSize = ColumnSize.TwoThirds
             ),
             Column(
@@ -71,14 +75,14 @@ class SimulationController : Controller<Simulator, BulmaElement> {
             centered = true
         ),
         Columns(
-            Column(graphCanvas),
+            Column(chartCanvas),
             centered = true
         )
     )
 
     val context = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
-    val chart = Chart(graphCanvas.root, LineChartConfig(
+    val chart = Chart(chartCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
             animation.duration = 0
             scales.xAxes = arrayOf(LinearAxisOptions())
@@ -133,11 +137,13 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         refreshCounts()
 
         // appends data to charts
-        chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
-            val data = set.data
-            if (data != null) {
-                val index = if (data.isEmpty()) 0 else data.lastIndex
-                data.push(LineChartPlot(index, i))
+        if (presentCharts) {
+            chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+                val data = set.data
+                if (data != null) {
+                    val index = if (data.isEmpty()) 0 else data.lastIndex
+                    data.push(LineChartPlot(index, i))
+                }
             }
         }
 
@@ -145,6 +151,11 @@ class SimulationController : Controller<Simulator, BulmaElement> {
             chart.update(ChartUpdateConfig(duration = 0, lazy = true))
             lastRefresh = 0
         }
+    }
+
+    fun toggleCharts() {
+        presentCharts = !presentCharts
+        refresh()
     }
 
     fun refreshButtons() {
@@ -201,17 +212,23 @@ class SimulationController : Controller<Simulator, BulmaElement> {
     }
 
     fun refreshChart() {
-        // refreshes charts
-        chart.data.datasets = data.grainCountHistory.map {
-            LineDataSet(
-                it.key.description, it.value
-                    .mapIndexed { index, i -> LineChartPlot(index, i) }
-                    .toTypedArray(),
-                borderColor = it.key.color, backgroundColor = it.key.color, fill = "false",
-                showLine = true, pointRadius = 1
-            )
-        }.toTypedArray()
-        chart.update()
-        lastRefresh = 0
+        chartCanvas.root.classList.toggle("is-hidden", !presentCharts)
+        if (presentCharts) {
+            // refreshes charts
+            chart.data.datasets = data.grainCountHistory.map {
+                LineDataSet(
+                    it.key.description, it.value
+                        .mapIndexed { index, i -> LineChartPlot(index, i) }
+                        .toTypedArray(),
+                    borderColor = it.key.color, backgroundColor = it.key.color, fill = "false",
+                    showLine = true, pointRadius = 1
+                )
+            }.toTypedArray()
+            chart.update()
+            lastRefresh = 0
+        } else {
+            chart.data.datasets = emptyArray()
+            chart.update()
+        }
     }
 }

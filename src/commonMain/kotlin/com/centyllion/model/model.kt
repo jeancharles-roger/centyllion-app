@@ -97,10 +97,10 @@ data class Position(
     val x: Int, val y: Int, val z: Int = 0
 ) {
     fun move(direction: Direction, step: Int = 1) = when (direction) {
-        Direction.Left -> copy(x = x - step)
-        Direction.Right -> copy(x = x + step)
-        Direction.Up -> copy(y = y + step)
-        Direction.Down -> copy(y = y - step)
+        Direction.Left -> copy(x = x + step)
+        Direction.Right -> copy(x = x - step)
+        Direction.Up -> copy(y = y - step)
+        Direction.Down -> copy(y = y + step)
         Direction.Front -> copy(z = z - step)
         Direction.Back -> copy(z = z + step)
     }
@@ -155,10 +155,10 @@ data class Simulation(
         var x = yRest - y * width
 
         when (direction) {
-            Direction.Left -> x = (x + step) % width
-            Direction.Right -> x = (x - step) % width
-            Direction.Up -> y = (y + step) % height
-            Direction.Down -> y = (y - step) % height
+            Direction.Left -> x = (x - step) % width
+            Direction.Right -> x = (x + step) % width
+            Direction.Up -> y = (y - step) % height
+            Direction.Down -> y = (y + step) % height
             Direction.Front -> z = (z - step) % depth
             Direction.Back -> z = (z + step) % depth
         }
@@ -171,7 +171,9 @@ data class Simulation(
     }
 
     /** Transform given [position] to index. */
-    fun toIndex(position: Position) = position.z * (height * width) + position.y * width + position.x
+    fun toIndex(position: Position) = toIndex(position.x, position.y, position.z)
+
+    fun toIndex(x: Int, y: Int, z: Int = 0) = z * (height * width) + y * width + x
 
     fun indexInside(index: Int) = index in 0 until dataSize
 

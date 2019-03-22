@@ -11,34 +11,40 @@ import kotlin.browser.document
 interface FieldElement : BulmaElement
 
 /** [Field](https://bulma.io/documentation/form/general) */
-class Field(vararg body: FieldElement) : BulmaElement {
+class Field(
+    vararg body: FieldElement, narrow: Boolean = false,
+    addons: Boolean = false, addonsCentered: Boolean = false,
+    addonsRight: Boolean = false, grouped: Boolean = false,
+    groupedCentered: Boolean = false, groupedRight: Boolean = false,
+    groupedMultiline: Boolean = false
+) : BulmaElement {
     override val root: HTMLElement = document.create.div("field")
 
     var body by bulmaList(body.toList(), root)
 
     /** Narrow property */
-    var narrow by className(false, "is-narrow", root)
+    var narrow by className(narrow, "is-narrow", root)
 
     /** See https://bulma.io/documentation/form/general/#form-addons */
-    var addons by className(false, "has-addons", root)
+    var addons by className(addons, "has-addons", root)
 
     /** See https://bulma.io/documentation/form/general/#form-addons */
-    var addonsCentered by className(false, "has-addons-centered", root)
+    var addonsCentered by className(addonsCentered, "has-addons-centered", root)
 
     /** See https://bulma.io/documentation/form/general/#form-addons */
-    var addonsRight by className(false, "has-addons-right", root)
+    var addonsRight by className(addonsRight, "has-addons-right", root)
 
     /** See https://bulma.io/documentation/form/general/#form-group */
-    var grouped by className(false, "is-grouped", root)
+    var grouped by className(grouped, "is-grouped", root)
 
     /** See https://bulma.io/documentation/form/general/#form-group */
-    var groupedCentered by className(false, "is-grouped-centered", root)
+    var groupedCentered by className(groupedCentered, "is-grouped-centered", root)
 
     /** See https://bulma.io/documentation/form/general/#form-group */
-    var groupedRight by className(false, "is-grouped-right", root)
+    var groupedRight by className(groupedRight, "is-grouped-right", root)
 
     /** See https://bulma.io/documentation/form/general/#form-group */
-    var groupedMultiline by className(false, "is-grouped-multiline", root)
+    var groupedMultiline by className(groupedMultiline, "is-grouped-multiline", root)
 }
 
 /** [Horizontal Field](https://bulma.io/documentation/form/general/#horizontal-form) */
@@ -84,13 +90,13 @@ interface ControlElement : BulmaElement
 
 /** [Control](https://bulma.io/documentation/form/general/#form-control) */
 class Control(
-    element: ControlElement, leftIcon: Icon? = null, rightIcon: Icon? = null
+    element: ControlElement, leftIcon: Icon? = null, rightIcon: Icon? = null, expanded: Boolean = false
 ) : FieldElement {
     override val root: HTMLElement = document.create.div("control")
 
     var body by bulma(element, root)
 
-    var expanded by className(false, "is-expanded", root)
+    var expanded by className(expanded, "is-expanded", root)
 
     /** Left [Icon](https://bulma.io/documentation/form/general/#with-icons) */
     var leftIcon: Icon? = leftIcon

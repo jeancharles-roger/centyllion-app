@@ -96,14 +96,16 @@ class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
 }
 
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */
-class Icon(initialIcon: String) : ControlElement {
+class Icon(
+    icon: String, size: Size = Size.None, color: TextColor = TextColor.None
+) : ControlElement {
     override val root: HTMLElement = document.create.span("icon") {
-        i("fas fa-$initialIcon")
+        i("fas fa-$icon")
     }
 
     private val iconNode = root.querySelector(".fas") as HTMLElement
 
-    var icon by className(initialIcon, iconNode, "fa-")
+    var icon by className(icon, iconNode, "fa-")
 
     var size
         get() = outerSize
@@ -112,11 +114,11 @@ class Icon(initialIcon: String) : ControlElement {
             iconSize = value.toFas()
         }
 
-    var outerSize by className(Size.None, root)
+    var outerSize by className(size, root)
 
-    var iconSize by className(FasSize.None, iconNode)
+    var iconSize by className(size.toFas(), iconNode)
 
-    var color by className(TextColor.None, root)
+    var color by className(color, root)
 
 }
 

@@ -59,7 +59,9 @@ class Level(
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */
-class Media : BulmaElement {
+class Media(
+    left: List<BulmaElement> = emptyList(), center: List<BulmaElement> = emptyList(), right: List<BulmaElement> = emptyList()
+) : BulmaElement {
     override val root: HTMLElement = document.create.article("media") {
         figure("media-left")
         div("media-content")
@@ -70,9 +72,9 @@ class Media : BulmaElement {
     private val contentNode = root.querySelector(".media-content") as HTMLElement
     private val rightNode = root.querySelector(".media-right") as HTMLElement
 
-    var left by bulmaList(emptyList(), leftNode)
-    var center by bulmaList(emptyList(), contentNode)
-    var right by bulmaList(emptyList(), rightNode)
+    var left by bulmaList(left, leftNode)
+    var center by bulmaList(center, contentNode)
+    var right by bulmaList(right, rightNode)
 }
 
 /** [Hero](https://bulma.io/documentation/layout/hero) element */

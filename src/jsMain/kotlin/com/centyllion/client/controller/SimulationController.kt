@@ -44,15 +44,13 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         height = "${simulation.height * canvasWidth / simulation.width}"
     }
 
-    val grainsController =
-        ColumnsController(model.grains, columnSize = ColumnSize.Full) { _, grain ->
-            GrainDisplayController().apply { data = grain }
-        }
+    val grainsController = ColumnsController(model.grains) { _, grain ->
+        GrainDisplayController().apply { data = grain }
+    }
 
-    val behaviourController =
-        ColumnsController(model.behaviours, columnSize = ColumnSize.Full) { _, behaviour ->
-            BehaviourDisplayController(model).apply { data = behaviour }
-        }
+    val behaviourController = ColumnsController(model.behaviours) { _, behaviour ->
+        BehaviourDisplayController(model).apply { data = behaviour }
+    }
 
     val chartCanvas = canvas {}
 

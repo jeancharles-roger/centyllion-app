@@ -15,18 +15,17 @@ interface Controller<Data, Element : BulmaElement> : BulmaElement {
     fun refresh()
 }
 
-class ColumnsController<Data, Element: BulmaElement>(
+class ColumnsController<Data>(
     initialList: List<Data>,
     override val container: Columns = Columns().apply { multiline = true },
-    val columnSize: ColumnSize = ColumnSize.None,
-    val controllerBuilder: (Int, Data) -> Controller<Data, Element>
+    val controllerBuilder: (Int, Data) -> Controller<Data, Column>
 ) : Controller<List<Data>, Columns> {
 
     override var data: List<Data> by observable(initialList) { _, _, _ -> refresh() }
 
-    private var controllers: MutableList<Controller<Data, Element>> = mutableListOf()
+    private var controllers: MutableList<Controller<Data, Column>> = mutableListOf()
 
-    val dataControllers: List<Controller<Data, Element>> get() = controllers
+    val dataControllers: List<Controller<Data, Column>> get() = controllers
 
     init {
         refresh()
@@ -35,7 +34,7 @@ class ColumnsController<Data, Element: BulmaElement>(
     // TODO implements controller re-use
     override fun refresh() {
         controllers = data.mapIndexed { index, data -> controllerBuilder(index, data) }.toMutableList()
-        container.columns = controllers.map { Column(it.container, size = columnSize) }
+        container.columns = controllers.map { it.container }
     }
 }
 

@@ -1,11 +1,10 @@
 package com.centyllion.client.controller
 
 import bulma.*
-import bulma.Controller
 import com.centyllion.model.Grain
 import kotlin.properties.Delegates.observable
 
-class GrainDisplayController: Controller<Grain, Media> {
+class GrainDisplayController: Controller<Grain, Column> {
 
     override var data: Grain by observable(Grain()) { _, old, new ->
         if (old != new) refresh()
@@ -20,11 +19,11 @@ class GrainDisplayController: Controller<Grain, Media> {
     val descriptionLabel = p()
     val countLabel = Label()
 
-    override val container = Media().apply {
-        left = listOf(dot)
-        center = listOf(titleLabel, descriptionLabel)
+    override val container = Column(Media(
+        left = listOf(dot),
+        center = listOf(titleLabel, descriptionLabel),
         right = listOf(countLabel)
-    }
+    ), size = ColumnSize.Full)
 
     override fun refresh() {
         dot.root.style.backgroundColor = data.color

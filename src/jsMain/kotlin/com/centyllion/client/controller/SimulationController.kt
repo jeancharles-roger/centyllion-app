@@ -30,11 +30,11 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     var presentCharts = true
 
-    val runButton = Button("Run", ElementColor.Primary, rounded = true) { run() }
-    val stepButton = Button("Step", ElementColor.Info, rounded = true) { step() }
-    val stopButton = Button("Stop", ElementColor.Danger, rounded = true) { stop() }
-    val resetButton = Button("Reset", ElementColor.Warning, rounded = true) { reset() }
-    val toggleChartsButton = Button("Hide Charts", ElementColor.Link, rounded = true) { toggleCharts() }
+    val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
+    val stepButton = iconButton(Icon("step-forward"), ElementColor.Info, rounded = true) { step() }
+    val stopButton = iconButton(Icon("stop"), ElementColor.Danger, rounded = true) { stop() }
+    val resetButton = iconButton(Icon("history"), ElementColor.Warning, rounded = true) { reset() }
+    val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Link, rounded = true) { toggleCharts() }
 
     val stepLabel = Label()
 
@@ -60,7 +60,8 @@ class SimulationController : Controller<Simulator, BulmaElement> {
                 Level(
                     left = listOf(runButton, stepButton, stopButton, resetButton),
                     center = listOf(stepLabel),
-                    right = listOf(toggleChartsButton)
+                    right = listOf(toggleChartsButton),
+                    mobile = true
                 ),
                 div(simulationCanvas, classes = "has-text-centered"),
                 desktopSize = ColumnSize.TwoThirds
@@ -153,7 +154,6 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
     fun toggleCharts() {
         presentCharts = !presentCharts
-        toggleChartsButton.text = if (presentCharts) "Hide Charts" else "Show Charts"
         toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
         refresh()
     }

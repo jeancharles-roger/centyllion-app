@@ -22,7 +22,7 @@ class UserController : Controller<User?, BulmaElement> {
     val emailValue = Value()
 
     val saveResult = Help()
-    val saveButton = Button("Save Changes", ElementColor.Primary) {
+    val saveButton = textButton("Save Changes", ElementColor.Primary) {
         val result = onUpdate(data, newData, this@UserController)
         result?.then {
             data = newData
@@ -33,8 +33,8 @@ class UserController : Controller<User?, BulmaElement> {
     }
 
     override val container = div(
-        simpleField(Label("Name"), nameValue, Help()),
-        simpleField(Label("Email"), emailValue, Help()),
+        Field(Label("Name"), nameValue, Help()),
+        Field(Label("Email"), emailValue, Help()),
         Level(listOf(saveButton), listOf(saveResult))
     )
 

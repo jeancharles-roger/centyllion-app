@@ -11,10 +11,10 @@ import kotlin.browser.document
 interface FieldElement : BulmaElement
 
 /** [Field](https://bulma.io/documentation/form/general) */
-class Field(initialBody: List<FieldElement> = emptyList()) : BulmaElement {
+class Field(vararg body: FieldElement) : BulmaElement {
     override val root: HTMLElement = document.create.div("field")
 
-    var body by bulmaList(initialBody, root)
+    var body by bulmaList(body.toList(), root)
 
     /** Narrow property */
     var narrow by className(false, "is-narrow", root)
@@ -41,11 +41,8 @@ class Field(initialBody: List<FieldElement> = emptyList()) : BulmaElement {
     var groupedMultiline by className(false, "is-grouped-multiline", root)
 }
 
-fun simpleField(label: Label? = null, element: FieldElement, help: Help? = null) =
-    Field(listOfNotNull(label, element, help))
-
 /** [Horizontal Field](https://bulma.io/documentation/form/general/#horizontal-form) */
-class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList()) : BulmaElement {
+class HorizontalField(label: Label, vararg body: Field) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("field is-horizontal") {
         div("field-label")
@@ -55,23 +52,23 @@ class HorizontalField(initialLabel: Label, initialBody: List<Field> = emptyList(
     private val labelNode = root.querySelector(".field-label") as HTMLElement
     private val bodyNode = root.querySelector(".field-body") as HTMLElement
 
-    var label by bulma<Label>(initialLabel, labelNode)
+    var label by bulma<Label>(label, labelNode)
 
     var labelSize by className(Size.Normal, labelNode)
 
-    var body by bulmaList(initialBody, bodyNode)
+    var body by bulmaList(body.toList(), bodyNode)
 
 }
 
-class Label(initialText: String = "") : FieldElement {
+class Label(text: String = "") : FieldElement {
     override val root: HTMLElement = document.create.label("label") {
-        +initialText
+        +text
     }
 }
 
-class Value(initialText: String = "") : FieldElement {
+class Value(text: String = "") : FieldElement {
     override val root: HTMLElement = document.create.span("value") {
-        +initialText
+        +text
     }
 }
 
@@ -86,15 +83,17 @@ class Help(initialText: String = "") : FieldElement {
 interface ControlElement : BulmaElement
 
 /** [Control](https://bulma.io/documentation/form/general/#form-control) */
-class Control(initialElement: ControlElement) : FieldElement {
+class Control(
+    element: ControlElement, leftIcon: Icon? = null, rightIcon: Icon? = null
+) : FieldElement {
     override val root: HTMLElement = document.create.div("control")
 
-    var body by bulma(initialElement, root)
+    var body by bulma(element, root)
 
     var expanded by className(false, "is-expanded", root)
 
     /** Left [Icon](https://bulma.io/documentation/form/general/#with-icons) */
-    var leftIcon: Icon? = null
+    var leftIcon: Icon? = leftIcon
         set(value) {
             if (value != field) {
                 updateIcon("left", value)
@@ -103,7 +102,7 @@ class Control(initialElement: ControlElement) : FieldElement {
         }
 
     /** Right [Icon](https://bulma.io/documentation/form/general/#with-icons) */
-    var rightIcon: Icon? = null
+    var rightIcon: Icon? = rightIcon
         set(value) {
             if (value != field) {
                 updateIcon("right", value)
@@ -126,10 +125,21 @@ class Control(initialElement: ControlElement) : FieldElement {
             root.append(icon.root)
         }
     }
+
+    init {
+        updateIcon("left", leftIcon)
+        updateIcon("right", rightIcon)
+    }
 }
 
 /** [Input](https://bulma.io/documentation/form/input/) */
-class Input(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }) : ControlElement {
+class Input(
+    value: String = "", placeholder: String = "",
+    color: ElementColor = ElementColor.None, size: Size = Size.None,
+    rounded: Boolean = false, loading: Boolean = false,
+    readonly: Boolean = false, static: Boolean = false,
+    onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
+) : ControlElement {
 
     override val root: HTMLElement = document.create.input(InputType.text, classes = "input") {
         onInputFunction = {
@@ -140,25 +150,25 @@ class Input(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }) 
         }
     }
 
-    var value by attribute("", "value", root)
+    var value by attribute(value, "value", root)
 
-    var placeholder by attribute("", "placeholder", root)
+    var placeholder by attribute(placeholder, "placeholder", root)
 
     // TODO support input type (text, password, email, tel)
 
-    var color by className(ElementColor.None, root)
+    var color by className(color, root)
 
-    var size by className(Size.None, root)
+    var size by className(size, root)
 
-    var rounded by className(false, "is-rounded", root)
+    var rounded by className(rounded, "is-rounded", root)
 
-    var loading by className(false, "is-loading", root)
+    var loading by className(loading, "is-loading", root)
 
     var disabled by booleanAttribute(false, "disabled", root)
 
-    var readonly by booleanAttribute(false, "readonly", root)
+    var readonly by booleanAttribute(readonly, "readonly", root)
 
-    var static by className(false, "is-static", root)
+    var static by className(static, "is-static", root)
 
 }
 

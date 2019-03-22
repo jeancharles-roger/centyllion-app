@@ -18,7 +18,8 @@ class Box : BulmaElement {
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
 class Button(
-    text: String, color: ElementColor = ElementColor.None,
+    text: String, icon: Icon? = null,
+    color: ElementColor = ElementColor.None,
     rounded: Boolean = false, outlined: Boolean = false,
     inverted: Boolean = false, size: Size = Size.None,
     val onClick: (Button) -> Unit = {}
@@ -28,6 +29,17 @@ class Button(
         +text
         onClickFunction = { if (!disabled) onClick(this@Button) }
     }
+
+    /** Left [Icon](https://bulma.io/documentation/form/general/#with-icons) */
+    var icon: Icon? = icon
+        set(value) {
+            if (value != field) {
+                // removes previous if any
+                field?.let { root.removeChild(it.root) }
+                field = value
+                field?.let { root.appendChild(it.root)}
+            }
+        }
 
     var rounded by className(rounded, "is-rounded", root)
 
@@ -42,7 +54,25 @@ class Button(
     var size by className(size, root)
 
     var disabled by booleanAttribute(false, "disabled", root)
+
+    init {
+        icon?.let { root.appendChild(it.root)}
+    }
 }
+
+fun iconButton(
+    icon: Icon? = null, color: ElementColor = ElementColor.None,
+    rounded: Boolean = false, outlined: Boolean = false,
+    inverted: Boolean = false, size: Size = Size.None,
+    onClick: (Button) -> Unit = {}
+) = Button("", icon, color, rounded, outlined, inverted, size, onClick)
+
+fun textButton(
+    text: String, color: ElementColor = ElementColor.None,
+    rounded: Boolean = false, outlined: Boolean = false,
+    inverted: Boolean = false, size: Size = Size.None,
+    onClick: (Button) -> Unit = {}
+) = Button(text, null, color, rounded, outlined, inverted, size, onClick)
 
 /** [Content](https://bulma.io/documentation/elements/content) element. */
 class Content(block: DIV.() -> Unit = {}) : BulmaElement {

@@ -9,15 +9,19 @@ import kotlin.properties.Delegates.observable
 class ModelPageController(val instance: KeycloakInstance) : Controller<GrainModel, Columns> {
 
     override var data: GrainModel by observable(fishRespirationModel(true)) { _, _, _ ->
+        nameController.data = data.name
+        descriptionController.data = data.description
+        grainsController.data = data.grains
+        behavioursController.data = data.behaviours
         refresh()
     }
 
-    val name = Input { _, v ->
-        data = data.copy(name = v)
+    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
+        data = data.copy(name = new)
     }
 
-    val description = TextArea { _, v ->
-        data = data.copy(description = v)
+    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
+        data = data.copy(description = new)
     }
 
     val grainsController = ColumnsController(data.grains) { _, grain ->
@@ -29,8 +33,8 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<GrainMode
     }
 
     override val container = Columns(
-        Column(Field(Label("Name"), Control(name)), size = ColumnSize.OneThird),
-        Column(Field(Label("Description"), description), size = ColumnSize.TwoThirds),
+        Column(nameController, size = ColumnSize.OneThird),
+        Column(descriptionController, size = ColumnSize.TwoThirds),
         Column(Label("Grains"), size = ColumnSize.OneThird),
         Column(Label("Behaviour"), size = ColumnSize.TwoThirds),
         Column(grainsController, size = ColumnSize.OneThird),
@@ -44,8 +48,6 @@ class ModelPageController(val instance: KeycloakInstance) : Controller<GrainMode
     }
 
     override fun refresh() {
-        name.value = data.name
-        description.value = data.description
     }
 
 

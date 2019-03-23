@@ -167,12 +167,20 @@ class SimulationController : Controller<Simulator, BulmaElement> {
     }
 
     fun refreshCanvas() {
+        val scale = 0.1
+
         // refreshes simulation view
         val canvasWidth = simulationCanvas.root.width.toDouble()
         val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xSize = canvasWidth / simulation.width
-        val xMax = simulation.width * xSize
-        val ySize = canvasHeight / simulation.height
+        val xStep = canvasWidth / simulation.width
+        val xMax = simulation.width * xStep
+        val yStep = canvasHeight / simulation.height
+
+        val xSize = xStep * (1.0 + scale)
+        val xDelta = xStep * (scale/2.0)
+        val ySize = xStep * (1.0 + scale)
+        val yDelta = xStep * (scale/2.0)
+
         context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0
@@ -180,13 +188,13 @@ class SimulationController : Controller<Simulator, BulmaElement> {
             val grain = data.grainAtIndex(i)
             if (grain != null) {
                 context.fillStyle = grain.color
-                context.fillRect(currentX, currentY, xSize, ySize)
+                context.fillRect(currentX-xDelta, currentY-yDelta, xSize, ySize)
             }
 
-            currentX += xSize
+            currentX += xStep
             if (currentX >= xMax) {
                 currentX = 0.0
-                currentY += ySize
+                currentY += yStep
             }
         }
     }

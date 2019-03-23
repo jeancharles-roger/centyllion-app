@@ -19,15 +19,16 @@ class EditableStringController(
     }
 
     val validateButton = Control(iconButton(Icon("check"), ElementColor.Success) {
-        this.data = valueInput.value
+        this.data = input.value
         edit(false)
     })
 
     val cancelButton = Control(iconButton(Icon("times"), ElementColor.Danger, rounded = true) {
+        input.value = this.data
         edit(false)
     })
 
-    val valueInput = Input(value = data, placeholder = placeHolder).apply {
+    val input = Input(value = data, placeholder = placeHolder).apply {
         readonly = true
         static = true
         root.onclick = {
@@ -38,11 +39,11 @@ class EditableStringController(
 
     val penIcon = Icon("pen")
 
-    val inputControl = Control(valueInput, expanded = true, rightIcon = penIcon)
+    val inputControl = Control(input, expanded = true, rightIcon = penIcon)
 
     fun edit(editable: Boolean) {
-        valueInput.static = !editable
-        valueInput.readonly = !editable
+        input.static = !editable
+        input.readonly = !editable
         container.addons = editable
         if (editable) {
             container.body = listOf(inputControl, validateButton, cancelButton)
@@ -56,7 +57,7 @@ class EditableStringController(
     override val container: Field = Field(inputControl)
 
     override fun refresh() {
-        valueInput.value = data
+        input.value = data
     }
 
 }

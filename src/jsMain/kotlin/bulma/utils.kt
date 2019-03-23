@@ -212,33 +212,27 @@ fun className(initialValue: String, node: HTMLElement, prefix: String = "") =
 
 
 /** Property class delegate that handle a string property that set or reset an attribute. */
-class StringAttributeProperty<T>(
-    initialValue: T,
+class StringAttributeProperty(
+    initialValue: String?,
     private val attributeName: String,
     private val node: HTMLElement
-) : ReadWriteProperty<Any?, T> {
+) : ReadWriteProperty<Any?, String?> {
 
-    private var value = initialValue
+    override fun getValue(thisRef: Any?, property: KProperty<*>): String? =
+        node.getAttribute(attributeName) ?: ""
 
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = value
 
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        val oldValue = this.value
-        if (oldValue != value) {
-            this.value = value
-            val string = value?.toString()
-            if (string != null) {
-                node.setAttribute(attributeName, string)
-            } else {
-                node.removeAttribute(attributeName)
-            }
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: String?) {
+        if (value != null) {
+            node.setAttribute(attributeName, value)
+        } else {
+            node.removeAttribute(attributeName)
         }
     }
 
     init {
-        val string = value?.toString()
-        if (string != null) {
-            node.setAttribute(attributeName, string)
+        if (initialValue != null) {
+            node.setAttribute(attributeName, initialValue)
         } else {
             node.removeAttribute(attributeName)
         }
@@ -252,25 +246,47 @@ class BooleanAttributeProperty(
     private val node: HTMLElement
 ) : ReadWriteProperty<Any?, Boolean> {
 
-    private var value = initialValue
-
-    override fun getValue(thisRef: Any?, property: KProperty<*>): Boolean = value
+    override fun getValue(thisRef: Any?, property: KProperty<*>): Boolean = node.hasAttribute(attributeName)
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
-        val oldValue = this.value
-        if (oldValue != value) {
-            this.value = value
-            if (value) {
-                node.setAttribute(attributeName, "")
-            } else {
-                node.removeAttribute(attributeName)
-            }
+        if (value) {
+            node.setAttribute(attributeName, "")
+        } else {
+            node.removeAttribute(attributeName)
         }
     }
 
     init {
-        if (value) {
+        if (initialValue) {
             node.setAttribute(attributeName, "")
+        } else {
+            node.removeAttribute(attributeName)
+        }
+    }
+}
+
+/** Property class delegate that handle a int property that set or reset an attribute. */
+class IntAttributeProperty(
+    initialValue: Int?,
+    private val attributeName: String,
+    private val node: HTMLElement
+) : ReadWriteProperty<Any?, Int?> {
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): Int? =
+        node.getAttribute(attributeName)?.toIntOrNull()
+
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int?) {
+        if (value != null) {
+            node.setAttribute(attributeName, value.toString())
+        } else {
+            node.removeAttribute(attributeName)
+        }
+    }
+
+    init {
+        if (initialValue != null) {
+            node.setAttribute(attributeName, initialValue.toString())
         } else {
             node.removeAttribute(attributeName)
         }
@@ -280,5 +296,8 @@ class BooleanAttributeProperty(
 fun booleanAttribute(initialValue: Boolean, attribute: String, node: HTMLElement) =
     BooleanAttributeProperty(initialValue, attribute, node)
 
-fun <T> attribute(initialValue: T, attribute: String, node: HTMLElement) =
+fun intAttribute(initialValue: Int?, attribute: String, node: HTMLElement) =
+    IntAttributeProperty(initialValue, attribute, node)
+
+fun attribute(initialValue: String?, attribute: String, node: HTMLElement) =
     StringAttributeProperty(initialValue, attribute, node)

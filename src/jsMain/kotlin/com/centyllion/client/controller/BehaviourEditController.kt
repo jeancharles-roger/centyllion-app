@@ -10,7 +10,11 @@ class BehaviourEditController(
 ) : Controller<Behaviour, Column> {
 
     override var data: Behaviour by observable(Behaviour()) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            nameController.data = data.name
+            descriptionController.data = data.description
+            refresh()
+        }
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
@@ -42,9 +46,6 @@ class BehaviourEditController(
             .flatMap { listOf(it.reactiveId, it.productId) }.filter { it >= 0 }
             .map { model.indexedGrains[it] }.filterNotNull().toSet()
         body.left = ids.map { span(classes = "dot").apply { root.style.backgroundColor = it.color } }
-
-        nameController.data = data.name
-        descriptionController.data = data.description
     }
 
 }

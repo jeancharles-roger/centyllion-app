@@ -145,11 +145,11 @@ class ProgressBar : BulmaElement {
 
     var size by className(Size.None, root)
 
-    var min by attribute<Int?>(null, "min", root)
+    var min by intAttribute(null, "min", root)
 
-    var value by attribute<Int?>(null, "value", root)
+    var value by intAttribute(null, "value", root)
 
-    var max by attribute<Int?>(null, "max", root)
+    var max by intAttribute(null, "max", root)
 
 }
 

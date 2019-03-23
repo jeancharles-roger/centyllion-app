@@ -147,16 +147,19 @@ class Input(
     onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
 ) : ControlElement {
 
-    override val root: HTMLElement = document.create.input(InputType.text, classes = "input") {
+    override val root = document.create.input(InputType.text, classes = "input") {
+        this.value = value
         onInputFunction = {
             val target = it.target
             if (it is InputEvent && target is HTMLInputElement) {
                 onChange(it, target.value)
             }
         }
-    }
+    } as HTMLInputElement
 
-    var value by attribute(value, "value", root)
+    var value: String
+        get() = root.value
+        set(value) { root.value = value }
 
     var placeholder by attribute(placeholder, "placeholder", root)
 
@@ -221,7 +224,9 @@ class Option(initialText: String) : BulmaElement {
 
     var value
         get() = optionNode.value
-        set(value) { optionNode.value = value}
+        set(value) {
+            optionNode.value = value
+        }
 
     val index get() = optionNode.index
 }

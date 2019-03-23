@@ -13,7 +13,7 @@ fun dendriteModel(): GrainModel {
 
     val r1 = Behaviour(
         "cristalisation", "Cristalisation du Manganèse", 1.0,
-        mainReaction = Reaction(mc.id, mc.id), reaction = listOf(Reaction(ms.id, mc.id))
+        mainReactiveId = mc.id, mainProductId = mc.id, reaction = listOf(Reaction(ms.id, mc.id))
     )
 
     return GrainModel("Dendrite", "test model", listOf(ms, mc), listOf(r1))
@@ -44,12 +44,12 @@ fun carModel(): GrainModel {
 
     val move = Behaviour(
         "Move", "Move car", 1.0,
-        mainReaction = Reaction(carFront.id, carBack.id),
+        mainReactiveId = carFront.id, mainProductId = carBack.id,
         reaction = listOf(Reaction(carBack.id, road.id), Reaction(road.id, carFront.id))
     )
     val reverse = Behaviour(
         "Reverse", "Reverse car", 1.0,
-        mainReaction = Reaction(carFront.id, carBack.id),
+        mainReactiveId = carFront.id, mainProductId = carBack.id,
         reaction = listOf(Reaction(carFront.id, carFront.id), Reaction(carBack.id, carFront.id))
     )
     return GrainModel("Cars", "On the road again", listOf(road, carFront, carBack), listOf(move, reverse))
@@ -103,7 +103,7 @@ fun bacteriaModel(): GrainModel {
 
     val division = Behaviour(
         "Division", "Bacteria division", 1.0,
-        mainReaction = Reaction(0, 0), reaction = listOf(Reaction(1, 0))
+        mainReactiveId = 0 , mainProductId = 0, reaction = listOf(Reaction(1, 0))
     )
     return GrainModel("Bacteria", "Bacteria model", listOf(bacteria, sugar), listOf(division))
 }
@@ -130,15 +130,18 @@ fun immunityModel(): GrainModel {
 
     val division = Behaviour(
         "Division", "Bacteria division", 0.01,
-        mainReaction = Reaction(1, 1), reaction = listOf(Reaction(-1, 1))
+        mainReactiveId = 1, mainProductId = 1,
+        reaction = listOf(Reaction(-1, 1))
     )
     val defense = Behaviour(
         "Defense", "System defense", 1.0,
-        mainReaction = Reaction(0, 0), reaction = listOf(Reaction(1, 0))
+        mainReactiveId = 0, mainProductId = 0,
+        reaction = listOf(Reaction(1, 0))
     )
     val siProduction = Behaviour(
         "Production", "Bone marrow si production", 0.1,
-        mainReaction = Reaction(2, 2), reaction = listOf(Reaction(-1, 0))
+        mainReactiveId = 2, mainProductId = 2,
+        reaction = listOf(Reaction(-1, 0))
     )
 
     return GrainModel(
@@ -173,11 +176,11 @@ fun fishRespirationModel(co: Boolean): GrainModel {
     val waterO2Sink = Grain(3, "Evacuation d'oxygène dans l'eau", "violet", movementProbability = 0.0)
 
     val waterO2SourceBehaviour = Behaviour("Apport d'oxygene", "", 0.1,
-        mainReaction = Reaction(waterO2Source.id, waterO2Source.id),
+        mainReactiveId = waterO2Source.id, mainProductId = waterO2Source.id,
         reaction = listOf(Reaction(-1,  waterO2.id, allowedDirection = setOf(Direction.Right)))
     )
     val waterO2SinkBehaviour = Behaviour("Evacuation d'oxygene", "", 1.0,
-        mainReaction = Reaction(waterO2Sink.id, waterO2Sink.id),
+        mainReactiveId = waterO2Sink.id, mainProductId = waterO2Sink.id,
         reaction = listOf(Reaction(waterO2.id,  -1, allowedDirection = setOf(Direction.Left)))
     )
 
@@ -186,7 +189,7 @@ fun fishRespirationModel(co: Boolean): GrainModel {
         allowedDirection = setOf(Direction.Up, Direction.Down, if (co) Direction.Right else Direction.Left))
 
     val waterToBlood = Behaviour("Passage eau vers sang", "", 0.2,
-        mainReaction = Reaction(branchiaSide.id, branchiaSide.id),
+        mainReactiveId = branchiaSide.id, mainProductId = branchiaSide.id,
         reaction = listOf(
             Reaction(waterO2.id,  -1, allowedDirection = setOf(Direction.Down)),
             Reaction(-1,  bloodO2.id, allowedDirection = setOf(Direction.Up))
@@ -194,7 +197,7 @@ fun fishRespirationModel(co: Boolean): GrainModel {
     )
 
     val bloodToWater = Behaviour("Passage sang vers eau", "", 0.2,
-        mainReaction = Reaction(branchiaSide.id, branchiaSide.id),
+        mainReactiveId = branchiaSide.id, mainProductId = branchiaSide.id,
         reaction = listOf(
             Reaction( bloodO2.id,  -1, allowedDirection = setOf(Direction.Up)),
             Reaction(-1,  waterO2.id, allowedDirection = setOf(Direction.Down))

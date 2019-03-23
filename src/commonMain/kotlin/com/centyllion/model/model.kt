@@ -74,21 +74,25 @@ data class Behaviour(
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
     // TODO inline main reaction
-    val mainReaction: Reaction = Reaction(),
+    val mainReactiveId: Int = -1, val mainProductId: Int = -1, val transform: Boolean = false,
     val reaction: List<Reaction> = emptyList()
 ) {
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
     fun applicable(grain: Grain, age: Int, neighbours: Map<Direction, Int>): Boolean =
-        mainReaction.reactiveId == grain.id && agePredicate.check(age) &&
+        mainReactiveId == grain.id && agePredicate.check(age) &&
                 reaction.fold(true) { a, r ->
                     a && r.allowedDirection.any {
                         (neighbours[it] == r.reactiveId)
                     }
                 }
 
+    fun usedGrains(model: GrainModel) =
+        (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
+            .filter { it >= 0 }.mapNotNull { model.indexedGrains[it] }.toSet()
+
     fun validForModel(model: GrainModel) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
-            mainReaction.reactiveId >= 0 && mainReaction.validForModel(model) &&
+            mainReactiveId >= 0 &&
             reaction.fold(true) { a, r -> a && r.validForModel(model) }
 }
 
@@ -132,7 +136,8 @@ data class GrainModel(
 
     /** Main reactive grains are all the grains that are main component for a behaviour */
     @Transient
-    val mainReactiveGrains get() = behaviours.mapNotNull { indexedGrains[it.mainReaction.reactiveId] }.toSet()
+    val mainReactiveGrains
+        get() = behaviours.mapNotNull { indexedGrains[it.mainReactiveId] }.toSet()
 
     @Transient
     val valid

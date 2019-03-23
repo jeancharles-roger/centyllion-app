@@ -10,7 +10,7 @@ data class ApplicableBehavior(
 
     fun apply(simulation: Simulation) {
         // applies main reaction
-        simulation.transform(index, index, behaviour.mainReaction.productId, behaviour.mainReaction.transform)
+        simulation.transform(index, index, behaviour.mainProductId, behaviour.transform)
 
         // applies other reaction find each neighbour for each reaction
         val reactives = usedNeighbours.sortedBy { it.second }

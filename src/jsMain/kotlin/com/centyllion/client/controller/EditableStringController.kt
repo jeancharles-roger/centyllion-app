@@ -7,11 +7,11 @@ import kotlin.properties.Delegates.observable
  * Editable string controller.
  */
 class EditableStringController(
-    data: String = "", placeHolder: String = "",
+    initialData: String = "", placeHolder: String = "",
     val onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) : Controller<String, Field> {
 
-    override var data by observable(data) { _, old, new ->
+    override var data by observable(initialData) { _, old, new ->
         if (old != new) {
             onUpdate(old, new, this@EditableStringController)
             refresh()

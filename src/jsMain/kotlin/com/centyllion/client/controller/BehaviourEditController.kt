@@ -28,13 +28,18 @@ class BehaviourEditController(
         this.data = this.data.copy(description = new)
     }
 
+    val probatilityController = editableDoubleController(data.probability, "Probability") { _, new, _ ->
+        this.data = this.data.copy(probability = new)
+    }
+
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
     val body = Media(
         center = listOf(
             Columns(
-                Column(nameController, size = ColumnSize.OneThird),
-                Column(descriptionController, size = ColumnSize.TwoThirds)
+                Column(nameController, size = ColumnSize.S4),
+                Column(descriptionController, size = ColumnSize.None),
+                Column(probatilityController, size = ColumnSize.S3)
             )
         ),
         right = listOf(delete)

@@ -144,7 +144,7 @@ class Input(
     color: ElementColor = ElementColor.None, size: Size = Size.None,
     rounded: Boolean = false, loading: Boolean = false,
     readonly: Boolean = false, static: Boolean = false,
-    onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
+    var onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
 ) : ControlElement {
 
     override val root = document.create.input(InputType.text, classes = "input") {

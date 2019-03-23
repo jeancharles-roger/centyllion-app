@@ -8,7 +8,8 @@ import kotlin.properties.Delegates.observable
  */
 class EditableStringController(
     initialData: String = "", placeHolder: String = "",
-    val onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
+    var isValid: (value: String) -> Boolean = { true },
+    var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) : Controller<String, Field> {
 
     override var data by observable(initialData) { _, old, new ->
@@ -18,22 +19,30 @@ class EditableStringController(
         }
     }
 
-    val validateButton = Control(iconButton(Icon("check"), ElementColor.Success) {
+    val okButton: Button = iconButton(Icon("check"), ElementColor.Success) {
         this.data = input.value
         edit(false)
-    })
+    }
 
-    val cancelButton = Control(iconButton(Icon("times"), ElementColor.Danger, rounded = true) {
+    val okControl = Control(okButton)
+
+    val cancelButton: Button = iconButton(Icon("times"), ElementColor.Danger, rounded = true) {
         input.value = this.data
         edit(false)
-    })
+    }
 
-    val input = Input(value = data, placeholder = placeHolder).apply {
-        readonly = true
-        static = true
+    val cancelControl = Control(cancelButton)
+
+    val input = Input(value = data, placeholder = placeHolder, readonly = true, static = true).apply {
         root.onclick = {
             edit(true)
             Unit
+        }
+        onChange = { _, value ->
+            isValid(value).let {
+                color = if (it) ElementColor.None else ElementColor.Danger
+                okButton.disabled = !it
+            }
         }
     }
 
@@ -46,7 +55,7 @@ class EditableStringController(
         input.readonly = !editable
         container.addons = editable
         if (editable) {
-            container.body = listOf(inputControl, validateButton, cancelButton)
+            container.body = listOf(inputControl, okControl, cancelControl)
             inputControl.rightIcon = null
         } else {
             container.body = listOf(inputControl)
@@ -56,9 +65,18 @@ class EditableStringController(
 
     override val container: Field = Field(inputControl)
 
+
     override fun refresh() {
         input.value = data
     }
 
 }
 
+fun editableDoubleController(
+    initialData: Double = 0.0, placeHolder: String = "",
+    onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
+) = EditableStringController(
+    initialData.toString(), placeHolder, { it.toDoubleOrNull() != null }, { old, new, controller ->
+        onUpdate(old.toDouble(), new.toDouble(), controller)
+    }
+)

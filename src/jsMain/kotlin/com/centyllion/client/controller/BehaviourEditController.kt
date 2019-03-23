@@ -6,26 +6,29 @@ import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
-    val model: GrainModel, val onDelete: (Behaviour) -> Unit = {}
+    initialData: Behaviour, val model: GrainModel,
+    var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit = { _, _, _ -> },
+    var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ ->}
 ) : Controller<Behaviour, Column> {
 
-    override var data: Behaviour by observable(Behaviour()) { _, old, new ->
+    override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
             nameController.data = data.name
             descriptionController.data = data.description
+            onUpdate(old, new, this@BehaviourEditController)
             refresh()
         }
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
-        data = data.copy(name = new)
+        this.data = this.data.copy(name = new)
     }
 
     val descriptionController = EditableStringController(data.name, "Description") { _, new, _ ->
-        data = data.copy(description = new)
+        this.data = this.data.copy(description = new)
     }
 
-    val delete = Delete { onDelete(data) }
+    val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
     val body = Media(
         center = listOf(
@@ -39,6 +42,10 @@ class BehaviourEditController(
 
     override
     val container = Column(body, size = ColumnSize.Full)
+
+    init {
+        refresh()
+    }
 
     override fun refresh() {
         // dots for used grains

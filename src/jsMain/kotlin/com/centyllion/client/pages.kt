@@ -2,7 +2,7 @@ package com.centyllion.client
 
 import KeycloakInstance
 import bulma.*
-import com.centyllion.client.controller.ModelPageController
+import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationController
 import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
@@ -53,8 +53,22 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 }
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
-    val controller = ModelPageController(instance)
-    root.appendChild(controller.root)
+    val model = dendriteModel()
+    val simulation = dendriteSimulation(100, 100)
+    val simulator = Simulator(model, simulation, true)
+
+    val simulationController = SimulationController()
+    val modelController = GrainModelEditController(instance) { _, new, _ ->
+        simulationController.data = Simulator(new, simulationController.data.simulation, true)
+    }
+    modelController.data = model
+    simulationController.data = simulator
+
+    root.appendChild(div(
+        Title("Model"), modelController,
+        Title("Simulation"), Box(simulationController)
+    ).root)
+
 }
 
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {

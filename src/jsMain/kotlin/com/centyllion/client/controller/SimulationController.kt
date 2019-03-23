@@ -67,8 +67,8 @@ class SimulationController : Controller<Simulator, BulmaElement> {
                 desktopSize = ColumnSize.TwoThirds
             ),
             Column(
-                Title("Grains"), grainsController,
-                Title("Behaviours"), behaviourController,
+                Title("Grains", TextSize.S4), grainsController,
+                Title("Behaviours", TextSize.S4), behaviourController,
                 desktopSize = ColumnSize.OneThird
             ),
             centered = true

@@ -10,10 +10,10 @@ import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
 /** [Box](https://bulma.io/documentation/elements/box) element. */
-class Box : BulmaElement {
+class Box(vararg body: BulmaElement) : BulmaElement {
     override val root: HTMLElement = document.create.div("box")
 
-    var body by bulmaList(emptyList(), root)
+    var body by bulmaList(body.toList(), root)
 }
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
@@ -27,7 +27,7 @@ class Button(
 
     override val root: HTMLElement = document.create.a(classes = "button") {
         +text
-        onClickFunction = { if (!disabled) onClick(this@Button) }
+        onClickFunction = { if (!this@Button.disabled) onClick(this@Button) }
     }
 
     /** Left [Icon](https://bulma.io/documentation/form/general/#with-icons) */
@@ -84,7 +84,7 @@ class Content(block: DIV.() -> Unit = {}) : BulmaElement {
 /** [Delete](https://bulma.io/documentation/elements/delete) element. */
 class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
     override val root: HTMLElement = document.create.button(classes = "delete") {
-        onClickFunction = { if (!disabled) onClick(this@Delete) }
+        onClickFunction = { if (!this@Delete.disabled) onClick(this@Delete) }
     }
 
     var size by className(Size.None, root)
@@ -123,7 +123,7 @@ class Icon(
 }
 
 /** [Notification](https://bulma.io/documentation/elements/notification) element. */
-class Notification(val onDelete: (Notification) -> Unit = {}) : BulmaElement {
+class Notification(vararg body: BulmaElement, val onDelete: (Notification) -> Unit = {}) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("notification") {
         button(classes = "delete") {
@@ -133,7 +133,7 @@ class Notification(val onDelete: (Notification) -> Unit = {}) : BulmaElement {
 
     var color by className(ElementColor.None, root)
 
-    var body by bulmaList(emptyList(), root)
+    var body by bulmaList(body.toList(), root)
 }
 
 /** [Progress Bar](https://bulma.io/documentation/elements/progress) element. */

@@ -5,12 +5,15 @@ import com.centyllion.model.Grain
 import kotlin.properties.Delegates.observable
 
 class GrainEditController(
-    val onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
-    val onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
+    initialData: Grain,
+    var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
+    var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
 ): Controller<Grain, Column> {
 
-    override var data: Grain by observable(Grain()) { _, old, new ->
+    override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
+            nameController.data = new.name
+            descriptionController.data = new.description
             onUpdate(old, new, this@GrainEditController)
             refresh()
         }
@@ -23,7 +26,7 @@ class GrainEditController(
     }
 
     val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
-        data = data.copy(name = new)
+        data = data.copy(description = new)
     }
 
     val delete = Delete{ onDelete(data, this@GrainEditController) }
@@ -34,11 +37,12 @@ class GrainEditController(
         right = listOf(delete)
     ), size = ColumnSize.Full)
 
+    init {
+        refresh()
+    }
 
     override fun refresh() {
         dot.root.style.backgroundColor = data.color
-        nameController.data = data.name
-        descriptionController.data = data.description
     }
 
 }

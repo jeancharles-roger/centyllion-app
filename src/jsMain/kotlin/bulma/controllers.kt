@@ -34,14 +34,19 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
     }
 
     override fun refresh() {
-        // mapped controllers
-        val mapped = controllers.map { it.data to it }.toMap()
-        // constructs a resized controllers list to match new size
+        // constructs a resized controllers list to match new size and populates with controllers that haven't changed nor moved
         val resizedControllers = List(data.size) { controllers.getOrNull(it) }
-        // reconstructs controllers using the controller at the correct place if it's has the same data
-        // or by constructing a new one.
-        controllers = data.zip(resizedControllers).mapIndexed { i, (d, c) ->
-            if (c == null || c.data != d) controllerBuilder(i, d, mapped.getOrElse(d) { null }) else c
+            .zip(data).mapIndexed { i, (c, d) -> if (c != null && c.data == d) c else null }
+
+        // gets unused controllers
+        val availableControllers = controllers.filter { !resizedControllers.contains(it) }.toMutableList()
+        // constructs new controller passing already existing one (only once) if available.
+        controllers = resizedControllers.zip(data).mapIndexed { i, (c, d) ->
+            c ?: availableControllers.let {
+                val previous = availableControllers.find { it.data == d }
+                availableControllers.remove(previous)
+                controllerBuilder(i, d, previous)
+            }
         }
         container.columns = controllers.map { it.container }
     }

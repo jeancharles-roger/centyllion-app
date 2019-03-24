@@ -3,6 +3,7 @@ package com.centyllion.client.controller
 import bulma.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
+import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
@@ -15,7 +16,12 @@ class BehaviourEditController(
         if (old != new) {
             nameController.data = data.name
             descriptionController.data = data.description
+            probatilityController.data = "${data.probability}"
+            agePredicateController.data = data.agePredicate
             mainReactiveController.data = model.indexedGrains[data.mainReactiveId]
+            mainProductController.data = model.indexedGrains[data.mainProductId]
+            transform.checked = data.transform
+            reactionController.data = data.reaction
             onUpdate(old, new, this@BehaviourEditController)
             refresh()
         }
@@ -46,8 +52,27 @@ class BehaviourEditController(
     }
 
     val transform = Checkbox("transform", data.transform) { _, value ->
-        println("Update transform to ${value}")
         this.data = this.data.copy(transform = value)
+    }
+
+    val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
+        val newReaction = Reaction()
+        this.data = data.copy(reaction = data.reaction + newReaction)
+    }
+
+    val reactionController = ColumnsController<Reaction, ReactionEditController>(data.reaction) { index, reaction, previous ->
+        val controller = previous ?: ReactionEditController(reaction, model)
+        controller.onUpdate = { _, new, _ ->
+            val newList = data.reaction.toMutableList()
+            newList[index] = new
+            data = data.copy(reaction = newList)
+        }
+        controller.onDelete = { _, _ ->
+            val newList = data.reaction.toMutableList()
+            newList.removeAt(index)
+            data = data.copy(reaction = newList)
+        }
+        controller
     }
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
@@ -62,11 +87,13 @@ class BehaviourEditController(
                 Column(descriptionController, size = ColumnSize.S7),
                 Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),
                 // third line
-                Column(HorizontalField(Help("Reactive"), mainReactiveController.container), size = ColumnSize.S5),
-                Column(HorizontalField(Help("Product"), mainProductController.container), size = ColumnSize.S5),
-                Column(Field(Control(transform)), size = ColumnSize.S2),
+                Column(HorizontalField(Help("Reactive"), mainReactiveController.container), size = ColumnSize.S4),
+                Column(HorizontalField(Help("Product"), mainProductController.container), size = ColumnSize.S4),
+                Column(Field(Control(transform))),
+                Column(addReactionButton, size = ColumnSize.S1),
                 multiline = true
-            )
+            ),
+            reactionController
         ),
         right = listOf(delete)
     )

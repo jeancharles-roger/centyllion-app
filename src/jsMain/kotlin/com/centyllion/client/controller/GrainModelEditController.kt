@@ -43,8 +43,8 @@ class GrainModelEditController(
     }
 
 
-    val grainsController = ColumnsController(data.grains) { index, grain ->
-        val controller = GrainEditController(grain)
+    val grainsController = ColumnsController<Grain, GrainEditController>(data.grains) { index, grain, previous ->
+        val controller = previous ?: GrainEditController(grain)
         controller.onUpdate = { _, new, _ ->
             val newGrains = data.grains.toMutableList()
             newGrains[index] = new
@@ -58,8 +58,8 @@ class GrainModelEditController(
         controller
     }
 
-    val behavioursController = ColumnsController(data.behaviours) { index, behaviour ->
-        val controller = BehaviourEditController(behaviour, data)
+    val behavioursController = ColumnsController<Behaviour, BehaviourEditController>(data.behaviours) { index, behaviour, previous ->
+        val controller = previous ?: BehaviourEditController(behaviour, data)
         controller.onUpdate = { _, new, _ ->
             val behaviours = data.behaviours.toMutableList()
             behaviours[index] = new

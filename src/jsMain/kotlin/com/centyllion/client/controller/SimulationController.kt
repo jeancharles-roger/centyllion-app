@@ -2,6 +2,8 @@ package com.centyllion.client.controller
 
 import bulma.*
 import chartjs.*
+import com.centyllion.model.Behaviour
+import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
@@ -44,12 +46,12 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         height = "${simulation.height * canvasWidth / simulation.width}"
     }
 
-    val grainsController = ColumnsController(model.grains) { _, grain ->
-        GrainDisplayController().apply { data = grain }
+    val grainsController = ColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
+        previous ?: GrainDisplayController().apply { data = grain }
     }
 
-    val behaviourController = ColumnsController(model.behaviours) { _, behaviour ->
-        BehaviourDisplayController(model).apply { data = behaviour }
+    val behaviourController = ColumnsController<Behaviour, BehaviourDisplayController>(model.behaviours) { _, behaviour, previous ->
+        previous ?: BehaviourDisplayController(model).apply { data = behaviour }
     }
 
     val chartCanvas = canvas {}

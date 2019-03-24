@@ -78,9 +78,9 @@ class Value(text: String = "") : FieldElement {
     }
 }
 
-class Help(initialText: String = "") : FieldElement {
+class Help(text: String = "") : FieldElement {
     override val root: HTMLElement = document.create.p("help") {
-        +initialText
+        +text
     }
 
     var color by className(ElementColor.None, root)
@@ -215,9 +215,10 @@ class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> 
     var disabled by booleanAttribute(false, "disabled", root)
 }
 
-class Option(initialText: String) : BulmaElement {
+class Option(text: String, value: String = "") : BulmaElement {
     override val root: HTMLElement = document.create.option {
-        +initialText
+        +text
+        this.value = value
     }
 
     private val optionNode = root as HTMLOptionElement
@@ -233,7 +234,7 @@ class Option(initialText: String) : BulmaElement {
 
 /** [Select](http://bulma.io/documentation/form/select/) */
 class Select(
-    options: List<Option>, color: ElementColor = ElementColor.None,
+    options: List<Option>, selectedIndex: Int = 0, color: ElementColor = ElementColor.None,
     size: Size = Size.None, rounded: Boolean = false,
     loading: Boolean = false, multiple: Boolean = false,
     onChange: (event: Event, value: Option) -> Unit = { _, _ -> }
@@ -241,10 +242,9 @@ class Select(
 
     override val root: HTMLElement = document.create.div("select") {
         select {
+
             onInputFunction = {
                 val target = it.target
-                println("Target -> $target")
-                println("it -> $it")
                 if (target is HTMLSelectElement) {
                     // TODO support multiple
                     onChange(it, options[target.selectedIndex])
@@ -253,7 +253,11 @@ class Select(
         }
     }
 
-    private val selectNode = root.querySelector("select") as HTMLElement
+    private val selectNode = root.querySelector("select") as HTMLSelectElement
+
+    var selectedIndex
+        get() = selectNode.selectedIndex
+        set(value) { selectNode.selectedIndex = value}
 
     var options by bulmaList(options, selectNode)
 
@@ -275,6 +279,9 @@ class Select(
     private var rootMultiple by className(multiple, "is-multiple", root)
     private var selectMultiple by booleanAttribute(multiple, "multiple", selectNode)
 
+    init {
+        selectNode.selectedIndex = selectedIndex
+    }
 }
 
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */

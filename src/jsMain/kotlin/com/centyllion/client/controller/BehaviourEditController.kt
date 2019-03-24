@@ -33,6 +33,10 @@ class BehaviourEditController(
         this.data = this.data.copy(probability = new)
     }
 
+    val agePredicateController = IntPredicateController(data.agePredicate)  { _, new, _ ->
+        this.data = this.data.copy(agePredicate = new)
+    }
+
     val mainReactiveController = GrainSelectController(model.indexedGrains[data.mainReactiveId], model.grains) { _, new, _ ->
         this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
     }
@@ -42,6 +46,7 @@ class BehaviourEditController(
     }
 
     val transform = Checkbox("transform", data.transform) { _, value ->
+        println("Update transform to ${value}")
         this.data = this.data.copy(transform = value)
     }
 
@@ -50,12 +55,16 @@ class BehaviourEditController(
     val body = Media(
         center = listOf(
             Columns(
-                Column(nameController, size = ColumnSize.S4),
-                Column(descriptionController, size = ColumnSize.S4),
-                Column(HorizontalField(Label("p"), probatilityController.container), size = ColumnSize.S4),
-                Column(HorizontalField(Label("Reactive"), mainReactiveController.container), size = ColumnSize.S4),
-                Column(HorizontalField(Label("Product"), mainProductController.container), size = ColumnSize.S4),
-                Column(Field(Control(transform)), size = ColumnSize.S4),
+                // first line
+                Column(nameController, size = ColumnSize.S6),
+                Column(HorizontalField(Help("Probability"), probatilityController.container), size = ColumnSize.S6),
+                // second line
+                Column(descriptionController, size = ColumnSize.S7),
+                Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),
+                // third line
+                Column(HorizontalField(Help("Reactive"), mainReactiveController.container), size = ColumnSize.S5),
+                Column(HorizontalField(Help("Product"), mainProductController.container), size = ColumnSize.S5),
+                Column(Field(Control(transform)), size = ColumnSize.S2),
                 multiline = true
             )
         ),

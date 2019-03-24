@@ -14,8 +14,8 @@ enum class Figure {
     Square, Triangle, Disk, Diamond, Star
 }
 
-enum class Operator {
-    Equals, NotEquals, LessThan, LessThanOrEquals, GreaterThan, GreaterThanOrEquals
+enum class Operator(val label: String) {
+    Equals("="), NotEquals("!="), LessThan("<"), LessThanOrEquals("<="), GreaterThan(">"), GreaterThanOrEquals(">=")
 }
 
 @Serializable

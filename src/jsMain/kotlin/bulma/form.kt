@@ -2,6 +2,7 @@ package bulma
 
 import kotlinx.html.*
 import kotlinx.html.dom.create
+import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onInputFunction
 import org.w3c.dom.*
 import org.w3c.dom.events.Event
@@ -17,7 +18,7 @@ class Field(
     addonsRight: Boolean = false, grouped: Boolean = false,
     groupedCentered: Boolean = false, groupedRight: Boolean = false,
     groupedMultiline: Boolean = false
-) : BulmaElement {
+) : FieldElement {
     override val root: HTMLElement = document.create.div("field")
 
     var body by bulmaList(body.toList(), root)
@@ -48,7 +49,7 @@ class Field(
 }
 
 /** [Horizontal Field](https://bulma.io/documentation/form/general/#horizontal-form) */
-class HorizontalField(label: Label, vararg body: Field) : BulmaElement {
+class HorizontalField(label: FieldElement, vararg body: Field) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("field is-horizontal") {
         div("field-label")
@@ -58,7 +59,7 @@ class HorizontalField(label: Label, vararg body: Field) : BulmaElement {
     private val labelNode = root.querySelector(".field-label") as HTMLElement
     private val bodyNode = root.querySelector(".field-body") as HTMLElement
 
-    var label by bulma<Label>(label, labelNode)
+    var label by bulma(label, labelNode)
 
     var labelSize by className(Size.Normal, labelNode)
 
@@ -259,9 +260,7 @@ class Select(
 
     var selectedIndex
         get() = selectNode.selectedIndex
-        set(value) {
-            selectNode.selectedIndex = value
-        }
+        set(value) { selectNode.selectedIndex = value }
 
     var options by bulmaList(options, selectNode)
 
@@ -291,14 +290,14 @@ class Select(
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */
 class Checkbox(
     text: String, checked: Boolean = false,
-    onChange: (event: InputEvent, value: Boolean) -> Unit = { _, _ -> }
+    onChange: (event: Event, value: Boolean) -> Unit = { _, _ -> }
 ) : ControlElement {
     override val root: HTMLElement = document.create.label("checkbox") {
         input(type = InputType.checkBox) {
             this.checked = checked
-            onInputFunction = {
+            onChangeFunction = {
                 val target = it.target
-                if (it is InputEvent && target is HTMLInputElement) {
+                if (target is HTMLInputElement) {
                     onChange(it, target.checked)
                 }
             }

@@ -55,16 +55,15 @@ class EditableStringController(
         input.readonly = !editable
         container.addons = editable
         if (editable) {
-            container.body = listOf(inputControl, okControl, cancelControl)
+            container.body = listOfNotNull(inputControl, okControl, cancelControl)
             inputControl.rightIcon = null
         } else {
-            container.body = listOf(inputControl)
+            container.body = listOfNotNull(inputControl)
             inputControl.rightIcon = penIcon
         }
     }
 
     override val container: Field = Field(inputControl)
-
 
     override fun refresh() {
         input.value = data
@@ -78,5 +77,14 @@ fun editableDoubleController(
 ) = EditableStringController(
     initialData.toString(), placeHolder, { it.toDoubleOrNull() != null }, { old, new, controller ->
         onUpdate(old.toDouble(), new.toDouble(), controller)
+    }
+)
+
+fun editableIntController(
+    initialData: Int = 0, placeHolder: String = "",
+    onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
+) = EditableStringController(
+    initialData.toString(), placeHolder, { it.toIntOrNull() != null }, { old, new, controller ->
+        onUpdate(old.toInt(), new.toInt(), controller)
     }
 )

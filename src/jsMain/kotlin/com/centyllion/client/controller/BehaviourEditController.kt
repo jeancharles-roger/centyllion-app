@@ -41,6 +41,10 @@ class BehaviourEditController(
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
+    val transform = Checkbox("transform", data.transform) { _, value ->
+        this.data = this.data.copy(transform = value)
+    }
+
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
     val body = Media(
@@ -51,6 +55,7 @@ class BehaviourEditController(
                 Column(HorizontalField(Label("p"), probatilityController.container), size = ColumnSize.S4),
                 Column(HorizontalField(Label("Reactive"), mainReactiveController.container), size = ColumnSize.S4),
                 Column(HorizontalField(Label("Product"), mainProductController.container), size = ColumnSize.S4),
+                Column(Field(Control(transform)), size = ColumnSize.S4),
                 multiline = true
             )
         ),

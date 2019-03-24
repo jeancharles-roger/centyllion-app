@@ -21,7 +21,9 @@ class ColumnsController<Data>(
     val controllerBuilder: (Int, Data) -> Controller<Data, Column>
 ) : Controller<List<Data>, Columns> {
 
-    override var data: List<Data> by observable(initialList) { _, _, _ -> refresh() }
+    override var data: List<Data> by observable(initialList) { _, old, new ->
+        if (old != new) refresh()
+    }
 
     private var controllers: MutableList<Controller<Data, Column>> = mutableListOf()
 

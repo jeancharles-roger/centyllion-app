@@ -12,7 +12,7 @@ class GrainModelEditController(
     val instance: KeycloakInstance,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
-) : Controller<GrainModel, BulmaElement> {
+) : Controller<GrainModel, Columns> {
 
     override var data: GrainModel by observable(emptyModel) { _, old, new ->
         if (old != new) {
@@ -73,7 +73,7 @@ class GrainModelEditController(
         controller
     }
 
-    override val container = Box(
+    override val container =
         Columns(
             Column(nameController, size = ColumnSize.OneThird),
             Column(descriptionController, size = ColumnSize.TwoThirds),
@@ -87,8 +87,10 @@ class GrainModelEditController(
                 size = ColumnSize.OneThird
             ),
             Column(
-                Level(left = listOf(
-                    Title("Behaviours", TextSize.S4)),
+                Level(
+                    left = listOf(
+                        Title("Behaviours", TextSize.S4)
+                    ),
                     right = listOf(addBehaviourButton),
                     mobile = true
                 ),
@@ -97,7 +99,6 @@ class GrainModelEditController(
             ),
             multiline = true
         )
-    )
 
 
     init {

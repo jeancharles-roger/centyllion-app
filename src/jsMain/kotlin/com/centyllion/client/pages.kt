@@ -55,6 +55,8 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 fun model(root: HTMLElement, instance: KeycloakInstance) {
     val model = dendriteModel()
     val simulation = dendriteSimulation(100, 100)
+    //val model = immunityModel()
+    //val simulation = immunitySimulation(100, 100)
     val simulator = Simulator(model, simulation, true)
 
     val simulationController = SimulationController()
@@ -66,7 +68,7 @@ fun model(root: HTMLElement, instance: KeycloakInstance) {
 
     root.appendChild(div(
         Title("Model"), modelController,
-        Title("Simulation"), Box(simulationController)
+        Title("Simulation"), simulationController
     ).root)
 
 }

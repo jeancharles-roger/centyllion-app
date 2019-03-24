@@ -73,7 +73,6 @@ data class Behaviour(
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
-    // TODO inline main reaction
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val transform: Boolean = false,
     val reaction: List<Reaction> = emptyList()
 ) {

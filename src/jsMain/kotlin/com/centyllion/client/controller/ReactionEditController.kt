@@ -46,7 +46,7 @@ class ReactionEditController(
             )
         ),
         right = listOf(delete)
-    ))
+    ), size = ColumnSize.Full)
 
     override fun refresh() {
     }

@@ -159,7 +159,9 @@ class Input(
 
     var value: String
         get() = root.value
-        set(value) { root.value = value }
+        set(value) {
+            root.value = value
+        }
 
     var placeholder by attribute(placeholder, "placeholder", root)
 
@@ -257,7 +259,9 @@ class Select(
 
     var selectedIndex
         get() = selectNode.selectedIndex
-        set(value) { selectNode.selectedIndex = value}
+        set(value) {
+            selectNode.selectedIndex = value
+        }
 
     var options by bulmaList(options, selectNode)
 
@@ -285,9 +289,13 @@ class Select(
 }
 
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */
-class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean) -> Unit = { _, _ -> }) : BulmaElement {
+class Checkbox(
+    text: String, checked: Boolean = false,
+    onChange: (event: InputEvent, value: Boolean) -> Unit = { _, _ -> }
+) : ControlElement {
     override val root: HTMLElement = document.create.label("checkbox") {
         input(type = InputType.checkBox) {
+            this.checked = checked
             onInputFunction = {
                 val target = it.target
                 if (it is InputEvent && target is HTMLInputElement) {
@@ -295,10 +303,14 @@ class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean
                 }
             }
         }
-        +initialText
+        +text
     }
 
-    private val inputNode = root.querySelector("checkbox") as HTMLElement
+    private val inputNode = root.querySelector("input") as HTMLInputElement
+
+    var checked
+        get() = inputNode.checked
+        set(value) { inputNode.checked = value }
 
     var disable
         get() = disabledRoot
@@ -308,7 +320,7 @@ class Checkbox(initialText: String, onChange: (event: InputEvent, value: Boolean
         }
 
     private var disabledInput by booleanAttribute(false, "disabled", inputNode)
-    private var disabledRoot by booleanAttribute(false, "disabled", inputNode)
+    private var disabledRoot by booleanAttribute(false, "disabled", root)
 
 }
 

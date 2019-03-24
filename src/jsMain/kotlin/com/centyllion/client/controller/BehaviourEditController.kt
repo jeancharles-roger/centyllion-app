@@ -101,13 +101,6 @@ class BehaviourEditController(
     override
     val container = Column(body, size = ColumnSize.Full)
 
-    init {
-        refresh()
-    }
-
-    override fun refresh() {
-        // dots for used grains
-        body.left = data.usedGrains(model).map { span(classes = "dot").apply { root.style.backgroundColor = it.color } }
-    }
+    override fun refresh() { }
 
 }

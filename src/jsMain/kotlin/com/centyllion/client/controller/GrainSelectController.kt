@@ -8,7 +8,7 @@ import kotlin.properties.Delegates.observable
 class GrainSelectController(
     grain: Grain?, grains: List<Grain>,
     var onUpdate: (old: Grain?, new: Grain?, controller: GrainSelectController) -> Unit = { _, _, _ -> }
-): Controller<Grain?, Field> {
+) : Controller<Grain?, Field> {
 
     var grains = grains
         set(value) {
@@ -23,11 +23,14 @@ class GrainSelectController(
         }
     }
 
+    val icon = Icon("circle")
+    val button = iconButton(icon, rounded = true)
+
     val select = Select(options()) { _: Event, value: Option ->
         data = if (value.index == grains.size) null else grains[value.index]
     }
 
-    override val container: Field = Field(Control(select))
+    override val container: Field = Field(Control(button), Control(select), addons = true)
 
     private fun options() = grains.map { Option(it.name, "${it.id}") } + Option("none", "-1")
 
@@ -38,6 +41,7 @@ class GrainSelectController(
     override fun refresh() {
         val index = data.let { if (it != null) grains.indexOf(it) else select.options.lastIndex }
         select.selectedIndex = index
+        icon.root.style.color = data?.color ?: "transparent"
     }
 
 }

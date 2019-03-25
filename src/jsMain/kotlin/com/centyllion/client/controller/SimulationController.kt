@@ -66,18 +66,14 @@ class SimulationController : Controller<Simulator, BulmaElement> {
                     mobile = true
                 ),
                 div(simulationCanvas, classes = "has-text-centered"),
+                div(chartCanvas, classes = "has-text-centered"),
                 desktopSize = ColumnSize.TwoThirds
             ),
             Column(
                 Title("Grains", TextSize.S4), grainsController,
                 Title("Behaviours", TextSize.S4), behaviourController,
                 desktopSize = ColumnSize.OneThird
-            ),
-            centered = true
-        ),
-        Columns(
-            Column(chartCanvas),
-            centered = true
+            )
         )
     )
 

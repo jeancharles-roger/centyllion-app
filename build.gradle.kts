@@ -12,7 +12,6 @@ import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base64
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
 val serialization_version: String by project
@@ -85,7 +84,7 @@ kotlin {
 
                     implementation("org.litote.kmongo:kmongo:$kmongo_version")
 
-                    //implementation("ch.qos.logback:logback-classic:1.2.1")
+                    implementation("ch.qos.logback:logback-classic:1.2.1")
                 }
             }
             // JVM-specific tests and their dependencies:
@@ -132,7 +131,8 @@ kotlin {
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 tasks {
-    val jsDir = "$buildDir/assemble/js"
+    val jsDir = "$buildDir/assemble/main/js"
+    val jsTestDir = "$buildDir/assemble/test/js"
     val webRoot = rootProject.file("webroot")
     val deploy = rootProject.file("deploy")
     val mainFunction = "com.centyllion.client.index()"

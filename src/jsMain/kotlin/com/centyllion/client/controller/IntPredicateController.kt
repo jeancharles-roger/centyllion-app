@@ -19,7 +19,7 @@ class IntPredicateController(
         }
     }
 
-    val select = Select(Operator.values().map { Option(it.label, it.name) }) { _: Event, value: String ->
+    val select = Select(Operator.values().map { Option(it.label, it.name) }, rounded = true) { _: Event, value: String ->
         data = data.copy(op = Operator.valueOf(value))
     }
 

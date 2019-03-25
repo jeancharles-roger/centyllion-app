@@ -16,6 +16,7 @@ class GrainEditController(
             descriptionController.data = new.description
             movementProbabilityController.data = "${new.movementProbability}"
             directionController.data = new.allowedDirection
+            halfLifeController.data = "${new.halfLife}"
             onUpdate(old, new, this@GrainEditController)
         }
         refresh()
@@ -39,6 +40,12 @@ class GrainEditController(
         this.data = this.data.copy(allowedDirection = new)
     }
 
+
+    val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
+        this.data = this.data.copy(halfLife = new)
+    }
+
+
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
     override val container = Column(
@@ -47,6 +54,7 @@ class GrainEditController(
             center = listOf(
                 nameController,
                 descriptionController,
+                HorizontalField(Help("Half life"), halfLifeController.container),
                 HorizontalField(Help("Probability"), movementProbabilityController.container),
                 HorizontalField(Help("Directions"), directionController.container)
             ),
@@ -54,16 +62,13 @@ class GrainEditController(
         ), size = ColumnSize.Full
     )
 
-    init {
-        refresh()
-    }
-
     override fun refresh() {
         dot.root.style.backgroundColor = data.color
         nameController.refresh()
         descriptionController.refresh()
         movementProbabilityController.refresh()
         directionController.refresh()
+        halfLifeController.refresh()
     }
 
 }

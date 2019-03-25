@@ -9,10 +9,12 @@ class DirectionSetEditController(
     var onUpdate: (old: Set<Direction>, new: Set<Direction>, controller: DirectionSetEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Set<Direction>, Field>() {
 
-    val upIcon = "angle-up"
-    val downIcon = "angle-down"
-    val leftIcon = "angle-left"
-    val rightIcon = "angle-right"
+    val icons = mapOf(
+        Direction.Up to "angle-up",
+        Direction.Down to "angle-down",
+        Direction.Left to "angle-left",
+        Direction.Right to "angle-right"
+    )
 
     override var data: Set<Direction> by Delegates.observable(directions) { _, old, new ->
         if (old != new) {
@@ -21,10 +23,18 @@ class DirectionSetEditController(
         }
     }
 
-    val left = iconButton(Icon(leftIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Left) }
-    val up = iconButton(Icon(upIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Up) }
-    val down = iconButton(Icon(downIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Down) }
-    val right = iconButton(Icon(rightIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Right) }
+    val left = buttonForDirection(Direction.Left)
+    val up = buttonForDirection(Direction.Up)
+    val down = buttonForDirection(Direction.Down)
+    val right = buttonForDirection(Direction.Right)
+
+    fun buttonForDirection(direction: Direction) =
+        iconButton(Icon(icons.getValue(direction)), rounded = true, size = Size.Small, color = colorForDirection(direction)) {
+            toggleDirection(direction)
+        }
+
+    fun colorForDirection(direction: Direction) =
+        if (data.contains(direction)) ElementColor.Info else ElementColor.None
 
     fun toggleDirection(direction: Direction) {
         data = if (data.contains(direction)) data - direction else data + direction
@@ -36,10 +46,10 @@ class DirectionSetEditController(
     )
 
     override fun refresh() {
-        up.color = if (data.contains(Direction.Up)) ElementColor.Info else ElementColor.None
-        down.color = if (data.contains(Direction.Down)) ElementColor.Info else ElementColor.None
-        left.color = if (data.contains(Direction.Left)) ElementColor.Info else ElementColor.None
-        right.color = if (data.contains(Direction.Right)) ElementColor.Info else ElementColor.None
+        up.color = colorForDirection(Direction.Up)
+        down.color = colorForDirection(Direction.Down)
+        left.color = colorForDirection(Direction.Left)
+        right.color = colorForDirection(Direction.Right)
     }
 
 }

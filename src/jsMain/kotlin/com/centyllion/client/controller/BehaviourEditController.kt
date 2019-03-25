@@ -16,7 +16,7 @@ class BehaviourEditController(
         if (old != new) {
             nameController.data = data.name
             descriptionController.data = data.description
-            probatilityController.data = "${data.probability}"
+            probabilityController.data = "${data.probability}"
             agePredicateController.data = data.agePredicate
             mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
             mainProductController.data = context.indexedGrains[data.mainProductId]
@@ -46,7 +46,7 @@ class BehaviourEditController(
         this.data = this.data.copy(description = new)
     }
 
-    val probatilityController = editableDoubleController(data.probability, "Probability") { _, new, _ ->
+    val probabilityController = editableDoubleController(data.probability, "Probability") { _, new, _ ->
         this.data = this.data.copy(probability = new)
     }
 
@@ -109,7 +109,7 @@ class BehaviourEditController(
             Columns(
                 // first line
                 Column(nameController, size = ColumnSize.S6),
-                Column(HorizontalField(Help("Probability"), probatilityController.container), size = ColumnSize.S6),
+                Column(HorizontalField(Help("Probability"), probabilityController.container), size = ColumnSize.S6),
                 // second line
                 Column(descriptionController, size = ColumnSize.S7),
                 Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),
@@ -128,7 +128,7 @@ class BehaviourEditController(
 
         nameController.refresh()
         descriptionController.refresh()
-        probatilityController.refresh()
+        probabilityController.refresh()
         agePredicateController.refresh()
         mainReactiveController.refresh()
         mainProductController.refresh()

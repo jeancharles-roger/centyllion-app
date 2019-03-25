@@ -53,10 +53,10 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 }
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
-    val model = dendriteModel()
-    val simulation = dendriteSimulation(100, 100)
-    //val model = fishRespirationModel(true)
-    //val simulation = fishRespirationSimulation()
+    //val model = dendriteModel()
+    //val simulation = dendriteSimulation(100, 100)
+    val model = fishRespirationModel(true)
+    val simulation = fishRespirationSimulation()
     val simulator = Simulator(model, simulation, true)
 
     val simulationController = SimulationController()

@@ -19,8 +19,8 @@ class IntPredicateController(
         }
     }
 
-    val select = Select(Operator.values().map { Option(it.label, it.name) }) { _: Event, value: Option ->
-        data = data.copy(op = Operator.valueOf(value.value))
+    val select = Select(Operator.values().map { Option(it.label, it.name) }) { _: Event, value: String ->
+        data = data.copy(op = Operator.valueOf(value))
     }
 
     val value = editableIntController(data.constant) { _, new, _ ->

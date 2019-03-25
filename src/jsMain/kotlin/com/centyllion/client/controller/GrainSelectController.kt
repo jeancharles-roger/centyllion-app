@@ -26,8 +26,10 @@ class GrainSelectController(
     val icon = Icon("circle")
     val button = iconButton(icon, rounded = true)
 
-    val select = Select(options()) { _: Event, value: Option ->
-        data = if (value.index == grains.size) null else grains[value.index]
+    val select = Select(options()) { _: Event, value: String ->
+        val index = value.toInt()
+        val newValue = if (index < 0) null else grains[index]
+        data = newValue
     }
 
     override val container: Field = Field(Control(button), Control(select), addons = true)

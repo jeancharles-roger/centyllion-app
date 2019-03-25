@@ -90,9 +90,11 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
     val controller = SimulationController()
     controller.data = simulations[0]
 
-    val options = simulations.map { Option("${it.model.name} ${it.simulation.width}x${it.simulation.height}") }
-    val select = Select(options, rounded = true) { _, o ->
-        controller.data = simulations[o.index]
+    val options = simulations.mapIndexed { i, s ->
+        Option("${s.model.name} ${s.simulation.width}x${s.simulation.height}", "$i")
+    }
+    val select = Select(options, rounded = true) { _, index ->
+        controller.data = simulations[index.toInt()]
     }
     root.appendChild(div(select, controller).root)
 }

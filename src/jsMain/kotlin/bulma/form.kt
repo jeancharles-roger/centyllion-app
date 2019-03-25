@@ -240,17 +240,16 @@ class Select(
     options: List<Option>, selectedIndex: Int = 0, color: ElementColor = ElementColor.None,
     size: Size = Size.None, rounded: Boolean = false,
     loading: Boolean = false, multiple: Boolean = false,
-    onChange: (event: Event, value: Option) -> Unit = { _, _ -> }
+    onChange: (event: Event, value: String) -> Unit = { _, _ -> }
 ) : ControlElement {
 
     override val root: HTMLElement = document.create.div("select") {
         select {
-
             onInputFunction = {
                 val target = it.target
                 if (target is HTMLSelectElement) {
                     // TODO support multiple
-                    onChange(it, options[target.selectedIndex])
+                    onChange(it, target.value)
                 }
             }
         }

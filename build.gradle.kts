@@ -12,6 +12,7 @@ import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base64
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
 val serialization_version: String by project
@@ -132,7 +133,6 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
-    val jsTestDir = "$buildDir/assemble/test/js"
     val webRoot = rootProject.file("webroot")
     val deploy = rootProject.file("deploy")
     val mainFunction = "com.centyllion.client.index()"

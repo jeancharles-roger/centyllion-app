@@ -4,7 +4,7 @@ import bulma.*
 import com.centyllion.model.Grain
 import kotlin.properties.Delegates.observable
 
-class GrainDisplayController: Controller<Grain, Column> {
+class GrainDisplayController: NoContextController<Grain, Column>() {
 
     override var data: Grain by observable(Grain()) { _, old, new ->
         if (old != new) refresh()

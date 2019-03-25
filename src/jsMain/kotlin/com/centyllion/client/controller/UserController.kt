@@ -5,7 +5,7 @@ import com.centyllion.model.User
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class UserController : Controller<User?, BulmaElement> {
+class UserController : NoContextController<User?, BulmaElement>() {
 
     override var data: User? by observable<User?>(null) { _, _, _ ->
         newData = data

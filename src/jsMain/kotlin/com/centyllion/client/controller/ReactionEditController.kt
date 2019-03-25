@@ -6,29 +6,39 @@ import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
-    reaction: Reaction, val model: GrainModel,
+    reaction: Reaction, model: GrainModel,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ ->}
-): Controller<Reaction, Column> {
+): Controller<Reaction, GrainModel, Column> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
-            reactiveController.data = model.indexedGrains[data.reactiveId]
+            reactiveController.data = context.indexedGrains[data.reactiveId]
             directionController.data = data.allowedDirection
-            productController.data = model.indexedGrains[data.productId]
+            productController.data = context.indexedGrains[data.productId]
             transform.checked = data.transform
             onUpdate(old, new, this@ReactionEditController)
         }
         refresh()
     }
 
-    val reactiveController = GrainSelectController(model.indexedGrains[data.reactiveId], model.grains) { _, new, _ ->
+    override var context: GrainModel by observable(model) { _, old, new ->
+        if (old != new) {
+            reactiveController.data = context.indexedGrains[data.reactiveId]
+            reactiveController.context = new.grains
+            productController.data = context.indexedGrains[data.productId]
+            productController.context = new.grains
+            refresh()
+        }
+    }
+
+    val reactiveController = GrainSelectController(context.indexedGrains[data.reactiveId], context.grains) { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
 
     val directionController = DirectionSetEditController(data.allowedDirection)
 
-    val productController = GrainSelectController(model.indexedGrains[data.productId], model.grains) { _, new, _ ->
+    val productController = GrainSelectController(context.indexedGrains[data.productId], context.grains) { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 

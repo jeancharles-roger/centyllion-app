@@ -3,7 +3,7 @@ package com.centyllion.client.controller
 import bulma.*
 import com.centyllion.model.Direction
 
-class DirectionSetEditController(directions: Set<Direction> = emptySet()) : Controller<Set<Direction>, Columns> {
+class DirectionSetEditController(directions: Set<Direction> = emptySet()) : NoContextController<Set<Direction>, Columns>() {
 
     val upIcon = "angle-up"
     val downIcon = "angle-down"

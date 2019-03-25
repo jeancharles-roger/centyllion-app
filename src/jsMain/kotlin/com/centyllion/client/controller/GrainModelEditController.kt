@@ -10,7 +10,7 @@ import kotlin.properties.Delegates.observable
 class GrainModelEditController(
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
-) : Controller<GrainModel, Columns> {
+) : NoContextController<GrainModel, Columns>() {
 
     override var data: GrainModel by observable(emptyModel) { _, old, new ->
         if (old != new) {
@@ -18,6 +18,7 @@ class GrainModelEditController(
             descriptionController.data = data.description
             grainsController.data = data.grains
             behavioursController.data = data.behaviours
+            behavioursController.context = data
             onUpdate(old, new, this@GrainModelEditController)
         }
         refresh()
@@ -41,7 +42,7 @@ class GrainModelEditController(
     }
 
 
-    val grainsController = ColumnsController<Grain, GrainEditController>(data.grains) { index, grain, previous ->
+    val grainsController = noContextColumnsController<Grain, GrainEditController>(data.grains) { index, grain, previous ->
         val controller = previous ?: GrainEditController(grain)
         controller.onUpdate = { _, new, _ ->
             val newGrains = data.grains.toMutableList()
@@ -56,7 +57,7 @@ class GrainModelEditController(
         controller
     }
 
-    val behavioursController = ColumnsController<Behaviour, BehaviourEditController>(data.behaviours) { index, behaviour, previous ->
+    val behavioursController = ColumnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
         val controller = previous ?: BehaviourEditController(behaviour, data)
         controller.onUpdate = { _, new, _ ->
             val behaviours = data.behaviours.toMutableList()

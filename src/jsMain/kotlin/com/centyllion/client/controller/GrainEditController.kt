@@ -8,7 +8,7 @@ class GrainEditController(
     initialData: Grain,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
-): Controller<Grain, Column> {
+): NoContextController<Grain, Column>() {
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {

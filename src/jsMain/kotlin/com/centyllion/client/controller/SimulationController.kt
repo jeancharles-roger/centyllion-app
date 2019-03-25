@@ -4,13 +4,14 @@ import bulma.*
 import chartjs.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
+import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
 import org.w3c.dom.CanvasRenderingContext2D
 import kotlin.browser.window
 
-class SimulationController : Controller<Simulator, BulmaElement> {
+class SimulationController : NoContextController<Simulator, BulmaElement>() {
 
     override var data: Simulator = Simulator(emptyModel, emptySimulation)
         set(value) {
@@ -18,6 +19,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
                 field = value
                 grainsController.data = value.model.grains
                 behaviourController.data = value.model.behaviours
+                behaviourController.context = value.model
                 running = false
                 refresh()
             }
@@ -46,11 +48,11 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         height = "${simulation.height * canvasWidth / simulation.width}"
     }
 
-    val grainsController = ColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
+    val grainsController = noContextColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
         previous ?: GrainDisplayController().apply { data = grain }
     }
 
-    val behaviourController = ColumnsController<Behaviour, BehaviourDisplayController>(model.behaviours) { _, behaviour, previous ->
+    val behaviourController = ColumnsController<Behaviour, GrainModel, BehaviourDisplayController>(model.behaviours, model) { _, behaviour, previous ->
         previous ?: BehaviourDisplayController(model).apply { data = behaviour }
     }
 
@@ -77,7 +79,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         )
     )
 
-    val context = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
+    val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
     val chart = Chart(chartCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
@@ -179,14 +181,14 @@ class SimulationController : Controller<Simulator, BulmaElement> {
         val ySize = xStep * (1.0 + scale)
         val yDelta = xStep * (scale/2.0)
 
-        context.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
+        simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0
         for (i in 0 until simulation.agents.size) {
             val grain = data.grainAtIndex(i)
             if (grain != null) {
-                context.fillStyle = grain.color
-                context.fillRect(currentX-xDelta, currentY-yDelta, xSize, ySize)
+                simulationContext.fillStyle = grain.color
+                simulationContext.fillRect(currentX-xDelta, currentY-yDelta, xSize, ySize)
             }
 
             currentX += xStep
@@ -203,11 +205,7 @@ class SimulationController : Controller<Simulator, BulmaElement> {
 
         // refreshes grain counts
         val counts = data.lastGrainsCount().values
-        grainsController.dataControllers.zip(counts) { controller, count ->
-            if (controller is GrainDisplayController) {
-                controller.count = count
-            }
-        }
+        grainsController.dataControllers.zip(counts) { controller, count -> controller.count = count }
     }
 
     override fun refresh() {

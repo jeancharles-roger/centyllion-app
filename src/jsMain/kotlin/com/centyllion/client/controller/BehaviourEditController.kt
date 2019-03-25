@@ -7,10 +7,10 @@ import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
-    initialData: Behaviour, val model: GrainModel,
+    initialData: Behaviour, model: GrainModel,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ ->}
-) : Controller<Behaviour, Column> {
+    var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ -> }
+) : Controller<Behaviour, GrainModel, Column> {
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -18,13 +18,24 @@ class BehaviourEditController(
             descriptionController.data = data.description
             probatilityController.data = "${data.probability}"
             agePredicateController.data = data.agePredicate
-            mainReactiveController.data = model.indexedGrains[data.mainReactiveId]
-            mainProductController.data = model.indexedGrains[data.mainProductId]
+            mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
+            mainProductController.data = context.indexedGrains[data.mainProductId]
             transform.checked = data.transform
             reactionController.data = data.reaction
             onUpdate(old, new, this@BehaviourEditController)
+            refresh()
         }
-        refresh()
+    }
+
+    override var context: GrainModel by observable(model) { _, old, new ->
+        if (old != new) {
+            mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
+            mainReactiveController.context = new.grains
+            mainProductController.data = context.indexedGrains[data.mainProductId]
+            mainProductController.context = new.grains
+            reactionController.context = context
+            refresh()
+        }
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
@@ -39,15 +50,15 @@ class BehaviourEditController(
         this.data = this.data.copy(probability = new)
     }
 
-    val agePredicateController = IntPredicateController(data.agePredicate)  { _, new, _ ->
+    val agePredicateController = IntPredicateController(data.agePredicate) { _, new, _ ->
         this.data = this.data.copy(agePredicate = new)
     }
 
-    val mainReactiveController = GrainSelectController(model.indexedGrains[data.mainReactiveId], model.grains) { _, new, _ ->
+    val mainReactiveController = GrainSelectController(context.indexedGrains[data.mainReactiveId], context.grains) { _, new, _ ->
         this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
     }
 
-    val mainProductController = GrainSelectController(model.indexedGrains[data.mainProductId], model.grains) { _, new, _ ->
+    val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains) { _, new, _ ->
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
@@ -60,20 +71,21 @@ class BehaviourEditController(
         this.data = data.copy(reaction = data.reaction + newReaction)
     }
 
-    val reactionController = ColumnsController<Reaction, ReactionEditController>(data.reaction) { index, reaction, previous ->
-        val controller = previous ?: ReactionEditController(reaction, model)
-        controller.onUpdate = { _, new, _ ->
-            val newList = data.reaction.toMutableList()
-            newList[index] = new
-            data = data.copy(reaction = newList)
+    val reactionController =
+        ColumnsController<Reaction, GrainModel, ReactionEditController>(data.reaction, context) { index, reaction, previous ->
+            val controller = previous ?: ReactionEditController(reaction, context)
+            controller.onUpdate = { _, new, _ ->
+                val newList = data.reaction.toMutableList()
+                newList[index] = new
+                data = data.copy(reaction = newList)
+            }
+            controller.onDelete = { _, _ ->
+                val newList = data.reaction.toMutableList()
+                newList.removeAt(index)
+                data = data.copy(reaction = newList)
+            }
+            controller
         }
-        controller.onDelete = { _, _ ->
-            val newList = data.reaction.toMutableList()
-            newList.removeAt(index)
-            data = data.copy(reaction = newList)
-        }
-        controller
-    }
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 

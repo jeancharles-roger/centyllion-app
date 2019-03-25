@@ -10,7 +10,7 @@ class EditableStringController(
     initialData: String = "", placeHolder: String = "",
     var isValid: (value: String) -> Boolean = { true },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
-) : Controller<String, Field> {
+) : NoContextController<String, Field>() {
 
     override var data by observable(initialData) { _, old, new ->
         if (old != new) {

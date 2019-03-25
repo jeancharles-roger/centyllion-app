@@ -8,13 +8,7 @@ import kotlin.properties.Delegates.observable
 class GrainSelectController(
     grain: Grain?, grains: List<Grain>,
     var onUpdate: (old: Grain?, new: Grain?, controller: GrainSelectController) -> Unit = { _, _, _ -> }
-) : Controller<Grain?, Field> {
-
-    var grains = grains
-        set(value) {
-            field = value
-            select.options = options()
-        }
+) : Controller<Grain?, List<Grain>, Field> {
 
     override var data by observable(grain) { _, old, new ->
         if (old != new) {
@@ -23,26 +17,32 @@ class GrainSelectController(
         }
     }
 
+    override var context: List<Grain> by observable(grains) { _, old, new ->
+        if (old != new) {
+            select.options = options()
+            this@GrainSelectController.refresh()
+        }
+    }
+
     val icon = Icon("circle")
     val button = iconButton(icon, rounded = true)
 
     val select = Select(options()) { _: Event, value: String ->
         val index = value.toInt()
-        val newValue = if (index < 0) null else grains[index]
+        val newValue = if (index >= context.size) null else context[index]
         data = newValue
     }
 
     override val container: Field = Field(Control(button), Control(select), addons = true)
 
-    private fun options() = grains.map { Option(it.name, "${it.id}") } + Option("none", "-1")
+    private fun options() = context.map { Option(it.name, "${it.id}") } + Option("none", "${context.size}")
 
     init {
         refresh()
     }
 
     override fun refresh() {
-        select.options = options()
-        val index = data.let { if (it != null) grains.indexOf(it) else select.options.lastIndex }
+        val index = data.let { if (it != null) context.indexOf(it) else select.options.lastIndex }
         select.selectedIndex = index
         icon.root.style.color = data?.color ?: "transparent"
     }

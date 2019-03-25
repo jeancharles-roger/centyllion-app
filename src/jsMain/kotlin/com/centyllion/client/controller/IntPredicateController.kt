@@ -10,7 +10,7 @@ class IntPredicateController(
     predicate: Predicate<Int>,
     var onUpdate: (old: Predicate<Int>, new: Predicate<Int>, controller: IntPredicateController) -> Unit =
         { _, _, _ -> }
-): Controller<Predicate<Int>, Field> {
+): NoContextController<Predicate<Int>, Field>() {
 
     override var data by observable(predicate) { _, old, new ->
         if (old != new) {

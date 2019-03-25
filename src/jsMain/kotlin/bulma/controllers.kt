@@ -4,9 +4,11 @@ import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
 
-interface Controller<Data, Element : BulmaElement> : BulmaElement {
+interface Controller<Data, Context, Element : BulmaElement> : BulmaElement {
 
     var data: Data
+
+    var context: Context
 
     val container: Element
 
@@ -15,17 +17,27 @@ interface Controller<Data, Element : BulmaElement> : BulmaElement {
     fun refresh()
 }
 
-class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
-    initialList: List<Data>,
+abstract class NoContextController<Data, Element: BulmaElement>: Controller<Data, Unit, Element> {
+    override var context: Unit = Unit
+}
+
+class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>(
+    initialList: List<Data>, initialContext: Context,
     override val container: Columns = Columns().apply { multiline = true },
     val controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
-) : Controller<List<Data>, Columns> {
+) : Controller<List<Data>, Context, Columns> {
 
     override var data: List<Data> by observable(initialList) { _, old, new ->
         if (old != new) {
             refreshControllers()
+            refresh()
         }
-        refresh()
+    }
+
+    override var context: Context by observable(initialContext) { _, old, new ->
+        if (old != new) {
+            controllers.forEach { it.context = new }
+        }
     }
 
     private var controllers: List<Ctrl> = listOf()
@@ -39,7 +51,7 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
     fun refreshControllers() {
         // constructs a resized controllers list to match new size and populates with controllers that haven't changed nor moved
         val resizedControllers = List(data.size) { controllers.getOrNull(it) }
-            .zip(data).mapIndexed { i, (c, d) -> if (c != null && c.data == d) c else null }
+            .zip(data).map { (c, d) -> if (c != null && c.data == d) c else null }
 
         // gets unused controllers
         val availableControllers = controllers.filter { !resizedControllers.contains(it) }.toMutableList()
@@ -59,3 +71,8 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
     }
 }
 
+fun <Data, Ctrl : Controller<Data, Unit, Column>> noContextColumnsController(
+    initialList: List<Data>,
+    container: Columns = Columns().apply { multiline = true },
+    controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
+) = ColumnsController(initialList, Unit, container, controllerBuilder)

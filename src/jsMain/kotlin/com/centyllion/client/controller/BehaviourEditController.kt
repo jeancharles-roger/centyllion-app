@@ -101,6 +101,8 @@ class BehaviourEditController(
     override
     val container = Column(body, size = ColumnSize.Full)
 
-    override fun refresh() { }
+    override fun refresh() {
+        addReactionButton.disabled = data.reaction.size >= 2
+    }
 
 }

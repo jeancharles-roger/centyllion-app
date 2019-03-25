@@ -8,8 +8,8 @@ import kotlin.properties.Delegates.observable
 class ReactionEditController(
     reaction: Reaction, model: GrainModel,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ ->}
-): Controller<Reaction, GrainModel, Column> {
+    var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
+) : Controller<Reaction, GrainModel, Column> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
@@ -44,25 +44,26 @@ class ReactionEditController(
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("transform", data.transform) { _, value ->
+    val transform = Checkbox("Transform", data.transform) { _, value ->
         this.data = this.data.copy(transform = value)
     }
 
     val delete = Delete { onDelete(this.data, this@ReactionEditController) }
 
-    override val container = Column(Media(
-        center = listOf(
-            Columns(
-                // first line
-                Column(HorizontalField(Help("Reactive"), reactiveController.container), size = ColumnSize.S4),
-                Column(directionController, size = ColumnSize.S2),
-                Column(HorizontalField(Help("Product"), productController.container), size = ColumnSize.S4),
-                Column(Field(Control(transform)), size = ColumnSize.S2),
-                multiline = true
+    override val container = Column(
+        Level(
+            center = listOf(
+                HorizontalField(Help("Reactive"), reactiveController.container),
+                directionController,
+                HorizontalField(Help("Product"), productController.container),
+                Control(transform)
+            ),
+            right = listOf(
+                delete
             )
         ),
-        right = listOf(delete)
-    ), size = ColumnSize.Full)
+        size = ColumnSize.Full
+    )
 
     override fun refresh() {
         reactiveController.refresh()

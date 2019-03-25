@@ -291,7 +291,8 @@ class Checkbox(
     text: String, checked: Boolean = false,
     onChange: (event: Event, value: Boolean) -> Unit = { _, _ -> }
 ) : ControlElement {
-    override val root: HTMLElement = document.create.label("checkbox") {
+    override val root: HTMLElement = document.create.span("help checkbox") {
+        +text
         input(type = InputType.checkBox) {
             this.checked = checked
             onChangeFunction = {
@@ -301,7 +302,6 @@ class Checkbox(
                 }
             }
         }
-        +text
     }
 
     private val inputNode = root.querySelector("input") as HTMLInputElement

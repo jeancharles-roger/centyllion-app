@@ -62,7 +62,7 @@ class BehaviourEditController(
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("transform", data.transform) { _, value ->
+    val transform = Checkbox("Transform", data.transform) { _, value ->
         this.data = this.data.copy(transform = value)
     }
 

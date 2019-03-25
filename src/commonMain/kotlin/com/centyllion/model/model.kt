@@ -245,6 +245,11 @@ data class Simulation(
         ages[index] = 0
     }
 
+    fun resetIdAtIndex(index: Int) {
+        agents[index] = -1
+        ages[index] = -1
+    }
+
     fun neighbours(index: Int): Map<Direction, Int> = Direction.values().map { it to agents[moveIndex(index, it)] }.toMap()
 
     fun grainsCounts(): Map<Int, Int> {

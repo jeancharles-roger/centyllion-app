@@ -15,6 +15,8 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
+val debug: String by project
+
 val serialization_version: String by project
 val coroutine_version: String by project
 val clikt_version: String by project
@@ -121,8 +123,8 @@ kotlin {
                 it.kotlinOptions {
                     moduleKind = "amd"
                     main = "noCall"
-                    sourceMap = true
-                    sourceMapEmbedSources = "always"
+                    sourceMap = debug.toBoolean()
+                    sourceMapEmbedSources = if (debug.toBoolean()) "always" else "never"
                 }
             }
         }

@@ -18,8 +18,8 @@ class ReactionEditController(
             productController.data = model.indexedGrains[data.productId]
             transform.checked = data.transform
             onUpdate(old, new, this@ReactionEditController)
-            refresh()
         }
+        refresh()
     }
 
     val reactiveController = GrainSelectController(model.indexedGrains[data.reactiveId], model.grains) { _, new, _ ->
@@ -53,6 +53,9 @@ class ReactionEditController(
     ), size = ColumnSize.Full)
 
     override fun refresh() {
+        reactiveController.refresh()
+        directionController.refresh()
+        productController.refresh()
     }
 
 }

@@ -15,8 +15,8 @@ class GrainEditController(
             nameController.data = new.name
             descriptionController.data = new.description
             onUpdate(old, new, this@GrainEditController)
-            refresh()
         }
+        refresh()
     }
 
     val dot = span(classes = "dot")
@@ -43,6 +43,8 @@ class GrainEditController(
 
     override fun refresh() {
         dot.root.style.backgroundColor = data.color
+        nameController.refresh()
+        descriptionController.refresh()
     }
 
 }

@@ -169,11 +169,11 @@ fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
 }
 
 fun fishRespirationModel(co: Boolean): GrainModel {
-    val branchiaSide = Grain(0, "Paroi branchie", "darkblue", movementProbability = 0.0)
-    val waterO2 = Grain(1, "Oxygène dans l'eau", "lightblue",
+    val branchiaSide = Grain(0, "pb", "darkblue", description = "Paroi branchie", movementProbability = 0.0)
+    val waterO2 = Grain(1, "oe", "lightblue", description = "Oxygène dans l'eau",
         allowedDirection = setOf(Direction.Up, Direction.Down, Direction.Right))
-    val waterO2Source = Grain(2, "Source d'oxygène dans l'eau", "plum", movementProbability = 0.0)
-    val waterO2Sink = Grain(3, "Evacuation d'oxygène dans l'eau", "violet", movementProbability = 0.0)
+    val waterO2Source = Grain(2, "soe", "plum", description = "Source d'oxygène dans l'eau", movementProbability = 0.0)
+    val waterO2Sink = Grain(3, "eoe", "violet", description = "Evacuation d'oxygène dans l'eau", movementProbability = 0.0)
 
     val waterO2SourceBehaviour = Behaviour("Apport d'oxygene", "", 0.1,
         mainReactiveId = waterO2Source.id, mainProductId = waterO2Source.id,
@@ -184,8 +184,8 @@ fun fishRespirationModel(co: Boolean): GrainModel {
         reaction = listOf(Reaction(waterO2.id,  -1, allowedDirection = setOf(Direction.Left)))
     )
 
-    val veinSide = Grain(4, "Paroi veine", "firebrick", movementProbability = 0.0)
-    val bloodO2 = Grain(5, "Oxygène dans le sang", "red",
+    val veinSide = Grain(4, "px", "firebrick", description = "Paroi veine", movementProbability = 0.0)
+    val bloodO2 = Grain(5, "os", "red", description = "Oxygène dans le sang",
         allowedDirection = setOf(Direction.Up, Direction.Down, if (co) Direction.Right else Direction.Left))
 
     val waterToBlood = Behaviour("Passage eau vers sang", "", 0.2,
@@ -209,7 +209,6 @@ fun fishRespirationModel(co: Boolean): GrainModel {
         listOf(waterO2SourceBehaviour, waterO2SinkBehaviour, waterToBlood, bloodToWater)
     )
 }
-
 
 fun fishRespirationSimulation(): Simulation {
     return Simulation(100, 100, 1).apply {

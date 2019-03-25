@@ -22,7 +22,10 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
 ) : Controller<List<Data>, Columns> {
 
     override var data: List<Data> by observable(initialList) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            refreshControllers()
+        }
+        refresh()
     }
 
     private var controllers: List<Ctrl> = listOf()
@@ -30,10 +33,10 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
     val dataControllers: List<Ctrl> get() = controllers
 
     init {
-        refresh()
+        refreshControllers()
     }
 
-    override fun refresh() {
+    fun refreshControllers() {
         // constructs a resized controllers list to match new size and populates with controllers that haven't changed nor moved
         val resizedControllers = List(data.size) { controllers.getOrNull(it) }
             .zip(data).mapIndexed { i, (c, d) -> if (c != null && c.data == d) c else null }
@@ -49,6 +52,10 @@ class ColumnsController<Data, Ctrl : Controller<Data, Column>>(
             }
         }
         container.columns = controllers.map { it.container }
+    }
+
+    override fun refresh() {
+        controllers.forEach { it.refresh() }
     }
 }
 

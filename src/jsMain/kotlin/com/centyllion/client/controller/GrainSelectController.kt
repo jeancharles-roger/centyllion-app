@@ -39,6 +39,7 @@ class GrainSelectController(
     }
 
     override fun refresh() {
+        select.options = options()
         val index = data.let { if (it != null) grains.indexOf(it) else select.options.lastIndex }
         select.selectedIndex = index
         icon.root.style.color = data?.color ?: "transparent"

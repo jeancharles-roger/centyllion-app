@@ -1,6 +1,5 @@
 package com.centyllion.client.controller
 
-import KeycloakInstance
 import bulma.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
@@ -9,7 +8,6 @@ import com.centyllion.model.sample.emptyModel
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
-    val instance: KeycloakInstance,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : Controller<GrainModel, Columns> {
@@ -21,8 +19,8 @@ class GrainModelEditController(
             grainsController.data = data.grains
             behavioursController.data = data.behaviours
             onUpdate(old, new, this@GrainModelEditController)
-            refresh()
         }
+        refresh()
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
@@ -106,6 +104,10 @@ class GrainModelEditController(
     }
 
     override fun refresh() {
+        nameController.refresh()
+        descriptionController.refresh()
+        grainsController.refresh()
+        behavioursController.refresh()
     }
 
 

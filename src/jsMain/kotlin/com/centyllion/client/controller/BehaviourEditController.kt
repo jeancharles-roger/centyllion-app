@@ -23,8 +23,8 @@ class BehaviourEditController(
             transform.checked = data.transform
             reactionController.data = data.reaction
             onUpdate(old, new, this@BehaviourEditController)
-            refresh()
         }
+        refresh()
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
@@ -103,6 +103,14 @@ class BehaviourEditController(
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 2
+
+        nameController.refresh()
+        descriptionController.refresh()
+        probatilityController.refresh()
+        agePredicateController.refresh()
+        mainReactiveController.refresh()
+        mainProductController.refresh()
+        reactionController.refresh()
     }
 
 }

@@ -3,13 +3,14 @@ package com.centyllion.client.controller
 import bulma.*
 import com.centyllion.model.Direction
 
-const val upIcon = "fa-angle-up"
-const val downIcon = "fa-angle-down"
-const val leftIcon = "fa-angle-left"
-const val rightIcon = "fa-angle-right"
+class DirectionSetEditController(directions: Set<Direction> = emptySet()) : Controller<Set<Direction>, Columns> {
 
-class DirectionSetController : Controller<Set<Direction>, Columns> {
-    override var data: Set<Direction> = emptySet()
+    val upIcon = "angle-up"
+    val downIcon = "angle-down"
+    val leftIcon = "angle-left"
+    val rightIcon = "angle-right"
+
+    override var data: Set<Direction> = directions
         set(value) {
             if (field != value) {
                 field = value

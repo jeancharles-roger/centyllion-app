@@ -14,6 +14,7 @@ class ReactionEditController(
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
             reactiveController.data = model.indexedGrains[data.reactiveId]
+            directionController.data = data.allowedDirection
             productController.data = model.indexedGrains[data.productId]
             transform.checked = data.transform
             onUpdate(old, new, this@ReactionEditController)
@@ -24,6 +25,8 @@ class ReactionEditController(
     val reactiveController = GrainSelectController(model.indexedGrains[data.reactiveId], model.grains) { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
+
+    val directionController = DirectionSetEditController(data.allowedDirection)
 
     val productController = GrainSelectController(model.indexedGrains[data.productId], model.grains) { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)
@@ -39,8 +42,9 @@ class ReactionEditController(
         center = listOf(
             Columns(
                 // first line
-                Column(HorizontalField(Help("Reactive"), reactiveController.container), size = ColumnSize.S5),
-                Column(HorizontalField(Help("Product"), productController.container), size = ColumnSize.S5),
+                Column(HorizontalField(Help("Reactive"), reactiveController.container), size = ColumnSize.S4),
+                Column(directionController, size = ColumnSize.S2),
+                Column(HorizontalField(Help("Product"), productController.container), size = ColumnSize.S4),
                 Column(Field(Control(transform)), size = ColumnSize.S2),
                 multiline = true
             )

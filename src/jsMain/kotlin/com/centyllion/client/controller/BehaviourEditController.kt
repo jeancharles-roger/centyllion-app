@@ -71,21 +71,36 @@ class BehaviourEditController(
         this.data = data.copy(reaction = data.reaction + newReaction)
     }
 
-    val reactionController =
-        ColumnsController<Reaction, GrainModel, ReactionEditController>(data.reaction, context) { index, reaction, previous ->
-            val controller = previous ?: ReactionEditController(reaction, context)
-            controller.onUpdate = { _, new, _ ->
-                val newList = data.reaction.toMutableList()
-                newList[index] = new
-                data = data.copy(reaction = newList)
-            }
-            controller.onDelete = { _, _ ->
-                val newList = data.reaction.toMutableList()
-                newList.removeAt(index)
-                data = data.copy(reaction = newList)
-            }
-            controller
+    val reactionHeader = listOf(
+        Column(
+            Level(
+                center = listOf(
+                    HorizontalField(Help("Reactive"), mainReactiveController.container),
+                    HorizontalField(Help("Product"), mainProductController.container),
+                    Field(Control(transform))
+                ),
+                right = listOf(addReactionButton)
+            ),
+            size = ColumnSize.Full
+        )
+    )
+
+    val reactionController = ColumnsController<Reaction, GrainModel, ReactionEditController>(
+        data.reaction, context, reactionHeader
+    ) { index, reaction, previous ->
+        val controller = previous ?: ReactionEditController(reaction, context)
+        controller.onUpdate = { _, new, _ ->
+            val newList = data.reaction.toMutableList()
+            newList[index] = new
+            data = data.copy(reaction = newList)
         }
+        controller.onDelete = { _, _ ->
+            val newList = data.reaction.toMutableList()
+            newList.removeAt(index)
+            data = data.copy(reaction = newList)
+        }
+        controller
+    }
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
@@ -98,11 +113,6 @@ class BehaviourEditController(
                 // second line
                 Column(descriptionController, size = ColumnSize.S7),
                 Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),
-                // third line
-                Column(HorizontalField(Help("Reactive"), mainReactiveController.container), size = ColumnSize.S4),
-                Column(HorizontalField(Help("Product"), mainProductController.container), size = ColumnSize.S4),
-                Column(Field(Control(transform))),
-                Column(addReactionButton, size = ColumnSize.S1),
                 multiline = true
             ),
             reactionController

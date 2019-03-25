@@ -23,6 +23,7 @@ abstract class NoContextController<Data, Element: BulmaElement>: Controller<Data
 
 class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>(
     initialList: List<Data>, initialContext: Context,
+    val header: List<Column> = emptyList(),
     override val container: Columns = Columns().apply { multiline = true },
     val controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
 ) : Controller<List<Data>, Context, Columns> {
@@ -63,7 +64,7 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
                 controllerBuilder(i, d, previous)
             }
         }
-        container.columns = controllers.map { it.container }
+        container.columns = header + controllers.map { it.container }
     }
 
     override fun refresh() {
@@ -74,5 +75,6 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
 fun <Data, Ctrl : Controller<Data, Unit, Column>> noContextColumnsController(
     initialList: List<Data>,
     container: Columns = Columns().apply { multiline = true },
+     header: List<Column> = emptyList(),
     controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
-) = ColumnsController(initialList, Unit, container, controllerBuilder)
+) = ColumnsController(initialList, Unit, header, container, controllerBuilder)

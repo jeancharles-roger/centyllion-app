@@ -36,7 +36,9 @@ class ReactionEditController(
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
 
-    val directionController = DirectionSetEditController(data.allowedDirection)
+    val directionController = DirectionSetEditController(data.allowedDirection) { _, new, _ ->
+        this.data = this.data.copy(allowedDirection = new)
+    }
 
     val productController = GrainSelectController(context.indexedGrains[data.productId], context.grains) { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)

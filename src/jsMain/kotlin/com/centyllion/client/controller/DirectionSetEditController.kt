@@ -2,38 +2,44 @@ package com.centyllion.client.controller
 
 import bulma.*
 import com.centyllion.model.Direction
+import kotlin.properties.Delegates
 
-class DirectionSetEditController(directions: Set<Direction> = emptySet()) : NoContextController<Set<Direction>, Columns>() {
+class DirectionSetEditController(
+    directions: Set<Direction> = emptySet(),
+    var onUpdate: (old: Set<Direction>, new: Set<Direction>, controller: DirectionSetEditController) -> Unit = { _, _, _ -> }
+) : NoContextController<Set<Direction>, Field>() {
 
     val upIcon = "angle-up"
     val downIcon = "angle-down"
     val leftIcon = "angle-left"
     val rightIcon = "angle-right"
 
-    override var data: Set<Direction> = directions
-        set(value) {
-            if (field != value) {
-                field = value
-                refresh()
-            }
+    override var data: Set<Direction> by Delegates.observable(directions) { _, old, new ->
+        if (old != new) {
+            onUpdate(old, new, this@DirectionSetEditController)
+            refresh()
         }
+    }
 
-    val left = Icon(leftIcon)
-    val up = Icon(upIcon)
-    val down = Icon(downIcon)
-    val right = Icon(rightIcon)
+    val left = iconButton(Icon(leftIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Left) }
+    val up = iconButton(Icon(upIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Up) }
+    val down = iconButton(Icon(downIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Down) }
+    val right = iconButton(Icon(rightIcon), rounded = true, size = Size.Small) { toggleDirection(Direction.Right) }
 
-    override val container = Columns(
-        Column(left, size = ColumnSize.OneThird),
-        Column(up, down, size = ColumnSize.OneThird),
-        Column(right, size = ColumnSize.OneThird)
+    fun toggleDirection(direction: Direction) {
+        data = if (data.contains(direction)) data - direction else data + direction
+    }
+
+    override val container = Field(
+        Control(left), Control(up), Control(down), Control(right),
+        addons = true
     )
 
     override fun refresh() {
-        up.color = if (data.contains(Direction.Up)) TextColor.GreyLighter else TextColor.None
-        down.color = if (data.contains(Direction.Down)) TextColor.GreyLighter else TextColor.None
-        left.color = if (data.contains(Direction.Left)) TextColor.GreyLighter else TextColor.None
-        right.color = if (data.contains(Direction.Right)) TextColor.GreyLighter else TextColor.None
+        up.color = if (data.contains(Direction.Up)) ElementColor.Info else ElementColor.None
+        down.color = if (data.contains(Direction.Down)) ElementColor.Info else ElementColor.None
+        left.color = if (data.contains(Direction.Left)) ElementColor.Info else ElementColor.None
+        right.color = if (data.contains(Direction.Right)) ElementColor.Info else ElementColor.None
     }
 
 }

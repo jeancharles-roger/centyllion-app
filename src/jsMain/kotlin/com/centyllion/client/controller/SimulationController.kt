@@ -8,13 +8,15 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
-import kotlinx.html.js.onClickFunction
+import kotlinx.html.js.onMouseDownFunction
 import kotlinx.html.js.onMouseMoveFunction
+import kotlinx.html.js.onMouseUpFunction
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class SimulationController : NoContextController<Simulator, BulmaElement>() {
 
@@ -29,6 +31,7 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
                 grainsController.data = value.model.grains
                 behaviourController.data = value.model.behaviours
                 behaviourController.context = value.model
+                selectedGrainController.context = value.model.grains
                 running = false
                 refresh()
             }
@@ -43,6 +46,13 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
 
     var presentCharts = true
 
+    // simulation content edition
+    private var selectedTool: EditTools? = null
+
+    var drawStep = -1
+    var sourceX = -1
+    var sourceY = -1
+
     // simulation execution controls
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Info, rounded = true) { step() }
@@ -53,19 +63,32 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
     val stepLabel = Label()
 
     fun drawOnSimulation(sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int) {
-        val idToSet = 1
-        val spraySize = 50
-        val sprayDensity = 0.2
 
         when (selectedTool) {
             EditTools.Pen -> {
-                simulation.setIdAtIndex(simulation.toIndex(x, y), idToSet)
+                selectedGrainController.data?.id?.let { idToSet ->
+                    simulation.setIdAtIndex(simulation.toIndex(x, y), idToSet)
+                }
             }
             EditTools.Line -> {
                 // TODO
             }
             EditTools.Spray -> {
+                val random = Random.Default
+                selectedGrainController.data?.id?.let { idToSet ->
+                    val sprayHalfSize = 15
+                    val sprayDensity = 0.005
 
+                    for (i in x - sprayHalfSize until x + sprayHalfSize) {
+                        for (j in y - sprayHalfSize until y + sprayHalfSize) {
+                            if (simulation.positionInside(i, j)) {
+                                if (random.nextDouble() < sprayDensity) {
+                                    simulation.setIdAtIndex(simulation.toIndex(i, j), idToSet)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             EditTools.Eraser -> {
                 simulation.resetIdAtIndex(simulation.toIndex(x, y))
@@ -81,10 +104,6 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
         }
     }
 
-    var drawStep = -1
-    var sourceX = -1
-    var sourceY = -1
-
     private fun mouseChange(event: MouseEvent) {
         if (running) return
 
@@ -95,6 +114,7 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
             drawStep > 0 -> -1
             else -> null
         }
+
         if (newStep != null) {
             val rectangle = simulationCanvas.root.getBoundingClientRect()
             val canvasX = event.clientX - rectangle.left
@@ -117,7 +137,12 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
         width = "$canvasWidth"
         height = "${simulation.height * canvasWidth / simulation.width}"
 
-        onClickFunction = {
+        onMouseUpFunction = {
+            if (it is MouseEvent) {
+                mouseChange(it)
+            }
+        }
+        onMouseDownFunction = {
             if (it is MouseEvent) {
                 mouseChange(it)
             }
@@ -141,20 +166,23 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
             previous ?: BehaviourDisplayController(model).apply { data = behaviour }
         }
 
-    // simulation content edition
-    private var selectedTool: EditTools? = null
-
     fun selectTool(tool: EditTools) {
         toolButtons.forEach { it.outlined = false }
         toolButtons[tool.ordinal].outlined = true
         selectedTool = tool
     }
 
+    val selectedGrainController = GrainSelectController(null, model.grains)
+
     val toolButtons = EditTools.values().map { tool ->
         iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true) { selectTool(tool) }
     }
 
-    val editToolbar = Level(center = listOf(Field(grouped = true).apply { body = toolButtons.map { Control(it) } }))
+    val editToolbar = Level(
+        center = listOf(Field(grouped = true).apply {
+            body = toolButtons.map { Control(it) }
+        }, selectedGrainController.container)
+    )
 
     val chartCanvas = canvas {}
 

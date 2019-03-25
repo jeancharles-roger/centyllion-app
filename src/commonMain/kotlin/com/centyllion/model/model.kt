@@ -207,6 +207,9 @@ data class Simulation(
     fun positionInside(position: Position) =
         position.z in 0 until depth && position.y in 0 until height && position.x in 0 until width
 
+    fun positionInside(x: Int, y: Int, z: Int = 0) =
+        z in 0 until depth && y in 0 until height && x in 0 until width
+
     fun reset() {
         initialAgents.copyInto(agents)
         for (i in 0 until ages.size) {

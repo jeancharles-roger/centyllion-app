@@ -41,6 +41,8 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
         }
     }
 
+    var onClick: (Data, Ctrl) -> Unit = { _, _ -> }
+
     private var controllers: List<Ctrl> = listOf()
 
     val dataControllers: List<Ctrl> get() = controllers
@@ -61,7 +63,13 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
             c ?: availableControllers.let {
                 val previous = availableControllers.find { it.data == d }
                 availableControllers.remove(previous)
-                controllerBuilder(i, d, previous)
+                val newController = controllerBuilder(i, d, previous)
+                if (previous == null) {
+                    newController.root.onclick = {
+                        onClick(newController.data, newController)
+                    }
+                }
+                newController
             }
         }
         container.columns = header + controllers.map { it.container }

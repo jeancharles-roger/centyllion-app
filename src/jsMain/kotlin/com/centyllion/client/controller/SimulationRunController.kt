@@ -13,10 +13,6 @@ import kotlin.properties.Delegates
 
 class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
-    enum class EditTools(val icon: String) {
-        Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
-    }
-
     override var data: Simulator by Delegates.observable(Simulator(emptyModel, emptySimulation)) { _, old, new ->
         if (old != new) {
             grainsController.data = new.model.grains

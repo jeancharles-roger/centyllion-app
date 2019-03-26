@@ -237,7 +237,7 @@ class Option(text: String, value: String = "") : BulmaElement {
 
 /** [Select](http://bulma.io/documentation/form/select/) */
 class Select(
-    options: List<Option>, selectedIndex: Int = 0, color: ElementColor = ElementColor.None,
+    options: List<Option> = emptyList(), selectedIndex: Int = 0, color: ElementColor = ElementColor.None,
     size: Size = Size.None, rounded: Boolean = false,
     loading: Boolean = false, multiple: Boolean = false,
     onChange: (event: Event, value: String) -> Unit = { _, _ -> }

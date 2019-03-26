@@ -21,7 +21,7 @@ class SimulationEditController(
 ) : Controller<Simulation, GrainModel, BulmaElement> {
 
     enum class EditTools(val icon: String) {
-        Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
+        None("ban"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
     }
 
     override var data: Simulation by observable(emptySimulation) { _, old, new ->
@@ -38,7 +38,7 @@ class SimulationEditController(
     }
 
     // simulation content edition
-    private var selectedTool: EditTools? = null
+    private var selectedTool: EditTools = EditTools.None
 
     var drawStep = -1
     var sourceX = -1
@@ -75,6 +75,7 @@ class SimulationEditController(
             EditTools.Eraser -> {
                 data.resetIdAtIndex(data.toIndex(x, y))
             }
+            EditTools.None -> { }
         }
 
         val scale = 0.1
@@ -167,7 +168,7 @@ class SimulationEditController(
     val selectedGrainController = GrainSelectController(null, context.grains)
 
     val toolButtons = EditTools.values().map { tool ->
-        iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true) { selectTool(tool) }
+        iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true, outlined = selectedTool == tool) { selectTool(tool) }
     }
 
     val editToolbar = Level(

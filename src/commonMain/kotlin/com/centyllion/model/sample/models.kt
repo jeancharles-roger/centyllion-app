@@ -3,7 +3,7 @@ package com.centyllion.model.sample
 import com.centyllion.model.*
 import kotlin.random.Random
 
-val emptyModel = GrainModel("empty")
+val emptyModel = GrainModel("Empty model")
 val emptyGrainModelDescription = GrainModelDescription("", "", null, null, "", emptyModel)
 val emptySimulation = Simulation(100, 100, 1)
 

@@ -1,10 +1,9 @@
 package com.centyllion.model
 
-val colorNames = arrayOf(
+val colorNames = listOf(
     "black",
     "silver",
     "gray",
-    "white",
     "maroon",
     "red",
     "purple",
@@ -160,8 +159,6 @@ val colorNames = arrayOf(
     "turquoise",
     "violet",
     "wheat",
-    "white",
-    "whitesmoke",
     "yellow",
     "yellowgreen"
 )

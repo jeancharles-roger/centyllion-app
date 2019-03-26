@@ -119,6 +119,14 @@ data class GrainModel(
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
+    fun availableGrainName(prefix: String = "grain"): String = grains.map { it.name }.toSet().let {
+        if (!it.contains(prefix)) return prefix
+        for (i in 1..grains.size) {
+            "$prefix $i".let { name -> if (!it.contains(name)) return name }
+        }
+        return "$prefix ${grains.size + 1}"
+    }
+
     fun availableGrainId(): Int = grains.map { it.id }.toSet().let {
         for (i in 0 until grains.size) {
             if (!it.contains(i)) return i
@@ -126,12 +134,11 @@ data class GrainModel(
         return grains.size
     }
 
-    fun availableGrainColor(): String = grains.map { it.color }.toSet().let {
-        for (color in colorNames) {
-            if (!it.contains(color)) return color
-        }
-        return "red"
+    fun availableGrainColor(): String = (colorNames - grains.map { it.color }).let {
+        if (it.isEmpty()) "red" else it.random()
     }
+
+    fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
 
     /** Main reactive grains are all the grains that are main component for a behaviour */
     @Transient

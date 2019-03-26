@@ -247,6 +247,8 @@ class LineChartPlot(
 )
 
 class LineDataSet(
+    var key: Int? = undefined,
+
     /** The label for the dataset which appears in the legend and tooltips. */
     var label: String? = undefined,
     /** Data for the set */

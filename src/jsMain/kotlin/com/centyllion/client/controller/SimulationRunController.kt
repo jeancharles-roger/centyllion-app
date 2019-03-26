@@ -8,50 +8,34 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
-import kotlinx.html.js.onMouseDownFunction
-import kotlinx.html.js.onMouseMoveFunction
-import kotlinx.html.js.onMouseUpFunction
-import org.w3c.dom.CanvasRenderingContext2D
-import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
-import kotlin.math.roundToInt
-import kotlin.random.Random
+import kotlin.properties.Delegates
 
-class SimulationController : NoContextController<Simulator, BulmaElement>() {
+class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     enum class EditTools(val icon: String) {
         Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
     }
 
-    override var data: Simulator = Simulator(emptyModel, emptySimulation)
-        set(value) {
-            if (value != field) {
-                field = value
-                grainsController.data = value.model.grains
-                behaviourController.data = value.model.behaviours
-                behaviourController.context = value.model
-                selectedGrainController.context = value.model.grains
-                running = false
-                refresh()
-            }
+    override var data: Simulator by Delegates.observable(Simulator(emptyModel, emptySimulation)) { _, old, new ->
+        if (old != new) {
+            grainsController.data = new.model.grains
+            behaviourController.data = new.model.behaviours
+            behaviourController.context = new.model
+            selectedGrainController.context = new.model.grains
+            simulationEditController.data = new.simulation
+            simulationEditController.context = new.model
+            running = false
+            refresh()
         }
+    }
 
     inline val model get() = data.model
-
-    inline val simulation get() = data.simulation
 
     var running = false
     var lastRefresh = 0
 
     var presentCharts = true
-
-    // simulation content edition
-    private var selectedTool: EditTools? = null
-
-    var drawStep = -1
-    var sourceX = -1
-    var sourceY = -1
 
     // simulation execution controls
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
@@ -61,98 +45,6 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Link, rounded = true) { toggleCharts() }
 
     val stepLabel = Label()
-
-    fun drawOnSimulation(sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int) {
-
-        when (selectedTool) {
-            EditTools.Pen -> {
-                selectedGrainController.data?.id?.let { idToSet ->
-                    simulation.setIdAtIndex(simulation.toIndex(x, y), idToSet)
-                }
-            }
-            EditTools.Line -> {
-                // TODO
-            }
-            EditTools.Spray -> {
-                val random = Random.Default
-                selectedGrainController.data?.id?.let { idToSet ->
-                    val sprayHalfSize = 15
-                    val sprayDensity = 0.005
-
-                    for (i in x - sprayHalfSize until x + sprayHalfSize) {
-                        for (j in y - sprayHalfSize until y + sprayHalfSize) {
-                            if (simulation.positionInside(i, j)) {
-                                if (random.nextDouble() < sprayDensity) {
-                                    simulation.setIdAtIndex(simulation.toIndex(i, j), idToSet)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            EditTools.Eraser -> {
-                simulation.resetIdAtIndex(simulation.toIndex(x, y))
-            }
-        }
-
-        refreshCanvas()
-        data.resetCount()
-        refreshCounts()
-
-        if (step == -1) {
-            simulation.saveState()
-        }
-    }
-
-    private fun mouseChange(event: MouseEvent) {
-        if (running) return
-
-        val clicked = event.buttons.toInt() == 1
-        val newStep = when {
-            clicked && drawStep >= 0 -> drawStep + 1
-            clicked -> 0
-            drawStep > 0 -> -1
-            else -> null
-        }
-
-        if (newStep != null) {
-            val rectangle = simulationCanvas.root.getBoundingClientRect()
-            val canvasX = event.clientX - rectangle.left
-            val canvasY = event.clientY - rectangle.top
-
-            val x = ((canvasX / simulationCanvas.root.width) * simulation.width).roundToInt()
-            val y = ((canvasY / simulationCanvas.root.height) * simulation.height).roundToInt()
-
-            if (newStep == 0) {
-                sourceX = x
-                sourceY = y
-            }
-            drawStep = newStep
-            drawOnSimulation(sourceX, sourceY, x, y, drawStep)
-        }
-    }
-
-    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas {
-        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
-        width = "$canvasWidth"
-        height = "${simulation.height * canvasWidth / simulation.width}"
-
-        onMouseUpFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
-        }
-        onMouseDownFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
-        }
-        onMouseMoveFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
-        }
-    }
 
     val grainsController =
         noContextColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
@@ -166,25 +58,14 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
             previous ?: BehaviourDisplayController(model).apply { data = behaviour }
         }
 
-    fun selectTool(tool: EditTools) {
-        toolButtons.forEach { it.outlined = false }
-        toolButtons[tool.ordinal].outlined = true
-        selectedTool = tool
-    }
-
     val selectedGrainController = GrainSelectController(null, model.grains)
 
-    val toolButtons = EditTools.values().map { tool ->
-        iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true) { selectTool(tool) }
-    }
-
-    val editToolbar = Level(
-        center = listOf(Field(grouped = true).apply {
-            body = toolButtons.map { Control(it) }
-        }, selectedGrainController.container)
-    )
-
     val chartCanvas = canvas {}
+
+    val simulationEditController = SimulationEditController { _, _ ->
+        data.resetCount()
+        refreshCounts()
+    }
 
     override val container = div(
         Columns(
@@ -200,8 +81,7 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
                     right = listOf(toggleChartsButton),
                     mobile = true
                 ),
-                div(simulationCanvas, classes = "has-text-centered"),
-                editToolbar,
+                simulationEditController.container,
                 div(chartCanvas, classes = "has-text-centered"),
                 desktopSize = ColumnSize.TwoThirds
             ),
@@ -212,8 +92,6 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
             )
         )
     )
-
-    val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
     val chart = Chart(chartCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
@@ -301,36 +179,7 @@ class SimulationController : NoContextController<Simulator, BulmaElement>() {
     }
 
     fun refreshCanvas() {
-        val scale = 0.1
-
-        // refreshes simulation view
-        val canvasWidth = simulationCanvas.root.width.toDouble()
-        val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xStep = canvasWidth / simulation.width
-        val xMax = simulation.width * xStep
-        val yStep = canvasHeight / simulation.height
-
-        val xSize = xStep * (1.0 + scale)
-        val xDelta = xStep * (scale / 2.0)
-        val ySize = xStep * (1.0 + scale)
-        val yDelta = xStep * (scale / 2.0)
-
-        simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
-        var currentX = 0.0
-        var currentY = 0.0
-        for (i in 0 until simulation.agents.size) {
-            val grain = data.grainAtIndex(i)
-            if (grain != null) {
-                simulationContext.fillStyle = grain.color
-                simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
-            }
-
-            currentX += xStep
-            if (currentX >= xMax) {
-                currentX = 0.0
-                currentY += yStep
-            }
-        }
+        simulationEditController.refresh()
     }
 
     fun refreshCounts() {

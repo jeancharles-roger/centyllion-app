@@ -10,10 +10,10 @@ class DirectionSetEditController(
 ) : NoContextController<Set<Direction>, Field>() {
 
     val icons = mapOf(
-        Direction.Up to "angle-up",
-        Direction.Down to "angle-down",
-        Direction.Left to "angle-left",
-        Direction.Right to "angle-right"
+        Direction.Up to "arrow-up",
+        Direction.Down to "arrow-down",
+        Direction.Left to "arrow-left",
+        Direction.Right to "arrow-right"
     )
 
     override var data: Set<Direction> by Delegates.observable(directions) { _, old, new ->

@@ -35,7 +35,7 @@ class GrainSelectController(
 
     override val container: Field = Field(Control(button), Control(select), addons = true)
 
-    private fun options() = context.map { Option(it.name, "${it.id}") } + Option("none", "${context.size}")
+    private fun options() = context.map { Option(it.label, "${it.id}") } + Option("none", "${context.size}")
 
     init {
         refresh()

@@ -198,17 +198,17 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
         chartCanvas.root.classList.toggle("is-hidden", !presentCharts)
         if (presentCharts) {
             // refreshes charts
-            val previous = chart.data.datasets.map { it.key to it}.toMap()
+            val previous = chart.data.datasets.map { it.key to it }.toMap()
             chart.data.datasets = data.grainCountHistory.map {
                 val dataSet = previous.getOrElse(it.key.id) {
-                    LineDataSet(
-                        key = it.key.id, label = if (it.key.description.isEmpty()) it.key.description else it.key.name,
-                        borderColor = it.key.color, backgroundColor = it.key.color,
-                        fill = "false", showLine = true, pointRadius = 1
-                    )
+                    LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }
-                dataSet.data = it.value.mapIndexed { index, i -> LineChartPlot(index, i) }.toTypedArray()
-                dataSet
+                dataSet.apply {
+                    label = it.key.label
+                    borderColor = it.key.color
+                    backgroundColor = it.key.color
+                    data = it.value.mapIndexed { index, i -> LineChartPlot(index, i) }.toTypedArray()
+                }
             }.toTypedArray()
             chart.update()
             lastRefresh = 0

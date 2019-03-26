@@ -153,6 +153,7 @@ class Simulator(
     fun reset() {
         simulation.reset()
         step = 0
+        resetCount()
     }
 
     fun resetCount() {

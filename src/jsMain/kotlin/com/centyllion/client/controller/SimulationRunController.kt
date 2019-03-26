@@ -204,7 +204,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
                     LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }
                 dataSet.apply {
-                    label = it.key.label
+                    label = it.key.label(true)
                     borderColor = it.key.color
                     backgroundColor = it.key.color
                     data = it.value.mapIndexed { index, i -> LineChartPlot(index, i) }.toTypedArray()

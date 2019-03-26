@@ -45,9 +45,8 @@ data class Grain(
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     /** Label for grain */
-    @Transient
-    val label = when {
-        description.isNotEmpty() -> description
+    fun label(long: Boolean = false) = when {
+        long && description.isNotEmpty() -> description
         name.isNotEmpty() -> name
         else -> "$id"
     }

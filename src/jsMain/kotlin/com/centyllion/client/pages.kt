@@ -2,8 +2,8 @@ package com.centyllion.client
 
 import KeycloakInstance
 import bulma.*
-import com.centyllion.client.controller.GrainModelEditController
-import com.centyllion.client.controller.SimulationController
+import com.centyllion.client.controller.ModelPage
+import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
@@ -37,7 +37,6 @@ val pages = listOf(
 )
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
-
     val userController = UserController()
     val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))
     root.appendChild(columns.root)
@@ -49,28 +48,10 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
     userController.onUpdate = { _, new, _ ->
         if (new != null) saveUser(new, instance) else null
     }
-
 }
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
-    //val model = dendriteModel()
-    //val simulation = dendriteSimulation(100, 100)
-    val model = fishRespirationModel(true)
-    val simulation = fishRespirationSimulation()
-    val simulator = Simulator(model, simulation, true)
-
-    val simulationController = SimulationController()
-    val modelController = GrainModelEditController { _, new, _ ->
-        simulationController.data = Simulator(new, simulationController.data.simulation, true)
-    }
-    modelController.data = model
-    simulationController.data = simulator
-
-    root.appendChild(div(
-        Title("Model"), modelController,
-        Title("Simulation"), simulationController
-    ).root)
-
+    root.appendChild(ModelPage(instance).root)
 }
 
 fun simulation(root: HTMLElement, instance: KeycloakInstance) {
@@ -87,7 +68,7 @@ fun simulation(root: HTMLElement, instance: KeycloakInstance) {
         Simulator(fishRespirationModel(false), fishRespirationSimulation())
     )
 
-    val controller = SimulationController()
+    val controller = SimulationRunController()
     controller.data = simulations[0]
 
     val options = simulations.mapIndexed { i, s ->

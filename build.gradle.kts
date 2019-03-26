@@ -124,7 +124,7 @@ kotlin {
                     moduleKind = "amd"
                     main = "noCall"
                     sourceMap = debug.toBoolean()
-                    sourceMapEmbedSources = if (debug.toBoolean()) "always" else "never"
+                    sourceMapEmbedSources = if (debug.toBoolean()) "inlining" else "never"
                 }
             }
         }

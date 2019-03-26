@@ -33,8 +33,7 @@ class GrainModelEditController(
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        val newGrain = Grain(data.availableGrainId(), "new grain", data.availableGrainColor())
-        this.data = data.copy(grains = data.grains + newGrain)
+        this.data = data.copy(grains = data.grains + data.newGrain())
     }
 
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {

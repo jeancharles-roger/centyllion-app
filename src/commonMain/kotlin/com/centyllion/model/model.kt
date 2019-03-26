@@ -44,6 +44,14 @@ data class Grain(
     val movementProbability: Double = 1.0,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
+    /** Label for grain */
+    @Transient
+    val label = when {
+        description.isNotEmpty() -> description
+        name.isNotEmpty() -> name
+        else -> "$id"
+    }
+
     /** True if an agent of this Grain can move */
     @Transient
     val canMove = movementProbability > 0.0 && allowedDirection.isNotEmpty()

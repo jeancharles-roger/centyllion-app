@@ -137,7 +137,7 @@ class SimulationEditController(
         }
     }
 
-    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas {
+    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
         width = "$canvasWidth"
         height = "${data.height * canvasWidth / data.width}"

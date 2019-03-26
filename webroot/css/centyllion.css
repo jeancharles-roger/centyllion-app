@@ -44,6 +44,13 @@ body {
   margin-right: 2rem;
 }
 
+canvas.cent-simulation {
+  border-radius: 4px;
+  border-style: solid;
+  border-color: #6497b1;
+  border-width: 1px;
+}
+
 .delete {
   background-color: #b3cde0;
 }

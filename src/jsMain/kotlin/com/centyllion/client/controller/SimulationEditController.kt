@@ -172,7 +172,7 @@ class SimulationEditController(
     }
 
     val editToolbar = Level(
-        center = listOf(Field(grouped = true).apply {
+        center = listOf(Field(addons = true).apply {
             body = toolButtons.map { Control(it) }
         }, selectedGrainController.container)
     )

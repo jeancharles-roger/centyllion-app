@@ -35,7 +35,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     // simulation execution controls
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
-    val stepButton = iconButton(Icon("step-forward"), ElementColor.Info, rounded = true) { step() }
+    val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Danger, rounded = true) { stop() }
     val resetButton = iconButton(Icon("history"), ElementColor.Warning, rounded = true) { reset() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Link, rounded = true) { toggleCharts() }
@@ -67,14 +67,14 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
         Columns(
             Column(
                 Level(
-                    left = listOf(
+                    center = listOf(
                         Field(
                             Control(runButton), Control(stepButton), Control(stopButton), Control(resetButton),
-                            grouped = true
-                        )
+                            addons = true
+                        ),
+                        stepLabel,
+                        toggleChartsButton
                     ),
-                    center = listOf(stepLabel),
-                    right = listOf(toggleChartsButton),
                     mobile = true
                 ),
                 simulationEditController.container,

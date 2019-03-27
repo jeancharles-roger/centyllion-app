@@ -1,50 +1,17 @@
 package bulma
 
+import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+/** Position where to insert on node using `insertAdjacentElement`. */
 enum class Position(val value: String) {
     BeforeBegin("beforebegin"), AfterBegin("afterbegin"),
     BeforeEnd("beforeend"), AfterEnd("afterend")
 }
 
-class HTMLElementProperty<T : HTMLElement>(
-    initialValue: T,
-    private val parent: HTMLElement,
-    private val prepare: (T) -> Unit
-) : ReadWriteProperty<Any?, T> {
-
-    private var value = initialValue
-
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = value
-
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        val oldValue = this.value
-        if (oldValue != value) {
-            this.value = value
-            prepare(value)
-            if (parent.contains(oldValue)) {
-                parent.replaceChild(oldValue, value)
-            } else {
-                parent.appendChild(value)
-            }
-        }
-    }
-
-    init {
-        prepare(value)
-        parent.appendChild(value)
-    }
-}
-
-fun <T : HTMLElement> html(initialValue: T, parent: HTMLElement, prepare: (newValue: T) -> Unit) =
-    HTMLElementProperty(initialValue, parent, prepare)
-
-fun <T : HTMLElement> html(initialValue: T, parent: HTMLElement, vararg classes: String) =
-    HTMLElementProperty(initialValue, parent) { node -> classes.forEach { node.classList.toggle(it, true) } }
-
-
+/** Property that handle the insertion and the change of a [BulmaElement]. */
 class BulmaElementProperty<T : BulmaElement>(
     initialValue: T?,
     private val parent: HTMLElement,
@@ -88,10 +55,7 @@ fun <T : BulmaElement> bulma(initialValue: T?, parent: HTMLElement, prepare: (ne
     BulmaElementProperty(initialValue, parent, prepare)
 
 class BulmaElementListProperty<T : BulmaElement>(
-    initialValue: List<T>,
-    private val parent: HTMLElement,
-    private val before: HTMLElement?,
-    private val prepare: (List<T>) -> Unit = {}
+    initialValue: List<T>, private val parent: HTMLElement, private val before: () -> Element?
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
@@ -103,9 +67,9 @@ class BulmaElementListProperty<T : BulmaElement>(
         if (oldValue != value) {
             this.value = value
             oldValue.forEach { parent.removeChild(it.root) }
-            prepare(value)
-            if (before != null) {
-                value.forEach { parent.insertBefore(it.root, before) }
+            val reference = before()
+            if (reference != null) {
+                value.forEach { parent.insertBefore(it.root, reference) }
             } else {
                 value.forEach { parent.appendChild(it.root) }
             }
@@ -113,9 +77,9 @@ class BulmaElementListProperty<T : BulmaElement>(
     }
 
     init {
-        prepare(value)
-        if (before != null) {
-            value.forEach { parent.insertBefore(it.root, before) }
+        val reference = before()
+        if (reference != null) {
+            value.forEach { parent.insertBefore(it.root, reference) }
         } else {
             value.forEach { parent.appendChild(it.root) }
         }
@@ -123,10 +87,68 @@ class BulmaElementListProperty<T : BulmaElement>(
 }
 
 fun <T : BulmaElement> bulmaList(
-    initialValue: List<T> = emptyList(), parent: HTMLElement,
-    before: HTMLElement? = null, prepare: (List<T>) -> Unit = {}
+    initialValue: List<T> = emptyList(), parent: HTMLElement, before: () -> Element? = { null }
 ) =
-    BulmaElementListProperty(initialValue, parent, before, prepare)
+    BulmaElementListProperty(initialValue, parent, before)
+
+
+class BulmaElementEmbeddedListProperty<T : BulmaElement>(
+    initialValue: List<T>,
+    private val parent: HTMLElement,
+    private val before: HTMLElement?,
+    private val position: Position = Position.BeforeEnd,
+    private val containerBuilder: (List<T>) -> HTMLElement?
+) : ReadWriteProperty<Any?, List<T>> {
+
+    private var value = initialValue
+    private var container = containerBuilder(initialValue)
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: List<T>) {
+        val oldValue = this.value
+        if (oldValue != value) {
+            val oldContainer = container
+            val newContainer = containerBuilder(value)
+            container = newContainer
+            if (oldContainer != null && newContainer != null && parent.contains(oldContainer)) {
+                parent.replaceChild(oldContainer, newContainer)
+            } else {
+                if (oldContainer != null) {
+                    parent.removeChild(oldContainer)
+                }
+                if (newContainer != null) {
+                    value.forEach { newContainer.appendChild(it.root) }
+                    if (before != null) {
+                        parent.insertBefore(newContainer, before)
+                    } else {
+                        parent.insertAdjacentElement(position.value, newContainer)
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        val newContainer = containerBuilder(value)
+        container = newContainer
+        if (newContainer != null) {
+            value.forEach { newContainer.appendChild(it.root) }
+            if (before != null) {
+                parent.insertBefore(newContainer, before)
+            } else {
+                parent.insertAdjacentElement(position.value, newContainer)
+            }
+        }
+    }
+}
+
+fun <T : BulmaElement> embeddedBulmaList(
+    initialValue: List<T> = emptyList(), parent: HTMLElement,
+    position: Position = Position.BeforeEnd, containerBuilder: (List<T>) -> HTMLElement?
+) =
+    BulmaElementEmbeddedListProperty(initialValue, parent, null, position, containerBuilder)
+
 
 /** Property class delegate that handle a boolean property that set or reset a css class. */
 class BooleanClassProperty(

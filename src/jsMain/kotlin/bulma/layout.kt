@@ -43,19 +43,20 @@ class Level(
     right: List<BulmaElement> = emptyList(), mobile: Boolean = false
 ) : BulmaElement {
 
-    override val root: HTMLElement = document.create.div("level") {
-        div("level-left")
-        div("level-right")
-    }
-
-    private val leftNode = root.querySelector(".level-left") as HTMLElement
-    private val rightNode = root.querySelector(".level-right") as HTMLElement
+    override val root: HTMLElement = document.create.div("level")
 
     var mobile by className(mobile, "is-mobile", root)
 
-    var left by bulmaList(left, leftNode)
-    var center by bulmaList(center, root, rightNode)
-    var right by bulmaList(right, rightNode)
+    var left by embeddedBulmaList(left, root, Position.AfterBegin) {
+        if (it.isNotEmpty()) document.create.div("level-left") else null
+    }
+
+    var center by bulmaList(center, root) { root.querySelector(".level-right") }
+
+    var right by embeddedBulmaList(right, root, Position.BeforeEnd) {
+        if (it.isNotEmpty()) document.create.div("level-right") else null
+    }
+
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */
@@ -63,31 +64,29 @@ class Media(
     left: List<BulmaElement> = emptyList(), center: List<BulmaElement> = emptyList(), right: List<BulmaElement> = emptyList()
 ) : BulmaElement {
     override val root: HTMLElement = document.create.article("media") {
-        figure("media-left")
         div("media-content")
-        div("media-right")
     }
 
-    private val leftNode = root.querySelector(".media-left") as HTMLElement
     private val contentNode = root.querySelector(".media-content") as HTMLElement
-    private val rightNode = root.querySelector(".media-right") as HTMLElement
 
-    var left by bulmaList(left, leftNode)
+    var left by embeddedBulmaList(left, root, Position.AfterBegin) {
+        if (it.isNotEmpty()) document.create.figure("media-left") else null
+    }
+
     var center by bulmaList(center, contentNode)
-    var right by bulmaList(right, rightNode)
+
+    var right by embeddedBulmaList(right, root, Position.BeforeEnd) {
+        if (it.isNotEmpty()) document.create.div("media-right") else null
+    }
 }
 
 /** [Hero](https://bulma.io/documentation/layout/hero) element */
 class Hero : BulmaElement {
     override val root: HTMLElement = document.create.section("hero") {
-        div("hero-head")
         div("hero-body")
-        div("hero-foot")
     }
 
-    private val headNode = root.querySelector(".hero-head") as HTMLElement
     private val bodyNode = root.querySelector(".hero-body") as HTMLElement
-    private val footNode = root.querySelector(".hero-foot") as HTMLElement
 
     var size by className(Size.None, root)
 
@@ -95,9 +94,15 @@ class Hero : BulmaElement {
 
     var color by className(ElementColor.None, root)
 
-    var head by bulmaList(emptyList(), headNode)
+    var head by embeddedBulmaList(emptyList(), root, Position.AfterBegin) {
+        if (it.isNotEmpty()) document.create.div("hero-head") else null
+    }
+
     var body by bulmaList(emptyList(), bodyNode)
-    var foot by bulmaList(emptyList(), footNode)
+
+    var foot by embeddedBulmaList(emptyList(), root, Position.BeforeEnd) {
+        if (it.isNotEmpty()) document.create.div("hero-foot") else null
+    }
 }
 
 /** [Section](https://bulma.io/documentation/layout/section) element */

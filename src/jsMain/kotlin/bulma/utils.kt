@@ -4,6 +4,11 @@ import org.w3c.dom.HTMLElement
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+enum class Position(val value: String) {
+    BeforeBegin("beforebegin"), AfterBegin("afterbegin"),
+    BeforeEnd("beforeend"), AfterEnd("afterend")
+}
+
 class HTMLElementProperty<T : HTMLElement>(
     initialValue: T,
     private val parent: HTMLElement,
@@ -41,36 +46,45 @@ fun <T : HTMLElement> html(initialValue: T, parent: HTMLElement, vararg classes:
 
 
 class BulmaElementProperty<T : BulmaElement>(
-    initialValue: T,
+    initialValue: T?,
     private val parent: HTMLElement,
-    private val prepare: (T) -> Unit
-) : ReadWriteProperty<Any?, T> {
+    private val prepare: (T) -> Unit,
+    private val position: Position = Position.BeforeEnd
+) : ReadWriteProperty<Any?, T?> {
 
     private var value = initialValue
 
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T? = value
 
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
-            prepare(value)
-            if (parent.contains(oldValue.root)) {
+
+            if (oldValue != null && value != null && parent.contains(oldValue.root)) {
+                prepare(value)
                 parent.replaceChild(oldValue.root, value.root)
             } else {
-                parent.removeChild(oldValue.root)
-                parent.appendChild(value.root)
+                if (oldValue != null) {
+                    parent.removeChild(oldValue.root)
+                }
+                if (value != null) {
+                    prepare(value)
+                    parent.insertAdjacentElement(position.value, value.root)
+                }
             }
         }
     }
 
     init {
-        prepare(value)
-        parent.appendChild(value.root)
+        value?.let {
+            prepare(it)
+            parent.appendChild(it.root)
+        }
     }
 }
 
-fun <T : BulmaElement> bulma(initialValue: T, parent: HTMLElement, prepare: (newValue: T) -> Unit = {}) =
+fun <T : BulmaElement> bulma(initialValue: T?, parent: HTMLElement, prepare: (newValue: T) -> Unit = {}) =
     BulmaElementProperty(initialValue, parent, prepare)
 
 class BulmaElementListProperty<T : BulmaElement>(

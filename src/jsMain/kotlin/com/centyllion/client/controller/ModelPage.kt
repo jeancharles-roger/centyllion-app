@@ -8,25 +8,25 @@ import com.centyllion.client.updateGrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
-import com.centyllion.model.sample.emptyModel
+import com.centyllion.model.sample.emptyGrainModelDescription
 import kotlin.properties.Delegates.observable
 
-class ModelPage(val instance: KeycloakInstance): Controller<GrainModelDescription, List<GrainModelDescription>, BulmaElement> {
+class ModelPage(val instance: KeycloakInstance) : Controller<GrainModelDescription, List<GrainModelDescription>, BulmaElement> {
 
     var selectingModel = false
 
     var needSaveStatus = arrayOf<Boolean>()
 
-    override var context by observable(listOf(
-        GrainModelDescription("", "", null, null, "", emptyModel)
-    )) { _, old, new ->
+    override var context by observable(listOf(emptyGrainModelDescription))
+    { _, old, new ->
         if (old != new) {
             needSaveStatus = Array(new.size) { new[it]._id.isEmpty() }
             refresh()
         }
     }
 
-    override var data by observable(context.first()) { _, old, new ->
+    override var data by observable(context.first())
+    { _, old, new ->
         if (old != new && !selectingModel) {
             val index = context.indexOf(old)
             val newContext = context.toMutableList()

@@ -315,22 +315,31 @@ data class Simulation(
 
 }
 
+enum class Access {
+    Read, Copy
+}
+
+@Serializable
+data class DescriptionInfo(
+    val userId: String = "",
+    val previousId: String? = null,
+    val nextId: String? = null,
+    val date: String = "",
+    val access: Set<Access> = emptySet()
+)
+
 @Serializable
 data class GrainModelDescription(
     val _id: String,
-    val userId: String,
-    val previousId: String?,
-    val nextId: String?,
-    val date: String,
+    val info: DescriptionInfo,
     val model: GrainModel
 )
 
 @Serializable
 data class SimulationDescription(
     val _id: String,
+    val info: DescriptionInfo,
     val previousId: String?,
-    val nextId: String?,
-    val date: String,
     val modelId: String,
     val simulation: Simulation
 )

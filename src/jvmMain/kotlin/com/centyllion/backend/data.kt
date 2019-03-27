@@ -90,7 +90,8 @@ class Data(
         val date = rfc1123Format.format(Date())
         val model = GrainModelDescription(
             newId<GrainModelDescription>().toString(),
-            user._id, null, null, date, sent
+            DescriptionInfo(user._id, null, null, date),
+            sent
         )
         grainModels.save(createDocument(GrainModelDescription.serializer(), model))
         insertEvent(Action.Create, user, grainModelsCollectionName, model._id, model.model.name)

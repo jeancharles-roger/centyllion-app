@@ -4,7 +4,8 @@ import com.centyllion.model.*
 import kotlin.random.Random
 
 val emptyModel = GrainModel("Empty model")
-val emptyGrainModelDescription = GrainModelDescription("", "", null, null, "", emptyModel)
+val emptyDescription = DescriptionInfo()
+val emptyGrainModelDescription = GrainModelDescription("", emptyDescription, emptyModel)
 val emptySimulation = Simulation(100, 100, 1)
 
 fun dendriteModel(): GrainModel {

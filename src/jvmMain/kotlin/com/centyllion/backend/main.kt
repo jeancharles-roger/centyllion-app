@@ -209,9 +209,9 @@ fun Application.centyllion() {
                         }
                     }
 
+                    // user's model access
                     route("model") {
-
-                        // get all user's saved dives
+                        // get all user's saved models
                         get {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
@@ -220,7 +220,7 @@ fun Application.centyllion() {
                             }
                         }
 
-                        // post a new dive for user
+                        // post a new model for user
                         post {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
@@ -230,6 +230,7 @@ fun Application.centyllion() {
                             }
                         }
 
+                        // access a given model belonging to the user
                         route("{id}") {
                             get {
                                 withPrincipal(setOf(modelRole)) {
@@ -239,14 +240,14 @@ fun Application.centyllion() {
                                     context.respond(
                                         when {
                                             model == null -> HttpStatusCode.NotFound
-                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
                                             else -> model
                                         }
                                     )
                                 }
                             }
 
-                            // patch an existing dive for user
+                            // patch an existing model for user
                             patch {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
@@ -255,7 +256,7 @@ fun Application.centyllion() {
                                     context.respond(
                                         when {
                                             model._id != id -> HttpStatusCode.Forbidden
-                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
                                             else -> {
                                                 data.saveGrainModel(user, model)
                                                 HttpStatusCode.OK
@@ -265,6 +266,7 @@ fun Application.centyllion() {
                                 }
                             }
 
+                            // delete an existing model for user
                             delete {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
@@ -273,7 +275,7 @@ fun Application.centyllion() {
                                     context.respond(
                                         when {
                                             model == null -> HttpStatusCode.NotFound
-                                            model.userId != user._id -> HttpStatusCode.Unauthorized
+                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
                                             else -> {
                                                 data.deleteGrainModel(user, model)
                                                 HttpStatusCode.OK

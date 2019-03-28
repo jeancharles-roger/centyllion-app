@@ -1,11 +1,8 @@
 package bulma
 
-import kotlinx.html.DIV
-import kotlinx.html.a
-import kotlinx.html.button
+import kotlinx.html.*
 import kotlinx.html.dom.create
-import kotlinx.html.i
-import kotlinx.html.js.*
+import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
@@ -18,28 +15,21 @@ class Box(vararg body: BulmaElement) : BulmaElement {
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
 class Button(
-    text: String, icon: Icon? = null,
+    title: String? = null, icon: Icon? = null,
     color: ElementColor = ElementColor.None,
     rounded: Boolean = false, outlined: Boolean = false,
     inverted: Boolean = false, size: Size = Size.None,
     val onClick: (Button) -> Unit = {}
 ) : ControlElement {
 
-    override val root: HTMLElement = document.create.a(classes = "button") {
-        +text
+    override val root: HTMLElement = document.create.button(classes = "button") {
         onClickFunction = { if (!this@Button.disabled) onClick(this@Button) }
     }
 
+    var title by html(title, root, Position.AfterBegin) { document.create.span { +it } }
+
     /** Left [Icon](https://bulma.io/documentation/form/general/#with-icons) */
-    var icon: Icon? = icon
-        set(value) {
-            if (value != field) {
-                // removes previous if any
-                field?.let { root.removeChild(it.root) }
-                field = value
-                field?.let { root.appendChild(it.root)}
-            }
-        }
+    var icon by bulma(icon, root, Position.AfterBegin)
 
     var rounded by className(rounded, "is-rounded", root)
 
@@ -55,9 +45,6 @@ class Button(
 
     var disabled by booleanAttribute(false, "disabled", root)
 
-    init {
-        icon?.let { root.appendChild(it.root)}
-    }
 }
 
 fun iconButton(
@@ -65,7 +52,7 @@ fun iconButton(
     rounded: Boolean = false, outlined: Boolean = false,
     inverted: Boolean = false, size: Size = Size.None,
     onClick: (Button) -> Unit = {}
-) = Button("", icon, color, rounded, outlined, inverted, size, onClick)
+) = Button(null, icon, color, rounded, outlined, inverted, size, onClick)
 
 fun textButton(
     text: String, color: ElementColor = ElementColor.None,

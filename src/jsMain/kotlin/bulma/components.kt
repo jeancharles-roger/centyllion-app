@@ -1,21 +1,26 @@
 package bulma
 
 import kotlinx.html.a
+import kotlinx.html.button
+import kotlinx.html.div
 import kotlinx.html.dom.create
+import kotlinx.html.hr
+import kotlinx.html.i
+import kotlinx.html.js.div
 import kotlinx.html.js.li
 import kotlinx.html.js.nav
+import kotlinx.html.js.onClickFunction
+import kotlinx.html.span
 import kotlinx.html.ul
-import org.w3c.dom.HTMLAnchorElement
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLUListElement
+import org.w3c.dom.*
 import kotlin.browser.document
 
-enum class BreadcrumbSeparator(override val className: String): HasClassName {
+enum class BreadcrumbSeparator(override val className: String) : HasClassName {
     Default(""), Arrow("has-arrow-separator"), Bullet("has-bullet-separator"),
     Dot("has-dot-separator"), Succeeds("has-succeeds-separator")
 }
 
-class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null): BulmaElement {
+class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null) : BulmaElement {
 
     override val root: HTMLElement = document.create.li {
         a(href = href) { +text }
@@ -25,11 +30,15 @@ class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null
 
     override var text: String
         get() = aNode.innerText
-        set(value) { aNode.innerText = value }
+        set(value) {
+            aNode.innerText = value
+        }
 
     var href: String
         get() = aNode.href
-        set(value) { aNode.href = value }
+        set(value) {
+            aNode.href = value
+        }
 
     var icon by bulma(icon, aNode)
 }
@@ -38,7 +47,7 @@ class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null
 class Breadcrumb(
     vararg body: BreadcrumbElement, separator: BreadcrumbSeparator = BreadcrumbSeparator.Default,
     size: Size = Size.None, centered: Boolean = false, right: Boolean = false
-): BulmaElement {
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.nav(classes = "breadcrumb") {
         ul()
@@ -55,5 +64,76 @@ class Breadcrumb(
     var centered by className(centered, "is-centered", root)
 
     var right by className(right, "is-right", root)
+
+}
+
+// TODO [Card](https://bulma.io/documentation/components/card/) element
+
+interface DropdownItem: BulmaElement
+
+class DropdownLinkItem(text: String, href: String, icon: Icon? = null) : DropdownItem {
+    override val root: HTMLAnchorElement = document.create.a(href,"dropdown-item") {
+        +text
+    } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) { root.href = value }
+
+    var icon by bulma(icon, root, Position.AfterBegin)
+}
+
+class DropdownContentItem(vararg body: BulmaElement) : DropdownItem {
+    override val root = document.create.div("dropdown-item")
+    var body by bulmaList(body.toList(), root)
+}
+
+class DropdownDivider : DropdownItem {
+    override val root = document.create.hr("dropdown-divider")
+}
+
+/** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
+class Dropdown(
+    text: String, vararg items: DropdownItem,
+    rounded: Boolean = false, dropDownIcon: String = "angle-down"
+) : BulmaElement {
+    override val root: HTMLElement = document.create.div(classes = "dropdown") {
+        div("dropdown-trigger") {
+            button(classes = "button") {
+                attributes["aria-haspopup"] = "true"
+                attributes["aria-controls"] = "dropdown-menu"
+                span("dropdown-title") { +text }
+                span("icon is-small") {
+                    i("fas fa-$dropDownIcon") {
+                        attributes["aria-hidden"] = "true"
+                    }
+                }
+            }
+            onClickFunction = { toggleDropdown() }
+        }
+        div("dropdown-menu") {
+            div("dropdown-content")
+        }
+    }
+
+    private val buttonNode = root.querySelector("button.button") as HTMLButtonElement
+    private val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
+    private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
+
+    fun toggleDropdown() {
+        root.classList.toggle("is-active")
+    }
+
+    override var text: String
+        get() = titleNode.innerText
+        set(value) {
+            titleNode.innerText = value
+        }
+
+    var items by bulmaList(items.toList(), contentNode) {
+        it.root.apply { if (!classList.contains("dropdown-divider")) classList.add("dropdown-item") }
+    }
+
+    var rounded by className(rounded, "is-rounded", buttonNode)
 
 }

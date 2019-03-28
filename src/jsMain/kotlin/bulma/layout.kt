@@ -51,7 +51,7 @@ class Level(
         if (it.isNotEmpty()) document.create.div("level-left") else null
     }
 
-    var center by bulmaList(center, root) { root.querySelector(".level-right") }
+    var center by bulmaList(center, root, { root.querySelector(".level-right") })
 
     var right by embeddedBulmaList(right, root, Position.BeforeEnd) {
         if (it.isNotEmpty()) document.create.div("level-right") else null

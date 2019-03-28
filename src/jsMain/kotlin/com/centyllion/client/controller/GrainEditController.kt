@@ -12,6 +12,7 @@ class GrainEditController(
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
+            colorController.data = new.color
             nameController.data = new.name
             descriptionController.data = new.description
             movementProbabilityController.data = "${new.movementProbability}"
@@ -22,7 +23,9 @@ class GrainEditController(
         refresh()
     }
 
-    val dot = span(classes = "dot")
+    val colorController = ColorSelectController(data.color) { _, new, _ ->
+        data = data.copy(color = new)
+    }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
         data = data.copy(name = new)
@@ -50,7 +53,7 @@ class GrainEditController(
 
     override val container = Column(
         Media(
-            left = listOf(dot),
+            left = listOf(colorController),
             center = listOf(
                 nameController,
                 descriptionController,
@@ -63,7 +66,7 @@ class GrainEditController(
     )
 
     override fun refresh() {
-        dot.root.style.backgroundColor = data.color
+        colorController.refresh()
         nameController.refresh()
         descriptionController.refresh()
         movementProbabilityController.refresh()

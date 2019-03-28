@@ -1,10 +1,7 @@
 package com.centyllion.client
 
 import KeycloakInstance
-import com.centyllion.model.Event
-import com.centyllion.model.GrainModel
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.User
+import com.centyllion.model.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.w3c.xhr.XMLHttpRequest
@@ -72,6 +69,33 @@ fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
             "/api/me/model/${model._id}",
             bearer,
             Json.stringify(GrainModelDescription.serializer(), model)
+        )
+    }
+
+fun fetchSimulations(modelId: String, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/me/model/$modelId/simulation", bearer)
+            .then { Json.parse(SimulationDescription.serializer().list, it) }
+    }
+
+fun saveSimulation(modelId: String, simulation: Simulation, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("POST", "/api/me/model/$modelId/simulation", bearer, Json.stringify(Simulation.serializer(), simulation))
+            .then { Json.parse(SimulationDescription.serializer(), it)}
+    }
+
+fun deleteSimulation(modelId: String, simulation: SimulationDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("DELETE", "/api/me/model/$modelId/simulation/${simulation._id}", bearer)
+    }
+
+fun updateSimulation(modelId: String, simulation: SimulationDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch(
+            "PATCH",
+            "/api/me/model/$modelId/simulation/${simulation._id}",
+            bearer,
+            Json.stringify(SimulationDescription.serializer(), simulation)
         )
     }
 

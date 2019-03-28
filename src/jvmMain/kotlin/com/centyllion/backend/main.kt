@@ -6,6 +6,8 @@ import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -231,11 +233,11 @@ fun Application.centyllion() {
                         }
 
                         // access a given model belonging to the user
-                        route("{id}") {
+                        route("{model}") {
                             get {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["id"]!!
+                                    val id = call.parameters["model"]!!
                                     val model = data.getGrainModel(id)
                                     context.respond(
                                         when {
@@ -251,7 +253,7 @@ fun Application.centyllion() {
                             patch {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["id"]!!
+                                    val id = call.parameters["model"]!!
                                     val model = call.receive(GrainModelDescription::class)
                                     context.respond(
                                         when {
@@ -270,7 +272,7 @@ fun Application.centyllion() {
                             delete {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["id"]!!
+                                    val id = call.parameters["model"]!!
                                     val model = data.getGrainModel(id)
                                     context.respond(
                                         when {
@@ -284,8 +286,92 @@ fun Application.centyllion() {
                                     )
                                 }
                             }
-                        }
 
+                            // model's simulations
+                            route("simulation") {
+                                get {
+                                    withPrincipal(setOf(modelRole)) {
+                                        val user = data.getOrCreateUserFromPrincipal(it)
+                                        val modelId = call.parameters["model"]!!
+                                        val simulations = data.getSimulationForModel(user, modelId)
+                                        context.respond(simulations)
+                                    }
+                                }
+
+                                // post a new simulation for model
+                                post {
+                                    withPrincipal(setOf(modelRole)) {
+                                        val user = data.getOrCreateUserFromPrincipal(it)
+                                        val modelId = call.parameters["model"]!!
+                                        val newSimulation = call.receive(Simulation::class)
+                                        val newDescription = data.createSimulation(user, modelId, newSimulation)
+                                        context.respond(newDescription)
+                                    }
+                                }
+
+                                route("{simulation}") {
+                                    get {
+                                        withPrincipal(setOf(modelRole)) {
+                                            val user = data.getOrCreateUserFromPrincipal(it)
+                                            val modelId = call.parameters["model"]!!
+                                            val simulationId = call.parameters["simulation"]!!
+                                            val simulation = data.getSimulation(simulationId)
+                                            context.respond(
+                                                when {
+                                                    simulation == null -> HttpStatusCode.NotFound
+                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
+                                                    else -> simulation
+                                                }
+                                            )
+                                        }
+                                    }
+
+                                    // patch an existing model for user
+                                    patch {
+                                        withPrincipal(setOf(modelRole)) {
+                                            val user = data.getOrCreateUserFromPrincipal(it)
+                                            val modelId = call.parameters["model"]!!
+                                            val simulationId = call.parameters["simulation"]!!
+                                            val simulation = call.receive(SimulationDescription::class)
+                                            context.respond(
+                                                when {
+                                                    simulation._id != simulationId -> HttpStatusCode.Forbidden
+                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
+                                                    else -> {
+                                                        data.saveSimulation(user, simulation)
+                                                        HttpStatusCode.OK
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+
+                                    // delete an existing model for user
+                                    delete {
+                                        withPrincipal(setOf(modelRole)) {
+                                            val user = data.getOrCreateUserFromPrincipal(it)
+                                            val modelId = call.parameters["model"]!!
+                                            val simulationId = call.parameters["simulation"]!!
+                                            val simulation = data.getSimulation(simulationId)
+                                            context.respond(
+                                                when {
+                                                    simulation == null -> HttpStatusCode.NotFound
+                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
+                                                    else -> {
+                                                        data.deleteSimulation(user, simulation)
+                                                        HttpStatusCode.OK
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
                     }
                 }
 

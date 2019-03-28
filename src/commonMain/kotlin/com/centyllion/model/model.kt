@@ -339,7 +339,6 @@ data class GrainModelDescription(
 data class SimulationDescription(
     val _id: String,
     val info: DescriptionInfo,
-    val previousId: String?,
     val modelId: String,
     val simulation: Simulation
 )

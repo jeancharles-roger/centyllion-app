@@ -28,12 +28,14 @@ class Data(
 
     val usersCollectionName = "users"
     val grainModelsCollectionName = "grainModels"
-
+    val simulationsCollectionName = "simulations"
     val eventsCollectionName = "events"
 
     val users: MongoCollection<Document> = db.getCollection(usersCollectionName)
 
     val grainModels: MongoCollection<Document> = db.getCollection(grainModelsCollectionName)
+
+    val simulations: MongoCollection<Document> = db.getCollection(simulationsCollectionName)
 
     val events: MongoCollection<Document> = db.getCollection(eventsCollectionName)
 
@@ -77,7 +79,7 @@ class Data(
     }
 
     fun grainModelsForUser(user: User): List<GrainModelDescription> {
-        val result = grainModels.find("{userId: '${user._id}'}")
+        val result = grainModels.find("{'info.userId': '${user._id}'}")
         return result.map { parseDocument(GrainModelDescription.serializer(), it) }.toList()
     }
 
@@ -105,7 +107,39 @@ class Data(
 
     fun deleteGrainModel(user: User, model: GrainModelDescription) {
         grainModels.deleteOneById(model._id)
-        insertEvent(Action.Delete, user,  model._id)
+        insertEvent(Action.Delete, user, grainModelsCollectionName, model._id)
+    }
+
+    fun getSimulationForModel(user: User, modelId: String): List<SimulationDescription> {
+        val result = simulations.find("{'info.userId': '${user._id}', modelId: '$modelId'}")
+        return result.map { parseDocument(SimulationDescription.serializer(), it) }.toList()
+    }
+
+    fun getSimulation(id: String): SimulationDescription? {
+        val result = simulations.findOne("{_id: '$id'}")
+        return result?.let { parseDocument(SimulationDescription.serializer(), result) }
+    }
+
+    fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription {
+        val date = rfc1123Format.format(Date())
+        val simulation = SimulationDescription(
+            newId<SimulationDescription>().toString(),
+            DescriptionInfo(user._id, null, null, date),
+            modelId, sent
+        )
+        simulations.save(createDocument(SimulationDescription.serializer(), simulation))
+        insertEvent(Action.Create, user, simulationsCollectionName, simulation._id)
+        return simulation
+    }
+
+    fun saveSimulation(user: User, simulation: SimulationDescription) {
+        simulations.save(createDocument(SimulationDescription.serializer(), simulation))
+        insertEvent(Action.Save, user, simulationsCollectionName, simulation._id)
+    }
+
+    fun deleteSimulation(user: User, simulation: SimulationDescription) {
+        simulations.deleteOneById(simulation._id)
+        insertEvent(Action.Delete, user,  simulationsCollectionName, simulation._id)
     }
 
     fun getEvents(): List<Event> {

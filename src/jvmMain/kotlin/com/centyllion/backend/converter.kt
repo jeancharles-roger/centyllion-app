@@ -1,9 +1,6 @@
 package com.centyllion.backend
 
-import com.centyllion.model.Event
-import com.centyllion.model.GrainModel
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.User
+import com.centyllion.model.*
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.features.ContentConverter
@@ -30,6 +27,8 @@ class JsonConverter : ContentConverter {
         is User -> Json.stringify(User.serializer(), value)
         is GrainModel -> Json.stringify(GrainModel.serializer(), value)
         is GrainModelDescription -> Json.stringify(GrainModelDescription.serializer(), value)
+        is Simulation -> Json.stringify(Simulation.serializer(), value)
+        is SimulationDescription -> Json.stringify(SimulationDescription.serializer(), value)
         is Event -> Json.stringify(Event.serializer(), value)
         is List<*> -> "[${if (value.isNotEmpty()) value.joinToString(",") { convertForSend(it) } else ""}]"
         else -> throw Exception("Can't transform ${value?.javaClass?.simpleName} to Json")
@@ -45,6 +44,8 @@ class JsonConverter : ContentConverter {
             User::class -> Json.parse(User.serializer(), text)
             GrainModel::class -> Json.parse(GrainModel.serializer(), text)
             GrainModelDescription::class -> Json.parse(GrainModelDescription.serializer(), text)
+            Simulation::class -> Json.parse(Simulation.serializer(), text)
+            SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

@@ -18,20 +18,29 @@ class ColorSelectController(
 
     val icon = Icon("circle")
 
-    val dropdown: Dropdown = Dropdown("", icon = icon, rounded = true).apply { items = colors() }
+    val dropdown: Dropdown = Dropdown("", icon = icon, rounded = true).apply {
+        menuSize = "30rem"
+        items = colors()
+    }
 
     override val container: Field = Field(Control(dropdown))
 
-    private fun item(color: String): DropdownSimpleItem {
+
+    private fun column(color: String): Column {
         val colorIcon = Icon("circle")
         colorIcon.root.style.color = color
-        return DropdownSimpleItem(color, colorIcon) {
+        val item = DropdownSimpleItem("", colorIcon) {
             this.data = color
             this.dropdown.toggleDropdown()
         }
+        val column = Column(item, size = ColumnSize.S1)
+        column.root.style.padding = "0rem"
+        return column
     }
 
-    private fun colors() = colorNames.map { item(it) }
+    private fun colors() = listOf(DropdownContentItem(
+        Columns(multiline = true).apply { columns = colorNames.map { column(it) } }
+    ))
 
     override fun refresh() {
         icon.root.style.color = data

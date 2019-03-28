@@ -113,9 +113,10 @@ class Dropdown(
         }
     }
 
-    private val buttonNode = root.querySelector("button.button") as HTMLButtonElement
-    private val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
-    private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
+    protected val buttonNode = root.querySelector("button.button") as HTMLButtonElement
+    protected val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
+    protected val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
+    protected val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
 
     fun toggleDropdown() {
         root.classList.toggle("is-active")
@@ -135,4 +136,7 @@ class Dropdown(
 
     var rounded by className(rounded, "is-rounded", buttonNode)
 
+    var menuSize: String
+        get() = menuNode.style.width
+        set(value) { menuNode.style.width = value }
 }

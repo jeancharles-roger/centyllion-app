@@ -47,7 +47,8 @@ class GrainSelectController(
 
     override fun refresh() {
         dropdown.text = data?.label() ?: "none"
-        icon.root.style.color = data?.color ?: "transparent"
+        icon.icon = if (data != null) "circle" else "times-circle"
+        icon.root.style.color = data?.color ?: ""
     }
 
 }

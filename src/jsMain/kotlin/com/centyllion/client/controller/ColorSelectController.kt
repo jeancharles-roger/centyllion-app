@@ -33,13 +33,13 @@ class ColorSelectController(
             this.data = color
             this.dropdown.toggleDropdown()
         }
-        val column = Column(item, size = ColumnSize.S1)
+        val column = Column(item, size = ColumnSize.S1, mobileSize = ColumnSize.S2)
         column.root.style.padding = "0rem"
         return column
     }
 
     private fun colors() = listOf(DropdownContentItem(
-        Columns(multiline = true).apply { columns = colorNames.map { column(it) } }
+        Columns(multiline = true, mobile = true).apply { columns = colorNames.map { column(it) } }
     ))
 
     override fun refresh() {

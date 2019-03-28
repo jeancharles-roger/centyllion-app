@@ -7,7 +7,7 @@ import kotlin.properties.Delegates.observable
 class ColorSelectController(
     color: String,
     var onUpdate: (old: String, new: String, controller: ColorSelectController) -> Unit = { _, _, _ -> }
-) : NoContextController<String, Field>() {
+) : NoContextController<String, Dropdown>() {
 
     override var data by observable(color) { _, old, new ->
         if (old != new) {
@@ -23,7 +23,7 @@ class ColorSelectController(
         items = colors()
     }
 
-    override val container: Field = Field(Control(dropdown))
+    override val container = dropdown
 
 
     private fun column(color: String): Column {

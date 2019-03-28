@@ -69,16 +69,13 @@ class Breadcrumb(
 
 // TODO [Card](https://bulma.io/documentation/components/card/) element
 
-interface DropdownItem: BulmaElement
+interface DropdownItem : BulmaElement
 
-class DropdownLinkItem(text: String, href: String, icon: Icon? = null) : DropdownItem {
-    override val root: HTMLAnchorElement = document.create.a(href,"dropdown-item") {
+class DropdownSimpleItem(text: String, icon: Icon? = null, onSelect: (DropdownSimpleItem) -> Unit = {}) : DropdownItem {
+    override val root = document.create.a(null, "dropdown-item") {
         +text
-    } as HTMLAnchorElement
-
-    var href: String
-        get() = root.href
-        set(value) { root.href = value }
+        onClickFunction = { onSelect(this@DropdownSimpleItem) }
+    }
 
     var icon by bulma(icon, root, Position.AfterBegin)
 }
@@ -95,8 +92,8 @@ class DropdownDivider : DropdownItem {
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
 class Dropdown(
     text: String, vararg items: DropdownItem,
-    rounded: Boolean = false, dropDownIcon: String = "angle-down"
-) : BulmaElement {
+    rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down"
+) : ControlElement {
     override val root: HTMLElement = document.create.div(classes = "dropdown") {
         div("dropdown-trigger") {
             button(classes = "button") {
@@ -129,6 +126,8 @@ class Dropdown(
         set(value) {
             titleNode.innerText = value
         }
+
+    var icon = bulma(icon, buttonNode, Position.AfterBegin)
 
     var items by bulmaList(items.toList(), contentNode) {
         it.root.apply { if (!classList.contains("dropdown-divider")) classList.add("dropdown-item") }

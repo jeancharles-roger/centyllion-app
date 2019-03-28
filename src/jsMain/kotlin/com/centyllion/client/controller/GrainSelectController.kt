@@ -2,7 +2,6 @@ package com.centyllion.client.controller
 
 import bulma.*
 import com.centyllion.model.Grain
-import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
 class GrainSelectController(
@@ -19,31 +18,35 @@ class GrainSelectController(
 
     override var context: List<Grain> by observable(grains) { _, old, new ->
         if (old != new) {
-            select.options = options()
+            dropdown.items = items()
             this@GrainSelectController.refresh()
         }
     }
 
     val icon = Icon("circle")
-    val button = iconButton(icon, rounded = true)
 
-    val select = Select(options()) { _: Event, value: String ->
-        val index = value.toInt()
-        val newValue = if (index >= context.size) null else context[index]
-        data = newValue
+    val dropdown: Dropdown = Dropdown(grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
+
+    override val container: Field = Field(Control(dropdown))
+
+    private fun item(grain: Grain): DropdownSimpleItem {
+        val grainIcon = Icon("circle")
+        grainIcon.root.style.color = grain.color
+        return DropdownSimpleItem(grain.label(), grainIcon) {
+            this.data = grain
+            this.dropdown.toggleDropdown()
+        }
     }
 
-    override val container: Field = Field(Control(button), Control(select), addons = true)
-
-    private fun options() = context.map { Option(it.label(), "${it.id}") } + Option("none", "${context.size}")
-
-    init {
-        refresh()
+    private fun emptyItem() = DropdownSimpleItem("none", Icon("times-circle")) {
+        data = null
+        dropdown.toggleDropdown()
     }
+
+    private fun items() = context.map { item(it) } + emptyItem()
 
     override fun refresh() {
-        val index = data.let { if (it != null) context.indexOf(it) else select.options.lastIndex }
-        select.selectedIndex = index
+        dropdown.text = data?.label() ?: "none"
         icon.root.style.color = data?.color ?: "transparent"
     }
 

@@ -85,7 +85,7 @@ class BehaviourEditController(
         )
     )
 
-    val reactionController = ColumnsController<Reaction, GrainModel, ReactionEditController>(
+    val reactionController = columnsController<Reaction, GrainModel, ReactionEditController>(
         data.reaction, context, reactionHeader
     ) { index, reaction, previous ->
         val controller = previous ?: ReactionEditController(reaction, context)

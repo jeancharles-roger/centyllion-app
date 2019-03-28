@@ -56,7 +56,7 @@ class GrainModelEditController(
         controller
     }
 
-    val behavioursController = ColumnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
+    val behavioursController = columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
         val controller = previous ?: BehaviourEditController(behaviour, data)
         controller.onUpdate = { _, new, _ ->
             val behaviours = data.behaviours.toMutableList()

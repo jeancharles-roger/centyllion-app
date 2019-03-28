@@ -21,12 +21,16 @@ abstract class NoContextController<Data, Element: BulmaElement>: Controller<Data
     override var context: Unit = Unit
 }
 
-class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>(
+class MultipleController<
+        Data, Context, ParentElement: BulmaElement, ItemElement: BulmaElement,
+        Ctrl : Controller<Data, Context, ItemElement>
+>(
     initialList: List<Data>, initialContext: Context,
-    val header: List<Column> = emptyList(),
-    override val container: Columns = Columns().apply { multiline = true },
-    val controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
-) : Controller<List<Data>, Context, Columns> {
+    val header: List<ItemElement>,
+    override val container: ParentElement,
+    val controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl,
+    val updateParent: (parent: ParentElement, items: List<ItemElement>) -> Unit
+) : Controller<List<Data>, Context, ParentElement> {
 
     override var data: List<Data> by observable(initialList) { _, old, new ->
         if (old != new) {
@@ -72,7 +76,7 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
                 newController
             }
         }
-        container.columns = header + controllers.map { it.container }
+        updateParent(container, header + controllers.map { it.container })
     }
 
     override fun refresh() {
@@ -80,9 +84,19 @@ class ColumnsController<Data, Context, Ctrl : Controller<Data, Context, Column>>
     }
 }
 
+fun <Data, Context, Ctrl : Controller<Data, Context, Column>> columnsController(
+    initialList: List<Data>, initialContext: Context,
+    header: List<Column> = emptyList(),
+    container: Columns = Columns().apply { multiline = true },
+    controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
+) = MultipleController<Data, Context, Columns, Column, Ctrl>(
+    initialList, initialContext, header, container, controllerBuilder) { parent, items ->
+    parent.columns = items
+}
+
 fun <Data, Ctrl : Controller<Data, Unit, Column>> noContextColumnsController(
     initialList: List<Data>,
     container: Columns = Columns().apply { multiline = true },
      header: List<Column> = emptyList(),
     controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
-) = ColumnsController(initialList, Unit, header, container, controllerBuilder)
+) = columnsController(initialList, Unit, header, container, controllerBuilder)

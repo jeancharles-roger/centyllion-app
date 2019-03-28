@@ -48,7 +48,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
         }
 
     val behaviourController =
-        ColumnsController<Behaviour, GrainModel, BehaviourDisplayController>(
+        columnsController<Behaviour, GrainModel, BehaviourDisplayController>(
             model.behaviours, model
         ) { _, behaviour, previous ->
             previous ?: BehaviourDisplayController(model).apply { data = behaviour }

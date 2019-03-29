@@ -187,11 +187,11 @@ data class Simulation(
         var x = yRest - y * width
 
         when (direction) {
-            Direction.Left -> x = (x - step) % width
+            Direction.Left -> x = (x + width - step) % width
             Direction.Right -> x = (x + step) % width
-            Direction.Up -> y = (y - step) % height
+            Direction.Up -> y = (y + height - step) % height
             Direction.Down -> y = (y + step) % height
-            Direction.Front -> z = (z - step) % depth
+            Direction.Front -> z = (z + depth - step) % depth
             Direction.Back -> z = (z + step) % depth
         }
 

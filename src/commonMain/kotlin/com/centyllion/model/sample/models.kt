@@ -29,9 +29,7 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
             }
         }
 
-        for (i in -2 until 2) {
-            setIdAtIndex(dataSize / 2 + i * 167, 1)
-        }
+        setIdAtIndex(toIndex(width/2, height/2), 1)
 
         saveState()
     }

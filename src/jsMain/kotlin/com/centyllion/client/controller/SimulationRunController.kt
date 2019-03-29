@@ -9,6 +9,7 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyModel
 import com.centyllion.model.sample.emptySimulation
 import kotlin.browser.window
+import kotlin.js.Date
 import kotlin.properties.Delegates
 
 class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
@@ -29,6 +30,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
     inline val model get() = data.model
 
     var running = false
+    var startTime = -1.0
     var lastRefresh = 0
 
     var presentCharts = true
@@ -104,6 +106,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
     fun run() {
         if (!running) {
             running = true
+            startTime = Date.now()
             refreshButtons()
             runningCallback()
         }
@@ -133,6 +136,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
     fun reset() {
         if (!running) {
             data.reset()
+            startTime = -1.0
             refresh()
             refreshChart()
         }
@@ -140,6 +144,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     private fun executeStep(updateChart: Boolean) {
         data.oneStep()
+
         refreshCanvas()
         refreshCounts()
 
@@ -180,7 +185,8 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     fun refreshCounts() {
         // refreshes step count
-        stepLabel.text = "${data.step}"
+        val time = if (startTime >= 0) " (${(Date.now() - startTime) / 1000.0} s.)" else ""
+        stepLabel.text = "${data.step}$time"
 
         // refreshes grain counts
         val counts = data.lastGrainsCount().values

@@ -57,6 +57,7 @@ class EditableStringController(
         if (editable) {
             container.body = listOfNotNull(inputControl, okControl, cancelControl)
             inputControl.rightIcon = null
+            input.root.focus()
         } else {
             container.body = listOfNotNull(inputControl)
             inputControl.rightIcon = penIcon

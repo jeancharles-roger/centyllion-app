@@ -34,8 +34,9 @@ body {
 
 .media {
   border-radius: 6px;
-  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+  box-shadow: 0 3px 4px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
   color: #011f4b;
+  background-color: #fafafa;
   padding: 1.25rem;
 }
 

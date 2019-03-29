@@ -8,7 +8,7 @@ class PerformanceTest {
 
     @Test
     fun testDendritePerformance() {
-        val simulator = Simulator(dendriteModel(), dendriteSimulation(200, 200))
+        val simulator = Simulator(dendriteModel(), dendriteSimulation(100, 100))
         repeat(500) { simulator.oneStep() }
     }
 

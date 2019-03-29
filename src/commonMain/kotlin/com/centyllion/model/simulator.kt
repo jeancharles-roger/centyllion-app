@@ -46,6 +46,8 @@ class Simulator(
 
     private val reactiveGrains = model.mainReactiveGrains
 
+    private val allBehaviours = model.allBehaviours
+
     fun grainAtIndex(index: Int) = model.indexedGrains[simulation.idAtIndex(index)]
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
@@ -87,7 +89,7 @@ class Simulator(
                     val neighbours = simulation.neighbours(i)
 
                     // searches for applicable behaviours
-                    val applicable = model.behaviours
+                    val applicable = allBehaviours
                         .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
                         .filter { random.nextDouble() < it.probability } // filters by probability
 
@@ -127,24 +129,6 @@ class Simulator(
             .flatMap { it.value - it.value[random.nextInt(it.value.size)] }.toSet()
         val toExecute = all.filter { it.value.isNotEmpty() }.flatMap {it.value} - toExclude
         toExecute.forEach { it.apply(simulation) }
-
-        // moves grains that aren't used in a reaction
-        all.filter { it.value.isEmpty() }.forEach {
-            val index = it.key
-            val grain = grainAtIndex(index)
-            if (grain != null && grain.canMove) {
-                // applies random to do move
-                if (random.nextDouble() < grain.movementProbability) {
-                    val directions = grain.allowedDirection
-                        .filter { simulation.moveIndex(index, it).let { index -> simulation.indexInside(index) && simulation.indexIsFree(index) } }
-                    if (directions.isNotEmpty()) {
-                        val direction = directions[random.nextInt(directions.size)]
-                        val targetIndex = simulation.moveIndex(index, direction)
-                        simulation.transform(index, targetIndex, grain.id, true)
-                    }
-                }
-            }
-        }
 
         // count a step
         step += 1

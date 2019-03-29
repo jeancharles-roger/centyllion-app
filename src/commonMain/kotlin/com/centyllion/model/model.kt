@@ -147,10 +147,23 @@ data class GrainModel(
 
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
 
+    private fun moveBehaviour(grain: Grain) = if (grain.canMove) {
+        Behaviour(
+            "Move ${grain.label()}", probability = grain.movementProbability, mainReactiveId = grain.id, transform = true,
+            reaction = listOf(Reaction(productId = grain.id, transform = true, allowedDirection = grain.allowedDirection))
+        )
+    } else {
+        null
+    }
+
+    @Transient
+    // TODO revert to not dynamic value when serialization on js works
+    val allBehaviours get() = behaviours + grains.mapNotNull { moveBehaviour(it) }
+
     /** Main reactive grains are all the grains that are main component for a behaviour */
     @Transient
     val mainReactiveGrains
-        get() = behaviours.mapNotNull { indexedGrains[it.mainReactiveId] }.toSet()
+        get() = allBehaviours.mapNotNull { indexedGrains[it.mainReactiveId] }.toSet()
 
     @Transient
     val valid

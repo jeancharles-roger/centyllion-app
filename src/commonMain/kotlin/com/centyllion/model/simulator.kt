@@ -56,23 +56,6 @@ class Simulator(
 
         // applies agents dying process
         val currentCount = mutableMapOf<Grain, Int>()
-        for (i in 0 until simulation.dataSize) {
-            val grain = grainAtIndex(i)
-            if (grain != null) {
-                // does the grain dies ?
-                if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
-                    // it dies, does't count
-                    simulation.transform(i, i, null, false)
-                } else {
-                    currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
-                    simulation.ageGrain(i)
-                }
-            }
-        }
-        // stores count for each grain
-        currentCount.forEach {
-            grainCountHistory[it.key]?.add(it.value)
-        }
 
         // all will contains index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
@@ -81,43 +64,56 @@ class Simulator(
         for (i in 0 until simulation.dataSize) {
             val grain = grainAtIndex(i)
             if (grain != null) {
-                val selected = all.getOrPut(i) { mutableListOf() }
-                if (reactiveGrains.contains(grain)) {
-                    val age = simulation.ageAtIndex(i)
 
-                    // a grain is present, a behaviour can be triggered
-                    val neighbours = simulation.neighbours(i)
+                // does the grain dies ?
+                if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
+                    // it dies, does't count
+                    simulation.transform(i, i, null, false)
+                } else {
 
-                    // searches for applicable behaviours
-                    val applicable = allBehaviours
-                        .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
-                        .filter { random.nextDouble() < it.probability } // filters by probability
+                    // ages grain
+                    currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
+                    simulation.ageGrain(i)
 
-                    // selects behaviour if any is applicable
-                    if (applicable.isNotEmpty()) {
-                        // selects one at random
-                        val behaviour = applicable[random.nextInt(applicable.size)]
+                    val selected = all.getOrPut(i) { mutableListOf() }
+                    if (reactiveGrains.contains(grain)) {
+                        val age = simulation.ageAtIndex(i)
 
-                        // for each reactions, find all possible reactives
-                        val possibleReactions = behaviour.reaction.map { reaction ->
-                            neighbours
-                                .filter { (d, id) -> reaction.reactiveId == id && reaction.allowedDirection.contains(d) }
-                                .map { it.key to it.value }
-                        }
+                        // a grain is present, a behaviour can be triggered
+                        val neighbours = simulation.neighbours(i)
 
-                        // combines possibilities
-                        val allCombinations = possibleReactions.allCombinations()
+                        // searches for applicable behaviours
+                        val applicable = allBehaviours
+                            .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
+                            .filter { random.nextDouble() < it.probability } // filters by probability
 
-                        // chooses one randomly
-                        val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map {
-                            simulation.moveIndex(i, it.first) to it.second
-                        }
+                        // selects behaviour if any is applicable
+                        if (applicable.isNotEmpty()) {
+                            // selects one at random
+                            val behaviour = applicable[random.nextInt(applicable.size)]
 
-                        val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
-                        selected.add(behavior)
-                        usedNeighbours.forEach {
-                            val neighboursSelected = all.getOrPut(it.first) { mutableListOf() }
-                            neighboursSelected.add(behavior)
+                            // for each reactions, find all possible reactives
+                            val possibleReactions = behaviour.reaction
+                                .map { reaction ->
+                                    neighbours.filter { (d, id) ->
+                                        reaction.reactiveId == id && reaction.allowedDirection.contains(d)
+                                    }
+                                }
+
+                            // combines possibilities
+                            val allCombinations = possibleReactions.allCombinations()
+
+                            // chooses one randomly
+                            val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map {
+                                simulation.moveIndex(i, it.first) to it.second
+                            }
+
+                            val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
+                            selected.add(behavior)
+                            usedNeighbours.forEach {
+                                val neighboursSelected = all.getOrPut(it.first) { mutableListOf() }
+                                neighboursSelected.add(behavior)
+                            }
                         }
                     }
                 }
@@ -127,8 +123,13 @@ class Simulator(
         // filters behaviors that aren't concurrent
         val toExclude = all.filter { it.value.size > 1 }
             .flatMap { it.value - it.value[random.nextInt(it.value.size)] }.toSet()
-        val toExecute = all.filter { it.value.isNotEmpty() }.flatMap {it.value} - toExclude
+        val toExecute = all.filter { it.value.isNotEmpty() }.flatMap { it.value } - toExclude
         toExecute.forEach { it.apply(simulation) }
+
+        // stores count for each grain
+        currentCount.forEach {
+            grainCountHistory[it.key]?.add(it.value)
+        }
 
         // count a step
         step += 1

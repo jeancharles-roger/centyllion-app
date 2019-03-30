@@ -63,7 +63,7 @@ fun <T> html(
 class BulmaElementListProperty<T : BulmaElement>(
     initialValue: List<T>, private val parent: HTMLElement,
     private val before: () -> Element?, private val prepare: (T) -> HTMLElement
-    ) : ReadWriteProperty<Any?, List<T>> {
+) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
 
@@ -111,7 +111,18 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
-    private var container = containerBuilder(initialValue)
+    private var container = prepareContainer(initialValue)?.also {
+        if (before != null) {
+            parent.insertBefore(it, before)
+        } else {
+            parent.insertAdjacentElement(position.value, it)
+        }
+    }
+
+    private fun prepareContainer(value: List<T>) =
+        containerBuilder(value)?.apply {
+            value.forEach { this.appendChild(it.root) }
+        }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
 
@@ -119,7 +130,7 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
         val oldValue = this.value
         if (oldValue != value) {
             val oldContainer = container
-            val newContainer = containerBuilder(value)
+            val newContainer = prepareContainer(value)
             container = newContainer
             if (oldContainer != null && newContainer != null && parent.contains(oldContainer)) {
                 parent.replaceChild(newContainer, oldContainer)
@@ -128,26 +139,12 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
                     parent.removeChild(oldContainer)
                 }
                 if (newContainer != null) {
-                    value.forEach { newContainer.appendChild(it.root) }
                     if (before != null) {
                         parent.insertBefore(newContainer, before)
                     } else {
                         parent.insertAdjacentElement(position.value, newContainer)
                     }
                 }
-            }
-        }
-    }
-
-    init {
-        val newContainer = containerBuilder(value)
-        container = newContainer
-        if (newContainer != null) {
-            value.forEach { newContainer.appendChild(it.root) }
-            if (before != null) {
-                parent.insertBefore(newContainer, before)
-            } else {
-                parent.insertAdjacentElement(position.value, newContainer)
             }
         }
     }

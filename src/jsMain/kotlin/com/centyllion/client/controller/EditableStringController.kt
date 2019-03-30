@@ -19,24 +19,24 @@ class EditableStringController(
         }
     }
 
-    val okButton: Button = iconButton(Icon("check"), ElementColor.Success) {
-        this.data = input.value
-        edit(false)
-    }
+    val okButton: Button = iconButton(Icon("check"), ElementColor.Success) { validate() }
+    val cancelButton: Button = iconButton(Icon("times"), ElementColor.Danger, rounded = true) { cancel() }
 
     val okControl = Control(okButton)
-
-    val cancelButton: Button = iconButton(Icon("times"), ElementColor.Danger, rounded = true) {
-        input.value = this.data
-        edit(false)
-    }
-
     val cancelControl = Control(cancelButton)
 
     val input = Input(value = data, placeholder = placeHolder, readonly = true, static = true).apply {
         root.onclick = {
             edit(true)
             Unit
+        }
+        root.onkeypress = {
+            if (!readonly) {
+                when (it.key) {
+                    "Enter" -> validate()
+                    "Escape" -> cancel()
+                }
+            }
         }
         onChange = { _, value ->
             isValid(value).let {
@@ -68,6 +68,16 @@ class EditableStringController(
 
     override fun refresh() {
         input.value = data
+    }
+
+    fun validate() {
+        this.data = input.value
+        edit(false)
+    }
+
+    fun cancel() {
+        input.value = this.data
+        edit(false)
     }
 
 }

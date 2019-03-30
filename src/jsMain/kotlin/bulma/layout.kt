@@ -5,7 +5,6 @@ import kotlinx.html.dom.create
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLSpanElement
 import kotlin.browser.document
 
 class HtmlWrapper<Html : HTMLElement>(override val root: Html) : BulmaElement
@@ -18,10 +17,10 @@ fun div(vararg body: BulmaElement, classes: String = "") =
         body.forEach { root.appendChild(it.root) }
     }
 
-fun span(vararg body: BulmaElement, classes: String = "") =
-    HtmlWrapper(document.create.span(classes) as HTMLSpanElement).apply {
-        body.forEach { root.appendChild(it.root) }
-    }
+fun span(text: String = "", classes: String = "") =
+    HtmlWrapper(document.create.span(classes) {
+        +text
+    })
 
 fun p(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
     body.forEach { root.appendChild(it.root) }

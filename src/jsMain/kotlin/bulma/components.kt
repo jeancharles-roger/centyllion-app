@@ -1,6 +1,7 @@
 package bulma
 
 import kotlinx.html.a
+import kotlinx.html.article
 import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.dom.create
@@ -139,4 +140,28 @@ class Dropdown(
     var menuSize: String
         get() = menuNode.style.width
         set(value) { menuNode.style.width = value }
+}
+
+// TODO [Menu](http://bulma.io/documentation/components/menu)
+
+/** [Message](http://bulma.io/documentation/components/message) element */
+class Message(
+    header: List<BulmaElement> = listOf(), body: List<BulmaElement> = listOf(),
+    size: Size = Size.None, color: ElementColor = ElementColor.None
+): BulmaElement {
+
+    override val root: HTMLElement = document.create.article( "message")
+
+    var header by embeddedBulmaList(header, root, Position.AfterBegin) {
+        if (it.isNotEmpty()) document.create.div("message-header") else null
+    }
+
+    var body by embeddedBulmaList(body, root, Position.BeforeEnd) {
+        if (it.isNotEmpty()) document.create.div("message-body") else null
+    }
+
+    var size by className(size, root)
+
+    var color by className(color, root)
+
 }

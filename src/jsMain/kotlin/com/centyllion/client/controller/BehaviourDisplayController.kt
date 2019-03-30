@@ -5,9 +5,9 @@ import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-class BehaviourDisplayController(model: GrainModel) : Controller<Behaviour, GrainModel, Column> {
+class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Controller<Behaviour, GrainModel, Column> {
 
-    override var data: Behaviour by observable(Behaviour()) { _, old, new ->
+    override var data: Behaviour by observable(behaviour) { _, old, new ->
         if (old != new) refresh()
     }
 
@@ -18,13 +18,15 @@ class BehaviourDisplayController(model: GrainModel) : Controller<Behaviour, Grai
     val titleLabel = Label()
     val descriptionLabel = p()
 
-    val body = Media(center = listOf(titleLabel, descriptionLabel))
+    val body = Media(
+        left = data.usedGrains(context).map { Icon("circle").apply { root.style.color = it.color } },
+        center = listOf(titleLabel, descriptionLabel)
+    )
 
     override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
-        body.left = data.usedGrains(context).map { span(classes = "dot").apply { root.style.backgroundColor = it.color } }
-
+        body.left = data.usedGrains(context).map { Icon("circle").apply { root.style.color = it.color } }
         titleLabel.text = data.name
         descriptionLabel.text = data.description
     }

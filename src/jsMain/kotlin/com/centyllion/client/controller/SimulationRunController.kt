@@ -46,14 +46,14 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     val grainsController =
         noContextColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
-            previous ?: GrainDisplayController().apply { data = grain }
+            previous ?: GrainDisplayController(grain)
         }
 
     val behaviourController =
         columnsController<Behaviour, GrainModel, BehaviourDisplayController>(
             model.behaviours, model
         ) { _, behaviour, previous ->
-            previous ?: BehaviourDisplayController(model).apply { data = behaviour }
+            previous ?: BehaviourDisplayController(behaviour, model)
         }
 
     val selectedGrainController = GrainSelectController(null, model.grains)

@@ -53,16 +53,18 @@ class BulmaElementProperty<T>(
 }
 
 fun <T: BulmaElement> bulma(
-    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement = { it.root }
+    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement? = { it.root }
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
 fun <T> html(
-    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement
+    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement?
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
 class BulmaElementListProperty<T : BulmaElement>(
     initialValue: List<T>, private val parent: HTMLElement,
-    private val before: () -> Element?, private val prepare: (T) -> HTMLElement
+    private val before: () -> Element?,
+    private val position: Position = Position.BeforeEnd,
+    private val prepare: (T) -> HTMLElement
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
@@ -79,7 +81,7 @@ class BulmaElementListProperty<T : BulmaElement>(
             if (reference != null) {
                 elements.forEach { parent.insertBefore(it, reference) }
             } else {
-                elements.forEach { parent.appendChild(it) }
+                elements.forEach { parent.insertAdjacentElement(position.value, it) }
             }
         }
     }
@@ -90,16 +92,17 @@ class BulmaElementListProperty<T : BulmaElement>(
         if (reference != null) {
             elements.forEach { parent.insertBefore(it, reference) }
         } else {
-            elements.forEach { parent.appendChild(it) }
+            elements.forEach { parent.insertAdjacentElement(position.value, it) }
         }
     }
 }
 
 fun <T : BulmaElement> bulmaList(
     initialValue: List<T> = emptyList(), parent: HTMLElement,
-    before: () -> Element? = { null }, prepare: (T) -> HTMLElement = { it.root }
+    before: () -> Element? = { null },
+    prepare: (T) -> HTMLElement = { it.root }
 ) =
-    BulmaElementListProperty(initialValue, parent, before, prepare)
+    BulmaElementListProperty(initialValue, parent, before, Position.BeforeEnd, prepare)
 
 
 class BulmaElementEmbeddedListProperty<T : BulmaElement>(

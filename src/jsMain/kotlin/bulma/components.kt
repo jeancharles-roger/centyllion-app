@@ -221,3 +221,58 @@ class ModalCard(
 
     var buttons by bulmaList(buttons, footNode)
 }
+
+// TODO [NavBar](https://bulma.io/documentation/components/navbar)
+
+// TODO [Pagination](https://bulma.io/documentation/components/pagination)
+
+interface PanelItem : BulmaElement
+
+class PanelTabsItem(text: String, onClick: (PanelTabsItem) -> Unit = {}) : BulmaElement {
+
+    override val root: HTMLElement = document.create.a {
+        +text
+        onClickFunction = { onClick(this@PanelTabsItem) }
+    }
+
+    var active by className(false, "is-active", root)
+}
+
+class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
+
+    override val root: HTMLElement = document.create.p("panel-tabs")
+
+    var items by bulmaList(items.toList(), root)
+}
+
+class PanelSimpleBlock(text: String, icon: String? = null): PanelItem {
+    override val root: HTMLElement = document.create.div("panel-block") {
+        +text
+    }
+
+    var icon = html(icon, root, Position.AfterBegin) {
+        document.create.span("panel-icon") {
+            i("fas fa-$it") {
+                attributes["aria-hidden"] = "true"
+            }
+        }
+    }
+}
+
+class PanelContentBlock(vararg content: BulmaElement): PanelItem {
+    override val root: HTMLElement = document.create.div("panel-block")
+
+    var content by bulmaList(content.toList(), root)
+
+}
+
+/** [Panel](https://bulma.io/documentation/components/panel) */
+class Panel(text: String, vararg items: PanelItem) : BulmaElement {
+
+    override val root: HTMLElement = document.create.nav("panel") {
+        p("panel-heading") { +text }
+    }
+
+    var items by bulmaList(items.toList(), root)
+}
+

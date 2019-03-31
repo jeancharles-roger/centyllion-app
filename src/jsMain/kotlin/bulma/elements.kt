@@ -87,7 +87,9 @@ class Icon(
     icon: String, size: Size = Size.None, color: TextColor = TextColor.None
 ) : ControlElement {
     override val root: HTMLElement = document.create.span("icon") {
-        i("fas fa-$icon")
+        i("fas fa-$icon") {
+            attributes["aria-hidden"] = "true"
+        }
     }
 
     private val iconNode = root.querySelector(".fas") as HTMLElement
@@ -169,14 +171,14 @@ class Tags(tags: List<Tag> = emptyList()) : BulmaElement {
     var tags by bulmaList<Tag>(tags, root)
 }
 
-class Title(text: String, size: TextSize = TextSize.None): BulmaElement {
+class Title(text: String, size: TextSize = TextSize.None) : BulmaElement {
 
     override val root: HTMLElement = document.create.h1("title") { +text }
 
     var size by className(size, root)
 }
 
-class SubTitle(text: String, size: TextSize = TextSize.None): BulmaElement {
+class SubTitle(text: String, size: TextSize = TextSize.None) : BulmaElement {
 
     override val root: HTMLElement = document.create.h1("subtitle") { +text }
 

@@ -1,16 +1,14 @@
 package com.centyllion.client
 
 import KeycloakInstance
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
 import com.centyllion.client.controller.ModelPage
-import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
-import com.centyllion.common.simulationRole
 import com.centyllion.model.Action
-import com.centyllion.model.Simulator
-import com.centyllion.model.sample.*
 import kotlinx.html.article
 import kotlinx.html.div
 import kotlinx.html.dom.create
@@ -31,7 +29,6 @@ const val contentSelector = "section.cent-main"
 
 val pages = listOf(
     Page("Model", "model", modelRole, ::model),
-    Page("Simulation", "simulation", simulationRole, ::simulation),
     Page("Profile", "profile", "", ::profile),
     Page("Administration", "administration", adminRole, ::administration)
 )
@@ -52,32 +49,6 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
 
 fun model(root: HTMLElement, instance: KeycloakInstance) {
     root.appendChild(ModelPage(instance).root)
-}
-
-fun simulation(root: HTMLElement, instance: KeycloakInstance) {
-    val simulations = listOf(
-        Simulator(dendriteModel(), dendriteSimulation(100, 100)),
-        Simulator(dendriteModel(), dendriteSimulation(200, 200)),
-        Simulator(bacteriaModel(), bacteriaSimulation(100, 100)),
-        Simulator(bacteriaModel(), bacteriaSimulation(200, 200)),
-        Simulator(immunityModel(), immunitySimulation(100, 100)),
-        Simulator(immunityModel(), immunitySimulation(200, 200)),
-        Simulator(carModel(), carSimulation(100, 100, 5)),
-        Simulator(carModel(), carSimulation(200, 200, 5)),
-        Simulator(fishRespirationModel(true), fishRespirationSimulation()),
-        Simulator(fishRespirationModel(false), fishRespirationSimulation())
-    )
-
-    val controller = SimulationRunController()
-    controller.data = simulations[0]
-
-    val options = simulations.mapIndexed { i, s ->
-        Option("${s.model.name} ${s.simulation.width}x${s.simulation.height}", "$i")
-    }
-    val select = Select(options, rounded = true) { _, index ->
-        controller.data = simulations[index.toInt()]
-    }
-    root.appendChild(div(select, controller).root)
 }
 
 fun administration(root: HTMLElement, instance: KeycloakInstance) {

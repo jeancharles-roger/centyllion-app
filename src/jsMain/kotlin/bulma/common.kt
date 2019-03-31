@@ -66,3 +66,7 @@ enum class TextColor(override val className: String) : HasClassName {
 
     fun next() = values().let { it[(ordinal + 1) % it.count()] }
 }
+
+enum class Alignment(override val className: String) : HasClassName {
+    Left(""), Centered("is-centered"), Right("is-right")
+}

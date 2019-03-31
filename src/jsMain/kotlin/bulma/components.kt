@@ -55,10 +55,7 @@ class Breadcrumb(
 
     var size by className(size, root)
 
-    var centered by className(centered, "is-centered", root)
-
-    var right by className(right, "is-right", root)
-
+    var alignment by className(Alignment.Left, root)
 }
 
 // TODO [Card](https://bulma.io/documentation/components/card/) element
@@ -276,3 +273,48 @@ class Panel(text: String, vararg items: PanelItem) : BulmaElement {
     var items by bulmaList(items.toList(), root)
 }
 
+class TabItem(
+    text: String, icon: String? = null
+): BulmaElement {
+
+    override val root: HTMLElement = document.create.li {
+        a { +text }
+    }
+
+    private val aNode = root.querySelector("a") as HTMLElement
+
+    var icon = html(icon, aNode, Position.AfterBegin) {
+        document.create.span("icon") {
+            i("fas fa-$it") {
+                attributes["aria-hidden"] = "true"
+            }
+        }
+    }
+
+    var active by className(false, "is-active", root)
+}
+
+/** [Tabs](http://bulma.io/documentation/components/tabs) */
+class Tabs(
+    vararg items: TabItem, alignment: Alignment = Alignment.Left, size: Size = Size.None,
+    boxed: Boolean = false, toggle: Boolean = false, toggleRounded: Boolean = false,
+    fullwidth: Boolean = false
+): BulmaElement {
+
+    override val root: HTMLElement = document.create.div("tabs")
+
+    var items by embeddedBulmaList(items.toList(), root, Position.AfterBegin) { document.create.ul() }
+
+    var alignment by className(alignment, root)
+
+    var size by className(size, root)
+
+    var toggle by className(toggle, "is-toggle", root)
+
+    var toggleRounded by className(toggleRounded, "is-toggle-rounded", root)
+
+    var boxed by className(boxed, "is-boxed", root)
+
+    var fullWidth by className(fullwidth, "is-fullwidth", root)
+
+}

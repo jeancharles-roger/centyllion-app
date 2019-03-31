@@ -11,7 +11,7 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyGrainModelDescription
 import kotlin.properties.Delegates.observable
 
-class ModelPage(val instance: KeycloakInstance) : Controller<GrainModelDescription, List<GrainModelDescription>, BulmaElement> {
+class ModelPage  (val instance: KeycloakInstance) : Controller<GrainModelDescription, List<GrainModelDescription>, BulmaElement> {
 
     var selectingModel = false
 
@@ -69,11 +69,10 @@ class ModelPage(val instance: KeycloakInstance) : Controller<GrainModelDescripti
 
     val modelField = Field(Control(modelSelect), Control(modelSave), addons = true)
 
-    override val container: BulmaElement = div(
-        Level(left = listOf(Title("Model")), right = listOf(modelField)),
-        modelController,
-        Title("Simulation"), simulationController
-    )
+    override val container: BulmaElement = div(modelField, TabPages(
+        TabPage(TabItem("Model", "boxes"), modelController),
+        TabPage(TabItem("Simulation", "play"), simulationController)
+    ))
 
     init {
         modelController.data = data.model

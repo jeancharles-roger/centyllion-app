@@ -1,18 +1,11 @@
 package bulma
 
-import kotlinx.html.a
-import kotlinx.html.article
-import kotlinx.html.button
-import kotlinx.html.div
+import kotlinx.html.*
 import kotlinx.html.dom.create
-import kotlinx.html.hr
-import kotlinx.html.i
 import kotlinx.html.js.div
 import kotlinx.html.js.li
 import kotlinx.html.js.nav
 import kotlinx.html.js.onClickFunction
-import kotlinx.html.span
-import kotlinx.html.ul
 import org.w3c.dom.*
 import kotlin.browser.document
 
@@ -95,6 +88,7 @@ class Dropdown(
     text: String, vararg items: DropdownItem,
     rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down"
 ) : ControlElement {
+
     override val root: HTMLElement = document.create.div(classes = "dropdown") {
         div("dropdown-trigger") {
             button(classes = "button") {
@@ -114,10 +108,10 @@ class Dropdown(
         }
     }
 
-    protected val buttonNode = root.querySelector("button.button") as HTMLButtonElement
-    protected val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
-    protected val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
-    protected val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
+    private val buttonNode = root.querySelector("button.button") as HTMLButtonElement
+    private val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
+    private val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
+    private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
 
     fun toggleDropdown() {
         root.classList.toggle("is-active")
@@ -139,7 +133,9 @@ class Dropdown(
 
     var menuSize: String
         get() = menuNode.style.width
-        set(value) { menuNode.style.width = value }
+        set(value) {
+            menuNode.style.width = value
+        }
 }
 
 // TODO [Menu](http://bulma.io/documentation/components/menu)
@@ -148,9 +144,9 @@ class Dropdown(
 class Message(
     header: List<BulmaElement> = listOf(), body: List<BulmaElement> = listOf(),
     size: Size = Size.None, color: ElementColor = ElementColor.None
-): BulmaElement {
+) : BulmaElement {
 
-    override val root: HTMLElement = document.create.article( "message")
+    override val root: HTMLElement = document.create.article("message")
 
     var header by embeddedBulmaList(header, root, Position.AfterBegin) {
         if (it.isNotEmpty()) document.create.div("message-header") else null
@@ -164,4 +160,64 @@ class Message(
 
     var color by className(color, root)
 
+}
+
+/** [Modal](https://bulma.io/documentation/components/modal) */
+class Modal(vararg content: BulmaElement) : BulmaElement {
+    override val root: HTMLElement = document.create.div("modal") {
+        div("modal-background") {
+            onClickFunction = { active = false }
+        }
+        div("modal-content")
+        div("modal-close is-large") {
+            attributes["aria-label"] = "close"
+            onClickFunction = { active = false }
+        }
+    }
+
+    private val contentNode = root.querySelector(".modal-content") as HTMLDivElement
+
+    var active by className(false, "is-active", root)
+
+    var content by bulmaList(content.toList(), contentNode)
+}
+
+/** [Modal Card](https://bulma.io/documentation/components/modal) */
+class ModalCard(
+    text: String,
+    body: List<BulmaElement> = listOf(),
+    buttons: List<Button> = listOf()
+) : BulmaElement {
+    override val root: HTMLElement = document.create.div("modal") {
+        div("modal-background") {
+            onClickFunction = { active = false }
+        }
+        div("modal-card") {
+            header("modal-card-head") {
+                p("modal-card-title") { +text }
+                button(classes = "delete") {
+                    attributes["aria-label"] = "close"
+                    onClickFunction = { active = false }
+                }
+            }
+            section("modal-card-body")
+            footer("modal-card-foot")
+        }
+    }
+
+    private val titleNode = root.querySelector("p.modal-card-title") as HTMLElement
+    private val bodyNode = root.querySelector("section.modal-card-body") as HTMLElement
+    private val footNode = root.querySelector("footer.modal-card-foot") as HTMLElement
+
+    var active by className(false, "is-active", root)
+
+    override var text: String
+        get() = titleNode.innerText
+        set(value) {
+            titleNode.innerText = value
+        }
+
+    var body by bulmaList(body, bodyNode)
+
+    var buttons by bulmaList(buttons, footNode)
 }

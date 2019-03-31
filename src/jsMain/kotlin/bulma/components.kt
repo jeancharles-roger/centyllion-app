@@ -274,11 +274,12 @@ class Panel(text: String, vararg items: PanelItem) : BulmaElement {
 }
 
 class TabItem(
-    text: String, icon: String? = null
+    text: String, icon: String? = null, onClick: (TabItem) -> Unit = {}
 ): BulmaElement {
 
     override val root: HTMLElement = document.create.li {
         a { +text }
+        onClickFunction = { onClick(this@TabItem)}
     }
 
     private val aNode = root.querySelector("a") as HTMLElement

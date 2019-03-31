@@ -8,6 +8,7 @@ import kotlinx.html.js.nav
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.*
 import kotlin.browser.document
+import kotlin.properties.Delegates.observable
 
 enum class BreadcrumbSeparator(override val className: String) : HasClassName {
     Default(""), Arrow("has-arrow-separator"), Bullet("has-bullet-separator"),
@@ -242,7 +243,7 @@ class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
     var items by bulmaList(items.toList(), root)
 }
 
-class PanelSimpleBlock(text: String, icon: String? = null): PanelItem {
+class PanelSimpleBlock(text: String, icon: String? = null) : PanelItem {
     override val root: HTMLElement = document.create.div("panel-block") {
         +text
     }
@@ -256,7 +257,7 @@ class PanelSimpleBlock(text: String, icon: String? = null): PanelItem {
     }
 }
 
-class PanelContentBlock(vararg content: BulmaElement): PanelItem {
+class PanelContentBlock(vararg content: BulmaElement) : PanelItem {
     override val root: HTMLElement = document.create.div("panel-block")
 
     var content by bulmaList(content.toList(), root)
@@ -274,12 +275,12 @@ class Panel(text: String, vararg items: PanelItem) : BulmaElement {
 }
 
 class TabItem(
-    text: String, icon: String? = null, onClick: (TabItem) -> Unit = {}
-): BulmaElement {
+    text: String, icon: String? = null, var onClick: (TabItem) -> Unit = {}
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.li {
         a { +text }
-        onClickFunction = { onClick(this@TabItem)}
+        onClickFunction = { onClick(this@TabItem) }
     }
 
     private val aNode = root.querySelector("a") as HTMLElement
@@ -300,7 +301,7 @@ class Tabs(
     vararg items: TabItem, alignment: Alignment = Alignment.Left, size: Size = Size.None,
     boxed: Boolean = false, toggle: Boolean = false, toggleRounded: Boolean = false,
     fullwidth: Boolean = false
-): BulmaElement {
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("tabs")
 
@@ -317,5 +318,46 @@ class Tabs(
     var boxed by className(boxed, "is-boxed", root)
 
     var fullWidth by className(fullwidth, "is-fullwidth", root)
+}
+
+class TabPage(val title: TabItem, val body: BulmaElement)
+
+class TabPages(
+    vararg pages: TabPage, val tabs: Tabs = Tabs(), initialTabIndex: Int = 0
+) : BulmaElement {
+
+    override val root: HTMLElement = document.create.div()
+
+    var pages by observable(pages.toList()) { _, _, new ->
+        tabs.items = new.map { it.title }
+        pagesContent = new.map { it.body }
+        preparePages(new)
+    }
+
+    private var pagesContent by bulmaList(pages.map { it.body }, root)
+
+    init {
+        tabs.apply { items = pages.map { it.title } }
+        preparePages(this.pages)
+        pages.getOrNull(initialTabIndex)?.let { selectPage(it) }
+        root.insertAdjacentElement(Position.AfterBegin.value, tabs.root)
+    }
+
+    private fun preparePages(pages: List<TabPage>) {
+        pages.map { page ->
+            page.title.onClick = { selectPage(page) }
+            page.body.root.classList.add("is-hidden")
+        }
+    }
+
+    fun selectPage(page: TabPage) {
+        pages.forEach {
+            it.body.root.classList.add("is-hidden")
+            it.title.active = false
+        }
+
+        page.body.root.classList.remove("is-hidden")
+        page.title.active = true
+    }
 
 }

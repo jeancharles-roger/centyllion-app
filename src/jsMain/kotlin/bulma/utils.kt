@@ -31,6 +31,7 @@ class BulmaElementProperty<T>(
 
             val oldElement = element
             val newElement = value?.let { prepare(it) }
+            element = newElement
 
             if (oldElement != null && newElement != null && parent.contains(oldElement)) {
                 parent.replaceChild(newElement, oldElement)
@@ -68,6 +69,7 @@ class BulmaElementListProperty<T : BulmaElement>(
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
+    private var elements = value.map { prepare(it) }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
 
@@ -75,9 +77,10 @@ class BulmaElementListProperty<T : BulmaElement>(
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
-            oldValue.forEach { parent.removeChild(it.root) }
+            val oldElements = elements
+            oldElements.forEach { parent.removeChild(it) }
+            elements = value.map { prepare(it) }
             val reference = before()
-            val elements = value.map { prepare(it) }
             if (reference != null) {
                 elements.forEach { parent.insertBefore(it, reference) }
             } else {
@@ -88,7 +91,7 @@ class BulmaElementListProperty<T : BulmaElement>(
 
     init {
         val reference = before()
-        val elements = value.map { prepare(it) }
+        elements = value.map { prepare(it) }
         if (reference != null) {
             elements.forEach { parent.insertBefore(it, reference) }
         } else {

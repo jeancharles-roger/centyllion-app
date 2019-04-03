@@ -121,7 +121,7 @@ class Dropdown(
             titleNode.innerText = value
         }
 
-    var icon = bulma(icon, buttonNode, Position.AfterBegin)
+    var icon by bulma(icon, buttonNode, Position.AfterBegin)
 
     var items by bulmaList(items.toList(), contentNode) {
         it.root.apply { if (!classList.contains("dropdown-divider")) classList.add("dropdown-item") }

@@ -217,8 +217,8 @@ fun Application.centyllion() {
                         get {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
-                                val dives = data.grainModelsForUser(user)
-                                context.respond(dives)
+                                val models = data.grainModelsForUser(user)
+                                context.respond(models)
                             }
                         }
 

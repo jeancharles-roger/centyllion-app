@@ -175,6 +175,7 @@ data class GrainModel(
 @Serializable
 data class Simulation(
     val name: String = "",
+    val description: String = "",
     val width: Int = 100,
     val height: Int = 100,
     val depth: Int = 1,

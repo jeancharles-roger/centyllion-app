@@ -6,7 +6,7 @@ import kotlin.random.Random
 val emptyModel = GrainModel("Empty model")
 val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", emptyDescription, emptyModel)
-val emptySimulation = Simulation()
+val emptySimulation = Simulation("Simulation")
 val emptySimulationDescription = SimulationDescription("", emptyDescription, "", emptySimulation)
 
 fun dendriteModel(): GrainModel {
@@ -22,7 +22,7 @@ fun dendriteModel(): GrainModel {
 }
 
 fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation("", width, height, 1).apply {
+    return Simulation("", "", width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
@@ -56,7 +56,7 @@ fun carModel(): GrainModel {
 }
 
 fun carSimulation(width: Int = 100, height: Int = 100, insideLines: Int = 4) =
-    Simulation("", width, height, 1).apply {
+    Simulation("", "", width, height, 1).apply {
         for (i in 1 until width - 1) {
             for (j in 1 until height - 1) {
                 if (i == 1 || j == 1 || i == width - 2 || j == height - 2) {
@@ -109,7 +109,7 @@ fun bacteriaModel(): GrainModel {
 }
 
 fun bacteriaSimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation("", width, height, 1).apply {
+    return Simulation("", "", width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
@@ -152,7 +152,7 @@ fun immunityModel(): GrainModel {
 }
 
 fun immunitySimulation(width: Int = 100, height: Int = 100): Simulation {
-    return Simulation("", width, height, 1).apply {
+    return Simulation("", "", width, height, 1).apply {
         for (i in 0 until dataSize) {
             val p = Random.nextDouble()
             when {
@@ -211,7 +211,7 @@ fun fishRespirationModel(co: Boolean): GrainModel {
 }
 
 fun fishRespirationSimulation(): Simulation {
-    return Simulation("", 100, 100, 1).apply {
+    return Simulation("", "",100, 100, 1).apply {
         for (i in 0 until width) {
             // main branchia
             setIdAtIndex(toIndex(i, 45), 0)

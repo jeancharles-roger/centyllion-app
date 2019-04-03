@@ -33,7 +33,13 @@ enum class FasSize(override val className: String) : HasClassName {
     Medium("fa-2x"), Large("fa-3x")
 }
 
+enum class FaRotate(override val className: String) : HasClassName {
+    None(""), R90("fa-rotate-90"),  R180("fa-rotate-180"), R270("fa-rotate-270")
+}
 
+enum class FaFlip(override val className: String) : HasClassName {
+    None(""), Horizontal("fa-flip-horizontal"),  Vertical("fa-flip-vertical"), Both("fa-flip-both")
+}
 
 enum class ElementColor(override val className: String) : HasClassName {
     None(""),

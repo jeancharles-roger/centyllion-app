@@ -24,45 +24,26 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     enum class Status { Saved, Dirty, New }
 
     var modelStatus: MutableMap<GrainModelDescription, Status> = mutableMapOf()
+    var simulationStatus: MutableMap<SimulationDescription, Status> = mutableMapOf()
 
     var models: List<GrainModelDescription> by observable(emptyList())
     { _, old, new ->
-        if (old != new) {
-            refreshModels()
-        }
+        if (old != new) refreshModels()
     }
 
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
     { _, old, new ->
-        if (old != new) {
-            refreshSelectedModel()
-        }
+        if (old != new) refreshSelectedModel()
     }
 
     var simulations: List<SimulationDescription> by observable(emptyList())
     { _, old, new ->
-        if (old != new) {
-            simulationSelect.items = new.map {
-                DropdownSimpleItem(it.simulation.name, Icon("cloud")) { _ ->
-                    selectedSimulation = it
-                    simulationSelect.toggleDropdown()
-                }
-            }
-        }
+        if (old != new) refreshSimulations()
     }
 
     var selectedSimulation by observable(emptySimulationDescription)
     { _, old, new ->
-        if (old != new) {
-            simulationController.data = Simulator(simulationController.data.model, new.simulation, true)
-            simulationSelect.icon = Icon(
-                when {
-                    new._id.isEmpty() -> "laptop"
-                    else -> "cloud"
-                }
-            )
-            simulationSelect.text = new.simulation.name
-        }
+        if (old != new) refreshSelectedSimulation()
     }
 
     private var choosingModel = false
@@ -86,6 +67,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             simulationController.data = Simulator(new, Simulation(), true)
         }
     }
+
+    private var choosingSimulation = false
 
     val simulationController = SimulationRunController()
 
@@ -142,7 +125,10 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val simulationSelect = Dropdown("", rounded = true)
 
     val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
-        // TODO
+        val newSimulation = emptySimulationDescription
+        simulationStatus[newSimulation] = Status.New
+        simulations += newSimulation
+        selectedSimulation = simulations.last()
     }
 
     val saveSimulationButton = iconButton(Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
@@ -180,11 +166,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     init {
         refreshModels()
         refreshSelectedModel()
-
-        /*
-        modelController.data = selectedModel.model
-        simulationController.data = Simulator(modelController.data, Simulation(), true)
-        */
+        refreshSimulations()
+        refreshSelectedSimulation()
 
         fetchGrainModels(instance)
             .then {
@@ -209,6 +192,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         messageContent.text = string
     }
 
+    private fun iconForModel(model: GrainModelDescription) = Icon(
+        when (modelStatus.getOrElse(model) { Status.Saved }) {
+            Status.New -> "laptop"
+            Status.Dirty -> "cloud-upload-alt"
+            Status.Saved -> "cloud"
+        }
+    )
 
     private fun refreshModels() {
         modelSelect.items = models.map {
@@ -219,14 +209,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
         modelStatus = modelStatus.filter { models.contains(it.key) }.toMutableMap()
     }
-
-    private fun iconForModel(model: GrainModelDescription) = Icon(
-        when (modelStatus.getOrElse(model) { Status.Saved }) {
-            Status.New -> "laptop"
-            Status.Dirty -> "cloud-upload-alt"
-            Status.Saved -> "cloud"
-        }
-    )
 
     private fun refreshSelectedModel() {
         choosingModel = true
@@ -264,6 +246,45 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (newModels.isEmpty()) newModels.add(emptyGrainModelDescription)
         models = newModels
         selectedModel = models.first()
+    }
+
+
+    private fun iconForSimulation(simulation: SimulationDescription) = Icon(
+        when (simulationStatus.getOrElse(simulation) { Status.Saved }) {
+            Status.New -> "laptop"
+            Status.Dirty -> "cloud-upload-alt"
+            Status.Saved -> "cloud"
+        }
+    )
+
+    private fun refreshSimulations() {
+        simulationSelect.items = simulations.map {
+            DropdownSimpleItem(it.simulation.name, iconForSimulation(it)) { _ ->
+                selectedSimulation = it
+                simulationSelect.toggleDropdown()
+            }
+        }
+        simulationStatus = simulationStatus.filter { simulations.contains(it.key) }.toMutableMap()
+    }
+
+    private fun refreshSelectedSimulation() {
+        choosingSimulation = true
+        simulationController.data = Simulator(simulationController.data.model, selectedSimulation.simulation, true)
+        choosingSimulation = false
+
+        simulationSelect.icon = iconForSimulation(selectedSimulation)
+        simulationSelect.text = selectedSimulation.simulation.name
+
+        saveSimulationButton.disabled = simulationStatus.getOrElse(selectedSimulation) { Status.Saved } == Status.Saved
+    }
+
+    private fun removeSimulation(deletedSimulation: SimulationDescription) {
+        // updates simulation list
+        val newSimulations = simulations.toMutableList()
+        newSimulations.remove(deletedSimulation)
+        if (newSimulations.isEmpty()) newSimulations.add(emptySimulationDescription)
+        simulations = newSimulations
+        selectedSimulation = simulations.first()
     }
 
 }

@@ -106,6 +106,9 @@ class Data(
     }
 
     fun deleteGrainModel(user: User, model: GrainModelDescription) {
+        // first delete all simulation for model
+        getSimulationForModel(user, model._id).forEach{ deleteSimulation(user, it) }
+        // delete the model
         grainModels.deleteOneById(model._id)
         insertEvent(Action.Delete, user, grainModelsCollectionName, model._id)
     }

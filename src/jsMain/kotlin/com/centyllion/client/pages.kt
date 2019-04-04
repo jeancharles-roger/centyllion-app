@@ -33,6 +33,8 @@ val pages = listOf(
     Page("Administration", "administration", adminRole, ::administration)
 )
 
+val mainPage = pages[0]
+
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
     val userController = UserController()
     val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))

@@ -85,9 +85,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val modelSelect = Dropdown("", rounded = true)
 
     val newModelButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
-        val newModel = emptyGrainModelDescription
-        modelStatus[newModel] = Status.New
-        models += newModel
+        models += emptyGrainModelDescription
         selectedModel = models.last()
     }
 
@@ -95,10 +93,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (selectedModel._id.isEmpty()) {
             saveGrainModel(selectedModel.model, instance)
                 .then {
-                    // TODO replace model with saved one
-                    // data = it
+                    val newModels = models.toMutableList()
+                    newModels[models.indexOf(selectedModel)] = it
+                    models = newModels
+                    selectedModel = it
                     modelStatus[selectedModel] = Status.Saved
-                    refreshSelectedModel()
                     message("Model ${it.model.name} saved")
                 }
                 .catch { error(it) }
@@ -106,6 +105,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             updateGrainModel(selectedModel, instance)
                 .then {
                     modelStatus[selectedModel] = Status.Saved
+                    refreshModels()
                     refreshSelectedModel()
                     message("Model ${selectedModel.model.name} saved")
                 }
@@ -134,9 +134,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val simulationSelect = Dropdown("", rounded = true)
 
     val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
-        val newSimulation = emptySimulationDescription
-        simulationStatus[newSimulation] = Status.New
-        simulations += newSimulation
+        simulations += emptySimulationDescription
         selectedSimulation = simulations.last()
     }
 
@@ -144,10 +142,10 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (selectedSimulation._id.isEmpty()) {
             saveSimulation(selectedModel._id, selectedSimulation.simulation, instance)
                 .then {
-                    // TODO replace model with saved one
-                    // data = it
+                    val newSimulations = simulations.toMutableList()
+                    newSimulations[simulations.indexOf(selectedSimulation)] = it
+                    simulations = newSimulations
                     simulationStatus[selectedSimulation] = Status.Saved
-                    refreshSelectedSimulation()
                     message("Simulation ${it.simulation.name} saved")
                 }
                 .catch { error(it) }
@@ -155,6 +153,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             updateSimulation(selectedModel._id, selectedSimulation, instance)
                 .then {
                     simulationStatus[selectedSimulation] = Status.Saved
+                    refreshSimulations()
                     refreshSelectedSimulation()
                     message("Simulation ${selectedSimulation.simulation.name} saved")
                 }

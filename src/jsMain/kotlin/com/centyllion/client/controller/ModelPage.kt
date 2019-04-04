@@ -2,14 +2,9 @@ package com.centyllion.client.controller
 
 import KeycloakInstance
 import bulma.*
-import com.centyllion.client.deleteGrainModel
-import com.centyllion.client.fetchGrainModels
-import com.centyllion.client.saveGrainModel
-import com.centyllion.client.updateGrainModel
+import com.centyllion.client.*
 import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Simulator
 import com.centyllion.model.sample.emptyGrainModelDescription
 import com.centyllion.model.sample.emptySimulationDescription
 import org.w3c.dom.HTMLElement
@@ -48,7 +43,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private var choosingModel = false
 
-    val modelController = GrainModelEditController { old, new, _ ->
+    val modelController = GrainModelEditController(selectedModel.model) { old, new, _ ->
         if (old != new) {
             if (!choosingModel) {
                 // update selected model
@@ -64,13 +59,28 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             }
 
             // updates the simulation
-            simulationController.data = Simulator(new, Simulation(), true)
+            simulationController.context = new
         }
     }
 
     private var choosingSimulation = false
 
-    val simulationController = SimulationRunController()
+    val simulationController = SimulationRunController(selectedSimulation.simulation, selectedModel.model) { old, new, _ ->
+        if (old != new) {
+            if (!choosingSimulation) {
+                // update selected simulation
+                val oldSimulation = selectedSimulation
+                val newSimulation = selectedSimulation.copy(simulation = new)
+                simulationStatus[newSimulation] = if (simulationStatus[oldSimulation] == Status.New) Status.New else Status.Dirty
+                selectedSimulation = newSimulation
+
+                // updates simulation list
+                val newSimulations = simulations.toMutableList()
+                newSimulations[simulations.indexOf(oldSimulation)] = newSimulation
+                simulations = newSimulations
+            }
+        }
+    }
 
     val modelSelect = Dropdown("", rounded = true)
 
@@ -114,7 +124,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             removeModel(deletedModel)
             message("Model ${deletedModel.model.name} removed")
         }
-
     }
 
     val modelField = Field(
@@ -132,11 +141,38 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     }
 
     val saveSimulationButton = iconButton(Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
-        // TODO
+        if (selectedSimulation._id.isEmpty()) {
+            saveSimulation(selectedModel._id, selectedSimulation.simulation, instance)
+                .then {
+                    // TODO replace model with saved one
+                    // data = it
+                    simulationStatus[selectedSimulation] = Status.Saved
+                    refreshSelectedSimulation()
+                    message("Simulation ${it.simulation.name} saved")
+                }
+                .catch { error(it) }
+        } else {
+            updateSimulation(selectedModel._id, selectedSimulation, instance)
+                .then {
+                    simulationStatus[selectedSimulation] = Status.Saved
+                    refreshSelectedSimulation()
+                    message("Simulation ${selectedSimulation.simulation.name} saved")
+                }
+                .catch { error(it) }
+        }
     }
 
     val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
-        // TODO
+        val deletedSimulation = selectedSimulation
+        if (deletedSimulation._id.isNotEmpty()) {
+            deleteSimulation(selectedModel._id, deletedSimulation, instance).then {
+                removeSimulation(deletedSimulation)
+                message("Simulation ${deletedSimulation.simulation.name} deleted")
+            }.catch { error(it) }
+        } else {
+            removeSimulation(deletedSimulation)
+            message("Simulation ${deletedSimulation.simulation.name} removed")
+        }
     }
 
     val simulationField = Field(
@@ -221,21 +257,20 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         saveModelButton.disabled = modelStatus.getOrElse(selectedModel) { Status.Saved } == Status.Saved
 
         if (selectedModel._id.isNotEmpty()) {
-            /*
-                fetchGrainModels(instance)
-                    .then {
-                        models = if (it.isEmpty()) it else listOf(emptyGrainModelDescription)
-                        selectedModel = models.first()
-                        message("Models loaded")
-                    }
-                    .catch {
-                        models = listOf(emptyGrainModelDescription)
-                        selectedModel = models.first()
-                        error(it.message ?: it.toString())
-                    }
-                 */
+            fetchSimulations(selectedModel._id, instance)
+                .then {
+                    simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
+                    selectedSimulation = simulations.first()
+                    message("Simulations for ${selectedModel.model.name} loaded")
+                }
+                .catch {
+                    simulations = listOf(emptySimulationDescription)
+                    selectedSimulation = simulations.first()
+                    error(it.message ?: it.toString())
+                }
         } else {
-
+            simulations = listOf(emptySimulationDescription)
+            selectedSimulation = simulations.first()
         }
     }
 
@@ -269,7 +304,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private fun refreshSelectedSimulation() {
         choosingSimulation = true
-        simulationController.data = Simulator(simulationController.data.model, selectedSimulation.simulation, true)
+        simulationController.data = selectedSimulation.simulation
         choosingSimulation = false
 
         simulationSelect.icon = iconForSimulation(selectedSimulation)

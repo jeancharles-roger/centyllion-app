@@ -2,38 +2,57 @@ package com.centyllion.client.controller
 
 import bulma.*
 import chartjs.*
-import com.centyllion.model.Behaviour
-import com.centyllion.model.Grain
-import com.centyllion.model.GrainModel
-import com.centyllion.model.Simulator
-import com.centyllion.model.sample.emptyModel
-import com.centyllion.model.sample.emptySimulation
+import com.centyllion.model.*
 import kotlin.browser.window
 import kotlin.js.Date
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
-class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
+class SimulationRunController(
+    simulation: Simulation, model: GrainModel,
+    val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
+        { _, _, _ -> }
+) : Controller<Simulation, GrainModel, BulmaElement> {
 
-    override var data: Simulator by Delegates.observable(Simulator(emptyModel, emptySimulation)) { _, old, new ->
+    override var data: Simulation by observable(simulation) { _, old, new ->
         if (old != new) {
-            grainsController.data = new.model.grains
-            behaviourController.data = new.model.behaviours
-            behaviourController.context = new.model
-            selectedGrainController.context = new.model.grains
-            simulationEditController.data = new.simulation
-            simulationEditController.context = new.model
+            nameController.data = new.name
+            descriptionController.data = new.description
+            simulationEditController.data = new
             running = false
+            simulator = Simulator(context, new)
+            onUpdate(old, new, this@SimulationRunController)
             refresh()
         }
     }
 
-    inline val model get() = data.model
+    override var context: GrainModel by observable(model) { _, old, new ->
+        if (old != new) {
+            grainsController.data = new.grains
+            behaviourController.data = new.behaviours
+            behaviourController.context = new
+            selectedGrainController.context = new.grains
+            simulationEditController.context = new
+            running = false
+            simulator = Simulator(new, data)
+            refresh()
+        }
+    }
+
+    private var simulator = Simulator(context, data, true)
 
     var running = false
     var startTime = -1.0
     var lastRefresh = 0
 
     var presentCharts = true
+
+    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
+        data = data.copy(name = new)
+    }
+
+    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
+        data = data.copy(description = new)
+    }
 
     // simulation execution controls
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
@@ -60,36 +79,42 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
 
     val chartCanvas = canvas {}
 
-    val simulationEditController = SimulationEditController { _, _ ->
-        data.resetCount()
+    val simulationEditController = SimulationEditController(simulation, model)
+    { ended, old, new, _ ->
+        simulator.resetCount()
         refreshCounts()
+        if (ended && old != new) {
+            onUpdate(old, new, this@SimulationRunController)
+        }
     }
 
-    override val container = div(
-        Columns(
-            Column(
-                Level(
-                    center = listOf(
-                        Field(
-                            Control(runButton), Control(stepButton), Control(stopButton), Control(resetButton),
-                            addons = true
-                        ),
-                        stepLabel,
-                        toggleChartsButton
+    override val container = Columns(
+        Column(nameController, size = ColumnSize.OneThird),
+        Column(descriptionController, size = ColumnSize.TwoThirds),
+        Column(
+            Level(
+                center = listOf(
+                    Field(
+                        Control(runButton), Control(stepButton), Control(stopButton), Control(resetButton),
+                        addons = true
                     ),
-                    mobile = true
+                    stepLabel,
+                    toggleChartsButton
                 ),
-                simulationEditController.container,
-                div(chartCanvas, classes = "has-text-centered"),
-                desktopSize = ColumnSize.TwoThirds
+                mobile = true
             ),
-            Column(
-                Title("Grains", TextSize.S4), grainsController,
-                Title("Behaviours", TextSize.S4), behaviourController,
-                desktopSize = ColumnSize.OneThird
-            )
-        )
+            simulationEditController.container,
+            div(chartCanvas, classes = "has-text-centered"),
+            desktopSize = ColumnSize.TwoThirds
+        ),
+        Column(
+            Title("Grains", TextSize.S4), grainsController,
+            Title("Behaviours", TextSize.S4), behaviourController,
+            desktopSize = ColumnSize.OneThird
+        ),
+        multiline = true
     )
+
 
     val chart = Chart(chartCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
@@ -143,14 +168,14 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
     }
 
     private fun executeStep(updateChart: Boolean) {
-        data.oneStep()
+        simulator.oneStep()
 
         refreshCanvas()
         refreshCounts()
 
         // appends data to charts
         if (presentCharts) {
-            chart.data.datasets.zip(data.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+            chart.data.datasets.zip(simulator.lastGrainsCount().values) { set: LineDataSet, i: Int ->
                 val data = set.data
                 if (data != null) {
                     val index = if (data.isEmpty()) 0 else data.lastIndex
@@ -186,10 +211,10 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
     fun refreshCounts() {
         // refreshes step count
         val time = if (startTime >= 0) " (${(Date.now() - startTime) / 1000.0} s.)" else ""
-        stepLabel.text = "${data.step}$time"
+        stepLabel.text = "${simulator.step}$time"
 
         // refreshes grain counts
-        val counts = data.lastGrainsCount().values
+        val counts = simulator.lastGrainsCount().values
         grainsController.dataControllers.zip(counts) { controller, count -> controller.count = count }
     }
 
@@ -205,7 +230,7 @@ class SimulationRunController : NoContextController<Simulator, BulmaElement>() {
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()
-            chart.data.datasets = data.grainCountHistory.map {
+            chart.data.datasets = simulator.grainCountHistory.map {
                 val dataSet = previous.getOrElse(it.key.id) {
                     LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }

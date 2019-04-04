@@ -4,15 +4,15 @@ import bulma.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
-import com.centyllion.model.sample.emptyModel
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
+    model: GrainModel,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
 
-    override var data: GrainModel by observable(emptyModel) { _, old, new ->
+    override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
             nameController.data = data.name
             descriptionController.data = data.description
@@ -20,8 +20,8 @@ class GrainModelEditController(
             behavioursController.data = data.behaviours
             behavioursController.context = data
             onUpdate(old, new, this@GrainModelEditController)
+            refresh()
         }
-        refresh()
     }
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
@@ -40,7 +40,6 @@ class GrainModelEditController(
         this.data = data.copy(behaviours = data.behaviours + Behaviour())
     }
 
-
     val grainsController = noContextColumnsController<Grain, GrainEditController>(data.grains) { index, grain, previous ->
         val controller = previous ?: GrainEditController(grain)
         controller.onUpdate = { _, new, _ ->
@@ -56,47 +55,47 @@ class GrainModelEditController(
         controller
     }
 
-    val behavioursController = columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
-        val controller = previous ?: BehaviourEditController(behaviour, data)
-        controller.onUpdate = { _, new, _ ->
-            val behaviours = data.behaviours.toMutableList()
-            behaviours[index] = new
-            data = data.copy(behaviours = behaviours)
+    val behavioursController =
+        columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
+            val controller = previous ?: BehaviourEditController(behaviour, data)
+            controller.onUpdate = { _, new, _ ->
+                val behaviours = data.behaviours.toMutableList()
+                behaviours[index] = new
+                data = data.copy(behaviours = behaviours)
+            }
+            controller.onDelete = { _, _ ->
+                val behaviours = data.behaviours.toMutableList()
+                behaviours.removeAt(index)
+                data = data.copy(behaviours = behaviours)
+            }
+            controller
         }
-        controller.onDelete = { _, _ ->
-            val behaviours = data.behaviours.toMutableList()
-            behaviours.removeAt(index)
-            data = data.copy(behaviours = behaviours)
-        }
-        controller
-    }
 
-    override val container =
-        Columns(
-            Column(nameController, size = ColumnSize.OneThird),
-            Column(descriptionController, size = ColumnSize.TwoThirds),
-            Column(
-                Level(
-                    left = listOf(Title("Grains", TextSize.S4)),
-                    right = listOf(addGrainButton),
-                    mobile = true
-                ),
-                grainsController,
-                size = ColumnSize.OneThird
+    override val container = Columns(
+        Column(nameController, size = ColumnSize.OneThird),
+        Column(descriptionController, size = ColumnSize.TwoThirds),
+        Column(
+            Level(
+                left = listOf(Title("Grains", TextSize.S4)),
+                right = listOf(addGrainButton),
+                mobile = true
             ),
-            Column(
-                Level(
-                    left = listOf(
-                        Title("Behaviours", TextSize.S4)
-                    ),
-                    right = listOf(addBehaviourButton),
-                    mobile = true
+            grainsController,
+            size = ColumnSize.OneThird
+        ),
+        Column(
+            Level(
+                left = listOf(
+                    Title("Behaviours", TextSize.S4)
                 ),
-                behavioursController,
-                size = ColumnSize.TwoThirds
+                right = listOf(addBehaviourButton),
+                mobile = true
             ),
-            multiline = true
-        )
+            behavioursController,
+            size = ColumnSize.TwoThirds
+        ),
+        multiline = true
+    )
 
 
     init {

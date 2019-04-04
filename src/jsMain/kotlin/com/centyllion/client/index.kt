@@ -19,9 +19,7 @@ import kotlin.js.Promise
 fun index() {
     initialize().then { (instance, page) ->
         console.log("Starting function")
-        if (page == null) {
-            activatePage(pages.find { it.id == "simulation" }!!, instance)
-        }
+        if (page == null) activatePage(mainPage, instance)
     }
 }
 

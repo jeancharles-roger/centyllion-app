@@ -298,6 +298,8 @@ data class Simulation(
 
         other as Simulation
 
+        if (name != other.name) return false
+        if (description != other.description) return false
         if (width != other.width) return false
         if (height != other.height) return false
         if (depth != other.depth) return false
@@ -311,7 +313,9 @@ data class Simulation(
     }
 
     override fun hashCode(): Int {
-        var result = width
+        var result = name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + width
         result = 31 * result + height
         result = 31 * result + depth
         result = 31 * result + initialAgents.contentHashCode()

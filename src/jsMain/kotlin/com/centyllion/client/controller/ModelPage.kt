@@ -195,10 +195,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
     val container: BulmaElement = div(
-        Level(
-            center = listOf(modelField, simulationField),
-            right = listOf(message)
-        ),
+        Level(left = listOf(modelField), right = listOf(simulationField)),
+        message,
         editionTab
     )
 
@@ -271,11 +269,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 }
                 .catch {
                     simulations = listOf(emptySimulationDescription)
+                    simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
                     selectedSimulation = simulations.first()
                     error(it.message ?: it.toString())
                 }
         } else {
             simulations = listOf(emptySimulationDescription)
+            simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
             selectedSimulation = simulations.first()
         }
     }

@@ -332,10 +332,12 @@ fun Application.centyllion() {
                                         withPrincipal(setOf(modelRole)) {
                                             val user = data.getOrCreateUserFromPrincipal(it)
                                             val modelId = call.parameters["model"]!!
+                                            val model = data.getGrainModel(modelId)
                                             val simulationId = call.parameters["simulation"]!!
                                             val simulation = call.receive(SimulationDescription::class)
                                             context.respond(
                                                 when {
+                                                    model == null -> HttpStatusCode.NotFound
                                                     simulation._id != simulationId -> HttpStatusCode.Forbidden
                                                     simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
                                                     simulation.modelId != modelId -> HttpStatusCode.Unauthorized

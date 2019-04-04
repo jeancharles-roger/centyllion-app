@@ -98,9 +98,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 .then {
                     val newModels = models.toMutableList()
                     newModels[models.indexOf(selectedModel)] = it
+                    modelStatus[it] = Status.Saved
                     models = newModels
                     selectedModel = it
-                    modelStatus[selectedModel] = Status.Saved
                     message("Model ${it.model.name} saved")
                 }
                 .catch { error(it) }
@@ -150,8 +150,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 .then {
                     val newSimulations = simulations.toMutableList()
                     newSimulations[simulations.indexOf(selectedSimulation)] = it
+                    simulationStatus[it] = Status.Saved
                     simulations = newSimulations
-                    simulationStatus[selectedSimulation] = Status.Saved
+                    selectedSimulation = it
                     message("Simulation ${it.simulation.name} saved")
                 }
                 .catch { error(it) }

@@ -317,7 +317,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         simulationSelect.icon = iconForSimulation(selectedSimulation)
         simulationSelect.text = selectedSimulation.simulation.name
 
-        saveSimulationButton.disabled = simulationStatus.getOrElse(selectedSimulation) { Status.Saved } == Status.Saved
+        saveSimulationButton.disabled = selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] == Status.Saved
     }
 
     private fun removeSimulation(deletedSimulation: SimulationDescription) {

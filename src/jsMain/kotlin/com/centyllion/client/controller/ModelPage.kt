@@ -23,7 +23,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var models: List<GrainModelDescription> by observable(emptyList())
     { _, old, new ->
-        if (old != new) refreshModels()
+        if (old != new) { refreshModels() }
     }
 
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
@@ -43,7 +43,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private var choosingModel = false
 
-    val modelController = GrainModelEditController(selectedModel.model) { old, new, _ ->
+    val modelController = GrainModelEditController(selectedModel.model)
+    { old, new, _ ->
         if (old != new) {
             if (!choosingModel) {
                 // update selected model
@@ -65,7 +66,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private var choosingSimulation = false
 
-    val simulationController = SimulationRunController(selectedSimulation.simulation, selectedModel.model) { old, new, _ ->
+    val simulationController = SimulationRunController(selectedSimulation.simulation, selectedModel.model)
+    { old, new, _ ->
         if (old != new) {
             if (!choosingSimulation) {
                 // update selected simulation
@@ -86,6 +88,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val newModelButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         models += emptyGrainModelDescription
+        modelStatus[emptyGrainModelDescription] = Status.New
         selectedModel = models.last()
     }
 
@@ -124,6 +127,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             removeModel(deletedModel)
             message("Model ${deletedModel.model.name} removed")
         }
+        modelStatus.remove(deletedModel)
+
     }
 
     val modelField = Field(
@@ -135,6 +140,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         simulations += emptySimulationDescription
+        simulationStatus[emptySimulationDescription] = Status.New
         selectedSimulation = simulations.last()
     }
 
@@ -207,6 +213,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         fetchGrainModels(instance)
             .then {
                 models = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
+                modelStatus = models.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
                 selectedModel = models.first()
                 message("Models loaded")
             }
@@ -228,7 +235,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     }
 
     private fun iconForModel(model: GrainModelDescription) = Icon(
-        when (modelStatus.getOrElse(model) { Status.Saved }) {
+        when (modelStatus.getOrElse(model) { Status.New }) {
             Status.New -> "laptop"
             Status.Dirty -> "cloud-upload-alt"
             Status.Saved -> "cloud"
@@ -242,7 +249,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 modelSelect.toggleDropdown()
             }
         }
-        modelStatus = modelStatus.filter { models.contains(it.key) }.toMutableMap()
     }
 
     private fun refreshSelectedModel() {
@@ -259,6 +265,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             fetchSimulations(selectedModel._id, instance)
                 .then {
                     simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
+                    simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
                     selectedSimulation = simulations.first()
                     message("Simulations for ${selectedModel.model.name} loaded")
                 }
@@ -284,7 +291,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
 
     private fun iconForSimulation(simulation: SimulationDescription) = Icon(
-        when (simulationStatus.getOrElse(simulation) { Status.Saved }) {
+        when (simulationStatus.getOrElse(simulation) { Status.New }) {
             Status.New -> "laptop"
             Status.Dirty -> "cloud-upload-alt"
             Status.Saved -> "cloud"

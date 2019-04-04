@@ -152,9 +152,9 @@ class Data(
         }.toList()
     }
 
-    private fun insertEvent(action: Action, user: User, collection: String, vararg arguments: String) {
+    fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
         val date = rfc1123Format.format(Date())
-        val event = Event(newId<Event>().toString(), date, user._id, action, collection, arguments.toList())
+        val event = Event(newId<Event>().toString(), date, user?._id ?: "", action, collection, arguments.toList())
         events.insertOne(createDocument(Event.serializer(), event))
     }
 

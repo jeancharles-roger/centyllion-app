@@ -11,7 +11,7 @@ data class User(
 )
 
 enum class Action {
-    Create, Save, Delete
+    Create, Save, Delete, Error
 }
 
 @Serializable

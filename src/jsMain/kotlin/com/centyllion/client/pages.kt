@@ -60,6 +60,7 @@ fun administration(root: HTMLElement, instance: KeycloakInstance) {
                 Action.Create -> "is-primary"
                 Action.Save -> "is-info"
                 Action.Delete -> "is-warning"
+                Action.Error -> "is-danger"
             }
             root.appendChild(document.create.article("message $color") {
                 div("message-header level") {

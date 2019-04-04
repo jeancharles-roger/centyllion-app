@@ -4,10 +4,7 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
-import com.centyllion.model.GrainModel
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.Simulation
-import com.centyllion.model.SimulationDescription
+import com.centyllion.model.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -135,6 +132,8 @@ fun main(args: Array<String>): Unit = ServerCommand().main(args)
 fun Application.centyllion() {
     val debug = environment.config.property("debug").getString() == "true"
 
+    val data = Data("localhost", 27017)
+
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)
@@ -158,6 +157,19 @@ fun Application.centyllion() {
 
     // TODO create nice error pages
     install(StatusPages) {
+        exception<Throwable> { cause ->
+            // insert an event when see a problem
+            val principal = call.principal<JWTPrincipal>()
+            val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
+            data.insertEvent(Action.Error, user, "",
+                cause.javaClass.simpleName,
+                cause.message.toString(),
+                cause.stackTrace.joinToString("\n") { it.toString() }
+            )
+
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+
         status(HttpStatusCode.NotFound) {
             context.respond(
                 TextContent(
@@ -192,7 +204,6 @@ fun Application.centyllion() {
         register(ContentType.Application.Json, JsonConverter())
     }
 
-    val data = Data("localhost", 27017)
     routing {
         get("/") { context.respondHtml { index() } }
 

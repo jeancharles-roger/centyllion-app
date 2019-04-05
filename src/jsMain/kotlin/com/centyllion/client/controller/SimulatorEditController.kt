@@ -9,17 +9,23 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
 class SimulatorEditController(
     simulator: Simulator,
-    var onUpdate: (ended: Boolean,new: Simulator, SimulatorEditController) -> Unit = { _, _, _ -> }
+    var onUpdate: (ended: Boolean, new: Simulator, SimulatorEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
     enum class EditTools(val icon: String) {
         None("ban"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
+    }
+
+    enum class ToolSize(val size: Int) {
+        Fine(1), Small(5), Medium(10), Large(20)
     }
 
     override var data: Simulator by observable(simulator) { _, old, new ->
@@ -38,12 +44,28 @@ class SimulatorEditController(
     var mouseX = -1
     var mouseY = -1
 
+
+    fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
+        val size = ToolSize.valueOf(sizeDropdown.text).size * factor
+        val halfSize = (size / 2).coerceAtLeast(1)
+        if (halfSize == 1) {
+            block(x, y)
+        } else {
+            for (i in x - halfSize until x + halfSize) {
+                for (j in y - halfSize until y + halfSize) {
+                    val inCircle = sqrt((x - i).toDouble().pow(2) + (y - j).toDouble().pow(2)) < halfSize
+                    val inSimulation = data.simulation.positionInside(i, j)
+                    if (inCircle && inSimulation) block(i, j)
+                }
+            }
+        }
+    }
+
     fun drawOnSimulation(sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int) {
         when (selectedTool) {
             EditTools.Pen -> {
-                val id = selectedGrainController.data?.id
-                if (id != null) {
-                    data.setIdAtIndex(data.simulation.toIndex(x, y), id)
+                selectedGrainController.data?.id?.let { idToSet ->
+                    circle(x, y) { i, j -> data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet) }
                 }
             }
             EditTools.Line -> {
@@ -52,22 +74,18 @@ class SimulatorEditController(
             EditTools.Spray -> {
                 val random = Random.Default
                 selectedGrainController.data?.id?.let { idToSet ->
-                    val sprayHalfSize = 15
                     val sprayDensity = 0.005
-
-                    for (i in x - sprayHalfSize until x + sprayHalfSize) {
-                        for (j in y - sprayHalfSize until y + sprayHalfSize) {
-                            if (data.simulation.positionInside(i, j)) {
-                                if (random.nextDouble() < sprayDensity) {
-                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
-                                }
-                            }
+                    circle(x, y, 5) { i, j ->
+                        if (random.nextDouble() < sprayDensity) {
+                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }
                     }
                 }
             }
             EditTools.Eraser -> {
-                data.resetIdAtIndex(data.simulation.toIndex(x, y))
+                circle(x, y) { i, j ->
+                    data.resetIdAtIndex(data.simulation.toIndex(i, j))
+                }
             }
             EditTools.None -> {
             }
@@ -118,8 +136,8 @@ class SimulatorEditController(
         val canvasY = event.clientY - rectangle.top
         val stepX = data.simulation.width.toDouble() / simulationCanvas.root.width
         val stepY = data.simulation.height.toDouble() / simulationCanvas.root.height
-        mouseX = (canvasX * stepX - 2*stepX).roundToInt()
-        mouseY = (canvasY * stepY - 2*stepY).roundToInt()
+        mouseX = (canvasX * stepX - 2 * stepX).roundToInt()
+        mouseY = (canvasY * stepY - 2 * stepY).roundToInt()
 
         if (newStep != null) {
             if (newStep == 0) {
@@ -161,14 +179,25 @@ class SimulatorEditController(
 
     val selectedGrainController = GrainSelectController(null, data.model.grains)
 
+    val sizeDropdown = Dropdown(ToolSize.Fine.name, rounded = true).apply {
+        items = ToolSize.values().map { size ->
+            DropdownSimpleItem(size.name) {
+                this.text = size.name
+                this.toggleDropdown()
+            }
+        }
+    }
+
     val toolButtons = EditTools.values().map { tool ->
-        iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true, outlined = selectedTool == tool) { selectTool(tool) }
+        iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true, outlined = selectedTool == tool) {
+            selectTool(tool)
+        }
     }
 
     val editToolbar = Level(
         center = listOf(Field(addons = true).apply {
             body = toolButtons.map { Control(it) }
-        }, selectedGrainController.container)
+        }, sizeDropdown, selectedGrainController.container)
     )
 
     override val container = div(

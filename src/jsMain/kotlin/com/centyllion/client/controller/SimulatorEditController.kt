@@ -1,8 +1,7 @@
 package com.centyllion.client.controller
 
 import bulma.*
-import com.centyllion.model.GrainModel
-import com.centyllion.model.Simulation
+import com.centyllion.model.Simulator
 import kotlinx.html.js.onMouseDownFunction
 import kotlinx.html.js.onMouseMoveFunction
 import kotlinx.html.js.onMouseUpFunction
@@ -14,39 +13,19 @@ import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
-class SimulationEditController(
-    simulation: Simulation, model: GrainModel,
-    var onUpdate: (ended: Boolean, old: Simulation, new: Simulation, SimulationEditController) -> Unit =
-        { _, _, _, _ -> }
-) : Controller<Simulation, GrainModel, BulmaElement> {
+class SimulatorEditController(
+    simulator: Simulator,
+    var onUpdate: (ended: Boolean,new: Simulator, SimulatorEditController) -> Unit = { _, _, _ -> }
+) : NoContextController<Simulator, BulmaElement>() {
 
     enum class EditTools(val icon: String) {
         None("ban"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
     }
 
-    private var previousData = simulation.copy(
-        initialAgents = simulation.initialAgents.copyOf(),
-        agents = simulation.agents.copyOf(),
-        ages = simulation.agents.copyOf()
-    )
-
-    override var data: Simulation by observable(simulation) { _, old, new ->
-        if (old != new) {
-            previousData = new.copy(
-                initialAgents = new.initialAgents.copyOf(),
-                agents = new.agents.copyOf(),
-                ages = new.agents.copyOf()
-            )
-            onUpdate(true, old, new, this)
-            refresh()
-        }
-    }
-
-    override var context: GrainModel by observable(model) { _, old, new ->
-        if (old != new) {
-            selectedGrainController.context = new.grains
-            refresh()
-        }
+    override var data: Simulator by observable(simulator) { _, old, new ->
+        onUpdate(true, new, this)
+        selectedGrainController.context = new.model.grains
+        refresh()
     }
 
     // simulation content edition
@@ -62,8 +41,9 @@ class SimulationEditController(
     fun drawOnSimulation(sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int) {
         when (selectedTool) {
             EditTools.Pen -> {
-                selectedGrainController.data?.id?.let { idToSet ->
-                    data.setIdAtIndex(data.toIndex(x, y), idToSet)
+                val id = selectedGrainController.data?.id
+                if (id != null) {
+                    data.setIdAtIndex(data.simulation.toIndex(x, y), id)
                 }
             }
             EditTools.Line -> {
@@ -77,9 +57,9 @@ class SimulationEditController(
 
                     for (i in x - sprayHalfSize until x + sprayHalfSize) {
                         for (j in y - sprayHalfSize until y + sprayHalfSize) {
-                            if (data.positionInside(i, j)) {
+                            if (data.simulation.positionInside(i, j)) {
                                 if (random.nextDouble() < sprayDensity) {
-                                    data.setIdAtIndex(data.toIndex(i, j), idToSet)
+                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                                 }
                             }
                         }
@@ -87,7 +67,7 @@ class SimulationEditController(
                 }
             }
             EditTools.Eraser -> {
-                data.resetIdAtIndex(data.toIndex(x, y))
+                data.resetIdAtIndex(data.simulation.toIndex(x, y))
             }
             EditTools.None -> {
             }
@@ -96,9 +76,9 @@ class SimulationEditController(
         val scale = 0.1
         val canvasWidth = simulationCanvas.root.width.toDouble()
         val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xStep = canvasWidth / data.width
-        val xMax = data.width * xStep
-        val yStep = canvasHeight / data.height
+        val xStep = canvasWidth / data.simulation.width
+        val xMax = data.simulation.width * xStep
+        val yStep = canvasHeight / data.simulation.height
         val xSize = xStep * (1.0 + scale)
         val xDelta = xStep * (scale / 2.0)
         val ySize = xStep * (1.0 + scale)
@@ -106,8 +86,8 @@ class SimulationEditController(
         simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0
-        for (i in 0 until data.agents.size) {
-            val grain = context.indexedGrains[data.idAtIndex(i)]
+        for (i in 0 until data.currentAgents.size) {
+            val grain = data.model.indexedGrains[data.idAtIndex(i)]
             if (grain != null) {
                 simulationContext.fillStyle = grain.color
                 simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
@@ -119,11 +99,9 @@ class SimulationEditController(
                 currentY += yStep
             }
         }
-        if (step == -1) {
-            data.saveState()
-        }
 
-        onUpdate(step == -1, previousData, data, this)
+        onUpdate(step == -1, data, this)
+        refresh()
     }
 
     private fun mouseChange(event: MouseEvent) {
@@ -138,8 +116,8 @@ class SimulationEditController(
         val rectangle = simulationCanvas.root.getBoundingClientRect()
         val canvasX = event.clientX - rectangle.left
         val canvasY = event.clientY - rectangle.top
-        val stepX = data.width.toDouble() / simulationCanvas.root.width
-        val stepY = data.height.toDouble() / simulationCanvas.root.height
+        val stepX = data.simulation.width.toDouble() / simulationCanvas.root.width
+        val stepY = data.simulation.height.toDouble() / simulationCanvas.root.height
         mouseX = (canvasX * stepX - 2*stepX).roundToInt()
         mouseY = (canvasY * stepY - 2*stepY).roundToInt()
 
@@ -156,7 +134,7 @@ class SimulationEditController(
     val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
         width = "$canvasWidth"
-        height = "${data.height * canvasWidth / data.width}"
+        height = "${data.simulation.height * canvasWidth / data.simulation.width}"
 
         onMouseUpFunction = {
             if (it is MouseEvent) {
@@ -181,7 +159,7 @@ class SimulationEditController(
         selectedTool = tool
     }
 
-    val selectedGrainController = GrainSelectController(null, context.grains)
+    val selectedGrainController = GrainSelectController(null, data.model.grains)
 
     val toolButtons = EditTools.values().map { tool ->
         iconButton(Icon(tool.icon), ElementColor.Primary, rounded = true, outlined = selectedTool == tool) { selectTool(tool) }
@@ -208,9 +186,9 @@ class SimulationEditController(
         val scale = 0.1
         val canvasWidth = simulationCanvas.root.width.toDouble()
         val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xStep = canvasWidth / data.width
-        val xMax = data.width * xStep
-        val yStep = canvasHeight / data.height
+        val xStep = canvasWidth / data.simulation.width
+        val xMax = data.simulation.width * xStep
+        val yStep = canvasHeight / data.simulation.height
         val xSize = xStep * (1.0 + scale)
         val xDelta = xStep * (scale / 2.0)
         val ySize = xStep * (1.0 + scale)
@@ -218,8 +196,8 @@ class SimulationEditController(
         simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
         var currentX = 0.0
         var currentY = 0.0
-        for (i in 0 until data.agents.size) {
-            val grain = context.indexedGrains[data.idAtIndex(i)]
+        for (i in 0 until data.currentAgents.size) {
+            val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
             if (grain != null) {
                 simulationContext.fillStyle = grain.color

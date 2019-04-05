@@ -8,9 +8,9 @@ data class ApplicableBehavior(
     val usedNeighbours: List<Pair<Int, Int>>
 ) {
 
-    fun apply(simulation: Simulation) {
+    fun apply(simulator: Simulator) {
         // applies main reaction
-        simulation.transform(index, index, behaviour.mainProductId, behaviour.transform)
+        simulator.transform(index, index, behaviour.mainProductId, behaviour.transform)
 
         // applies other reaction find each neighbour for each reaction
         val reactives = usedNeighbours.sortedBy { it.second }
@@ -19,36 +19,35 @@ data class ApplicableBehavior(
         // applies reactions
         reactions.zip(reactives).forEach { (reaction, reactive) ->
             val sourceIndex = reactive.first
-            simulation.transform(sourceIndex, sourceIndex, reaction.productId, reaction.transform)
+            simulator.transform(sourceIndex, sourceIndex, reaction.productId, reaction.transform)
         }
     }
 }
 
 class Simulator(
     val model: GrainModel,
-    val simulation: Simulation,
-    fromInitial: Boolean = false
+    val simulation: Simulation
 ) {
 
     val random = Random.Default
 
-    val grainCountHistory = simulation.grainsCounts().let { counts ->
-        model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
-    }
+    val initialAgents: IntArray = simulation.agents.toIntArray()
+    val agents: IntArray = initialAgents.copyOf()
+    val ages: IntArray = IntArray(initialAgents.size) { -1 }
 
-    init {
-        if (fromInitial) {
-            simulation.reset()
-        }
+    val currentAgents get() = if (step==0) initialAgents else agents
+
+    val grainCountHistory = grainsCounts().let { counts ->
+        model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
     }
 
     var step = 0
 
-    private val reactiveGrains = model.mainReactiveGrains
+    private val allBehaviours = model.behaviours + model.grains.mapNotNull { it.moveBehaviour() }
 
-    private val allBehaviours = model.allBehaviours
+    private val reactiveGrains = allBehaviours.mapNotNull { model.indexedGrains[it.mainReactiveId] }.toSet()
 
-    fun grainAtIndex(index: Int) = model.indexedGrains[simulation.idAtIndex(index)]
+    fun grainAtIndex(index: Int) = model.indexedGrains[idAtIndex(index)]
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
@@ -68,19 +67,19 @@ class Simulator(
                 // does the grain dies ?
                 if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
-                    simulation.transform(i, i, null, false)
+                    transform(i, i, null, false)
                 } else {
 
                     // ages grain
                     currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
-                    simulation.ageGrain(i)
+                    ageGrain(i)
 
                     val selected = all.getOrPut(i) { mutableListOf() }
                     if (reactiveGrains.contains(grain)) {
-                        val age = simulation.ageAtIndex(i)
+                        val age = ageAtIndex(i)
 
                         // a grain is present, a behaviour can be triggered
-                        val neighbours = simulation.neighbours(i)
+                        val neighbours = neighbours(i)
 
                         // searches for applicable behaviours
                         val applicable = allBehaviours
@@ -124,7 +123,7 @@ class Simulator(
         val toExclude = all.filter { it.value.size > 1 }
             .flatMap { it.value - it.value[random.nextInt(it.value.size)] }.toSet()
         val toExecute = all.filter { it.value.isNotEmpty() }.flatMap { it.value } - toExclude
-        toExecute.forEach { it.apply(simulation) }
+        toExecute.forEach { it.apply(this) }
 
         // stores count for each grain
         currentCount.forEach {
@@ -136,16 +135,70 @@ class Simulator(
     }
 
     fun reset() {
-        simulation.reset()
+        initialAgents.copyInto(agents)
+        for (i in 0 until ages.size) {
+            ages[i] = if (agents[i] != -1) 0 else -1
+        }
+
         step = 0
         resetCount()
     }
 
     fun resetCount() {
-        val counts = simulation.grainsCounts()
+        val counts = grainsCounts()
         grainCountHistory.forEach {
             it.value.clear()
             it.value.add(counts.getOrElse(it.key.id) { 0 })
         }
     }
+
+    fun saveState() {
+        agents.copyInto(initialAgents)
+    }
+
+    fun indexIsFree(index: Int) = currentAgents[index] < 0
+
+    fun idAtIndex(index: Int) = currentAgents[index]
+
+    fun ageAtIndex(index: Int) = ages[index]
+
+    fun ageGrain(index: Int) {
+        ages[index] += 1
+    }
+
+    fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, keepAge: Boolean) {
+        val age = ages[sourceIndex]
+        agents[sourceIndex] = -1
+        ages[sourceIndex] = -1
+        agents[targetIndex] = newId ?: -1
+        ages[targetIndex] = when {
+            newId != null && keepAge -> age
+            newId != null -> 0
+            else -> -1
+        }
+    }
+
+    fun setIdAtIndex(index: Int, id: Int) {
+        currentAgents[index] = id
+        ages[index] = 0
+    }
+
+    fun resetIdAtIndex(index: Int) {
+        currentAgents[index] = -1
+        ages[index] = -1
+    }
+
+    fun neighbours(index: Int): List<Pair<Direction, Int>> =
+        Direction.values().map { it to currentAgents[simulation.moveIndex(index, it)] }
+
+    fun grainsCounts(): Map<Int, Int> {
+        val result = mutableMapOf<Int, Int>()
+        for (i in currentAgents) {
+            if (i >= 0) {
+                result[i] = 1 + (result[i] ?: 0)
+            }
+        }
+        return result
+    }
+
 }

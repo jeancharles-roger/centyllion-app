@@ -4,6 +4,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
 
+val emptyModel = GrainModel("Empty model")
+val emptyDescription = DescriptionInfo()
+val emptyGrainModelDescription = GrainModelDescription("", emptyDescription, emptyModel)
+val emptySimulation = Simulation("Simulation")
+val emptySimulationDescription = SimulationDescription("", emptyDescription, "", emptySimulation)
+
 enum class Direction {
     Left, Right, Up, Down, Front, Back
 }
@@ -61,6 +67,14 @@ data class Grain(
     @Transient
     val valid
         get() = id > 0 && name.isNotBlank()
+
+    fun moveBehaviour() =
+        if (canMove) Behaviour(
+            "Move ${label()}", probability = movementProbability, mainReactiveId = id, transform = true,
+            reaction = listOf(Reaction(productId = id, transform = true, allowedDirection = allowedDirection))
+        )
+        else null
+
 }
 
 @Serializable
@@ -145,24 +159,6 @@ data class GrainModel(
 
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
 
-    private fun moveBehaviour(grain: Grain) = if (grain.canMove) {
-        Behaviour(
-            "Move ${grain.label()}", probability = grain.movementProbability, mainReactiveId = grain.id, transform = true,
-            reaction = listOf(Reaction(productId = grain.id, transform = true, allowedDirection = grain.allowedDirection))
-        )
-    } else {
-        null
-    }
-
-    @Transient
-    // TODO revert to not dynamic value when serialization on js works
-    val allBehaviours get() = behaviours + grains.mapNotNull { moveBehaviour(it) }
-
-    /** Main reactive grains are all the grains that are main component for a behaviour */
-    @Transient
-    val mainReactiveGrains
-        get() = allBehaviours.mapNotNull { indexedGrains[it.mainReactiveId] }.toSet()
-
     @Transient
     val valid
         get() =
@@ -172,6 +168,8 @@ data class GrainModel(
 
 }
 
+fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }
+
 @Serializable
 data class Simulation(
     val name: String = "",
@@ -179,17 +177,17 @@ data class Simulation(
     val width: Int = 100,
     val height: Int = 100,
     val depth: Int = 1,
-    val initialAgents: Array<Int> = Array(width * height * depth) { -1 },
-    val agents: Array<Int> = initialAgents.copyOf(),
-    val ages: Array<Int> = Array(initialAgents.size) { -1 }
+    val agents: List<Int> = emptyList(width * height * depth)
 ) {
-
     @Transient
     val levelSize = width * height
 
     @Transient
     val dataSize = levelSize * depth
 
+    @Transient
+    val valid
+        get() = width > 0 && height > 0 && depth > 0
 
     /** Move [index] on given [direction] of [step] cases, whatever the index, it will always remains inside the simulation. */
     fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int {
@@ -236,99 +234,6 @@ data class Simulation(
 
     fun positionInside(x: Int, y: Int, z: Int = 0) =
         z in 0 until depth && y in 0 until height && x in 0 until width
-
-    fun reset() {
-        initialAgents.copyInto(agents)
-        for (i in 0 until ages.size) {
-            ages[i] = if (agents[i] != -1) 0 else -1
-        }
-    }
-
-    fun saveState() {
-        agents.copyInto(initialAgents)
-    }
-
-    fun indexIsFree(index: Int) = agents[index] < 0
-
-    fun idAtIndex(index: Int) = agents[index]
-
-    fun ageAtIndex(index: Int) = ages[index]
-
-    fun ageGrain(index: Int) {
-        ages[index] += 1
-    }
-
-    fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, keepAge: Boolean) {
-        val age = ages[sourceIndex]
-        agents[sourceIndex] = -1
-        ages[sourceIndex] = -1
-        agents[targetIndex] = newId ?: -1
-        ages[targetIndex] = when {
-            newId != null && keepAge -> age
-            newId != null -> 0
-            else -> -1
-        }
-    }
-
-    fun setIdAtIndex(index: Int, id: Int) {
-        agents[index] = id
-        ages[index] = 0
-    }
-
-    fun resetIdAtIndex(index: Int) {
-        agents[index] = -1
-        ages[index] = -1
-    }
-
-    fun neighbours(index: Int): List<Pair<Direction, Int>> = Direction.values().map { it to agents[moveIndex(index, it)] }
-
-    fun grainsCounts(): Map<Int, Int> {
-        val result = mutableMapOf<Int, Int>()
-        for (i in agents) {
-            if (i >= 0) {
-                result[i] = 1 + (result[i] ?: 0)
-            }
-        }
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as Simulation
-
-        if (name != other.name) return false
-        if (description != other.description) return false
-        if (width != other.width) return false
-        if (height != other.height) return false
-        if (depth != other.depth) return false
-        if (!initialAgents.contentEquals(other.initialAgents)) return false
-        if (!agents.contentEquals(other.agents)) return false
-        if (!ages.contentEquals(other.ages)) return false
-        if (levelSize != other.levelSize) return false
-        if (dataSize != other.dataSize) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + description.hashCode()
-        result = 31 * result + width
-        result = 31 * result + height
-        result = 31 * result + depth
-        result = 31 * result + initialAgents.contentHashCode()
-        result = 31 * result + agents.contentHashCode()
-        result = 31 * result + ages.contentHashCode()
-        result = 31 * result + levelSize
-        result = 31 * result + dataSize
-        return result
-    }
-
-    @Transient
-    val valid
-        get() = width > 0 && height > 0 && depth > 0
 
 }
 

@@ -17,9 +17,9 @@ class SimulationRunController(
         if (old != new) {
             nameController.data = new.name
             descriptionController.data = new.description
-            simulationEditController.data = new
-            running = false
             simulator = Simulator(context, new)
+            simulationEditController.data = simulator
+            running = false
             onUpdate(old, new, this@SimulationRunController)
             refresh()
         }
@@ -31,14 +31,14 @@ class SimulationRunController(
             behaviourController.data = new.behaviours
             behaviourController.context = new
             selectedGrainController.context = new.grains
-            simulationEditController.context = new
-            running = false
             simulator = Simulator(new, data)
+            simulationEditController.data = simulator
+            running = false
             refresh()
         }
     }
 
-    private var simulator = Simulator(context, data, true)
+    private var simulator = Simulator(context, data)
 
     var running = false
     var startTime = -1.0
@@ -79,12 +79,11 @@ class SimulationRunController(
 
     val chartCanvas = canvas {}
 
-    val simulationEditController = SimulationEditController(simulation, model)
-    { ended, old, new, _ ->
+    val simulationEditController = SimulatorEditController(simulator) { ended, new, _ ->
         simulator.resetCount()
         refreshCounts()
-        if (ended && old != new) {
-            onUpdate(old, new, this@SimulationRunController)
+        if (ended) {
+            data = data.copy(agents = new.currentAgents.asList())
         }
     }
 
@@ -160,7 +159,7 @@ class SimulationRunController(
 
     fun reset() {
         if (!running) {
-            data.reset()
+            simulator.reset()
             startTime = -1.0
             refresh()
             refreshChart()

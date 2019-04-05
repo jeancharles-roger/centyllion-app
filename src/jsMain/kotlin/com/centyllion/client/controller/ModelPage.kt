@@ -5,8 +5,8 @@ import bulma.*
 import com.centyllion.client.*
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.sample.emptyGrainModelDescription
-import com.centyllion.model.sample.emptySimulationDescription
+import com.centyllion.model.emptyGrainModelDescription
+import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 

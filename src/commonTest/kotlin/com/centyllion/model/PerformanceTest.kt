@@ -1,7 +1,5 @@
 package com.centyllion.model
 
-import com.centyllion.model.sample.dendriteModel
-import com.centyllion.model.sample.dendriteSimulation
 import kotlin.test.Test
 
 class PerformanceTest {

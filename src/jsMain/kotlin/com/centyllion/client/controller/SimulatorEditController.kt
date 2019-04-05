@@ -9,9 +9,7 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
@@ -53,7 +51,7 @@ class SimulatorEditController(
         } else {
             for (i in x - halfSize until x + halfSize) {
                 for (j in y - halfSize until y + halfSize) {
-                    val inCircle = sqrt((x - i).toDouble().pow(2) + (y - j).toDouble().pow(2)) < halfSize
+                    val inCircle = (x - i)*(x - i) + (y - j -1)*(y - j) +1 < halfSize*halfSize
                     val inSimulation = data.simulation.positionInside(i, j)
                     if (inCircle && inSimulation) block(i, j)
                 }
@@ -75,7 +73,7 @@ class SimulatorEditController(
                 val random = Random.Default
                 selectedGrainController.data?.id?.let { idToSet ->
                     val sprayDensity = 0.005
-                    circle(x, y, 5) { i, j ->
+                    circle(x, y, 4) { i, j ->
                         if (random.nextDouble() < sprayDensity) {
                             data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }

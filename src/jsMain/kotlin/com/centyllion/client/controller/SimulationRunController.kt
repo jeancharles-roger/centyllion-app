@@ -83,7 +83,7 @@ class SimulationRunController(
         simulator.resetCount()
         refreshCounts()
         if (ended) {
-            data = data.copy(agents = new.initialAgents.asList())
+            data = data.copy(agents = new.initialAgents.toList())
         }
     }
 

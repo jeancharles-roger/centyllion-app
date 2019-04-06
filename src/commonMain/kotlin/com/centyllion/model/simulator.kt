@@ -31,11 +31,11 @@ class Simulator(
 
     val random = Random.Default
 
-    val initialAgents: IntArray = simulation.agents.toIntArray()
+    val initialAgents: IntArray = IntArray(simulation.agents.size) { simulation.agents[it] }
     val agents: IntArray = initialAgents.copyOf()
-    val ages: IntArray = IntArray(initialAgents.size) { -1 }
+    val ages: IntArray = IntArray(initialAgents.size) { if (initialAgents[it] >= 0) 0 else -1 }
 
-    val currentAgents get() = if (step==0) initialAgents else agents
+    val currentAgents get() = if (step == 0) initialAgents else agents
 
     val grainCountHistory = grainsCounts().let { counts ->
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()

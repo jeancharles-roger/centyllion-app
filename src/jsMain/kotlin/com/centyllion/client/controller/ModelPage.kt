@@ -86,13 +86,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val modelSelect = Dropdown("", rounded = true)
 
-    val newModelButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
+    val newModelButton = Button("New", Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         models += emptyGrainModelDescription
         modelStatus[emptyGrainModelDescription] = Status.New
         selectedModel = models.last()
     }
 
-    val saveModelButton = iconButton(Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+    val saveModelButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
         if (selectedModel._id.isEmpty()) {
             saveGrainModel(selectedModel.model, instance)
                 .then {
@@ -116,7 +116,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    val deleteModelButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
+    val deleteModelButton = Button("Delete", Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedModel = selectedModel
         if (deletedModel._id.isNotEmpty()) {
             deleteGrainModel(deletedModel, instance).then {
@@ -138,13 +138,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val simulationSelect = Dropdown("", rounded = true)
 
-    val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
+    val newSimulationButton = Button("New", Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         simulations += emptySimulationDescription
         simulationStatus[emptySimulationDescription] = Status.New
         selectedSimulation = simulations.last()
     }
 
-    val saveSimulationButton = iconButton(Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+    val saveSimulationButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
         if (selectedSimulation._id.isEmpty()) {
             saveSimulation(selectedModel._id, selectedSimulation.simulation, instance)
                 .then {
@@ -168,7 +168,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
+    val deleteSimulationButton = Button("Delete", Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedSimulation = selectedSimulation
         if (deletedSimulation._id.isNotEmpty()) {
             deleteSimulation(selectedModel._id, deletedSimulation, instance).then {

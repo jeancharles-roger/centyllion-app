@@ -210,6 +210,10 @@ class SimulatorEditController(
     }
 
     override fun refresh() {
+
+        simulationCanvas.root.classList.toggle("is-primary", data.step > 0)
+        simulationCanvas.root.classList.toggle("is-success", data.step == 0)
+
         val scale = 0.1
         val canvasWidth = simulationCanvas.root.width.toDouble()
         val canvasHeight = simulationCanvas.root.height.toDouble()

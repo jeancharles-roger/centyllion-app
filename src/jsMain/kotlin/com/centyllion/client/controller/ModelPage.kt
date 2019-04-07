@@ -19,11 +19,19 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     var simulationStatus: MutableMap<SimulationDescription, Status> = mutableMapOf()
 
     private var modelHistory: List<GrainModel> by observable(emptyList()) { _, old, new ->
-        undoButton.disabled = new.isEmpty()
+        undoModelButton.disabled = new.isEmpty()
     }
 
     private var modelFuture: List<GrainModel> by observable(emptyList()) { _, old, new ->
-        redoButton.disabled = new.isEmpty()
+        redoModelButton.disabled = new.isEmpty()
+    }
+
+    private var simulationHistory: List<Simulation> by observable(emptyList()) { _, old, new ->
+        undoSimulationButton.disabled = new.isEmpty()
+    }
+
+    private var simulationFuture: List<Simulation> by observable(emptyList()) { _, old, new ->
+        redoSimulationButton.disabled = new.isEmpty()
     }
 
     var models: List<GrainModelDescription> by observable(emptyList())
@@ -110,6 +118,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
+    private var undoSimulation = false
     private var choosingSimulation = false
 
     val simulationController = SimulationRunController(selectedSimulation.simulation, selectedModel.model)
@@ -126,6 +135,12 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 val newSimulations = simulations.toMutableList()
                 newSimulations[simulations.indexOf(oldSimulation)] = newSimulation
                 simulations = newSimulations
+
+                if (undoSimulation) {
+                    simulationFuture += old
+                } else {
+                    simulationHistory += old
+                }
             }
         }
     }
@@ -174,7 +189,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             message("Model ${deletedModel.model.name} removed")
         }
         modelStatus.remove(deletedModel)
-
     }
 
     val modelField = Field(
@@ -232,7 +246,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         addons = true
     )
 
-    val undoButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+    val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
         val restoredModel = modelHistory.last()
         modelHistory = modelHistory.dropLast(1)
         undoModel = true
@@ -240,25 +254,43 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         undoModel = false
     }
 
-    val redoButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+    val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredModel = modelFuture.last()
         modelFuture = modelFuture.dropLast(1)
         modelController.data = restoredModel
     }
 
-    val undoField = Field(Control(undoButton), Control(redoButton), addons = true)
+    val undoModelField = Field(Control(undoModelButton), Control(redoModelButton), addons = true)
 
-    val editionTab = TabPages(
-        TabPage(TabItem("Model", "boxes"), modelController),
-        TabPage(TabItem("Simulation", "play"), simulationController),
-        tabs = Tabs(boxed = true)
-    )
+    val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredSimulation = simulationHistory.last()
+        simulationHistory = simulationHistory.dropLast(1)
+        undoSimulation = true
+        simulationController.data = restoredSimulation
+        undoSimulation = false
+    }
+
+    val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelFuture.last()
+        modelFuture = modelFuture.dropLast(1)
+        modelController.data = restoredModel
+    }
+
+    val undoSimulationField = Field(Control(undoSimulationButton), Control(redoSimulationButton), addons = true)
+
+    val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
+    val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
+
+    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
+        undoModelField.root.classList.toggle("is-hidden", it == simulationPage)
+        undoSimulationField.root.classList.toggle("is-hidden", it == modelPage)
+    }
 
     val messageContent = span()
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
     val container: BulmaElement = div(
-        Level(left = listOf(modelField), center = listOf(undoField), right = listOf(simulationField)),
+        Level(left = listOf(modelField), center = listOf(undoModelField, undoSimulationField), right = listOf(simulationField)),
         message,
         editionTab
     )
@@ -266,8 +298,10 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     override val root: HTMLElement = container.root
 
     init {
-        undoButton.disabled = true
-        redoButton.disabled = true
+        undoModelButton.disabled = true
+        redoModelButton.disabled = true
+        undoSimulationButton.disabled = true
+        redoSimulationButton.disabled = true
 
         refreshModels()
         refreshSelectedModel()

@@ -46,16 +46,20 @@ class Level(
 
     var mobile by className(mobile, "is-mobile", root)
 
-    var left by embeddedBulmaList(left, root, Position.AfterBegin) {
+    var left by embeddedBulmaList(left, root, Position.AfterBegin, ::addLevelItem) {
         if (it.isNotEmpty()) document.create.div("level-left") else null
     }
 
-    var center by bulmaList(center, root, { root.querySelector(".level-right") })
+    var center by bulmaList(center, root, { root.querySelector(".level-right") }) {
+        document.create.div("level-item").apply { appendChild(it.root) }
+    }
 
-    var right by embeddedBulmaList(right, root, Position.BeforeEnd) {
+    var right by embeddedBulmaList(right, root, Position.BeforeEnd, ::addLevelItem) {
         if (it.isNotEmpty()) document.create.div("level-right") else null
     }
 
+    private fun addLevelItem(element: BulmaElement) =
+        element.root.apply { classList.add("level-item")}
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */

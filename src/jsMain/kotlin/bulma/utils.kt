@@ -113,6 +113,7 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
     private val parent: HTMLElement,
     private val before: HTMLElement?,
     private val position: Position = Position.BeforeEnd,
+    private val prepare: (T) -> HTMLElement,
     private val containerBuilder: (List<T>) -> HTMLElement?
 ) : ReadWriteProperty<Any?, List<T>> {
 
@@ -127,7 +128,7 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
 
     private fun prepareContainer(value: List<T>) =
         containerBuilder(value)?.apply {
-            value.forEach { this.appendChild(it.root) }
+            value.forEach { this.appendChild(prepare(it)) }
         }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
@@ -158,9 +159,10 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
 
 fun <T : BulmaElement> embeddedBulmaList(
     initialValue: List<T> = emptyList(), parent: HTMLElement,
-    position: Position = Position.BeforeEnd, containerBuilder: (List<T>) -> HTMLElement?
+    position: Position = Position.BeforeEnd, prepare: (T) -> HTMLElement = { it.root },
+    containerBuilder: (List<T>) -> HTMLElement?
 ) =
-    BulmaElementEmbeddedListProperty(initialValue, parent, null, position, containerBuilder)
+    BulmaElementEmbeddedListProperty(initialValue, parent, null, position, prepare, containerBuilder)
 
 
 /** Property class delegate that handle a boolean property that set or reset a css class. */

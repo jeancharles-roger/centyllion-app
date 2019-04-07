@@ -48,8 +48,6 @@ class ReactionEditController(
         this.data = this.data.copy(transform = value)
     }
 
-    //val delete = Delete { onDelete(this.data, this@ReactionEditController) }
-
     val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small) {
         onDelete(this.data, this@ReactionEditController)
     }

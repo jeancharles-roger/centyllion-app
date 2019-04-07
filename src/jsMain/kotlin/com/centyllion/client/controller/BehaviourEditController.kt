@@ -74,12 +74,8 @@ class BehaviourEditController(
     val reactionHeader = listOf(
         Column(
             Level(
-                center = listOf(
-                    HorizontalField(Help("Reactive"), mainReactiveController.container),
-                    HorizontalField(Help("Product"), mainProductController.container),
-                    Field(Control(transform))
-                ),
-                right = listOf(addReactionButton)
+                left = listOf(HorizontalField(Help("Reactive"), mainReactiveController.container)),
+                right = listOf(HorizontalField(Help("Product"), mainProductController.container), Field(Control(transform)), addReactionButton)
             ),
             size = ColumnSize.Full
         )

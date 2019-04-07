@@ -48,17 +48,23 @@ class ReactionEditController(
         this.data = this.data.copy(transform = value)
     }
 
-    val delete = Delete { onDelete(this.data, this@ReactionEditController) }
+    //val delete = Delete { onDelete(this.data, this@ReactionEditController) }
+
+    val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small) {
+        onDelete(this.data, this@ReactionEditController)
+    }
 
     override val container = Column(
         Level(
+            left = listOf(
+                HorizontalField(Help("Reactive"), reactiveController.container)
+            ),
             center = listOf(
-                HorizontalField(Help("Reactive"), reactiveController.container),
-                directionController,
-                HorizontalField(Help("Product"), productController.container),
-                Control(transform)
+                directionController
             ),
             right = listOf(
+                HorizontalField(Help("Product"), productController.container),
+                Control(transform),
                 delete
             )
         ),

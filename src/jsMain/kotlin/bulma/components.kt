@@ -323,7 +323,8 @@ class Tabs(
 class TabPage(val title: TabItem, val body: BulmaElement)
 
 class TabPages(
-    vararg pages: TabPage, val tabs: Tabs = Tabs(), initialTabIndex: Int = 0
+    vararg pages: TabPage, val tabs: Tabs = Tabs(), initialTabIndex: Int = 0,
+    var onTabChange: (page: TabPage) -> Unit = {}
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.div()
@@ -358,6 +359,7 @@ class TabPages(
 
         page.body.root.classList.remove("is-hidden")
         page.title.active = true
+        onTabChange(page)
     }
 
 }

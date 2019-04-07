@@ -28,7 +28,38 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
     { _, old, new ->
-        if (old != new) refreshSelectedModel()
+        if (old != new) {
+            refreshSelectedModel()
+
+            // updates simulation only if model _id changed
+            if (old._id != new._id) {
+                if (selectedModel._id.isNotEmpty()) {
+                    fetchSimulations(selectedModel._id, instance)
+                        .then {
+                            simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
+                            simulationStatus =
+                                simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
+                                    .toMutableMap()
+                            selectedSimulation = simulations.first()
+                            message("Simulations for ${selectedModel.model.name} loaded")
+                        }
+                        .catch {
+                            simulations = listOf(emptySimulationDescription)
+                            simulationStatus =
+                                simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
+                                    .toMutableMap()
+                            selectedSimulation = simulations.first()
+                            error(it.message ?: it.toString())
+                        }
+                } else {
+                    simulations = listOf(emptySimulationDescription)
+                    simulationStatus =
+                        simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
+                            .toMutableMap()
+                    selectedSimulation = simulations.first()
+                }
+            }
+        }
     }
 
     var simulations: List<SimulationDescription> by observable(emptyList())
@@ -259,26 +290,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         modelSelect.text = selectedModel.model.name
 
         saveModelButton.disabled = modelStatus.getOrElse(selectedModel) { Status.Saved } == Status.Saved
-
-        if (selectedModel._id.isNotEmpty()) {
-            fetchSimulations(selectedModel._id, instance)
-                .then {
-                    simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
-                    simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
-                    selectedSimulation = simulations.first()
-                    message("Simulations for ${selectedModel.model.name} loaded")
-                }
-                .catch {
-                    simulations = listOf(emptySimulationDescription)
-                    simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
-                    selectedSimulation = simulations.first()
-                    error(it.message ?: it.toString())
-                }
-        } else {
-            simulations = listOf(emptySimulationDescription)
-            simulationStatus = simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
-            selectedSimulation = simulations.first()
-        }
     }
 
     private fun removeModel(deletedModel: GrainModelDescription) {

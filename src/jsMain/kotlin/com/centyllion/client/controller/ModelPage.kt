@@ -3,10 +3,7 @@ package com.centyllion.client.controller
 import KeycloakInstance
 import bulma.*
 import com.centyllion.client.*
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.SimulationDescription
-import com.centyllion.model.emptyGrainModelDescription
-import com.centyllion.model.emptySimulationDescription
+import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
@@ -20,6 +17,14 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var modelStatus: MutableMap<GrainModelDescription, Status> = mutableMapOf()
     var simulationStatus: MutableMap<SimulationDescription, Status> = mutableMapOf()
+
+    private var modelHistory: List<GrainModel> by observable(emptyList()) { _, old, new ->
+        undoButton.disabled = new.isEmpty()
+    }
+
+    private var modelFuture: List<GrainModel> by observable(emptyList()) { _, old, new ->
+        redoButton.disabled = new.isEmpty()
+    }
 
     var models: List<GrainModelDescription> by observable(emptyList())
     { _, old, new ->
@@ -72,6 +77,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (old != new) refreshSelectedSimulation()
     }
 
+
+    private var undoModel = false
     private var choosingModel = false
 
     val modelController = GrainModelEditController(selectedModel.model)
@@ -88,6 +95,14 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 val newModels = models.toMutableList()
                 newModels[models.indexOf(oldModelDescription)] = newModelDescription
                 models = newModels
+
+                if (undoModel) {
+                    modelFuture += old
+                } else {
+                    modelHistory += old
+                }
+            } else {
+                modelHistory = emptyList()
             }
 
             // updates the simulation
@@ -217,6 +232,22 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         addons = true
     )
 
+    val undoButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelHistory.last()
+        modelHistory = modelHistory.dropLast(1)
+        undoModel = true
+        modelController.data = restoredModel
+        undoModel = false
+    }
+
+    val redoButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelFuture.last()
+        modelFuture = modelFuture.dropLast(1)
+        modelController.data = restoredModel
+    }
+
+    val undoField = Field(Control(undoButton), Control(redoButton), addons = true)
+
     val editionTab = TabPages(
         TabPage(TabItem("Model", "boxes"), modelController),
         TabPage(TabItem("Simulation", "play"), simulationController),
@@ -227,7 +258,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
     val container: BulmaElement = div(
-        Level(left = listOf(modelField), right = listOf(simulationField)),
+        Level(left = listOf(modelField), center = listOf(undoField), right = listOf(simulationField)),
         message,
         editionTab
     )
@@ -235,6 +266,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     override val root: HTMLElement = container.root
 
     init {
+        undoButton.disabled = true
+        redoButton.disabled = true
+
         refreshModels()
         refreshSelectedModel()
         refreshSimulations()

@@ -40,11 +40,11 @@ class SimulationRunController(
 
     private var simulator = Simulator(context, data)
 
-    var running = false
-    var startTime = -1.0
-    var lastRefresh = 0
+    private var running = false
+    private var startTime = -1.0
+    private var lastRefresh = 0
 
-    var presentCharts = true
+    private var presentCharts = false
 
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
         data = data.copy(name = new)
@@ -59,7 +59,7 @@ class SimulationRunController(
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Danger, rounded = true) { stop() }
     val resetButton = iconButton(Icon("history"), ElementColor.Warning, rounded = true) { reset() }
-    val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Link, rounded = true) { toggleCharts() }
+    val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
 
     val stepLabel = Label()
 

@@ -271,9 +271,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     }
 
     val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
-        val restoredModel = modelFuture.last()
-        modelFuture = modelFuture.dropLast(1)
-        modelController.data = restoredModel
+        val restoredSimulation = simulationFuture.last()
+        simulationFuture = simulationFuture.dropLast(1)
+        simulationController.data = restoredSimulation
     }
 
     val undoSimulationField = Field(Control(undoSimulationButton), Control(redoSimulationButton), addons = true)

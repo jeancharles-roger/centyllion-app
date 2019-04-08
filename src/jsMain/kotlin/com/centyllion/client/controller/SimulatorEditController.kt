@@ -192,10 +192,16 @@ class SimulatorEditController(
         }
     }
 
+    val clearAllButton = iconButton(Icon("trash"), ElementColor.Danger, true) {
+        (0 until data.simulation.dataSize).forEach { data.resetIdAtIndex(it) }
+        onUpdate(true, data, this)
+        refresh()
+    }
+
     val editToolbar = Level(
         center = listOf(Field(addons = true).apply {
             body = toolButtons.map { Control(it) }
-        }, sizeDropdown, selectedGrainController.container)
+        }, sizeDropdown, selectedGrainController.container, clearAllButton)
     )
 
     override val container = div(

@@ -108,6 +108,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                     modelFuture += old
                 } else {
                     modelHistory += old
+                    modelFuture = emptyList()
                 }
             } else {
                 modelHistory = emptyList()
@@ -140,6 +141,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                     simulationFuture += old
                 } else {
                     simulationHistory += old
+                    simulationFuture = emptyList()
                 }
             }
         }

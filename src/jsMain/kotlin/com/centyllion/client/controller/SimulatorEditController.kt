@@ -9,9 +9,14 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
+
+interface DisplayElement {
+    fun draw(gc: CanvasRenderingContext2D)
+}
 
 class SimulatorEditController(
     simulator: Simulator,
@@ -35,13 +40,14 @@ class SimulatorEditController(
     // simulation content edition
     private var selectedTool: EditTools = EditTools.None
 
+    private var toolElement: DisplayElement? = null
+
     var drawStep = -1
-    var sourceX = -1
-    var sourceY = -1
+    var canvasSourceX = -1.0
+    var canvasSourceY = -1.0
 
-    var mouseX = -1
-    var mouseY = -1
-
+    var mouseX = -1.0
+    var mouseY = -1.0
 
     fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
         val size = ToolSize.valueOf(sizeDropdown.text).size * factor
@@ -51,7 +57,7 @@ class SimulatorEditController(
         } else {
             for (i in x - halfSize until x + halfSize) {
                 for (j in y - halfSize until y + halfSize) {
-                    val inCircle = (x - i)*(x - i) + (y - j -1)*(y - j) +1 < halfSize*halfSize
+                    val inCircle = (x - i) * (x - i) + (y - j - 1) * (y - j) + 1 < halfSize * halfSize
                     val inSimulation = data.simulation.positionInside(i, j)
                     if (inCircle && inSimulation) block(i, j)
                 }
@@ -59,7 +65,10 @@ class SimulatorEditController(
         }
     }
 
-    fun drawOnSimulation(sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int) {
+    fun drawOnSimulation(
+        canvasSourceX: Double, canvasSourceY: Double, canvasX: Double, canvasY: Double,
+        sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int
+    ) {
         when (selectedTool) {
             EditTools.Pen -> {
                 selectedGrainController.data?.id?.let { idToSet ->
@@ -67,7 +76,54 @@ class SimulatorEditController(
                 }
             }
             EditTools.Line -> {
-                // TODO
+                selectedGrainController.data?.id?.let { idToSet ->
+
+                    // sets guide element
+                    toolElement = object : DisplayElement {
+                        override fun draw(gc: CanvasRenderingContext2D) {
+                            gc.beginPath();
+                            gc.moveTo(canvasSourceX, canvasSourceY)
+                            gc.lineTo(canvasX, canvasY)
+                            gc.lineWidth = 1.0
+                            gc.strokeStyle = "black"
+                            gc.setLineDash(arrayOf(5.0, 15.0))
+                            gc.stroke()
+                        }
+                    }
+
+                    if (step == -1) {
+                        // draw the line
+                        val dx = x - sourceX
+                        val dy = y - sourceY
+                        if (dx.absoluteValue > dy.absoluteValue) {
+                            if (sourceX < x) {
+                                for (i in sourceX until x) {
+                                    val j = sourceY + dy * (i - sourceX) / dx
+                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                                }
+                            } else {
+                                for (i in x until sourceX) {
+                                    val j = y + dy * (i - x) / dx
+                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                                }
+
+                            }
+                        } else {
+                            if (sourceY < y) {
+                                for (j in sourceY until y) {
+                                    val i = sourceX + dx * (j - sourceY) / dy
+                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                                }
+                            } else {
+                                for (j in y until sourceY) {
+                                    val i = x + dx * (j - y) / dy
+                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
             EditTools.Spray -> {
                 val random = Random.Default
@@ -89,31 +145,8 @@ class SimulatorEditController(
             }
         }
 
-        val scale = 0.1
-        val canvasWidth = simulationCanvas.root.width.toDouble()
-        val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xStep = canvasWidth / data.simulation.width
-        val xMax = data.simulation.width * xStep
-        val yStep = canvasHeight / data.simulation.height
-        val xSize = xStep * (1.0 + scale)
-        val xDelta = xStep * (scale / 2.0)
-        val ySize = xStep * (1.0 + scale)
-        val yDelta = xStep * (scale / 2.0)
-        simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
-        var currentX = 0.0
-        var currentY = 0.0
-        for (i in 0 until data.currentAgents.size) {
-            val grain = data.model.indexedGrains[data.idAtIndex(i)]
-            if (grain != null) {
-                simulationContext.fillStyle = grain.color
-                simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
-            }
-
-            currentX += xStep
-            if (currentX >= xMax) {
-                currentX = 0.0
-                currentY += yStep
-            }
+        if (step == -1) {
+            toolElement = null
         }
 
         onUpdate(step == -1, data, this)
@@ -130,20 +163,23 @@ class SimulatorEditController(
         }
 
         val rectangle = simulationCanvas.root.getBoundingClientRect()
-        val canvasX = event.clientX - rectangle.left
-        val canvasY = event.clientY - rectangle.top
+        mouseX = event.clientX - rectangle.left
+        mouseY = event.clientY - rectangle.top
         val stepX = data.simulation.width.toDouble() / simulationCanvas.root.width
         val stepY = data.simulation.height.toDouble() / simulationCanvas.root.height
-        mouseX = (canvasX * stepX - 2 * stepX).roundToInt()
-        mouseY = (canvasY * stepY - 2 * stepY).roundToInt()
 
         if (newStep != null) {
             if (newStep == 0) {
-                sourceX = mouseX
-                sourceY = mouseY
+                canvasSourceX = mouseX
+                canvasSourceY = mouseY
             }
             drawStep = newStep
-            drawOnSimulation(sourceX, sourceY, mouseX, mouseY, drawStep)
+
+            val sourceX = (canvasSourceX * stepX - 2 * stepX).roundToInt()
+            val sourceY = (canvasSourceY * stepY - 2 * stepY).roundToInt()
+            val x = (mouseX * stepX - 2 * stepX).roundToInt()
+            val y = (mouseY * stepY - 2 * stepY).roundToInt()
+            drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
         }
     }
 
@@ -247,5 +283,8 @@ class SimulatorEditController(
                 currentY += yStep
             }
         }
+
+        toolElement?.draw(simulationContext)
+
     }
 }

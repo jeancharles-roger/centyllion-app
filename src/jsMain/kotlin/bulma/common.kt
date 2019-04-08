@@ -9,6 +9,10 @@ interface BulmaElement {
     var text: String
         get() = root.innerText
         set(value) { root.innerText = value }
+
+    var hidden: Boolean
+        get() = root.classList.contains("is-hidden")
+        set(value) { root.classList.toggle("is-hidden", value)}
 }
 
 interface HasClassName {

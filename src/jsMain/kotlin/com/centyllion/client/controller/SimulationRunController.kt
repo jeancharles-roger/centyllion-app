@@ -225,7 +225,7 @@ class SimulationRunController(
     }
 
     fun refreshChart() {
-        chartCanvas.root.classList.toggle("is-hidden", !presentCharts)
+        chartCanvas.hidden = !presentCharts
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()

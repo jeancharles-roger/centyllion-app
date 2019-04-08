@@ -281,19 +281,16 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
 
-    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
-        undoModelField.root.classList.toggle("is-hidden", it == simulationPage)
-        undoSimulationField.root.classList.toggle("is-hidden", it == modelPage)
-    }
+    val tools = Level(left = listOf(modelField), center = listOf(undoModelField), right = listOf(simulationField))
 
     val messageContent = span()
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
-    val container: BulmaElement = div(
-        Level(left = listOf(modelField), center = listOf(undoModelField, undoSimulationField), right = listOf(simulationField)),
-        message,
-        editionTab
-    )
+    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
+        tools.center = listOf(if (it == simulationPage) undoSimulationField else undoModelField)
+    }
+
+    val container: BulmaElement = div(tools, message, editionTab)
 
     override val root: HTMLElement = container.root
 

@@ -347,17 +347,17 @@ class TabPages(
     private fun preparePages(pages: List<TabPage>) {
         pages.map { page ->
             page.title.onClick = { selectPage(page) }
-            page.body.root.classList.add("is-hidden")
+            page.body.hidden = true
         }
     }
 
     fun selectPage(page: TabPage) {
         pages.forEach {
-            it.body.root.classList.add("is-hidden")
+            it.body.hidden = true
             it.title.active = false
         }
 
-        page.body.root.classList.remove("is-hidden")
+        page.body.hidden = false
         page.title.active = true
         onTabChange(page)
     }

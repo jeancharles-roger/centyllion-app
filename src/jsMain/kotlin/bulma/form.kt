@@ -2,10 +2,10 @@ package bulma
 
 import kotlinx.html.*
 import kotlinx.html.dom.create
-import kotlinx.html.js.onChangeFunction
-import kotlinx.html.js.onInputFunction
+import kotlinx.html.js.*
 import org.w3c.dom.*
 import org.w3c.dom.events.Event
+import org.w3c.dom.events.FocusEvent
 import org.w3c.dom.events.InputEvent
 import kotlin.browser.document
 
@@ -145,6 +145,7 @@ class Input(
     color: ElementColor = ElementColor.None, size: Size = Size.None,
     rounded: Boolean = false, loading: Boolean = false,
     readonly: Boolean = false, static: Boolean = false,
+    var onFocus: (Boolean) -> Unit = { },
     var onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
 ) : ControlElement {
 
@@ -156,7 +157,16 @@ class Input(
                 onChange(it, target.value)
             }
         }
-    } as HTMLInputElement
+        onBlurFunction = {
+            val target = it.target
+            if (it is FocusEvent && target is HTMLInputElement) {
+                onFocus(false)
+            }
+        }
+        onFocusFunction = {
+            onFocus(true)
+        }
+    }
 
     var value: String
         get() = root.value

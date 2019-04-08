@@ -2,6 +2,7 @@ package bulma
 
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
+import kotlin.math.max
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -53,12 +54,18 @@ class BulmaElementProperty<T>(
     }
 }
 
-fun <T: BulmaElement> bulma(
-    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement? = { it.root }
+fun <T : BulmaElement> bulma(
+    initialValue: T?,
+    parent: HTMLElement,
+    position: Position = Position.BeforeEnd,
+    prepare: (newValue: T) -> HTMLElement? = { it.root }
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
 fun <T> html(
-    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd, prepare: (newValue: T) -> HTMLElement?
+    initialValue: T?,
+    parent: HTMLElement,
+    position: Position = Position.BeforeEnd,
+    prepare: (newValue: T) -> HTMLElement?
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
 class BulmaElementListProperty<T : BulmaElement>(
@@ -77,14 +84,27 @@ class BulmaElementListProperty<T : BulmaElement>(
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
+            // keep old element reference for now
             val oldElements = elements
-            oldElements.forEach { parent.removeChild(it) }
+
+            // construct new ones
             elements = value.map { prepare(it) }
+
+            // before reference
             val reference = before()
-            if (reference != null) {
-                elements.forEach { parent.insertBefore(it, reference) }
-            } else {
-                elements.forEach { parent.insertAdjacentElement(position.value, it) }
+
+            val size = max(elements.size, oldElements.size)
+            val copyElements = Array(size) { if (it < elements.size) elements[it] else null }
+            val copyOldElements = Array(size) { if (it < oldElements.size) oldElements[it] else null }
+
+            copyElements.zip(copyOldElements) { new, old ->
+                when {
+                    new != null && old != null && old != new/* && parent.contains(old)*/ -> parent.replaceChild(new, old)
+                    new == null && old != null -> parent.removeChild(old)
+                    new != null && old == null && reference != null -> parent.insertBefore(new, reference)
+                    new != null && old == null -> parent.insertAdjacentElement(position.value, new)
+                    else -> null
+                }
             }
         }
     }

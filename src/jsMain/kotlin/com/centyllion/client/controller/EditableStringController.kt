@@ -44,6 +44,7 @@ class EditableStringController(
                 okButton.disabled = !it
             }
         }
+        onFocus = { if (!it) validate() }
     }
 
     val penIcon = Icon("pen")

@@ -3,6 +3,7 @@ package com.centyllion.client
 import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
+import bulma.Title
 import com.centyllion.common.betaRole
 import com.centyllion.common.centyllionHost
 import kotlinx.html.a
@@ -20,6 +21,12 @@ fun index() {
     initialize().then { (instance, page) ->
         console.log("Starting function")
         if (page == null) activatePage(mainPage, instance)
+    }.catch {
+        val root = document.querySelector(contentSelector) as HTMLElement
+        root.appendChild(Title("Problem during connection ${it.message}").root)
+
+        console.error("Error on initialize")
+        console.error(it)
     }
 }
 

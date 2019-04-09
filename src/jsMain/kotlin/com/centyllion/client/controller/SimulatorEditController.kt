@@ -4,6 +4,7 @@ import bulma.*
 import com.centyllion.model.Simulator
 import kotlinx.html.js.onMouseDownFunction
 import kotlinx.html.js.onMouseMoveFunction
+import kotlinx.html.js.onMouseOutFunction
 import kotlinx.html.js.onMouseUpFunction
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -192,6 +193,35 @@ class SimulatorEditController(
             val x = (mouseX * stepX - 2 * stepX).roundToInt()
             val y = (mouseY * stepY - 2 * stepY).roundToInt()
             drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
+        } else {
+            val brushElement = object : DisplayElement {
+                override fun draw(gc: CanvasRenderingContext2D) {
+                    gc.save()
+
+                    gc.beginPath()
+                    gc.strokeStyle = "black"
+                    gc.lineWidth = 1.0
+                    gc.setLineDash(arrayOf(5.0, 15.0))
+
+                    val factor = if (selectedTool == EditTools.Spray) 4 else 1
+                    val brushSize = ToolSize.valueOf(sizeDropdown.text).size
+                    val radiusX = (brushSize * factor) * (simulationCanvas.root.width / data.simulation.width.toDouble()) / 2.0
+                    val radiusY = brushSize * factor* (simulationCanvas.root.height / data.simulation.height.toDouble()) / 2.0
+                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, 0.0, 0.0, 6.30 /* 2pi */)
+                    gc.stroke()
+
+                    gc.restore()
+                }
+            }
+
+
+            toolElement = when  {
+                selectedTool == EditTools.Pen && selectedGrainController.data != null -> brushElement
+                selectedTool == EditTools.Spray && selectedGrainController.data != null -> brushElement
+                selectedTool == EditTools.Eraser -> brushElement
+                else -> null
+            }
+            refresh()
         }
     }
 
@@ -200,20 +230,12 @@ class SimulatorEditController(
         width = "$canvasWidth"
         height = "${data.simulation.height * canvasWidth / data.simulation.width}"
 
-        onMouseUpFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
-        }
-        onMouseDownFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
-        }
-        onMouseMoveFunction = {
-            if (it is MouseEvent) {
-                mouseChange(it)
-            }
+        onMouseUpFunction = { if (it is MouseEvent) mouseChange(it) }
+        onMouseDownFunction = { if (it is MouseEvent) mouseChange(it) }
+        onMouseMoveFunction = { if (it is MouseEvent) mouseChange(it) }
+        onMouseOutFunction = {
+            toolElement = null
+            refresh()
         }
     }
 

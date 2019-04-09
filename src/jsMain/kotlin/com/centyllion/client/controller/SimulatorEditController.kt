@@ -35,6 +35,7 @@ class SimulatorEditController(
     override var data: Simulator by observable(simulator) { _, old, new ->
         onUpdate(true, new, this)
         selectedGrainController.context = new.model.grains
+        selectedGrainController.data = data.model.grains.firstOrNull()
         refresh()
     }
 
@@ -201,13 +202,13 @@ class SimulatorEditController(
                     gc.beginPath()
                     gc.strokeStyle = "black"
                     gc.lineWidth = 1.0
-                    gc.setLineDash(arrayOf(5.0, 15.0))
+                    gc.setLineDash(arrayOf(5.0, 10.0))
 
                     val factor = if (selectedTool == EditTools.Spray) 4 else 1
                     val brushSize = ToolSize.valueOf(sizeDropdown.text).size
                     val radiusX = (brushSize * factor) * (simulationCanvas.root.width / data.simulation.width.toDouble()) / 2.0
                     val radiusY = brushSize * factor* (simulationCanvas.root.height / data.simulation.height.toDouble()) / 2.0
-                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, 0.0, 0.0, 6.30 /* 2pi */)
+                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, (mouseX+mouseY)/20, 0.0, 6.30 /* 2pi */)
                     gc.stroke()
 
                     gc.restore()
@@ -245,7 +246,7 @@ class SimulatorEditController(
         selectedTool = tool
     }
 
-    val selectedGrainController = GrainSelectController(null, data.model.grains)
+    val selectedGrainController = GrainSelectController(data.model.grains.firstOrNull(), data.model.grains)
 
     val sizeDropdown = Dropdown(ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->

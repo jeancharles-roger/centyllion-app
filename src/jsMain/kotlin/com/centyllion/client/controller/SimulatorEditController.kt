@@ -65,6 +65,36 @@ class SimulatorEditController(
         }
     }
 
+    fun line(sourceX: Int, sourceY: Int, x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
+        val dx = x - sourceX
+        val dy = y - sourceY
+        if (dx.absoluteValue > dy.absoluteValue) {
+            if (sourceX < x) {
+                for (i in sourceX until x) {
+                    val j = sourceY + dy * (i - sourceX) / dx
+                    block(i, j)
+                }
+            } else {
+                for (i in x until sourceX) {
+                    val j = y + dy * (i - x) / dx
+                    block(i, j)
+                }
+            }
+        } else {
+            if (sourceY < y) {
+                for (j in sourceY until y) {
+                    val i = sourceX + dx * (j - sourceY) / dy
+                    block(i, j)
+                }
+            } else {
+                for (j in y until sourceY) {
+                    val i = x + dx * (j - y) / dy
+                    block(i, j)
+                }
+            }
+        }
+    }
+
     fun drawOnSimulation(
         canvasSourceX: Double, canvasSourceY: Double, canvasX: Double, canvasY: Double,
         sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int
@@ -81,45 +111,27 @@ class SimulatorEditController(
                     // sets guide element
                     toolElement = object : DisplayElement {
                         override fun draw(gc: CanvasRenderingContext2D) {
-                            gc.beginPath();
+                            gc.save()
+                            gc.strokeStyle = if (x == sourceX || y == sourceY) "blue" else "black"
+
+                            gc.strokeText("$sourceX, $sourceY", canvasSourceX, canvasSourceY)
+                            gc.strokeText("$x, $y", canvasX, canvasY)
+
+                            gc.beginPath()
                             gc.moveTo(canvasSourceX, canvasSourceY)
                             gc.lineTo(canvasX, canvasY)
                             gc.lineWidth = 1.0
-                            gc.strokeStyle = "black"
                             gc.setLineDash(arrayOf(5.0, 15.0))
                             gc.stroke()
+
+                            gc.restore()
                         }
                     }
 
                     if (step == -1) {
                         // draw the line
-                        val dx = x - sourceX
-                        val dy = y - sourceY
-                        if (dx.absoluteValue > dy.absoluteValue) {
-                            if (sourceX < x) {
-                                for (i in sourceX until x) {
-                                    val j = sourceY + dy * (i - sourceX) / dx
-                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
-                                }
-                            } else {
-                                for (i in x until sourceX) {
-                                    val j = y + dy * (i - x) / dx
-                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
-                                }
-
-                            }
-                        } else {
-                            if (sourceY < y) {
-                                for (j in sourceY until y) {
-                                    val i = sourceX + dx * (j - sourceY) / dy
-                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
-                                }
-                            } else {
-                                for (j in y until sourceY) {
-                                    val i = x + dx * (j - y) / dy
-                                    data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
-                                }
-                            }
+                        line(sourceX, sourceY, x, y) { i, j ->
+                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }
                     }
                 }

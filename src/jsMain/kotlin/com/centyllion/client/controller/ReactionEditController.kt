@@ -1,54 +1,64 @@
 package com.centyllion.client.controller
 
 import bulma.*
+import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
-    reaction: Reaction, model: GrainModel,
+    reaction: Reaction, behaviour: Behaviour, model: GrainModel,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
-) : Controller<Reaction, GrainModel, Column> {
+) : Controller<Reaction, Pair<Behaviour, GrainModel>, Column> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
-            reactiveController.data = context.indexedGrains[data.reactiveId]
+            reactiveController.data = context.second.indexedGrains[data.reactiveId]
             directionController.data = data.allowedDirection
-            productController.data = context.indexedGrains[data.productId]
-            // TODO adds source reaction controller
+            productController.data = context.second.indexedGrains[data.productId]
+            sourceReactiveController.data = data.sourceReactive
             onUpdate(old, new, this@ReactionEditController)
         }
         refresh()
     }
 
-    override var context: GrainModel by observable(model) { _, old, new ->
-        if (old != new) {
-            reactiveController.data = context.indexedGrains[data.reactiveId]
-            reactiveController.context = new.grains
-            productController.data = context.indexedGrains[data.productId]
-            productController.context = new.grains
+    override var context: Pair<Behaviour, GrainModel> by observable(behaviour to model)
+    { _, old, new ->
+        if (old.second != new.second) {
+            reactiveController.data = context.second.indexedGrains[data.reactiveId]
+            reactiveController.context = new.second.grains
+            productController.data = context.second.indexedGrains[data.productId]
+            productController.context = new.second.grains
             refresh()
+        }
+        if (old != new) {
+            sourceReactiveController.context = context
         }
     }
 
-    val reactiveController = GrainSelectController(context.indexedGrains[data.reactiveId], context.grains) { _, new, _ ->
+    val reactiveController = GrainSelectController(context.second.indexedGrains[data.reactiveId], context.second.grains)
+    { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
 
-    val directionController = DirectionSetEditController(data.allowedDirection) { _, new, _ ->
+    val directionController = DirectionSetEditController(data.allowedDirection)
+    { _, new, _ ->
         this.data = this.data.copy(allowedDirection = new)
     }
 
-    val productController = GrainSelectController(context.indexedGrains[data.productId], context.grains) { _, new, _ ->
+    val productController = GrainSelectController(context.second.indexedGrains[data.productId], context.second.grains)
+    { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("Transform", this.data.sourceReactive == 0) { _, value ->
-        this.data = this.data.copy(sourceReactive = if (value) 0 else -1)
+    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, context.first, context.second)
+    { _, new, _ ->
+        this.data = this.data.copy(sourceReactive = new)
     }
 
-    val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small) {
+    val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small)
+    {
         onDelete(this.data, this@ReactionEditController)
     }
 
@@ -62,7 +72,7 @@ class ReactionEditController(
             ),
             right = listOf(
                 HorizontalField(Help("Product"), productController.container),
-                Control(transform),
+                sourceReactiveController,
                 delete
             )
         ),

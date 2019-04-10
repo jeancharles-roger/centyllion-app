@@ -62,8 +62,8 @@ class BehaviourEditController(
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("Transform", true) { _, value ->
-        //this.data = this.data.copy(transform = value)
+    val transform = Checkbox("Transform", this.data.sourceReactive == 0) { _, value ->
+        this.data = this.data.copy(sourceReactive = if (value) 0 else -1)
     }
 
     val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {

@@ -44,8 +44,8 @@ class ReactionEditController(
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("Transform", true) { _, value ->
-        //this.data = this.data.copy(transform = value)
+    val transform = Checkbox("Transform", this.data.sourceReactive == 0) { _, value ->
+        this.data = this.data.copy(sourceReactive = if (value) 0 else -1)
     }
 
     val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small) {

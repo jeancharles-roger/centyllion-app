@@ -35,7 +35,9 @@ class SimulatorEditController(
     override var data: Simulator by observable(simulator) { _, old, new ->
         onUpdate(true, new, this)
         selectedGrainController.context = new.model.grains
-        selectedGrainController.data = data.model.grains.firstOrNull()
+        if (old.model != new.model) {
+            selectedGrainController.data = data.model.grains.firstOrNull()
+        }
         refresh()
     }
 

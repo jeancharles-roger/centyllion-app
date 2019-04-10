@@ -3,14 +3,19 @@ package com.centyllion.model
 import kotlin.random.Random
 
 data class ApplicableBehavior(
+    /** Index in the data where to apply the behavior */
     val index: Int,
+    /** The behaviour to apply */
     val behaviour: Behaviour,
+    /** */
     val usedNeighbours: List<Pair<Int, Int>>
 ) {
 
     fun apply(simulator: Simulator) {
         // applies main reaction
-        simulator.transform(index, index, behaviour.mainProductId, behaviour.transform)
+        val mainAge = if (behaviour.sourceReactive >= 0)
+            simulator.ages[usedNeighbours[behaviour.sourceReactive].first] else -1
+        simulator.transform(index, index, behaviour.mainProductId, mainAge)
 
         // applies other reaction find each neighbour for each reaction
         val reactives = usedNeighbours.sortedBy { it.second }
@@ -19,7 +24,9 @@ data class ApplicableBehavior(
         // applies reactions
         reactions.zip(reactives).forEach { (reaction, reactive) ->
             val sourceIndex = reactive.first
-            simulator.transform(sourceIndex, sourceIndex, reaction.productId, reaction.transform)
+            val newAge = if (reaction.sourceReactive >= 0)
+                simulator.ages[usedNeighbours[reaction.sourceReactive].first] else -1
+            simulator.transform(sourceIndex, sourceIndex, reaction.productId, newAge)
         }
     }
 }
@@ -67,7 +74,7 @@ class Simulator(
                 // does the grain dies ?
                 if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
-                    transform(i, i, null, false)
+                    transform(i, i, null)
                 } else {
 
                     // ages grain
@@ -166,14 +173,13 @@ class Simulator(
         ages[index] += 1
     }
 
-    fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, keepAge: Boolean) {
+    fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, newAge: Int = -1) {
         val age = ages[sourceIndex]
         agents[sourceIndex] = -1
         ages[sourceIndex] = -1
         agents[targetIndex] = newId ?: -1
         ages[targetIndex] = when {
-            newId != null && keepAge -> age
-            newId != null -> 0
+            newId != null -> newAge
             else -> -1
         }
     }

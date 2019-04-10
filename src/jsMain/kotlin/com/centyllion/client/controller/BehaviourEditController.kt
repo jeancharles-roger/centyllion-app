@@ -20,7 +20,7 @@ class BehaviourEditController(
             agePredicateController.data = data.agePredicate
             mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
             mainProductController.data = context.indexedGrains[data.mainProductId]
-            transform.checked = data.transform
+            // TODO adds source reaction controller
             reactionController.data = data.reaction
             onUpdate(old, new, this@BehaviourEditController)
             refresh()
@@ -62,8 +62,8 @@ class BehaviourEditController(
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("Transform", data.transform) { _, value ->
-        this.data = this.data.copy(transform = value)
+    val transform = Checkbox("Transform", true) { _, value ->
+        //this.data = this.data.copy(transform = value)
     }
 
     val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {

@@ -1,14 +1,20 @@
 package com.centyllion.model
 
+import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
 
+val userVersion = 0
+val eventVersion = 0
+val grainModelVersion = 0
+val simulationVersion = 0
+
 val emptyModel = GrainModel("Empty model")
 val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", emptyDescription, emptyModel)
+val emptyGrainModelDescription = GrainModelDescription("", grainModelVersion, emptyDescription, emptyModel)
 val emptySimulation = Simulation("Simulation")
-val emptySimulationDescription = SimulationDescription("", emptyDescription, "", emptySimulation)
+val emptySimulationDescription = SimulationDescription("", simulationVersion, emptyDescription, "", emptySimulation)
 
 enum class Direction {
     Left, Right, Up, Down, Front, Back
@@ -70,8 +76,8 @@ data class Grain(
 
     fun moveBehaviour() =
         if (canMove) Behaviour(
-            "Move ${label()}", probability = movementProbability, mainReactiveId = id, transform = true,
-            reaction = listOf(Reaction(productId = id, transform = true, allowedDirection = allowedDirection))
+            "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,
+            reaction = listOf(Reaction(productId = id, sourceReactive = 0, allowedDirection = allowedDirection))
         )
         else null
 
@@ -81,7 +87,7 @@ data class Grain(
 data class Reaction(
     val reactiveId: Int = -1,
     val productId: Int = -1,
-    val transform: Boolean = false,
+    val sourceReactive: Int = -1,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     fun validForModel(model: GrainModel) = model.indexedGrains.containsKey(reactiveId) &&
@@ -94,7 +100,7 @@ data class Behaviour(
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
-    val mainReactiveId: Int = -1, val mainProductId: Int = -1, val transform: Boolean = false,
+    val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int =  -1,
     val reaction: List<Reaction> = emptyList()
 ) {
 
@@ -253,6 +259,7 @@ data class DescriptionInfo(
 @Serializable
 data class GrainModelDescription(
     val _id: String,
+    @Optional val version: Int = grainModelVersion,
     val info: DescriptionInfo,
     val model: GrainModel
 )
@@ -260,6 +267,7 @@ data class GrainModelDescription(
 @Serializable
 data class SimulationDescription(
     val _id: String,
+    @Optional val version: Int = simulationVersion,
     val info: DescriptionInfo,
     val modelId: String,
     val simulation: Simulation

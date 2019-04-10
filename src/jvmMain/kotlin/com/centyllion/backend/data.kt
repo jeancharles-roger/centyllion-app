@@ -55,7 +55,7 @@ class Data(
                             val claims = principal.payload.claims
                             val name = claims["name"]?.asString() ?: ""
                             val email = claims["email"]?.asString() ?: ""
-                            val new = User(newId<User>().toString(), id, name, email)
+                            val new = User(newId<User>().toString(), userVersion, id, name, email)
                             users.insertOne(createDocument(User.serializer(), new))
                             insertEvent(Action.Create, new, usersCollectionName, new.name)
                             new
@@ -91,7 +91,7 @@ class Data(
     fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription {
         val date = rfc1123Format.format(Date())
         val model = GrainModelDescription(
-            newId<GrainModelDescription>().toString(),
+            newId<GrainModelDescription>().toString(), grainModelVersion,
             DescriptionInfo(user._id, null, null, date),
             sent
         )
@@ -126,7 +126,7 @@ class Data(
     fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription {
         val date = rfc1123Format.format(Date())
         val simulation = SimulationDescription(
-            newId<SimulationDescription>().toString(),
+            newId<SimulationDescription>().toString(), simulationVersion,
             DescriptionInfo(user._id, null, null, date),
             modelId, sent
         )
@@ -154,12 +154,16 @@ class Data(
 
     fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
         val date = rfc1123Format.format(Date())
-        val event = Event(newId<Event>().toString(), date, user?._id ?: "", action, collection, arguments.toList())
+        val event = Event(
+            newId<Event>().toString(), eventVersion, date,
+            user?._id ?: "", action, collection, arguments.toList()
+         )
         events.insertOne(createDocument(Event.serializer(), event))
     }
 
-    private fun <T> parseDocument(serializer: KSerializer<T>, document: Document) =
-        Json.parse(serializer, document.toJson())
+    private fun <T> parseDocument(serializer: KSerializer<T>, document: Document): T {
+        return Json.parse(serializer, migrate(serializer, document).toJson())
+    }
 
     private fun <T> createDocument(serializer: KSerializer<T>, value: T) =
         Document.parse(Json.stringify(serializer, value))

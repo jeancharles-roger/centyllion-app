@@ -16,7 +16,7 @@ class ReactionEditController(
             reactiveController.data = context.indexedGrains[data.reactiveId]
             directionController.data = data.allowedDirection
             productController.data = context.indexedGrains[data.productId]
-            transform.checked = data.transform
+            // TODO adds source reaction controller
             onUpdate(old, new, this@ReactionEditController)
         }
         refresh()
@@ -44,8 +44,8 @@ class ReactionEditController(
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 
-    val transform = Checkbox("Transform", data.transform) { _, value ->
-        this.data = this.data.copy(transform = value)
+    val transform = Checkbox("Transform", true) { _, value ->
+        //this.data = this.data.copy(transform = value)
     }
 
     val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small) {

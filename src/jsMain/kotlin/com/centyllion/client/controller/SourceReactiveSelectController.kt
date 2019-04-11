@@ -24,14 +24,16 @@ class SourceReactiveSelectController(
         }
     }
 
-    val icon = Icon("circle")
+    val icon = Icon(indexIcon(data)).apply {
+        root.style.color = indexColor(data)
+    }
 
     val dropdown: Dropdown = Dropdown(indexLabel(data), icon = icon, rounded = true).apply { items = items() }
 
     override val container: Field = Field(Control(dropdown))
 
     private fun item(index: Int): DropdownSimpleItem {
-        val grainIcon = Icon("circle")
+        val grainIcon = Icon(indexIcon(index))
         grainIcon.root.style.color = indexColor(index)
         return DropdownSimpleItem(indexLabel(index), grainIcon) {
             this.data = index
@@ -46,13 +48,23 @@ class SourceReactiveSelectController(
 
     private fun indexLabel(index: Int) = if (index >= 0) "reactive ${index + 1}" else "none"
 
+    private fun indexIcon(index: Int) = when {
+        index < 0 -> "times-circle"
+        else -> {
+            val grainId = if (index == 0)
+                context.first.mainReactiveId else
+                context.first.reaction[index - 1].reactiveId
+            if (index >= 0 && grainId >= 0) "circle" else "times-circle"
+        }
+    }
+
     private fun indexColor(index: Int) = when {
         index < 0 -> ""
         else -> {
-            val graindId = if (index == 0)
+            val grainId = if (index == 0)
                 context.first.mainReactiveId else
                 context.first.reaction[index - 1].reactiveId
-            context.second.indexedGrains[graindId]?.color ?: ""
+            context.second.indexedGrains[grainId]?.color ?: ""
         }
     }
 
@@ -63,7 +75,7 @@ class SourceReactiveSelectController(
 
     override fun refresh() {
         dropdown.text = indexLabel(data)
-        icon.icon = if (data >= 0) "circle" else "times-circle"
+        icon.icon = indexIcon(data)
         icon.root.style.color = indexColor(data)
     }
 

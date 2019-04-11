@@ -24,6 +24,7 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
     var iSource = 0
     var iOther = 0
 
+    // Important, always use iOther as DiffAction index since it's the expected result
     val result = mutableListOf<Diff<T>>()
     while (iSource < size || iOther < other.size) {
         when {
@@ -34,7 +35,7 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
             }
             iOther >= other.size -> {
                 // other empty
-                result.add(Diff(DiffAction.Removed, iSource, this[iSource]))
+                result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
                 iSource += 1
             }
             this[iSource] == other[iOther] -> {
@@ -44,13 +45,13 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
             }
             iSource + 1 == size || iOther + 1 == other.size -> {
                 // last element for source or iOther
-                result.add(Diff(DiffAction.Replaced, iSource, other[iOther]))
+                result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
                 iSource += 1
                 iOther += 1
             }
             this[iSource + 1] == other[iOther] -> {
                 // next source is current other
-                result.add(Diff(DiffAction.Removed, iSource, this[iSource]))
+                result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
                 iSource += 1
             }
             this[iSource] == other[iOther+1] -> {
@@ -60,7 +61,7 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
             }
             else -> {
                 // just different
-                result.add(Diff(DiffAction.Replaced, iSource, other[iOther]))
+                result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
                 iSource += 1
                 iOther += 1
             }
@@ -74,18 +75,11 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
 /** From a list of [Diff] ([diff]) it computes the result one */
 internal fun <T> List<T>.applyDiff(diff: List<Diff<T>>): List<T> {
     val result = this.toMutableList()
-    var delta = 0
     diff.forEach {
         when (it.action) {
-            DiffAction.Added -> {
-                result.add(it.index, it.element)
-                delta -= 1
-            }
-            DiffAction.Removed -> {
-                result.removeAt(it.index - delta)
-                delta += 1
-            }
-            DiffAction.Replaced -> result[it.index - delta] = it.element
+            DiffAction.Added -> result.add(it.index, it.element)
+            DiffAction.Removed -> result.removeAt(it.index)
+            DiffAction.Replaced -> result[it.index] = it.element
         }
     }
     return result

@@ -49,21 +49,32 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
                 iSource += 1
                 iOther += 1
             }
-            this[iSource + 1] == other[iOther] -> {
-                // next source is current other
-                result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
-                iSource += 1
-            }
-            this[iSource] == other[iOther+1] -> {
-                // next other is current source
-                result.add(Diff(DiffAction.Added, iOther, other[iOther]))
-                iOther += 1
-            }
             else -> {
-                // just different
-                result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
-                iSource += 1
-                iOther += 1
+
+                val indexOfOther = other.subList(iOther, other.size).indexOf(this[iSource])
+                val indexOfSource = subList(iSource, size).indexOf(other[iOther])
+                when {
+                    indexOfOther in 0..3 -> {
+                        repeat(indexOfOther) {
+                            // next other is current source
+                            result.add(Diff(DiffAction.Added, iOther, other[iOther]))
+                            iOther += 1
+                        }
+                    }
+                    indexOfSource in 0..3 -> {
+                        repeat(indexOfSource) {
+                            // next source is current other
+                            result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
+                            iSource += 1
+                        }
+                    }
+                    else -> {
+                        // just different
+                        result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
+                        iSource += 1
+                        iOther += 1
+                    }
+                }
             }
         }
     }

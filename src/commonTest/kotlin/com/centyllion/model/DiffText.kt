@@ -9,7 +9,7 @@ class DiffTest {
     fun <T> testDiff(source: List<T>, other: List<T>, diff: List<Diff<T>>? = null) {
         val computedDiff = source.diff(other)
         if (diff != null) assertEquals(diff, computedDiff)
-        println(computedDiff)
+        //println("${computedDiff.size}: $computedDiff")
         assertEquals(other, source.applyDiff(computedDiff))
     }
 
@@ -83,7 +83,7 @@ class DiffTest {
         listOf("1", "2", "3", "4"), listOf("1bis", "2bis", "3bis", "4bis")
     )
 
-    fun randomList(size: Int = 20, max: Int = 10) = ArrayList<String>(size).apply {
+    fun randomList(size: Int = 25, max: Int = 5) = ArrayList<String>(size).apply {
         (0 until size).forEach { add("${Random.nextInt(max)}") }
     }
 

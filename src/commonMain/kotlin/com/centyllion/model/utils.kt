@@ -43,12 +43,6 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
                 iSource += 1
                 iOther += 1
             }
-            iSource + 1 == size || iOther + 1 == other.size -> {
-                // last element for source or iOther
-                result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
-                iSource += 1
-                iOther += 1
-            }
             else -> {
 
                 val indexOfOther = other.subList(iOther, other.size).indexOf(this[iSource])

@@ -9,9 +9,13 @@ class DiffTest {
     fun <T> testDiff(source: List<T>, other: List<T>, diff: List<Diff<T>>? = null) {
         val computedDiff = source.diff(other)
         if (diff != null) assertEquals(diff, computedDiff)
-        //println("${computedDiff.size}: $computedDiff")
         assertEquals(other, source.applyDiff(computedDiff))
     }
+
+    @Test
+    fun testSwap1() = testDiff(
+        listOf("1", "2"), listOf("2", "1")
+    )
 
     @Test
     fun testAdd1() = testDiff(

@@ -2,31 +2,35 @@ package com.centyllion.model
 
 import kotlin.random.Random
 
+data class Agent(val index: Int, val id: Int, val age: Int)
+
 data class ApplicableBehavior(
     /** Index in the data where to apply the behavior */
-    val index: Int,
+    val index: Int, val age: Int,
     /** The behaviour to apply */
     val behaviour: Behaviour,
     /** */
-    val usedNeighbours: List<Pair<Int, Int>>
+    val usedNeighbours: List<Agent>
 ) {
+
+    fun ageForSource(reactive: Int) = when {
+        reactive == 0 -> age
+        reactive > 0 -> usedNeighbours[reactive - 1].age
+        else -> 0
+    }
 
     fun apply(simulator: Simulator) {
         // applies main reaction
-        val mainAge = if (behaviour.sourceReactive >= 0)
-            simulator.ages[usedNeighbours[behaviour.sourceReactive].first] else -1
-        simulator.transform(index, index, behaviour.mainProductId, mainAge)
+        simulator.transform(index, index, behaviour.mainProductId, ageForSource(behaviour.sourceReactive))
 
         // applies other reaction find each neighbour for each reaction
-        val reactives = usedNeighbours.sortedBy { it.second }
+        val reactives = usedNeighbours.sortedBy { it.id }
         val reactions = behaviour.reaction.sortedBy { it.reactiveId }
 
         // applies reactions
         reactions.zip(reactives).forEach { (reaction, reactive) ->
-            val sourceIndex = reactive.first
-            val newAge = if (reaction.sourceReactive >= 0)
-                simulator.ages[usedNeighbours[reaction.sourceReactive].first] else -1
-            simulator.transform(sourceIndex, sourceIndex, reaction.productId, newAge)
+            val newAge = ageForSource(reaction.sourceReactive)
+            simulator.transform(reactive.index, reactive.index, reaction.productId, newAge)
         }
     }
 }
@@ -83,9 +87,10 @@ class Simulator(
 
                     val selected = all.getOrPut(i) { mutableListOf() }
                     if (reactiveGrains.contains(grain)) {
+                        // a grain is present, a behaviour can be triggered
                         val age = ageAtIndex(i)
 
-                        // a grain is present, a behaviour can be triggered
+                        // find all neighbours
                         val neighbours = neighbours(i)
 
                         // searches for applicable behaviours
@@ -101,8 +106,8 @@ class Simulator(
                             // for each reactions, find all possible reactives
                             val possibleReactions = behaviour.reaction
                                 .map { reaction ->
-                                    neighbours.filter { (d, id) ->
-                                        reaction.reactiveId == id && reaction.allowedDirection.contains(d)
+                                    neighbours.filter { (d, a) ->
+                                        reaction.reactiveId == a.id && reaction.allowedDirection.contains(d)
                                     }
                                 }
 
@@ -110,16 +115,12 @@ class Simulator(
                             val allCombinations = possibleReactions.allCombinations()
 
                             // chooses one randomly
-                            val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map {
-                                simulation.moveIndex(i, it.first) to it.second
-                            }
+                            val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map { it.second }
 
-                            val behavior = ApplicableBehavior(i, behaviour, usedNeighbours)
+                            // registers behaviour for for concurrency
+                            val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)
                             selected.add(behavior)
-                            usedNeighbours.forEach {
-                                val neighboursSelected = all.getOrPut(it.first) { mutableListOf() }
-                                neighboursSelected.add(behavior)
-                            }
+                            usedNeighbours.forEach { all.getOrPut(it.index) { mutableListOf() }.add(behavior) }
                         }
                     }
                 }
@@ -194,8 +195,9 @@ class Simulator(
         ages[index] = -1
     }
 
-    fun neighbours(index: Int): List<Pair<Direction, Int>> =
-        Direction.values().map { it to currentAgents[simulation.moveIndex(index, it)] }
+    /** Returns all neighbours agents in all directions */
+    fun neighbours(index: Int): List<Pair<Direction, Agent>> =
+        Direction.values().map { it to simulation.moveIndex(index, it).let { Agent(it, currentAgents[it], ages[it]) } }
 
     fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()

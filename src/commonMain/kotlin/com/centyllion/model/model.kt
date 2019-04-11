@@ -105,10 +105,12 @@ data class Behaviour(
 ) {
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
-    fun applicable(grain: Grain, age: Int, neighbours: List<Pair<Direction, Int>>): Boolean =
+    fun applicable(grain: Grain, age: Int, neighbours: List<Pair<Direction, Agent>>): Boolean =
         mainReactiveId == grain.id && agePredicate.check(age) &&
                 reaction.fold(true) { a, r ->
-                    a && r.allowedDirection.any { d -> neighbours.any { it.first == d && it.second == r.reactiveId } }
+                    a && r.allowedDirection.any { d ->
+                        neighbours.any { it.first == d && it.second.id == r.reactiveId }
+                    }
                 }
 
     fun usedGrains(model: GrainModel) =

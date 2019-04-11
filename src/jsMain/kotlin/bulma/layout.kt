@@ -47,7 +47,7 @@ class Level(
     var mobile by className(mobile, "is-mobile", root)
 
     var left by embeddedBulmaList(left, root, Position.AfterBegin, ::addLevelItem) {
-        if (it.isNotEmpty()) document.create.div("level-left") else null
+        document.create.div("level-left")
     }
 
     var center by bulmaList(center, root, { root.querySelector(".level-right") }) {
@@ -55,11 +55,10 @@ class Level(
     }
 
     var right by embeddedBulmaList(right, root, Position.BeforeEnd, ::addLevelItem) {
-        if (it.isNotEmpty()) document.create.div("level-right") else null
+        document.create.div("level-right")
     }
 
-    private fun addLevelItem(element: BulmaElement) =
-        element.root.apply { classList.add("level-item")}
+    private fun addLevelItem(element: BulmaElement) = element.root.apply { classList.add("level-item") }
 }
 
 /** [Media](https://bulma.io/documentation/layout/media) element */
@@ -73,13 +72,13 @@ class Media(
     private val contentNode = root.querySelector(".media-content") as HTMLElement
 
     var left by embeddedBulmaList(left, root, Position.AfterBegin) {
-        if (it.isNotEmpty()) document.create.figure("media-left") else null
+        document.create.figure("media-left")
     }
 
     var center by bulmaList(center, contentNode)
 
     var right by embeddedBulmaList(right, root, Position.BeforeEnd) {
-        if (it.isNotEmpty()) document.create.div("media-right") else null
+        document.create.div("media-right")
     }
 }
 
@@ -98,13 +97,13 @@ class Hero : BulmaElement {
     var color by className(ElementColor.None, root)
 
     var head by embeddedBulmaList(emptyList(), root, Position.AfterBegin) {
-        if (it.isNotEmpty()) document.create.div("hero-head") else null
+        document.create.div("hero-head")
     }
 
     var body by bulmaList(emptyList(), bodyNode)
 
     var foot by embeddedBulmaList(emptyList(), root, Position.BeforeEnd) {
-        if (it.isNotEmpty()) document.create.div("hero-foot") else null
+        document.create.div("hero-foot")
     }
 }
 

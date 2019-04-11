@@ -147,11 +147,11 @@ class Message(
     override val root: HTMLElement = document.create.article("message")
 
     var header by embeddedBulmaList(header, root, Position.AfterBegin) {
-        if (it.isNotEmpty()) document.create.div("message-header") else null
+        document.create.div("message-header")
     }
 
     var body by embeddedBulmaList(body, root, Position.BeforeEnd) {
-        if (it.isNotEmpty()) document.create.div("message-body") else null
+        document.create.div("message-body")
     }
 
     var size by className(size, root)

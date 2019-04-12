@@ -140,38 +140,63 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
 ) : ReadWriteProperty<Any?, List<T>> {
 
     private var value = initialValue
-    private var container = prepareContainer(initialValue)?.also {
+    private var elements = value.map { prepare(it) }
+    private var container = if (initialValue.isEmpty()) null else containerBuilder(initialValue).apply {
+        elements.forEach { appendChild(it) }
         if (before != null) {
-            parent.insertBefore(it, before)
+            parent.insertBefore(this, before)
         } else {
-            parent.insertAdjacentElement(position.value, it)
+            parent.insertAdjacentElement(position.value, this)
         }
     }
-
-    private fun prepareContainer(value: List<T>) =
-        if (value.isNotEmpty()) containerBuilder(value).apply {
-            value.forEach { this.appendChild(prepare(it)) }
-        } else null
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: List<T>) {
         val oldValue = this.value
         if (oldValue != value) {
+            this.value = value
+
             val oldContainer = container
-            val newContainer = prepareContainer(value)
-            container = newContainer
-            if (oldContainer != null && newContainer != null && parent.contains(oldContainer)) {
-                parent.replaceChild(newContainer, oldContainer)
-            } else {
-                if (oldContainer != null) {
-                    parent.removeChild(oldContainer)
+
+            // keep old element reference for now
+            val oldElements = elements
+
+            // construct new ones
+            elements = value.map { prepare(it) }
+
+            when {
+                value.isEmpty() -> {
+                    // list is empty, new container is null
+                    container = null
+                    if (oldContainer != null) parent.removeChild(oldContainer)
                 }
-                if (newContainer != null) {
-                    if (before != null) {
-                        parent.insertBefore(newContainer, before)
-                    } else {
-                        parent.insertAdjacentElement(position.value, newContainer)
+                oldValue.isEmpty() -> {
+                    // previous list was empty, old container was null
+                    container = containerBuilder(value).apply {
+                        value.forEach { this.appendChild(prepare(it)) }
+                        if (before != null) {
+                            parent.insertBefore(this, before)
+                        } else {
+                            parent.insertAdjacentElement(position.value, this)
+                        }
+                    }
+                }
+                else -> container?.let { node ->
+
+                    val diff = oldElements.diff(elements)
+                    diff.forEach {
+                        when (it.action) {
+                            //result.add(it.index, it.element)
+                            DiffAction.Added -> when {
+                                node.childElementCount == 0 && before != null -> node.insertBefore(it.element, before)
+                                node.childElementCount == 0 -> node.insertAdjacentElement(position.value, it.element)
+                                it.index < node.childElementCount -> node.insertBefore(it.element, node.children.item(it.index))
+                                else -> node.insertAdjacentElement(Position.BeforeEnd.value, it.element)
+                            }
+                            DiffAction.Removed -> node.removeChild(it.element)
+                            DiffAction.Replaced -> node.replaceChild(it.element, oldElements[it.index])
+                        }
                     }
                 }
             }

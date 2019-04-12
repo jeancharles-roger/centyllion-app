@@ -18,19 +18,19 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     var modelStatus: MutableMap<GrainModelDescription, Status> = mutableMapOf()
     var simulationStatus: MutableMap<SimulationDescription, Status> = mutableMapOf()
 
-    private var modelHistory: List<GrainModel> by observable(emptyList()) { _, old, new ->
+    private var modelHistory: List<GrainModel> by observable(emptyList()) { _, _, new ->
         undoModelButton.disabled = new.isEmpty()
     }
 
-    private var modelFuture: List<GrainModel> by observable(emptyList()) { _, old, new ->
+    private var modelFuture: List<GrainModel> by observable(emptyList()) { _, _, new ->
         redoModelButton.disabled = new.isEmpty()
     }
 
-    private var simulationHistory: List<Simulation> by observable(emptyList()) { _, old, new ->
+    private var simulationHistory: List<Simulation> by observable(emptyList()) { _, _, new ->
         undoSimulationButton.disabled = new.isEmpty()
     }
 
-    private var simulationFuture: List<Simulation> by observable(emptyList()) { _, old, new ->
+    private var simulationFuture: List<Simulation> by observable(emptyList()) { _, _, new ->
         redoSimulationButton.disabled = new.isEmpty()
     }
 
@@ -108,7 +108,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                     modelFuture += old
                 } else {
                     modelHistory += old
-                    modelFuture = emptyList()
+                    if (modelFuture.lastOrNull() == new) {
+                        modelFuture = modelFuture.dropLast(1)
+                    } else {
+                        modelFuture = emptyList()
+                    }
                 }
             } else {
                 modelHistory = emptyList()
@@ -258,7 +262,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredModel = modelFuture.last()
-        modelFuture = modelFuture.dropLast(1)
         modelController.data = restoredModel
     }
 

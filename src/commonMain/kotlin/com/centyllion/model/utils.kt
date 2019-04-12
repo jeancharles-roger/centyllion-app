@@ -19,7 +19,11 @@ enum class DiffAction { Replaced, Added, Removed }
 /** Diff description */
 data class Diff<T>(val action: DiffAction, val index: Int, val element: T)
 
-/** Computes differences between [this] and [other]. It returns a list of [Diff] that describes the changes */
+/**
+ * Computes differences between [this] and [other].
+ * It returns a list of [Diff] that describes the changes. The result is
+ * sequential and the [Diff]s must be applied in order to be valid.
+ */
 internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
     var iSource = 0
     var iOther = 0

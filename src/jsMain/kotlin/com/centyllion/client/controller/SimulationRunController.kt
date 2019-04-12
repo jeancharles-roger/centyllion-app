@@ -4,7 +4,6 @@ import bulma.*
 import chartjs.*
 import com.centyllion.model.*
 import kotlin.browser.window
-import kotlin.js.Date
 import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
@@ -41,7 +40,6 @@ class SimulationRunController(
     private var simulator = Simulator(context, data)
 
     private var running = false
-    private var startTime = -1.0
     private var lastRefresh = 0
 
     private var presentCharts = false
@@ -130,7 +128,6 @@ class SimulationRunController(
     fun run() {
         if (!running) {
             running = true
-            startTime = Date.now()
             refreshButtons()
             runningCallback()
         }
@@ -160,7 +157,6 @@ class SimulationRunController(
     fun reset() {
         if (!running) {
             simulator.reset()
-            startTime = -1.0
             refresh()
             refreshChart()
         }
@@ -209,8 +205,7 @@ class SimulationRunController(
 
     fun refreshCounts() {
         // refreshes step count
-        val time = if (startTime >= 0) " (${(Date.now() - startTime) / 1000.0} s.)" else ""
-        stepLabel.text = "${simulator.step}$time"
+        stepLabel.text = "${simulator.step}"
 
         // refreshes grain counts
         val counts = simulator.lastGrainsCount().values

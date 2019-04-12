@@ -66,6 +66,8 @@ class BehaviourEditController(
         this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
     }
 
+    val dummyDirectionController = DirectionSetEditController().apply { invisible = true }
+
     val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains)
     { _, new, _ ->
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
@@ -82,14 +84,22 @@ class BehaviourEditController(
     }
 
     val reactionHeader = listOf(
+        // Title header
         Column(
             Level(
-                left = listOf(HorizontalField(Help("Reactive"), mainReactiveController.container)),
-                right = listOf(
-                    HorizontalField(Help("Product"), mainProductController.container),
-                    sourceReactiveController.container,
-                    addReactionButton
-                )
+                left = listOf(Help("Reactive")),
+                center = listOf(Help(""), Help("Product"), Help("Source")),
+                right = listOf(Help("")),
+                mobile = true
+            ), size = ColumnSize.Full
+        ),
+        // Main reactive header
+        Column(
+            Level(
+                left = listOf(mainReactiveController),
+                center = listOf(dummyDirectionController, mainProductController, sourceReactiveController),
+                right = listOf(addReactionButton),
+                mobile = true
             ),
             size = ColumnSize.Full
         )
@@ -119,8 +129,8 @@ class BehaviourEditController(
         center = listOf(
             Columns(
                 // first line
-                Column(nameController, size = ColumnSize.S6),
-                Column(HorizontalField(Help("Probability"), probabilityController.container), size = ColumnSize.S6),
+                Column(nameController, size = ColumnSize.S7),
+                Column(HorizontalField(Help("Probability"), probabilityController.container), size = ColumnSize.S5),
                 // second line
                 Column(descriptionController, size = ColumnSize.S7),
                 Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),

@@ -13,6 +13,10 @@ interface BulmaElement {
     var hidden: Boolean
         get() = root.classList.contains("is-hidden")
         set(value) { root.classList.toggle("is-hidden", value)}
+
+    var invisible: Boolean
+        get() = root.classList.contains("is-invisible")
+        set(value) { root.classList.toggle("is-invisible", value)}
 }
 
 interface HasClassName {

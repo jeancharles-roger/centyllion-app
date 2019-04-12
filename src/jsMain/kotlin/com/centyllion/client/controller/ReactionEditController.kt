@@ -64,17 +64,10 @@ class ReactionEditController(
 
     override val container = Column(
         Level(
-            left = listOf(
-                HorizontalField(Help("Reactive"), reactiveController.container)
-            ),
-            center = listOf(
-                directionController
-            ),
-            right = listOf(
-                HorizontalField(Help("Product"), productController.container),
-                sourceReactiveController,
-                delete
-            )
+            left = listOf(reactiveController),
+            center = listOf(directionController, productController, sourceReactiveController),
+            right = listOf(delete),
+            mobile = true
         ),
         size = ColumnSize.Full
     )

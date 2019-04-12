@@ -178,11 +178,12 @@ class SimulatorEditController(
             else -> null
         }
 
+        val stepX = simulationCanvas.root.width / data.simulation.width.toDouble()
+        val stepY = simulationCanvas.root.height / data.simulation.height.toDouble()
+
         val rectangle = simulationCanvas.root.getBoundingClientRect()
-        mouseX = event.clientX - rectangle.left
-        mouseY = event.clientY - rectangle.top
-        val stepX = data.simulation.width.toDouble() / simulationCanvas.root.width
-        val stepY = data.simulation.height.toDouble() / simulationCanvas.root.height
+        mouseX = event.clientX - rectangle.left - 4
+        mouseY = event.clientY - rectangle.top - 4
 
         if (newStep != null) {
             if (newStep == 0) {
@@ -191,10 +192,10 @@ class SimulatorEditController(
             }
             drawStep = newStep
 
-            val sourceX = (canvasSourceX * stepX - 2 * stepX).roundToInt()
-            val sourceY = (canvasSourceY * stepY - 2 * stepY).roundToInt()
-            val x = (mouseX * stepX - 2 * stepX).roundToInt()
-            val y = (mouseY * stepY - 2 * stepY).roundToInt()
+            val sourceX = (canvasSourceX / stepX).roundToInt()
+            val sourceY = (canvasSourceY / stepY).roundToInt()
+            val x = ((mouseX - 4) / stepX).roundToInt()
+            val y = ((mouseY - 4) / stepY).roundToInt()
             drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
         } else {
             val brushElement = object : DisplayElement {
@@ -202,23 +203,24 @@ class SimulatorEditController(
                     gc.save()
 
                     gc.beginPath()
+                    gc.fillStyle = "grey"
                     gc.strokeStyle = "black"
                     gc.lineWidth = 1.0
                     gc.setLineDash(arrayOf(5.0, 10.0))
 
                     val factor = if (selectedTool == EditTools.Spray) 4 else 1
                     val brushSize = ToolSize.valueOf(sizeDropdown.text).size
-                    val radiusX = (brushSize * factor) * (simulationCanvas.root.width / data.simulation.width.toDouble()) / 2.0
-                    val radiusY = brushSize * factor* (simulationCanvas.root.height / data.simulation.height.toDouble()) / 2.0
-                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, (mouseX+mouseY)/20, 0.0, 6.30 /* 2pi */)
-                    gc.stroke()
+                    val radiusX = brushSize * factor * stepX / 2.0
+                    val radiusY = brushSize * factor * stepY / 2.0
+                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, (mouseX + mouseY) / 20, 0.0, 6.30 /* 2pi */)
+                    if (brushSize * factor == 1) gc.fill() else gc.stroke()
 
                     gc.restore()
                 }
             }
 
 
-            toolElement = when  {
+            toolElement = when {
                 selectedTool == EditTools.Pen && selectedGrainController.data != null -> brushElement
                 selectedTool == EditTools.Spray && selectedGrainController.data != null -> brushElement
                 selectedTool == EditTools.Eraser -> brushElement

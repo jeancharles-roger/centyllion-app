@@ -78,6 +78,7 @@ class MultipleController<
                 newController
             }
         }
+
         updateParents()
     }
 

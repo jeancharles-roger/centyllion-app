@@ -59,7 +59,7 @@ class Columns(
 
     // TODO variable gap  https://bulma.io/documentation/columns/gap/#variable-gap
 
-    var columns by bulmaList<Column>(columns.toList(), root)
+    var columns by bulmaList(columns.toList(), root)
 }
 
 /** [Column](https://bulma.io/documentation/columns/basics) element */

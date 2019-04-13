@@ -153,13 +153,96 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val modelSelect = Dropdown("", rounded = true)
 
-    val newModelButton = Button("New", Icon(newIcon), color = ElementColor.Primary, rounded = true) {
+    val newModelButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         models += emptyGrainModelDescription
         modelStatus[emptyGrainModelDescription] = Status.New
         selectedModel = models.last()
     }
 
-    val saveModelButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+    val deleteModelButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
+        val deletedModel = selectedModel
+        if (deletedModel._id.isNotEmpty()) {
+            deleteGrainModel(deletedModel, instance).then {
+                removeModel(deletedModel)
+                message("Model ${deletedModel.model.name} deleted")
+            }.catch { error(it) }
+        } else {
+            removeModel(deletedModel)
+            message("Model ${deletedModel.model.name} removed")
+        }
+        modelStatus.remove(deletedModel)
+    }
+
+    val modelField = Field(
+        Control(modelSelect), Control(newModelButton), Control(deleteModelButton),
+        addons = true
+    )
+
+    val simulationSelect = Dropdown("", rounded = true)
+
+    val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
+        simulations += emptySimulationDescription
+        simulationStatus[emptySimulationDescription] = Status.New
+        selectedSimulation = simulations.last()
+    }
+
+    val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
+        val deletedSimulation = selectedSimulation
+        if (deletedSimulation._id.isNotEmpty()) {
+            deleteSimulation(selectedModel._id, deletedSimulation, instance).then {
+                removeSimulation(deletedSimulation)
+                message("Simulation ${deletedSimulation.simulation.name} deleted")
+            }.catch { error(it) }
+        } else {
+            removeSimulation(deletedSimulation)
+            message("Simulation ${deletedSimulation.simulation.name} removed")
+        }
+    }
+
+    val simulationField = Field(
+        Control(simulationSelect), Control(newSimulationButton), Control(deleteSimulationButton),
+        addons = true
+    )
+
+    val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelHistory.last()
+        modelHistory = modelHistory.dropLast(1)
+        undoModel = true
+        modelController.data = restoredModel
+        undoModel = false
+    }
+
+    val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelFuture.last()
+        modelController.data = restoredModel
+    }
+
+    val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredSimulation = simulationHistory.last()
+        simulationHistory = simulationHistory.dropLast(1)
+        undoSimulation = true
+        simulationController.data = restoredSimulation
+        undoSimulation = false
+    }
+
+    val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredSimulation = simulationFuture.last()
+        simulationFuture = simulationFuture.dropLast(1)
+        simulationController.data = restoredSimulation
+    }
+
+    val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+        if (needModelSave()) saveModel()
+        if (needSimulationSave()) saveSimulation()
+    }
+
+    private fun needModelSave() =
+        modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
+
+    private fun needSimulationSave() =
+        selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
+
+    private fun saveModel() {
         if (selectedModel._id.isEmpty()) {
             saveGrainModel(selectedModel.model, instance)
                 .then {
@@ -183,34 +266,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    val deleteModelButton = Button("Delete", Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
-        val deletedModel = selectedModel
-        if (deletedModel._id.isNotEmpty()) {
-            deleteGrainModel(deletedModel, instance).then {
-                removeModel(deletedModel)
-                message("Model ${deletedModel.model.name} deleted")
-            }.catch { error(it) }
-        } else {
-            removeModel(deletedModel)
-            message("Model ${deletedModel.model.name} removed")
-        }
-        modelStatus.remove(deletedModel)
-    }
-
-    val modelField = Field(
-        Control(modelSelect), Control(newModelButton), Control(saveModelButton), Control(deleteModelButton),
-        addons = true
-    )
-
-    val simulationSelect = Dropdown("", rounded = true)
-
-    val newSimulationButton = Button("New", Icon(newIcon), color = ElementColor.Primary, rounded = true) {
-        simulations += emptySimulationDescription
-        simulationStatus[emptySimulationDescription] = Status.New
-        selectedSimulation = simulations.last()
-    }
-
-    val saveSimulationButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+    private fun saveSimulation() {
         if (selectedSimulation._id.isEmpty()) {
             saveSimulation(selectedModel._id, selectedSimulation.simulation, instance)
                 .then {
@@ -234,65 +290,23 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    val deleteSimulationButton = Button("Delete", Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
-        val deletedSimulation = selectedSimulation
-        if (deletedSimulation._id.isNotEmpty()) {
-            deleteSimulation(selectedModel._id, deletedSimulation, instance).then {
-                removeSimulation(deletedSimulation)
-                message("Simulation ${deletedSimulation.simulation.name} deleted")
-            }.catch { error(it) }
-        } else {
-            removeSimulation(deletedSimulation)
-            message("Simulation ${deletedSimulation.simulation.name} removed")
-        }
-    }
-
-    val simulationField = Field(
-        Control(simulationSelect), Control(newSimulationButton), Control(saveSimulationButton), Control(deleteSimulationButton),
-        addons = true
-    )
-
-    val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
-        val restoredModel = modelHistory.last()
-        modelHistory = modelHistory.dropLast(1)
-        undoModel = true
-        modelController.data = restoredModel
-        undoModel = false
-    }
-
-    val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
-        val restoredModel = modelFuture.last()
-        modelController.data = restoredModel
-    }
-
-    val undoModelField = Field(Control(undoModelButton), Control(redoModelButton), addons = true)
-
-    val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
-        val restoredSimulation = simulationHistory.last()
-        simulationHistory = simulationHistory.dropLast(1)
-        undoSimulation = true
-        simulationController.data = restoredSimulation
-        undoSimulation = false
-    }
-
-    val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
-        val restoredSimulation = simulationFuture.last()
-        simulationFuture = simulationFuture.dropLast(1)
-        simulationController.data = restoredSimulation
-    }
-
-    val undoSimulationField = Field(Control(undoSimulationButton), Control(redoSimulationButton), addons = true)
+    val rightTools = Field(Control(undoModelButton), Control(redoModelButton), Control(saveButton), grouped = true)
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
 
-    val tools = Level(left = listOf(modelField), center = listOf(undoModelField), right = listOf(simulationField))
+    val tools = Level(center = listOf(modelField, simulationField, rightTools))
 
     val messageContent = span()
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
     val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
-        tools.center = listOf(if (it == simulationPage) undoSimulationField else undoModelField)
+        if (it == simulationPage) {
+            rightTools.body = listOf(Control(undoSimulationButton), Control(redoSimulationButton), Control(saveButton))
+        } else {
+            rightTools.body = listOf(Control(undoModelButton), Control(redoModelButton), Control(saveButton))
+
+        }
     }
 
     val container: BulmaElement = div(tools, message, editionTab)
@@ -359,7 +373,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         modelSelect.icon = iconForModel(selectedModel)
         modelSelect.text = selectedModel.model.name
 
-        saveModelButton.disabled = modelStatus.getOrElse(selectedModel) { Status.Saved } == Status.Saved
+        saveButton.disabled = !needModelSave() && !needSimulationSave()
     }
 
     private fun removeModel(deletedModel: GrainModelDescription) {
@@ -398,7 +412,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         simulationSelect.icon = iconForSimulation(selectedSimulation)
         simulationSelect.text = selectedSimulation.simulation.name
 
-        saveSimulationButton.disabled = selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] == Status.Saved
+        saveButton.disabled = !needModelSave() && !needSimulationSave()
     }
 
     private fun removeSimulation(deletedSimulation: SimulationDescription) {

@@ -239,6 +239,13 @@ fun Application.centyllion() {
                         context.respond(HttpStatusCode.NotFound)
                     }
 
+                    // featured models
+                    get("featured") {
+                        // TODO create featured models
+                        val models = data.publicGrainModels()
+                        context.respond(models)
+                    }
+
                     // post a new model
                     post {
                         withPrincipal(setOf(modelRole)) {

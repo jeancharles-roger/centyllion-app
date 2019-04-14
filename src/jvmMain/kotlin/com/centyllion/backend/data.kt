@@ -78,6 +78,11 @@ class Data(
         insertEvent(Action.Save, user, usersCollectionName, user.name)
     }
 
+    fun publicGrainModels(max: Int = 20): List<GrainModelDescription> {
+        val result = grainModels.find("{'info.access': ['Read']}").limit(max)
+        return result.map { parseDocument(GrainModelDescription.serializer(), it) }.toList()
+    }
+
     fun grainModelsForUser(user: User): List<GrainModelDescription> {
         val result = grainModels.find("{'info.userId': '${user._id}'}")
         return result.map { parseDocument(GrainModelDescription.serializer(), it) }.toList()

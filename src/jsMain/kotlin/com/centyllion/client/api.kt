@@ -54,20 +54,20 @@ fun fetchGrainModels(instance: KeycloakInstance) =
 
 fun saveGrainModel(model: GrainModel, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("POST", "/api/me/model", bearer, Json.stringify(GrainModel.serializer(), model))
+        fetch("POST", "/api/model", bearer, Json.stringify(GrainModel.serializer(), model))
             .then { Json.parse(GrainModelDescription.serializer(), it) }
     }
 
 fun deleteGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("DELETE", "/api/me/model/${model._id}", bearer)
+        fetch("DELETE", "/api/model/${model._id}", bearer)
     }
 
 fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch(
             "PATCH",
-            "/api/me/model/${model._id}",
+            "/api/model/${model._id}",
             bearer,
             Json.stringify(GrainModelDescription.serializer(), model)
         )
@@ -75,26 +75,26 @@ fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
 
 fun fetchSimulations(modelId: String, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/me/model/$modelId/simulation", bearer)
+        fetch("GET", "/api/model/$modelId/simulation", bearer)
             .then { Json.parse(SimulationDescription.serializer().list, it) }
     }
 
 fun saveSimulation(modelId: String, simulation: Simulation, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("POST", "/api/me/model/$modelId/simulation", bearer, Json.stringify(Simulation.serializer(), simulation))
+        fetch("POST", "/api/model/$modelId/simulation", bearer, Json.stringify(Simulation.serializer(), simulation))
             .then { Json.parse(SimulationDescription.serializer(), it) }
     }
 
-fun deleteSimulation(modelId: String, simulation: SimulationDescription, instance: KeycloakInstance) =
+fun deleteSimulation(simulation: SimulationDescription, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("DELETE", "/api/me/model/$modelId/simulation/${simulation._id}", bearer)
+        fetch("DELETE", "/api/simulation/${simulation._id}", bearer)
     }
 
-fun updateSimulation(modelId: String, simulation: SimulationDescription, instance: KeycloakInstance) =
+fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch(
             "PATCH",
-            "/api/me/model/$modelId/simulation/${simulation._id}",
+            "/api/simulation/${simulation._id}",
             bearer,
             Json.stringify(SimulationDescription.serializer(), simulation)
         )

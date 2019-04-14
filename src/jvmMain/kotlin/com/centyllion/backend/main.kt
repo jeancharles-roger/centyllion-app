@@ -222,169 +222,174 @@ fun Application.centyllion() {
                         }
                     }
 
-                    // user's model access
-                    route("model") {
-                        // get all user's saved models
+                    // get all user's saved models
+                    get("model") {
+                        withPrincipal(setOf(modelRole)) {
+                            val user = data.getOrCreateUserFromPrincipal(it)
+                            val models = data.grainModelsForUser(user)
+                            context.respond(models)
+                        }
+                    }
+                }
+
+                // user's model access
+                route("model") {
+                    get {
+                        // TODO what to do here ?
+                        context.respond(HttpStatusCode.NotFound)
+                    }
+
+                    // post a new model
+                    post {
+                        withPrincipal(setOf(modelRole)) {
+                            val user = data.getOrCreateUserFromPrincipal(it)
+                            val newModel = call.receive(GrainModel::class)
+                            val newDescription = data.createGrainModel(user, newModel)
+                            context.respond(newDescription)
+                        }
+                    }
+
+                    // access a given model
+                    route("{model}") {
                         get {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
-                                val models = data.grainModelsForUser(user)
-                                context.respond(models)
+                                val id = call.parameters["model"]!!
+                                val model = data.getGrainModel(id)
+                                context.respond(
+                                    when {
+                                        model == null -> HttpStatusCode.NotFound
+                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> model
+                                    }
+                                )
                             }
                         }
 
-                        // post a new model for user
-                        post {
+                        // patch an existing model
+                        patch {
                             withPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
-                                val newModel = call.receive(GrainModel::class)
-                                val newDescription = data.createGrainModel(user, newModel)
-                                context.respond(newDescription)
+                                val id = call.parameters["model"]!!
+                                val model = call.receive(GrainModelDescription::class)
+                                context.respond(
+                                    when {
+                                        model._id != id -> HttpStatusCode.Forbidden
+                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> {
+                                            data.saveGrainModel(user, model)
+                                            HttpStatusCode.OK
+                                        }
+                                    }
+                                )
                             }
                         }
 
-                        // access a given model belonging to the user
-                        route("{model}") {
+                        // delete an existing model
+                        delete {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val id = call.parameters["model"]!!
+                                val model = data.getGrainModel(id)
+                                context.respond(
+                                    when {
+                                        model == null -> HttpStatusCode.NotFound
+                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> {
+                                            data.deleteGrainModel(user, model)
+                                            HttpStatusCode.OK
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
+                        route("simulation") {
+                            // model's simulations
                             get {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["model"]!!
-                                    val model = data.getGrainModel(id)
-                                    context.respond(
-                                        when {
-                                            model == null -> HttpStatusCode.NotFound
-                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                            else -> model
-                                        }
-                                    )
+                                    val modelId = call.parameters["model"]!!
+                                    val simulations = data.getSimulationForModel(user, modelId)
+                                    context.respond(simulations)
                                 }
                             }
 
-                            // patch an existing model for user
-                            patch {
+                            // post a new simulation for model
+                            post {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["model"]!!
-                                    val model = call.receive(GrainModelDescription::class)
-                                    context.respond(
-                                        when {
-                                            model._id != id -> HttpStatusCode.Forbidden
-                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                            else -> {
-                                                data.saveGrainModel(user, model)
-                                                HttpStatusCode.OK
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-
-                            // delete an existing model for user
-                            delete {
-                                withPrincipal(setOf(modelRole)) {
-                                    val user = data.getOrCreateUserFromPrincipal(it)
-                                    val id = call.parameters["model"]!!
-                                    val model = data.getGrainModel(id)
-                                    context.respond(
-                                        when {
-                                            model == null -> HttpStatusCode.NotFound
-                                            model.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                            else -> {
-                                                data.deleteGrainModel(user, model)
-                                                HttpStatusCode.OK
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-
-                            // model's simulations
-                            route("simulation") {
-                                get {
-                                    withPrincipal(setOf(modelRole)) {
-                                        val user = data.getOrCreateUserFromPrincipal(it)
-                                        val modelId = call.parameters["model"]!!
-                                        val simulations = data.getSimulationForModel(user, modelId)
-                                        context.respond(simulations)
-                                    }
-                                }
-
-                                // post a new simulation for model
-                                post {
-                                    withPrincipal(setOf(modelRole)) {
-                                        val user = data.getOrCreateUserFromPrincipal(it)
-                                        val modelId = call.parameters["model"]!!
-                                        val newSimulation = call.receive(Simulation::class)
-                                        val newDescription = data.createSimulation(user, modelId, newSimulation)
-                                        context.respond(newDescription)
-                                    }
-                                }
-
-                                route("{simulation}") {
-                                    get {
-                                        withPrincipal(setOf(modelRole)) {
-                                            val user = data.getOrCreateUserFromPrincipal(it)
-                                            val modelId = call.parameters["model"]!!
-                                            val simulationId = call.parameters["simulation"]!!
-                                            val simulation = data.getSimulation(simulationId)
-                                            context.respond(
-                                                when {
-                                                    simulation == null -> HttpStatusCode.NotFound
-                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
-                                                    else -> simulation
-                                                }
-                                            )
-                                        }
-                                    }
-
-                                    // patch an existing model for user
-                                    patch {
-                                        withPrincipal(setOf(modelRole)) {
-                                            val user = data.getOrCreateUserFromPrincipal(it)
-                                            val modelId = call.parameters["model"]!!
-                                            val model = data.getGrainModel(modelId)
-                                            val simulationId = call.parameters["simulation"]!!
-                                            val simulation = call.receive(SimulationDescription::class)
-                                            context.respond(
-                                                when {
-                                                    model == null -> HttpStatusCode.NotFound
-                                                    simulation._id != simulationId -> HttpStatusCode.Forbidden
-                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
-                                                    else -> {
-                                                        data.saveSimulation(user, simulation)
-                                                        HttpStatusCode.OK
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-
-                                    // delete an existing model for user
-                                    delete {
-                                        withPrincipal(setOf(modelRole)) {
-                                            val user = data.getOrCreateUserFromPrincipal(it)
-                                            val modelId = call.parameters["model"]!!
-                                            val simulationId = call.parameters["simulation"]!!
-                                            val simulation = data.getSimulation(simulationId)
-                                            context.respond(
-                                                when {
-                                                    simulation == null -> HttpStatusCode.NotFound
-                                                    simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
-                                                    simulation.modelId != modelId -> HttpStatusCode.Unauthorized
-                                                    else -> {
-                                                        data.deleteSimulation(user, simulation)
-                                                        HttpStatusCode.OK
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-
+                                    val modelId = call.parameters["model"]!!
+                                    val newSimulation = call.receive(Simulation::class)
+                                    val newDescription = data.createSimulation(user, modelId, newSimulation)
+                                    context.respond(newDescription)
                                 }
                             }
                         }
+                    }
+                }
+
+                // simulations
+                route("simulation") {
+                    get {
+                        // TODO what to do here ?
+                        context.respond(HttpStatusCode.NotFound)
+                    }
+
+                    route("{simulation}") {
+                        get {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val simulationId = call.parameters["simulation"]!!
+                                val simulation = data.getSimulation(simulationId)
+                                context.respond(
+                                    when {
+                                        simulation == null -> HttpStatusCode.NotFound
+                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> simulation
+                                    }
+                                )
+                            }
+                        }
+
+                        // patch an existing simulation for user
+                        patch {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val simulationId = call.parameters["simulation"]!!
+                                val simulation = call.receive(SimulationDescription::class)
+                                context.respond(
+                                    when {
+                                        simulation._id != simulationId -> HttpStatusCode.Forbidden
+                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> {
+                                            data.saveSimulation(user, simulation)
+                                            HttpStatusCode.OK
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
+                        // delete an existing model for user
+                        delete {
+                            withPrincipal(setOf(modelRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val simulationId = call.parameters["simulation"]!!
+                                val simulation = data.getSimulation(simulationId)
+                                context.respond(
+                                    when {
+                                        simulation == null -> HttpStatusCode.NotFound
+                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        else -> {
+                                            data.deleteSimulation(user, simulation)
+                                            HttpStatusCode.OK
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
                     }
                 }
 

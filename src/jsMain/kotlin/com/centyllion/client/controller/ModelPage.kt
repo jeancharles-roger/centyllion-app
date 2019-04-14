@@ -189,7 +189,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedSimulation = selectedSimulation
         if (deletedSimulation._id.isNotEmpty()) {
-            deleteSimulation(selectedModel._id, deletedSimulation, instance).then {
+            deleteSimulation(deletedSimulation, instance).then {
                 removeSimulation(deletedSimulation)
                 message("Simulation ${deletedSimulation.simulation.name} deleted")
             }.catch { error(it) }
@@ -279,7 +279,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 }
                 .catch { error(it) }
         } else {
-            updateSimulation(selectedModel._id, selectedSimulation, instance)
+            updateSimulation(selectedSimulation, instance)
                 .then {
                     simulationStatus[selectedSimulation] = Status.Saved
                     refreshSimulations()

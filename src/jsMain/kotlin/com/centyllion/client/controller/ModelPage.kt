@@ -232,8 +232,51 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     }
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
-        if (needModelSave()) saveModel()
-        if (needSimulationSave()) saveSimulation()
+        if (needModelSave() && selectedModel._id.isEmpty()) {
+            // The model needs to be save first
+            saveGrainModel(selectedModel.model, instance)
+                .then { newModel ->
+                    val newModels = models.toMutableList()
+                    newModels[models.indexOf(selectedModel)] = newModel
+                    modelStatus[newModel] = Status.Saved
+                    models = newModels
+                    selectedModel = newModel
+
+                    saveSimulation(newModel._id, selectedSimulation.simulation, instance)
+                }.then { newSimulation ->
+                    // The simulation can be saved now
+                    val newSimulations = simulations.toMutableList()
+                    newSimulations[simulations.indexOf(selectedSimulation)] = newSimulation
+                    simulationStatus[newSimulation] = Status.Saved
+                    simulations = newSimulations
+                    selectedSimulation = newSimulation
+                    message("Model ${selectedModel.model.name} and simulation ${newSimulation.simulation.name} saved")
+                }
+                .catch { error(it) }
+        } else {
+
+            if (needModelSave()) {
+                updateGrainModel(selectedModel, instance)
+                    .then {
+                        modelStatus[selectedModel] = Status.Saved
+                        refreshModels()
+                        refreshSelectedModel()
+                        message("Model ${selectedModel.model.name} saved")
+                    }
+                    .catch { error(it) }
+            }
+
+            if (needSimulationSave()) {
+                updateSimulation(selectedSimulation, instance)
+                    .then {
+                        simulationStatus[selectedSimulation] = Status.Saved
+                        refreshSimulations()
+                        refreshSelectedSimulation()
+                        message("Simulation ${selectedSimulation.simulation.name} saved")
+                    }
+                    .catch { error(it) }
+            }
+        }
     }
 
     private fun needModelSave() =
@@ -241,54 +284,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private fun needSimulationSave() =
         selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
-
-    private fun saveModel() {
-        if (selectedModel._id.isEmpty()) {
-            saveGrainModel(selectedModel.model, instance)
-                .then {
-                    val newModels = models.toMutableList()
-                    newModels[models.indexOf(selectedModel)] = it
-                    modelStatus[it] = Status.Saved
-                    models = newModels
-                    selectedModel = it
-                    message("Model ${it.model.name} saved")
-                }
-                .catch { error(it) }
-        } else {
-            updateGrainModel(selectedModel, instance)
-                .then {
-                    modelStatus[selectedModel] = Status.Saved
-                    refreshModels()
-                    refreshSelectedModel()
-                    message("Model ${selectedModel.model.name} saved")
-                }
-                .catch { error(it) }
-        }
-    }
-
-    private fun saveSimulation() {
-        if (selectedSimulation._id.isEmpty()) {
-            saveSimulation(selectedModel._id, selectedSimulation.simulation, instance)
-                .then {
-                    val newSimulations = simulations.toMutableList()
-                    newSimulations[simulations.indexOf(selectedSimulation)] = it
-                    simulationStatus[it] = Status.Saved
-                    simulations = newSimulations
-                    selectedSimulation = it
-                    message("Simulation ${it.simulation.name} saved")
-                }
-                .catch { error(it) }
-        } else {
-            updateSimulation(selectedSimulation, instance)
-                .then {
-                    simulationStatus[selectedSimulation] = Status.Saved
-                    refreshSimulations()
-                    refreshSelectedSimulation()
-                    message("Simulation ${selectedSimulation.simulation.name} saved")
-                }
-                .catch { error(it) }
-        }
-    }
 
     val rightTools = Field(Control(undoModelButton), Control(redoModelButton), Control(saveButton), grouped = true)
 

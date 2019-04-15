@@ -59,7 +59,36 @@ class Breadcrumb(
     var alignment by className(Alignment.Left, root)
 }
 
-// TODO [Card](https://bulma.io/documentation/components/card/) element
+class CardHeader(val text: String = "", val icon: String? = null)
+
+/** [Card](https://bulma.io/documentation/components/card/) element */
+class Card(
+    vararg content: BulmaElement,
+    header: CardHeader? = null, footer: List<BulmaElement> = emptyList()
+): BulmaElement {
+    override val root = document.create.div("card")
+
+    var header by html(header, root, Position.AfterBegin) {
+        document.create.header("card-header") {
+            p("card-header-title") { +it.text }
+            span("icon") {
+                i("fas fa-${it.icon}") {
+                    attributes["aria-hidden"] = "true"
+                }
+            }
+        }
+    }
+
+    var content by embeddedBulmaList(content.toList(), root, Position.AfterBegin) {
+        document.create.div("card-content")
+    }
+
+    var footer by embeddedBulmaList(
+        content.toList(), root, Position.BeforeEnd,
+        { it.root.apply { classList.add("card-footer-item") } },
+        { document.create.footer("card-footer") }
+    )
+}
 
 interface DropdownItem : BulmaElement
 

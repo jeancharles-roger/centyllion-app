@@ -11,6 +11,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val newIcon = "plus"
     val saveIcon = "cloud-upload-alt"
+    val shareIcon = "share"
     val deleteIcon = "minus"
 
     enum class Status { Saved, Dirty, New }
@@ -18,11 +19,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     var modelStatus: MutableMap<GrainModelDescription, Status> = mutableMapOf()
     var simulationStatus: MutableMap<SimulationDescription, Status> = mutableMapOf()
 
-    private var modelHistory: List<GrainModel> by observable(emptyList()) { _, _, new ->
+    private var modelHistory: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
         undoModelButton.disabled = new.isEmpty()
     }
 
-    private var modelFuture: List<GrainModel> by observable(emptyList()) { _, _, new ->
+    private var modelFuture: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
         redoModelButton.disabled = new.isEmpty()
     }
 
@@ -36,7 +37,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var models: List<GrainModelDescription> by observable(emptyList())
     { _, old, new ->
-        if (old != new) { refreshModels() }
+        if (old != new) refreshModels()
     }
 
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
@@ -50,17 +51,18 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                     fetchSimulations(selectedModel._id, instance)
                         .then {
                             simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
-                            simulationStatus =
-                                simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
-                                    .toMutableMap()
+                            simulationStatus = simulations
+                                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                                .toMap().toMutableMap()
                             selectedSimulation = simulations.first()
                             message("Simulations for ${selectedModel.model.name} loaded")
                         }
                         .catch {
                             simulations = listOf(emptySimulationDescription)
-                            simulationStatus =
-                                simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
-                                    .toMutableMap()
+                            simulationStatus = simulations
+                                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                                .toMap()
+                                .toMutableMap()
                             selectedSimulation = simulations.first()
                             error(it.message ?: it.toString())
                         }
@@ -85,7 +87,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (old != new) refreshSelectedSimulation()
     }
 
-
     private var undoModel = false
     private var choosingModel = false
 
@@ -94,26 +95,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (old != new) {
             if (!choosingModel) {
                 // update selected model
-                val oldModelDescription = selectedModel
-                val newModelDescription = selectedModel.copy(model = new)
-                modelStatus[newModelDescription] = if (modelStatus[oldModelDescription] == Status.New) Status.New else Status.Dirty
-                selectedModel = newModelDescription
-
-                // updates model list
-                val newModels = models.toMutableList()
-                newModels[models.indexOf(oldModelDescription)] = newModelDescription
-                models = newModels
-
-                if (undoModel) {
-                    modelFuture += old
-                } else {
-                    modelHistory += old
-                    if (modelFuture.lastOrNull() == new) {
-                        modelFuture = modelFuture.dropLast(1)
-                    } else {
-                        modelFuture = emptyList()
-                    }
-                }
+                updateModel(selectedModel, selectedModel.copy(model = new))
             } else {
                 modelHistory = emptyList()
             }
@@ -133,7 +115,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 // update selected simulation
                 val oldSimulation = selectedSimulation
                 val newSimulation = selectedSimulation.copy(simulation = new)
-                simulationStatus[newSimulation] = if (simulationStatus[oldSimulation] == Status.New) Status.New else Status.Dirty
+                simulationStatus[newSimulation] =
+                    if (simulationStatus[oldSimulation] == Status.New) Status.New else Status.Dirty
                 selectedSimulation = newSimulation
 
                 // updates simulation list
@@ -208,13 +191,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         val restoredModel = modelHistory.last()
         modelHistory = modelHistory.dropLast(1)
         undoModel = true
-        modelController.data = restoredModel
+        modelController.data = restoredModel.model
         undoModel = false
     }
 
     val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredModel = modelFuture.last()
-        modelController.data = restoredModel
+        modelController.data = restoredModel.model
     }
 
     val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
@@ -231,17 +214,26 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         simulationController.data = restoredSimulation
     }
 
-    val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) {
+    val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
+
+    val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { publish() }
+
+    private fun canPublish() =
+        selectedModel._id.isNotEmpty() && selectedSimulation._id.isNotEmpty() &&
+                selectedModel.info.access.isEmpty() && selectedSimulation.info.access.isEmpty()
+
+    private fun needModelSave() =
+        modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
+
+    private fun needSimulationSave() =
+        selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
+
+    fun save() {
         if (needModelSave() && selectedModel._id.isEmpty()) {
             // The model needs to be save first
             saveGrainModel(selectedModel.model, instance)
                 .then { newModel ->
-                    val newModels = models.toMutableList()
-                    newModels[models.indexOf(selectedModel)] = newModel
-                    modelStatus[newModel] = Status.Saved
-                    models = newModels
-                    selectedModel = newModel
-
+                    updateModel(selectedModel, newModel, false)
                     saveSimulation(newModel._id, selectedSimulation.simulation, instance)
                 }.then { newSimulation ->
                     // The simulation can be saved now
@@ -279,13 +271,18 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    private fun needModelSave() =
-        modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
+    fun publish() {
+        val newModelDescription = selectedModel.copy(
+            info = selectedModel.info.copy(access = setOf(Access.Read))
+        )
+        updateModel(selectedModel, newModelDescription)
+        save()
+    }
 
-    private fun needSimulationSave() =
-        selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
-
-    val rightTools = Field(Control(undoModelButton), Control(redoModelButton), Control(saveButton), grouped = true)
+    val rightTools = Field(
+        Control(undoModelButton), Control(redoModelButton), Control(saveButton), Control(publishButton),
+        grouped = true
+    )
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
@@ -297,10 +294,15 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
         if (it == simulationPage) {
-            rightTools.body = listOf(Control(undoSimulationButton), Control(redoSimulationButton), Control(saveButton))
+            rightTools.body = listOf(
+                Control(undoSimulationButton), Control(redoSimulationButton),
+                Control(saveButton), Control(publishButton)
+            )
         } else {
-            rightTools.body = listOf(Control(undoModelButton), Control(redoModelButton), Control(saveButton))
-
+            rightTools.body = listOf(
+                Control(undoModelButton), Control(redoModelButton),
+                Control(saveButton), Control(publishButton)
+            )
         }
     }
 
@@ -322,7 +324,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         fetchGrainModels(instance)
             .then {
                 models = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
-                modelStatus = models.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap().toMutableMap()
+                modelStatus = models
+                    .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                    .toMap().toMutableMap()
                 selectedModel = models.first()
                 message("Models loaded")
             }
@@ -369,6 +373,35 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         modelSelect.text = selectedModel.model.name
 
         saveButton.disabled = !needModelSave() && !needSimulationSave()
+        publishButton.disabled = !canPublish()
+    }
+
+    private fun updateModel(
+        oldModelDescription: GrainModelDescription, newModelDescription: GrainModelDescription,
+        register: Boolean = true
+    ) {
+        // update selected model
+        modelStatus[newModelDescription] =
+            if (modelStatus[oldModelDescription] == Status.New) Status.New else Status.Dirty
+        selectedModel = newModelDescription
+
+        // updates model list
+        val newModels = models.toMutableList()
+        newModels[models.indexOf(oldModelDescription)] = newModelDescription
+        models = newModels
+
+        if (register) {
+            if (undoModel) {
+                modelFuture += oldModelDescription
+            } else {
+                modelHistory += oldModelDescription
+                if (modelFuture.lastOrNull() == newModelDescription) {
+                    modelFuture = modelFuture.dropLast(1)
+                } else {
+                    modelFuture = emptyList()
+                }
+            }
+        }
     }
 
     private fun removeModel(deletedModel: GrainModelDescription) {
@@ -408,6 +441,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         simulationSelect.text = selectedSimulation.simulation.name
 
         saveButton.disabled = !needModelSave() && !needSimulationSave()
+        publishButton.disabled = !canPublish()
     }
 
     private fun removeSimulation(deletedSimulation: SimulationDescription) {

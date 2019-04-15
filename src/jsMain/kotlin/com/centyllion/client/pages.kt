@@ -4,11 +4,14 @@ import KeycloakInstance
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
+import bulma.noContextColumnsController
+import com.centyllion.client.controller.GrainModelDisplayController
 import com.centyllion.client.controller.ModelPage
 import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.Action
+import com.centyllion.model.GrainModelDescription
 import kotlinx.html.article
 import kotlinx.html.div
 import kotlinx.html.dom.create
@@ -28,12 +31,26 @@ data class Page(
 const val contentSelector = "section.cent-main"
 
 val pages = listOf(
+    Page("Explore", "explore", "", ::explore),
     Page("Model", "model", modelRole, ::model),
     Page("Profile", "profile", "", ::profile),
     Page("Administration", "administration", adminRole, ::administration)
 )
 
 val mainPage = pages[0]
+
+
+fun explore(root: HTMLElement, instance: KeycloakInstance) {
+
+    val modelsController = noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList())
+    { index, data, previous ->
+        previous ?: GrainModelDisplayController(data)
+    }
+    root.appendChild(modelsController.root)
+
+    fetchFeaturedGrainModels(instance).then { models -> modelsController.data = models }
+}
+
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
     val userController = UserController()

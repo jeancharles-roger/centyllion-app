@@ -277,7 +277,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val messageContent = span()
     val message = Message(body = listOf(messageContent), size = Size.Small)
 
-    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true)) {
+    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true), initialTabIndex = 1) {
         if (it == simulationPage) {
             rightTools.body = listOf(
                 Control(undoSimulationButton), Control(redoSimulationButton),

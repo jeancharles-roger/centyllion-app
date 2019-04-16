@@ -50,6 +50,7 @@ fun explore(root: HTMLElement, instance: KeycloakInstance) {
     { index, data, previous ->
         val controller = previous ?: GrainModelDisplayController(data)
         controller.body.root.onclick = { openPage(showPage, instance, mapOf("model" to data._id)) }
+        controller.body.root.style.cursor = "pointer"
         controller
     }
     val page = div(

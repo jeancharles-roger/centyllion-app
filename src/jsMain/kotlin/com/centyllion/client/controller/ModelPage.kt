@@ -27,11 +27,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         redoModelButton.disabled = new.isEmpty()
     }
 
-    private var simulationHistory: List<Simulation> by observable(emptyList()) { _, _, new ->
+    private var simulationHistory: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
         undoSimulationButton.disabled = new.isEmpty()
     }
 
-    private var simulationFuture: List<Simulation> by observable(emptyList()) { _, _, new ->
+    private var simulationFuture: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
         redoSimulationButton.disabled = new.isEmpty()
     }
 
@@ -113,23 +113,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         if (old != new) {
             if (!choosingSimulation) {
                 // update selected simulation
-                val oldSimulation = selectedSimulation
-                val newSimulation = selectedSimulation.copy(simulation = new)
-                simulationStatus[newSimulation] =
-                    if (simulationStatus[oldSimulation] == Status.New) Status.New else Status.Dirty
-                selectedSimulation = newSimulation
-
-                // updates simulation list
-                val newSimulations = simulations.toMutableList()
-                newSimulations[simulations.indexOf(oldSimulation)] = newSimulation
-                simulations = newSimulations
-
-                if (undoSimulation) {
-                    simulationFuture += old
-                } else {
-                    simulationHistory += old
-                    simulationFuture = emptyList()
-                }
+                updateSimulation(selectedSimulation, selectedSimulation.copy(simulation = new))
             }
         }
     }
@@ -204,14 +188,14 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         val restoredSimulation = simulationHistory.last()
         simulationHistory = simulationHistory.dropLast(1)
         undoSimulation = true
-        simulationController.data = restoredSimulation
+        simulationController.data = restoredSimulation.simulation
         undoSimulation = false
     }
 
     val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredSimulation = simulationFuture.last()
         simulationFuture = simulationFuture.dropLast(1)
-        simulationController.data = restoredSimulation
+        simulationController.data = restoredSimulation.simulation
     }
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
@@ -272,10 +256,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     }
 
     fun publish() {
-        val newModelDescription = selectedModel.copy(
-            info = selectedModel.info.copy(access = setOf(Access.Read))
-        )
-        updateModel(selectedModel, newModelDescription)
+        val newModelInfo = selectedModel.info.copy(access = setOf(Access.Read))
+        updateModel(selectedModel, selectedModel.copy(info = newModelInfo))
+
+        val newSimulationInfo = selectedSimulation.info.copy(access = setOf(Access.Read))
+        updateSimulation(selectedSimulation, selectedSimulation.copy(info = newSimulationInfo))
         save()
     }
 
@@ -442,6 +427,34 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
         saveButton.disabled = !needModelSave() && !needSimulationSave()
         publishButton.disabled = !canPublish()
+    }
+
+    private fun updateSimulation(
+        oldSimulationDescription: SimulationDescription, newSimulationDescription: SimulationDescription,
+        register: Boolean = true
+    ) {
+        // update selected simulation
+        simulationStatus[newSimulationDescription] =
+            if (simulationStatus[oldSimulationDescription] == Status.New) Status.New else Status.Dirty
+        selectedSimulation = newSimulationDescription
+
+        // updates model list
+        val newSimulations = simulations.toMutableList()
+        newSimulations[simulations.indexOf(oldSimulationDescription)] = newSimulationDescription
+        simulations = newSimulations
+
+        if (register) {
+            if (undoSimulation) {
+                simulationFuture += oldSimulationDescription
+            } else {
+                simulationHistory += oldSimulationDescription
+                if (simulationFuture.lastOrNull() == newSimulationDescription) {
+                    simulationFuture = simulationFuture.dropLast(1)
+                } else {
+                    simulationFuture = emptyList()
+                }
+            }
+        }
     }
 
     private fun removeSimulation(deletedSimulation: SimulationDescription) {

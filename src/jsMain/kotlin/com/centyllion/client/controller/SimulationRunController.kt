@@ -45,11 +45,13 @@ class SimulationRunController(
 
     private var presentCharts = false
 
-    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
+    val nameController = EditableStringController(data.name, "Name", readonly)
+    { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
+    val descriptionController = EditableStringController(data.description, "Description", readonly)
+    { _, new, _ ->
         data = data.copy(description = new)
     }
 
@@ -80,9 +82,9 @@ class SimulationRunController(
 
     val simulationViewController: SimulatorViewController =
         if (readonly) SimulatorViewController(simulator) else
-        SimulatorEditController(simulator) { ended, new, _ ->
-            updatedSimulatorFromView(ended, new)
-        }
+            SimulatorEditController(simulator) { ended, new, _ ->
+                updatedSimulatorFromView(ended, new)
+            }
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),

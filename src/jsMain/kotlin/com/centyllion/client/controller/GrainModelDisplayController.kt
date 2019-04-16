@@ -17,7 +17,7 @@ class GrainModelDisplayController(model: GrainModelDescription) : NoContextContr
 
     val dots = Columns(multiline = true, mobile = true).apply { columns = dotColumns() }
 
-    val name = Title(data.model.name)
+    val name = SubTitle(data.model.name)
     val description = Label(data.model.description)
 
     val body = Media(center = listOf(name, description, dots))
@@ -28,8 +28,5 @@ class GrainModelDisplayController(model: GrainModelDescription) : NoContextContr
         dots.columns = dotColumns()
         name.text = data.model.name
         description.text = data.model.description
-
     }
-
-
 }

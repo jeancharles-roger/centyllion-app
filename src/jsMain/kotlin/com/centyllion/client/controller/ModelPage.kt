@@ -200,11 +200,16 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
 
-    val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { publish() }
+    val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { togglePublication() }
 
-    private fun canPublish() =
-        selectedModel._id.isNotEmpty() && selectedSimulation._id.isNotEmpty() &&
-                (selectedModel.info.access.isEmpty() || selectedSimulation.info.access.isEmpty())
+    private val modelAndSimulationNotLocal
+        get() = selectedModel._id.isEmpty() && selectedSimulation._id.isEmpty()
+
+    private val canPublish
+        get() = selectedModel.info.access.isEmpty() || selectedSimulation.info.access.isEmpty()
+
+    private val canUnPublish
+        get() = selectedModel.info.access.isNotEmpty() || simulations.any { it.info.access.isNotEmpty() }
 
     private fun needModelSave() =
         modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
@@ -255,11 +260,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     }
 
-    fun publish() {
-        val newModelInfo = selectedModel.info.copy(access = setOf(Access.Read))
+    fun togglePublication() {
+        val accessSet = if (canPublish) setOf(Access.Read) else emptySet()
+
+        val newModelInfo = selectedModel.info.copy(access = accessSet)
         updateModel(selectedModel, selectedModel.copy(info = newModelInfo))
 
-        val newSimulationInfo = selectedSimulation.info.copy(access = setOf(Access.Read))
+        val newSimulationInfo = selectedSimulation.info.copy(access = accessSet)
         updateSimulation(selectedSimulation, selectedSimulation.copy(info = newSimulationInfo))
         save()
     }
@@ -345,6 +352,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         }
     )
 
+    private fun refreshPublishButton() {
+        publishButton.disabled = modelAndSimulationNotLocal
+        publishButton.title = if (!canPublish) "Un-Publish" else "Publish"
+    }
+
     private fun refreshModels() {
         modelSelect.items = models.map {
             DropdownSimpleItem(it.model.name, iconForModel(it)) { _ ->
@@ -363,7 +375,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         modelSelect.text = selectedModel.model.name
 
         saveButton.disabled = !needModelSave() && !needSimulationSave()
-        publishButton.disabled = !canPublish()
+        refreshPublishButton()
     }
 
     private fun updateModel(
@@ -431,7 +443,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         simulationSelect.text = selectedSimulation.simulation.name
 
         saveButton.disabled = !needModelSave() && !needSimulationSave()
-        publishButton.disabled = !canPublish()
+        refreshPublishButton()
     }
 
     private fun updateSimulation(

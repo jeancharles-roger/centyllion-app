@@ -7,7 +7,7 @@ import kotlin.properties.Delegates.observable
  * Editable string controller.
  */
 class EditableStringController(
-    initialData: String = "", placeHolder: String = "",
+    initialData: String = "", placeHolder: String = "", disabled: Boolean = false,
     var isValid: (value: String) -> Boolean = { true },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, Field>() {
@@ -19,6 +19,10 @@ class EditableStringController(
         }
     }
 
+    var disabled: Boolean by observable(disabled) { _, old, new ->
+        if (old != new) edit(false)
+    }
+
     val okButton: Button = iconButton(Icon("check"), ElementColor.Success) { validate() }
     val cancelButton: Button = iconButton(Icon("times"), ElementColor.Danger, rounded = true) { cancel() }
 
@@ -27,14 +31,14 @@ class EditableStringController(
 
     val input = Input(value = data, placeholder = placeHolder, readonly = true, static = true).apply {
         root.onclick = {
-            edit(true)
+            if (!this@EditableStringController.disabled) edit(true)
             Unit
         }
-        root.onkeypress = {
+        root.onkeyup = {
             if (!readonly) {
                 when (it.key) {
                     "Enter" -> validate()
-                    "Escape" -> cancel()
+                    "Esc", "Escape" -> cancel()
                 }
             }
         }
@@ -49,7 +53,7 @@ class EditableStringController(
 
     val penIcon = Icon("pen")
 
-    val inputControl = Control(input, expanded = true, rightIcon = penIcon)
+    val inputControl = Control(input, expanded = true, rightIcon = if (disabled) null else penIcon)
 
     fun edit(editable: Boolean) {
         input.static = !editable
@@ -61,7 +65,7 @@ class EditableStringController(
             input.root.focus()
         } else {
             container.body = listOfNotNull(inputControl)
-            inputControl.rightIcon = penIcon
+            inputControl.rightIcon = if (this.disabled) null else penIcon
         }
     }
 
@@ -84,19 +88,19 @@ class EditableStringController(
 }
 
 fun editableDoubleController(
-    initialData: Double = 0.0, placeHolder: String = "",
+    initialData: Double = 0.0, placeHolder: String = "", disabled: Boolean = false,
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData.toString(), placeHolder, { it.toDoubleOrNull() != null }, { old, new, controller ->
+    initialData.toString(), placeHolder, disabled, { it.toDoubleOrNull() != null }, { old, new, controller ->
         onUpdate(old.toDouble(), new.toDouble(), controller)
     }
 )
 
 fun editableIntController(
-    initialData: Int = 0, placeHolder: String = "",
+    initialData: Int = 0, placeHolder: String = "", disabled: Boolean = false,
     onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData.toString(), placeHolder, { it.toIntOrNull() != null }, { old, new, controller ->
+    initialData.toString(), placeHolder, disabled, { it.toIntOrNull() != null }, { old, new, controller ->
         onUpdate(old.toInt(), new.toInt(), controller)
     }
 )

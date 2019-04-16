@@ -38,6 +38,12 @@ fun authenticate(required: Boolean): Promise<KeycloakInstance?> {
     return promise.then(onFulfilled = { keycloak }, onRejected = { null })
 }
 
+fun findPageInUrl(): Page? {
+    // gets params active page if any to activate it is allowed
+    val params = URLSearchParams(window.location.search)
+    return params.get("page")?.let { id -> pages.find { it.id == id } }
+}
+
 fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     activateNavBar()
     showVersion()
@@ -55,11 +61,10 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
             val granted = keycloak.authenticated &&
                     requiredRoles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
 
-            // gets params active page if any to activate it is allowed
-            val params = URLSearchParams(window.location.search)
-            val page = params.get("page")?.let { id -> pages.find { it.id == id } }
-            if (page != null) activatePage(page, keycloak)
+            val page = findPageInUrl()
+            if (page != null) activatePage(page, keycloak, false)
 
+            listenToPopstate(keycloak)
             addMenu(isCentyllionHost, keycloak)
             (if (granted) keycloak else null) to page
         } else {
@@ -68,7 +73,7 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     }
 }
 
-fun updateActivePage(page: Page) {
+fun updateActivePage(page: Page, register: Boolean) {
     // clear active status
     val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
     for (item in menu.querySelectorAll(".navbar-item").asList()) {
@@ -83,16 +88,18 @@ fun updateActivePage(page: Page) {
     }
 
     // update page parameter in URL
-    window.location.let {
-        val params = URLSearchParams(it.search)
-        params.set("page", page.id)
-        val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
-        window.history.pushState(null, "Centyllion ${page.title}", newUrl)
+    if (register) {
+        window.location.let {
+            val params = URLSearchParams(it.search)
+            params.set("page", page.id)
+            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
+            window.history.pushState(null, "Centyllion ${page.title}", newUrl)
+        }
     }
 }
 
-fun activatePage(page: Page, instance: KeycloakInstance?) {
-    updateActivePage(page)
+fun activatePage(page: Page, instance: KeycloakInstance?, register: Boolean = true) {
+    updateActivePage(page, register)
 
     val root = document.querySelector(contentSelector) as HTMLElement
     root.innerHTML = ""
@@ -134,4 +141,10 @@ fun addMenu(isCentyllionHost: Boolean, keycloak: KeycloakInstance) {
                 })
             }
     }
+}
+
+fun listenToPopstate(instance: KeycloakInstance) {
+    window.addEventListener("popstate", {
+        findPageInUrl()?.let { activatePage(it, instance, false) }
+    })
 }

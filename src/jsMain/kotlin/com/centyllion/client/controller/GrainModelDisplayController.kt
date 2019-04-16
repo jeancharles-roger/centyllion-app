@@ -22,7 +22,7 @@ class GrainModelDisplayController(model: GrainModelDescription) : NoContextContr
 
     val body = Media(center = listOf(name, description, dots))
 
-    override val container = Column(body)
+    override val container = Column(body, size = ColumnSize.OneQuarter)
 
     override fun refresh() {
         dots.columns = dotColumns()

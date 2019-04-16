@@ -132,7 +132,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             deleteGrainModel(deletedModel, instance).then {
                 removeModel(deletedModel)
                 message("Model ${deletedModel.model.name} deleted")
-            }.catch { error(it) }
+            }.catch { this.error(it) }
         } else {
             removeModel(deletedModel)
             message("Model ${deletedModel.model.name} removed")
@@ -159,7 +159,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             deleteSimulation(deletedSimulation, instance).then {
                 removeSimulation(deletedSimulation)
                 message("Simulation ${deletedSimulation.simulation.name} deleted")
-            }.catch { error(it) }
+            }.catch { this.error(it) }
         } else {
             removeSimulation(deletedSimulation)
             message("Simulation ${deletedSimulation.simulation.name} removed")
@@ -204,7 +204,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     private fun canPublish() =
         selectedModel._id.isNotEmpty() && selectedSimulation._id.isNotEmpty() &&
-                selectedModel.info.access.isEmpty() && selectedSimulation.info.access.isEmpty()
+                (selectedModel.info.access.isEmpty() || selectedSimulation.info.access.isEmpty())
 
     private fun needModelSave() =
         modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
@@ -218,39 +218,39 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
             saveGrainModel(selectedModel.model, instance)
                 .then { newModel ->
                     updateModel(selectedModel, newModel, false)
+                    modelStatus[selectedModel] = Status.Saved
                     saveSimulation(newModel._id, selectedSimulation.simulation, instance)
                 }.then { newSimulation ->
-                    // The simulation can be saved now
-                    val newSimulations = simulations.toMutableList()
-                    newSimulations[simulations.indexOf(selectedSimulation)] = newSimulation
-                    simulationStatus[newSimulation] = Status.Saved
-                    simulations = newSimulations
-                    selectedSimulation = newSimulation
+                    simulationStatus[selectedSimulation] = Status.Saved
+                    updateSimulation(selectedSimulation, newSimulation, false)
                     message("Model ${selectedModel.model.name} and simulation ${newSimulation.simulation.name} saved")
-                }
-                .catch { error(it) }
+                }.catch { this.error(it) }
         } else {
 
             if (needModelSave()) {
-                updateGrainModel(selectedModel, instance)
-                    .then {
-                        modelStatus[selectedModel] = Status.Saved
-                        refreshModels()
-                        refreshSelectedModel()
-                        message("Model ${selectedModel.model.name} saved")
-                    }
-                    .catch { error(it) }
+                updateGrainModel(selectedModel, instance).then {
+                    modelStatus[selectedModel] = Status.Saved
+                    refreshModels()
+                    refreshSelectedModel()
+                    message("Model ${selectedModel.model.name} saved")
+                }.catch { this.error(it) }
             }
 
             if (needSimulationSave()) {
-                updateSimulation(selectedSimulation, instance)
-                    .then {
+                if (selectedSimulation._id.isEmpty()) {
+                    saveSimulation(selectedModel._id, selectedSimulation.simulation, instance).then {
+                        simulationStatus[selectedSimulation] = Status.Saved
+                        updateSimulation(selectedSimulation, it, false)
+                        message("Simulation ${selectedSimulation.simulation.name} saved")
+                    }.catch { this.error(it) }
+                } else {
+                    updateSimulation(selectedSimulation, instance).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         refreshSimulations()
                         refreshSelectedSimulation()
                         message("Simulation ${selectedSimulation.simulation.name} saved")
-                    }
-                    .catch { error(it) }
+                    }.catch { this.error(it) }
+                }
             }
         }
     }
@@ -320,6 +320,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 selectedModel = models.first()
                 error(it.message ?: it.toString())
             }
+    }
+
+    fun error(throwable: Throwable) {
+        message.color = ElementColor.Danger
+        messageContent.text = "${throwable.message}"
     }
 
     fun error(string: String) {

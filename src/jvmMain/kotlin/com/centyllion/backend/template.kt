@@ -14,7 +14,7 @@ fun HTML.centyllionHead(title: String) =
             attributes["crossorigin"] = "anonymous"
         }
 
-        script(src = "https://login.centyllion.com/auth/js/keycloak.js") {}
+        script(src = "js/Keycloak-4.8.0/keycloak.js") {}
         script(src = "js/require.js") { }
         script(src = "js/centyllion/requirejs.config.json") { }
     }

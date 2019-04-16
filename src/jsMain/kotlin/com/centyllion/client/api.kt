@@ -57,6 +57,11 @@ fun fetchGrainModels(instance: KeycloakInstance) =
         fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
+fun fetchGrainModel(modelId: String, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/model/${modelId}", bearer).then { Json.parse(GrainModelDescription.serializer(), it) }
+    }
+
 fun saveGrainModel(model: GrainModel, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("POST", "/api/model", bearer, Json.stringify(GrainModel.serializer(), model))
@@ -82,6 +87,12 @@ fun fetchSimulations(modelId: String, instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/model/$modelId/simulation", bearer)
             .then { Json.parse(SimulationDescription.serializer().list, it) }
+    }
+
+fun fetchSimulation(simulationId: String, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/simulation/$simulationId", bearer)
+            .then { Json.parse(SimulationDescription.serializer(), it) }
     }
 
 fun saveSimulation(modelId: String, simulation: Simulation, instance: KeycloakInstance) =

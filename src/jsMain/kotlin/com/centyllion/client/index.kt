@@ -3,12 +3,14 @@ package com.centyllion.client
 import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
+import bulma.ElementColor
+import bulma.Message
 import bulma.Title
+import bulma.span
 import com.centyllion.common.betaRole
 import com.centyllion.common.centyllionHost
 import kotlinx.html.a
 import kotlinx.html.dom.create
-import kotlinx.html.h1
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.*
 import org.w3c.dom.url.URLSearchParams
@@ -20,13 +22,46 @@ import kotlin.js.Promise
 fun index() {
     initialize().then { (instance, page) ->
         console.log("Starting function")
-        if (page == null) activatePage(mainPage, instance)
+        if (page == null) openPage(mainPage, instance)
     }.catch {
         val root = document.querySelector(contentSelector) as HTMLElement
-        root.appendChild(Title("Problem during connection ${it.message}").root)
-
+        error(root, it)
         console.error("Error on initialize")
         console.error(it)
+    }
+}
+
+/** Open the given [page] */
+fun openPage(
+    page: Page, instance: KeycloakInstance?,
+    parameters: Map<String, String> = emptyMap(), register: Boolean = true
+) {
+    // highlight active page
+    updateActivePage(page)
+
+    window.location.let {
+        // sets parameters
+        val params = URLSearchParams(it.search)
+        parameters.forEach { params.set(it.key, it.value) }
+        params.set("page", page.id)
+
+        // registers page to history if needed
+        if (register) {
+            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
+            window.history.pushState(null, "Centyllion ${page.title}", newUrl)
+        }
+    }
+
+    // gets root element
+    val root = document.querySelector(contentSelector) as HTMLElement
+    // clears element
+    root.innerHTML = ""
+
+    // tries to load page if authorized
+    if (instance != null && page.authorized(instance)) {
+        page.callback(root, instance)
+    } else {
+        error(root, "Unauthorized", "You are not authorized to access this page")
     }
 }
 
@@ -61,11 +96,12 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
             val granted = keycloak.authenticated &&
                     requiredRoles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
 
-            val page = findPageInUrl()
-            if (page != null) activatePage(page, keycloak, false)
-
             listenToPopstate(keycloak)
             addMenu(isCentyllionHost, keycloak)
+
+            val page = findPageInUrl()
+            if (page != null) openPage(page, keycloak, register = false)
+
             (if (granted) keycloak else null) to page
         } else {
             null to null
@@ -73,7 +109,7 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     }
 }
 
-fun updateActivePage(page: Page, register: Boolean) {
+fun updateActivePage(page: Page) {
     // clear active status
     val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
     for (item in menu.querySelectorAll(".navbar-item").asList()) {
@@ -85,30 +121,6 @@ fun updateActivePage(page: Page, register: Boolean) {
     val item = menu.querySelector("a.cent-${page.id}")
     if (item is HTMLElement) {
         item.classList.add("has-text-weight-bold")
-    }
-
-    // update page parameter in URL
-    if (register) {
-        window.location.let {
-            val params = URLSearchParams(it.search)
-            params.set("page", page.id)
-            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
-            window.history.pushState(null, "Centyllion ${page.title}", newUrl)
-        }
-    }
-}
-
-fun activatePage(page: Page, instance: KeycloakInstance?, register: Boolean = true) {
-    updateActivePage(page, register)
-
-    val root = document.querySelector(contentSelector) as HTMLElement
-    root.innerHTML = ""
-    if (instance != null && page.authorized(instance)) {
-        page.callback(root, instance)
-    } else {
-        root.appendChild(document.create.h1("title") {
-            +"Not authorized"
-        })
     }
 }
 
@@ -131,12 +143,12 @@ fun activateNavBar() {
 fun addMenu(isCentyllionHost: Boolean, keycloak: KeycloakInstance) {
     if (isCentyllionHost || keycloak.hasRealmRole(betaRole)) {
         val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
-        pages.filter { page -> page.authorized(keycloak) }
+        pages.filter { page -> page.header && page.authorized(keycloak) }
             .forEach { page ->
                 menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
                     +page.title
                     onClickFunction = {
-                        activatePage(page, keycloak)
+                        openPage(page, keycloak)
                     }
                 })
             }
@@ -145,6 +157,14 @@ fun addMenu(isCentyllionHost: Boolean, keycloak: KeycloakInstance) {
 
 fun listenToPopstate(instance: KeycloakInstance) {
     window.addEventListener("popstate", {
-        findPageInUrl()?.let { activatePage(it, instance, false) }
+        findPageInUrl()?.let { openPage(it, instance, register = false) }
     })
+}
+
+fun error(root: HTMLElement, throwable: Throwable) =
+    error(root, "Error: ${throwable::class.simpleName}", throwable.message.toString())
+
+fun error(root: HTMLElement, title: String, content: String) {
+    val message = Message(color = ElementColor.Danger, header = listOf(Title(title)), body = listOf(span(content)))
+    root.appendChild(message.root)
 }

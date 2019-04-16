@@ -112,14 +112,14 @@ class Data(
 
     fun deleteGrainModel(user: User, model: GrainModelDescription) {
         // first delete all simulation for model
-        getSimulationForModel(user, model._id).forEach{ deleteSimulation(user, it) }
+        getSimulationForModel(model._id).forEach{ deleteSimulation(user, it) }
         // delete the model
         grainModels.deleteOneById(model._id)
         insertEvent(Action.Delete, user, grainModelsCollectionName, model._id)
     }
 
-    fun getSimulationForModel(user: User, modelId: String): List<SimulationDescription> {
-        val result = simulations.find("{'info.userId': '${user._id}', modelId: '$modelId'}")
+    fun getSimulationForModel(modelId: String): List<SimulationDescription> {
+        val result = simulations.find("{modelId: '$modelId'}")
         return result.map { parseDocument(SimulationDescription.serializer(), it) }.toList()
     }
 

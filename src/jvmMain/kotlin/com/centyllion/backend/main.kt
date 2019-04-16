@@ -259,14 +259,14 @@ fun Application.centyllion() {
                     // access a given model
                     route("{model}") {
                         get {
-                            withPrincipal(setOf(modelRole)) {
+                            withPrincipal {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = data.getGrainModel(id)
                                 context.respond(
                                     when {
                                         model == null -> HttpStatusCode.NotFound
-                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !hasReadAccess(model.info, user)-> HttpStatusCode.Unauthorized
                                         else -> model
                                     }
                                 )
@@ -282,7 +282,7 @@ fun Application.centyllion() {
                                 context.respond(
                                     when {
                                         model._id != id -> HttpStatusCode.Forbidden
-                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.saveGrainModel(user, model)
                                             HttpStatusCode.OK
@@ -301,7 +301,7 @@ fun Application.centyllion() {
                                 context.respond(
                                     when {
                                         model == null -> HttpStatusCode.NotFound
-                                        model.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.deleteGrainModel(user, model)
                                             HttpStatusCode.OK
@@ -314,11 +314,20 @@ fun Application.centyllion() {
                         route("simulation") {
                             // model's simulations
                             get {
-                                withPrincipal(setOf(modelRole)) {
+                                withPrincipal {
                                     val user = data.getOrCreateUserFromPrincipal(it)
                                     val modelId = call.parameters["model"]!!
-                                    val simulations = data.getSimulationForModel(user, modelId)
-                                    context.respond(simulations)
+                                    val model = data.getGrainModel(modelId)
+                                    context.respond(
+                                        when {
+                                            model == null -> HttpStatusCode.NotFound
+                                            !hasReadAccess(model.info, user)-> HttpStatusCode.Unauthorized
+                                            else -> {
+                                                val simulations = data.getSimulationForModel(modelId)
+                                                simulations.filter { hasReadAccess(it.info, user) }
+                                            }
+                                        }
+                                    )
                                 }
                             }
 
@@ -327,9 +336,15 @@ fun Application.centyllion() {
                                 withPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
                                     val modelId = call.parameters["model"]!!
+                                    val model = data.getGrainModel(modelId)
                                     val newSimulation = call.receive(Simulation::class)
-                                    val newDescription = data.createSimulation(user, modelId, newSimulation)
-                                    context.respond(newDescription)
+                                    context.respond(
+                                        when {
+                                            model == null -> HttpStatusCode.NotFound
+                                            !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
+                                            else -> data.createSimulation(user, modelId, newSimulation)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -345,14 +360,14 @@ fun Application.centyllion() {
 
                     route("{simulation}") {
                         get {
-                            withPrincipal(setOf(modelRole)) {
+                            withPrincipal {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = data.getSimulation(simulationId)
                                 context.respond(
                                     when {
                                         simulation == null -> HttpStatusCode.NotFound
-                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !hasReadAccess(simulation.info, user) -> HttpStatusCode.Unauthorized
                                         else -> simulation
                                     }
                                 )
@@ -368,7 +383,7 @@ fun Application.centyllion() {
                                 context.respond(
                                     when {
                                         simulation._id != simulationId -> HttpStatusCode.Forbidden
-                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.saveSimulation(user, simulation)
                                             HttpStatusCode.OK
@@ -387,7 +402,7 @@ fun Application.centyllion() {
                                 context.respond(
                                     when {
                                         simulation == null -> HttpStatusCode.NotFound
-                                        simulation.info.userId != user._id -> HttpStatusCode.Unauthorized
+                                        !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.deleteSimulation(user, simulation)
                                             HttpStatusCode.OK
@@ -396,7 +411,6 @@ fun Application.centyllion() {
                                 )
                             }
                         }
-
                     }
                 }
 
@@ -412,6 +426,12 @@ fun Application.centyllion() {
         }
     }
 }
+
+/** Checks if [info] authorizes access for [user] to [Access.Read]*/
+fun hasReadAccess(info: DescriptionInfo, user: User) =
+    info.access.contains(Access.Read) || isOwner(info, user)
+
+fun isOwner(info: DescriptionInfo, user: User) = info.userId == user._id
 
 suspend fun PipelineContext<Unit, ApplicationCall>.withPrincipal(
     requiredRoles: Set<String> = emptySet(),

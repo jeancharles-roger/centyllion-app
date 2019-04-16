@@ -2,10 +2,6 @@ package com.centyllion.client.controller
 
 import bulma.*
 import com.centyllion.model.Simulator
-import kotlinx.html.js.onMouseDownFunction
-import kotlinx.html.js.onMouseMoveFunction
-import kotlinx.html.js.onMouseOutFunction
-import kotlinx.html.js.onMouseUpFunction
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
@@ -15,14 +11,72 @@ import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
+
 interface DisplayElement {
     fun draw(gc: CanvasRenderingContext2D)
+}
+
+open class SimulatorViewController(simulator: Simulator) : NoContextController<Simulator, BulmaElement>() {
+
+    override var data: Simulator by observable(simulator) { _, old, new ->
+        simulationCanvas.root.height = simulator.simulation.height * simulationCanvas.root.width / simulator.simulation.width
+        refresh()
+    }
+
+    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
+        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
+        width = "$canvasWidth"
+        height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
+    }
+
+    override val container = div(
+        div(simulationCanvas, classes = "has-text-centered")
+    )
+
+    val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
+
+    init {
+        //refresh()
+    }
+
+    override fun refresh() {
+        simulationCanvas.root.classList.toggle("is-primary", data.step > 0)
+        simulationCanvas.root.classList.toggle("is-success", data.step == 0)
+
+        val scale = 0.1
+        val canvasWidth = simulationCanvas.root.width.toDouble()
+        val canvasHeight = simulationCanvas.root.height.toDouble()
+        val xStep = canvasWidth / data.simulation.width
+        val xMax = data.simulation.width * xStep
+        val yStep = canvasHeight / data.simulation.height
+        val xSize = xStep * (1.0 + scale)
+        val xDelta = xStep * (scale / 2.0)
+        val ySize = xStep * (1.0 + scale)
+        val yDelta = xStep * (scale / 2.0)
+        simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
+        var currentX = 0.0
+        var currentY = 0.0
+        for (i in 0 until data.currentAgents.size) {
+            val grain = data.model.indexedGrains[data.idAtIndex(i)]
+
+            if (grain != null) {
+                simulationContext.fillStyle = grain.color
+                simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
+            }
+
+            currentX += xStep
+            if (currentX >= xMax) {
+                currentX = 0.0
+                currentY += yStep
+            }
+        }
+    }
 }
 
 class SimulatorEditController(
     simulator: Simulator,
     var onUpdate: (ended: Boolean, new: Simulator, SimulatorEditController) -> Unit = { _, _, _ -> }
-) : NoContextController<Simulator, BulmaElement>() {
+) : SimulatorViewController(simulator) {
 
     enum class EditTools(val icon: String) {
         None("ban"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
@@ -230,20 +284,6 @@ class SimulatorEditController(
         }
     }
 
-    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
-        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
-        width = "$canvasWidth"
-        height = "${data.simulation.height * canvasWidth / data.simulation.width}"
-
-        onMouseUpFunction = { if (it is MouseEvent) mouseChange(it) }
-        onMouseDownFunction = { if (it is MouseEvent) mouseChange(it) }
-        onMouseMoveFunction = { if (it is MouseEvent) mouseChange(it) }
-        onMouseOutFunction = {
-            toolElement = null
-            refresh()
-        }
-    }
-
     fun selectTool(tool: EditTools) {
         toolButtons.forEach { it.outlined = false }
         toolButtons[tool.ordinal].outlined = true
@@ -284,45 +324,20 @@ class SimulatorEditController(
         editToolbar
     )
 
-    val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
-
     init {
-        refresh()
+        simulationCanvas.root.apply {
+            onmouseup  = { mouseChange(it) }
+            onmousedown  = { mouseChange(it) }
+            onmousemove  = { mouseChange(it) }
+            onmouseout = {
+                toolElement = null
+                refresh()
+            }
+        }
     }
 
     override fun refresh() {
-
-        simulationCanvas.root.classList.toggle("is-primary", data.step > 0)
-        simulationCanvas.root.classList.toggle("is-success", data.step == 0)
-
-        val scale = 0.1
-        val canvasWidth = simulationCanvas.root.width.toDouble()
-        val canvasHeight = simulationCanvas.root.height.toDouble()
-        val xStep = canvasWidth / data.simulation.width
-        val xMax = data.simulation.width * xStep
-        val yStep = canvasHeight / data.simulation.height
-        val xSize = xStep * (1.0 + scale)
-        val xDelta = xStep * (scale / 2.0)
-        val ySize = xStep * (1.0 + scale)
-        val yDelta = xStep * (scale / 2.0)
-        simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
-        var currentX = 0.0
-        var currentY = 0.0
-        for (i in 0 until data.currentAgents.size) {
-            val grain = data.model.indexedGrains[data.idAtIndex(i)]
-
-            if (grain != null) {
-                simulationContext.fillStyle = grain.color
-                simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
-            }
-
-            currentX += xStep
-            if (currentX >= xMax) {
-                currentX = 0.0
-                currentY += yStep
-            }
-        }
-
+        super.refresh()
         toolElement?.draw(simulationContext)
 
     }

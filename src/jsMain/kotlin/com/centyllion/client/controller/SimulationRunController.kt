@@ -8,6 +8,7 @@ import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
     simulation: Simulation, model: GrainModel,
+    readonly: Boolean = false,
     val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Simulation, GrainModel, BulmaElement> {
@@ -17,7 +18,7 @@ class SimulationRunController(
             nameController.data = new.name
             descriptionController.data = new.description
             simulator = Simulator(context, new)
-            simulationEditController.data = simulator
+            simulationViewController.data = simulator
             running = false
             onUpdate(old, new, this@SimulationRunController)
             refresh()
@@ -31,7 +32,7 @@ class SimulationRunController(
             behaviourController.context = new
             selectedGrainController.context = new.grains
             simulator = Simulator(new, data)
-            simulationEditController.data = simulator
+            simulationViewController.data = simulator
             running = false
             refresh()
         }
@@ -77,13 +78,11 @@ class SimulationRunController(
 
     val chartCanvas = canvas {}
 
-    val simulationEditController = SimulatorEditController(simulator) { ended, new, _ ->
-        simulator.resetCount()
-        refreshCounts()
-        if (ended) {
-            data = data.copy(agents = new.initialAgents.toList())
+    val simulationViewController: SimulatorViewController =
+        if (readonly) SimulatorViewController(simulator) else
+        SimulatorEditController(simulator) { ended, new, _ ->
+            updatedSimulatorFromView(ended, new)
         }
-    }
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
@@ -100,7 +99,7 @@ class SimulationRunController(
                 ),
                 mobile = true
             ),
-            simulationEditController.container,
+            simulationViewController.container,
             div(chartCanvas, classes = "has-text-centered"),
             desktopSize = ColumnSize.TwoThirds
         ),
@@ -191,6 +190,14 @@ class SimulationRunController(
         refresh()
     }
 
+    private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
+        simulator.resetCount()
+        refreshCounts()
+        if (ended) {
+            data = data.copy(agents = new.initialAgents.toList())
+        }
+    }
+
     fun refreshButtons() {
         runButton.loading = running
         runButton.disabled = running
@@ -200,7 +207,7 @@ class SimulationRunController(
     }
 
     fun refreshCanvas() {
-        simulationEditController.refresh()
+        simulationViewController.refresh()
     }
 
     fun refreshCounts() {

@@ -39,23 +39,15 @@ fun openPage(
     // highlight active page
     updateActivePage(page)
 
-    window.location.let {
-        // sets parameters
-        val params = URLSearchParams(it.search)
-        parameters.forEach { params.set(it.key, it.value) }
-        params.set("page", page.id)
-
-        // registers page to history if needed
-        if (register) {
-            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
-            window.history.pushState(null, "Centyllion ${page.title}", newUrl)
-        }
-    }
+    // updates locations and register to history
+    updateLocation(page, parameters, register)
 
     // gets root element
     val root = document.querySelector(contentSelector) as HTMLElement
     // clears element
-    root.innerHTML = ""
+    while (root.hasChildNodes()) {
+        root.removeChild(root.childNodes[0]!!)
+    }
 
     // tries to load page if authorized
     if (instance != null && page.authorized(instance)) {
@@ -65,9 +57,32 @@ fun openPage(
     }
 }
 
+/** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
+fun updateLocation(page: Page?, parameters: Map<String, String>, register: Boolean) {
+    window.location.let {
+        // sets parameters
+        val params = URLSearchParams(it.search)
+        parameters.forEach { params.set(it.key, it.value) }
+        val currentPage = if (page != null) {
+            params.set("page", page.id)
+            page
+        } else {
+            pages.find { it.id == params.get("page") }
+        }
+
+        // registers page to history if needed
+        if (register) {
+            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
+            window.history.pushState(null, "Centyllion ${currentPage?.title}", newUrl)
+        }
+    }
+}
+
+fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
+
 fun authenticate(required: Boolean): Promise<KeycloakInstance?> {
     val keycloak = Keycloak()
-    val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native")
+    val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", timeSkew = 60)
     options.onLoad = if (required) "login-required" else "check-sso"
     val promise = keycloak.init(options)
     return promise.then(onFulfilled = { keycloak }, onRejected = { null })

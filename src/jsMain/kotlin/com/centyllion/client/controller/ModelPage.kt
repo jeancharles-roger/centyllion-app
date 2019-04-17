@@ -43,6 +43,8 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
     { _, old, new ->
         if (old != new) {
+            updateLocation(null, mapOf("model" to new._id), true)
+
             refreshSelectedModel()
 
             // updates simulation only if model _id changed
@@ -54,7 +56,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                             simulationStatus = simulations
                                 .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
                                 .toMap().toMutableMap()
-                            selectedSimulation = simulations.first()
+
+                            val simulationId = getLocationParams("simulation")
+                            selectedSimulation = simulations.find { it._id == simulationId } ?: simulations.first()
                             message("Simulations for ${selectedModel.model.name} loaded")
                         }
                         .catch {
@@ -84,7 +88,10 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var selectedSimulation by observable(emptySimulationDescription)
     { _, old, new ->
-        if (old != new) refreshSelectedSimulation()
+        if (old != new)  {
+            updateLocation(null, mapOf("simulation" to new._id), true)
+            refreshSelectedSimulation()
+        }
     }
 
     private var undoModel = false
@@ -208,9 +215,6 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     private val canPublish
         get() = selectedModel.info.access.isEmpty() || selectedSimulation.info.access.isEmpty()
 
-    private val canUnPublish
-        get() = selectedModel.info.access.isNotEmpty() || simulations.any { it.info.access.isNotEmpty() }
-
     private fun needModelSave() =
         modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
 
@@ -319,7 +323,9 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 modelStatus = models
                     .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
                     .toMap().toMutableMap()
-                selectedModel = models.first()
+
+                val modelId = getLocationParams("model")
+                selectedModel = models.find { it._id == modelId } ?: models.first()
                 message("Models loaded")
             }
             .catch {

@@ -138,6 +138,10 @@ class SimulationRunController(
         if (running) {
             executeStep(lastRefresh >= 10)
             lastRefresh += 1
+
+            // if the document was removed, stop the simulation
+            if (container.root.ownerDocument != container.root.getRootNode()) stop()
+
             window.setTimeout(this::runningCallback, 0)
         }
     }

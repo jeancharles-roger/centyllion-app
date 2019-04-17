@@ -5,6 +5,7 @@ import bulma.*
 import com.centyllion.client.*
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
+import kotlin.js.Promise.Companion.resolve
 import kotlin.properties.Delegates.observable
 
 class ModelPage(val instance: KeycloakInstance) : BulmaElement {
@@ -49,33 +50,28 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
             // updates simulation only if model _id changed
             if (old._id != new._id) {
-                if (selectedModel._id.isNotEmpty()) {
-                    fetchSimulations(selectedModel._id, instance)
-                        .then {
-                            simulations = if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
-                            simulationStatus = simulations
-                                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
-                                .toMap().toMutableMap()
-
-                            val simulationId = getLocationParams("simulation")
-                            selectedSimulation = simulations.find { it._id == simulationId } ?: simulations.first()
+                // fetches new simulations or return one empty simulation
+                val newSimulations = when {
+                    selectedModel._id.isNotEmpty() ->
+                        fetchSimulations(selectedModel._id, instance).then {
                             message("Simulations for ${selectedModel.model.name} loaded")
-                        }
-                        .catch {
-                            simulations = listOf(emptySimulationDescription)
-                            simulationStatus = simulations
-                                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
-                                .toMap()
-                                .toMutableMap()
-                            selectedSimulation = simulations.first()
+                            if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
+                        }.catch {
                             error(it.message ?: it.toString())
+                            listOf(emptySimulationDescription)
                         }
-                } else {
-                    simulations = listOf(emptySimulationDescription)
-                    simulationStatus =
-                        simulations.map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }.toMap()
-                            .toMutableMap()
-                    selectedSimulation = simulations.first()
+                    else -> resolve(listOf(emptySimulationDescription))
+                }
+
+                // updates status and simulations
+                newSimulations.then {
+                    simulationStatus = it
+                        .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                        .toMap().toMutableMap()
+                    simulations = it
+
+                    val simulationId = getLocationParams("simulation")
+                    selectedSimulation = simulations.find { it._id == simulationId } ?: simulations.first()
                 }
             }
         }
@@ -88,7 +84,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
     var selectedSimulation by observable(emptySimulationDescription)
     { _, old, new ->
-        if (old != new)  {
+        if (old != new) {
             updateLocation(null, mapOf("simulation" to new._id), true)
             refreshSelectedSimulation()
         }
@@ -319,10 +315,12 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
         fetchGrainModels(instance)
             .then {
-                models = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
-                modelStatus = models
+                // refreshes modelStatus before models to obtain the correct icons
+                val newModels = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
+                modelStatus = newModels
                     .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
                     .toMap().toMutableMap()
+                models = newModels
 
                 val modelId = getLocationParams("model")
                 selectedModel = models.find { it._id == modelId } ?: models.first()

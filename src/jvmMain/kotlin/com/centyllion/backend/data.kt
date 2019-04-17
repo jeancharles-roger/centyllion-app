@@ -55,7 +55,7 @@ class Data(
                             val claims = principal.payload.claims
                             val name = claims["name"]?.asString() ?: ""
                             val email = claims["email"]?.asString() ?: ""
-                            val new = User(newId<User>().toString(), userVersion, id, name, email)
+                            val new = User(newId<User>().toString(), keycloakId = id, name = name, email = email)
                             users.insertOne(createDocument(User.serializer(), new))
                             insertEvent(Action.Create, new, usersCollectionName, new.name)
                             new
@@ -96,9 +96,9 @@ class Data(
     fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription {
         val date = rfc1123Format.format(Date())
         val model = GrainModelDescription(
-            newId<GrainModelDescription>().toString(), grainModelVersion,
-            DescriptionInfo(user._id, null, null, date),
-            sent
+            newId<GrainModelDescription>().toString(),
+            info = DescriptionInfo(user._id, null, null, date),
+            model = sent
         )
         grainModels.save(createDocument(GrainModelDescription.serializer(), model))
         insertEvent(Action.Create, user, grainModelsCollectionName, model._id, model.model.name)
@@ -131,9 +131,9 @@ class Data(
     fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription {
         val date = rfc1123Format.format(Date())
         val simulation = SimulationDescription(
-            newId<SimulationDescription>().toString(), simulationVersion,
-            DescriptionInfo(user._id, null, null, date),
-            modelId, sent
+            newId<SimulationDescription>().toString(),
+            info = DescriptionInfo(user._id, null, null, date),
+            modelId = modelId, simulation = sent
         )
         simulations.save(createDocument(SimulationDescription.serializer(), simulation))
         insertEvent(Action.Create, user, simulationsCollectionName, simulation._id)
@@ -160,8 +160,8 @@ class Data(
     fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
         val date = rfc1123Format.format(Date())
         val event = Event(
-            newId<Event>().toString(), eventVersion, date,
-            user?._id ?: "", action, collection, arguments.toList()
+            newId<Event>().toString(), date = date, userId = user?._id ?: "",
+            action = action, collection = collection, arguments = arguments.toList()
          )
         events.insertOne(createDocument(Event.serializer(), event))
     }

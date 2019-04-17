@@ -1,20 +1,22 @@
 package com.centyllion.model
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
 
-val userVersion = 0
-val eventVersion = 0
-val grainModelVersion = 0
-val simulationVersion = 0
+val versions = mapOf(
+    GrainModelDescription.serializer() to 1
+)
+
+fun version(serializer: KSerializer<*>) = versions[serializer] ?: 0
 
 val emptyModel = GrainModel("Empty model")
 val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", grainModelVersion, emptyDescription, emptyModel)
+val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
 val emptySimulation = Simulation("Simulation")
-val emptySimulationDescription = SimulationDescription("", simulationVersion, emptyDescription, "", emptySimulation)
+val emptySimulationDescription = SimulationDescription("", info = emptyDescription, modelId = "", simulation = emptySimulation)
 
 enum class Direction {
     Left, Right, Up, Down, Front, Back
@@ -261,7 +263,7 @@ data class DescriptionInfo(
 @Serializable
 data class GrainModelDescription(
     val _id: String,
-    @Optional val version: Int = grainModelVersion,
+    @Optional val version: Int = version(serializer()),
     val info: DescriptionInfo,
     val model: GrainModel
 )
@@ -269,7 +271,7 @@ data class GrainModelDescription(
 @Serializable
 data class SimulationDescription(
     val _id: String,
-    @Optional val version: Int = simulationVersion,
+    @Optional val version: Int = version(serializer()),
     val info: DescriptionInfo,
     val modelId: String,
     val simulation: Simulation

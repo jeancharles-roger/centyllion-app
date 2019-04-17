@@ -58,7 +58,7 @@ fun explore(root: HTMLElement, instance: KeycloakInstance) {
     )
     root.appendChild(page.root)
 
-    fetchFeaturedGrainModels(instance).then { models -> modelsController.data = models }
+    fetchFeatured(instance).then { models -> modelsController.data = models }
 }
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {

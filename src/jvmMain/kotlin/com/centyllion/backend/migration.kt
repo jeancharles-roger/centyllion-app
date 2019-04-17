@@ -1,6 +1,8 @@
 package com.centyllion.backend
 
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.version
+import com.centyllion.model.versions
 import kotlinx.serialization.KSerializer
 import org.bson.Document
 
@@ -8,7 +10,7 @@ abstract class Migration(val from: Int, val to: Int) {
     abstract fun migrate(document: Document)
 }
 
-val migrationGrainModelV0toV1 = object : Migration(0, 1) {
+val migrationGrainModelDescriptionV0toV1 = object : Migration(0, 1) {
     override fun migrate(document: Document) {
         val model = document["model"]
         if (model is Document) {
@@ -34,8 +36,22 @@ val migrationGrainModelV0toV1 = object : Migration(0, 1) {
 }
 
 val migrations: Map<KSerializer<*>, List<Migration>> = mapOf(
-    GrainModelDescription.serializer() to listOf(migrationGrainModelV0toV1)
+    GrainModelDescription.serializer() to listOf(migrationGrainModelDescriptionV0toV1)
 )
+
+fun latestVersion(serializer: KSerializer<*>) =
+    migrations.getOrElse(serializer) { emptyList() }.map { it.to }.max() ?: 0
+
+fun checkVersionsAndMigrations() {
+    (versions + migrations).map {
+        val migrationVersion = latestVersion(it.key)
+        val modelVersion = version(it.key)
+        if (migrationVersion != modelVersion) {
+            throw Exception("Migration version $migrationVersion is not aligned to model $modelVersion for ${it.key.descriptor.name}")
+        }
+    }
+}
+
 
 /** Migrates document to current version using the [migrations]. */
 fun <T> migrate(serializer: KSerializer<T>, document: Document): Document {

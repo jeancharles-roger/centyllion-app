@@ -126,7 +126,14 @@ class ServerCommand : CliktCommand("Start the server") {
     }
 }
 
-fun main(args: Array<String>): Unit = ServerCommand().main(args)
+fun main(args: Array<String>) {
+    // do some checking first
+    checkVersionsAndMigrations()
+
+
+    // start server command
+    ServerCommand().main(args)
+}
 
 @KtorExperimentalAPI
 fun Application.centyllion() {
@@ -232,18 +239,22 @@ fun Application.centyllion() {
                     }
                 }
 
+
+                // featured models
+                route("featured") {
+                    get {
+                        // TODO create featured models
+                        val models = data.publicGrainModels()
+                        context.respond(models)
+                    }
+                }
+
+
                 // user's model access
                 route("model") {
                     get {
                         // TODO what to do here ?
                         context.respond(HttpStatusCode.NotFound)
-                    }
-
-                    // featured models
-                    get("featured") {
-                        // TODO create featured models
-                        val models = data.publicGrainModels()
-                        context.respond(models)
                     }
 
                     // post a new model
@@ -266,7 +277,7 @@ fun Application.centyllion() {
                                 context.respond(
                                     when {
                                         model == null -> HttpStatusCode.NotFound
-                                        !hasReadAccess(model.info, user)-> HttpStatusCode.Unauthorized
+                                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> model
                                     }
                                 )
@@ -321,7 +332,7 @@ fun Application.centyllion() {
                                     context.respond(
                                         when {
                                             model == null -> HttpStatusCode.NotFound
-                                            !hasReadAccess(model.info, user)-> HttpStatusCode.Unauthorized
+                                            !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
                                             else -> {
                                                 val simulations = data.getSimulationForModel(modelId)
                                                 simulations.filter { hasReadAccess(it.info, user) }

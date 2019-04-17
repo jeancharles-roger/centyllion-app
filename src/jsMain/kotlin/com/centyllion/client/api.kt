@@ -47,11 +47,6 @@ fun saveUser(user: User, instance: KeycloakInstance) =
         fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
     }
 
-fun fetchFeaturedGrainModels(instance: KeycloakInstance) =
-    executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/model/featured", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
-    }
-
 fun fetchGrainModels(instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
@@ -114,6 +109,11 @@ fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstan
             bearer,
             Json.stringify(SimulationDescription.serializer(), simulation)
         )
+    }
+
+fun fetchFeatured(instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/featured", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
 fun fetchEvents(instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->

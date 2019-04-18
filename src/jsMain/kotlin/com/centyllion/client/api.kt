@@ -111,9 +111,9 @@ fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstan
         )
     }
 
-fun fetchFeatured(instance: KeycloakInstance) =
+fun fetchAllFeatured(instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/featured", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
+        fetch("GET", "/api/featured", bearer).then { Json.parse(FeaturedDescription.serializer().list, it) }
     }
 
 fun fetchEvents(instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->

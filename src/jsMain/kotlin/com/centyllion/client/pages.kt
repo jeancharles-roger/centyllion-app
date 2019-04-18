@@ -2,14 +2,14 @@ package com.centyllion.client
 
 import KeycloakInstance
 import bulma.*
-import com.centyllion.client.controller.GrainModelDisplayController
+import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.ModelPage
 import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.controller.UserController
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.Action
-import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.emptySimulationDescription
 import kotlinx.html.article
 import kotlinx.html.div
@@ -46,19 +46,21 @@ val mainPage = pages[0]
 val showPage = pages.find { it.id == "show" }!!
 
 fun explore(root: HTMLElement, instance: KeycloakInstance) {
-    val modelsController = noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList())
+    val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { index, data, previous ->
-        val controller = previous ?: GrainModelDisplayController(data)
-        controller.body.root.onclick = { openPage(showPage, instance, mapOf("model" to data._id)) }
+        val controller = previous ?: FeaturedController(data)
+        controller.body.root.onclick = {
+            openPage(showPage, instance, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+        }
         controller.body.root.style.cursor = "pointer"
         controller
     }
     val page = div(
-        Title("Explore models"), modelsController
+        Title("Explore featured models"), featuredController
     )
     root.appendChild(page.root)
 
-    fetchFeatured(instance).then { models -> modelsController.data = models }
+    fetchAllFeatured(instance).then { models -> featuredController.data = models }
 }
 
 fun profile(root: HTMLElement, instance: KeycloakInstance) {
@@ -136,11 +138,13 @@ fun show(root: HTMLElement, instance: KeycloakInstance) {
         val controller = SimulationRunController(it.first.simulation, it.second.model, true)
         root.appendChild(controller.root)
     }.catch {
-        root.appendChild(Message(
-            color = ElementColor.Danger,
-            header = listOf(Title("Error: ${it::class}")),
-            body = listOf(span(it.message.toString()))
-        ).root)
+        root.appendChild(
+            Message(
+                color = ElementColor.Danger,
+                header = listOf(Title("Error: ${it::class}")),
+                body = listOf(span(it.message.toString()))
+            ).root
+        )
     }
 
 

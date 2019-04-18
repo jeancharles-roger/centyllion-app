@@ -313,7 +313,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         refreshSimulations()
         refreshSelectedSimulation()
 
-        fetchGrainModels(instance)
+        fetchMyGrainModels(instance)
             .then {
                 // refreshes modelStatus before models to obtain the correct icons
                 val newModels = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it

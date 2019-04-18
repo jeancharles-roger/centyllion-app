@@ -292,3 +292,7 @@ data class FeaturedDescription(
     val dotColors: List<String>,
     val version: Int = version(serializer())
 )
+
+fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(
+    "", "", "", modelId, simulationId, authorId, "", "", "", emptyList()
+)

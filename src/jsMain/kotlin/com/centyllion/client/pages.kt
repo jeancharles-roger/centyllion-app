@@ -2,22 +2,13 @@ package com.centyllion.client
 
 import KeycloakInstance
 import bulma.*
-import com.centyllion.client.controller.FeaturedController
-import com.centyllion.client.controller.ModelPage
-import com.centyllion.client.controller.SimulationRunController
-import com.centyllion.client.controller.UserController
+import com.centyllion.client.controller.*
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
-import com.centyllion.model.Action
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.emptySimulationDescription
-import kotlinx.html.article
-import kotlinx.html.div
-import kotlinx.html.dom.create
-import kotlinx.html.p
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
-import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.Promise
 
@@ -82,31 +73,7 @@ fun model(root: HTMLElement, instance: KeycloakInstance) {
 }
 
 fun administration(root: HTMLElement, instance: KeycloakInstance) {
-    fetchEvents(instance).then { events ->
-        events.forEach {
-            val color = when (it.action) {
-                Action.Create -> "is-primary"
-                Action.Save -> "is-info"
-                Action.Delete -> "is-warning"
-                Action.Error -> "is-danger"
-            }
-            root.appendChild(document.create.article("message $color") {
-                div("message-header level") {
-                    div("level-left") {
-                        div("level-item") { +"${it.action} on ${it.collection}" }
-                    }
-                    div("level-right") {
-                        div("level-item") { +it.date }
-                    }
-                }
-                div("message-body") {
-                    it.arguments.forEach {
-                        p { +it }
-                    }
-                }
-            })
-        }
-    }
+    root.appendChild(AdministrationPage(instance).root)
 }
 
 

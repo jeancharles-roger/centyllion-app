@@ -4,7 +4,7 @@ import bulma.*
 import com.centyllion.model.FeaturedDescription
 import kotlin.properties.Delegates.observable
 
-class FeaturedController(featured: FeaturedDescription) : NoContextController<FeaturedDescription, Column>() {
+class FeaturedController(featured: FeaturedDescription, size: ColumnSize = ColumnSize.Half) : NoContextController<FeaturedDescription, Column>() {
 
     override var data by observable(featured) { _, old, new ->
         if (old != new) refresh()
@@ -22,7 +22,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
 
     val body = Media(center = listOf(name, description, dots))
 
-    override val container = Column(body, size = ColumnSize.OneQuarter)
+    override val container = Column(body, size = size)
 
     override fun refresh() {
         dots.columns = dotColumns()

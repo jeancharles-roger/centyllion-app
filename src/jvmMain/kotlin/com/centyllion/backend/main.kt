@@ -316,8 +316,8 @@ fun Application.centyllion() {
                 // user's model access
                 route("model") {
                     get {
-                        // TODO what to do here ?
-                        context.respond(HttpStatusCode.NotFound)
+                        val models = data.publicGrainModels(50)
+                        context.respond(models)
                     }
 
                     // post a new model

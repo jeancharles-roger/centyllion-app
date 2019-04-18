@@ -47,9 +47,14 @@ fun saveUser(user: User, instance: KeycloakInstance) =
         fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
     }
 
-fun fetchGrainModels(instance: KeycloakInstance) =
+fun fetchMyGrainModels(instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
+    }
+
+fun fetchPublicGrainModels(instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
 fun fetchGrainModel(modelId: String, instance: KeycloakInstance) =
@@ -115,6 +120,20 @@ fun fetchAllFeatured(instance: KeycloakInstance) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/featured", bearer).then { Json.parse(FeaturedDescription.serializer().list, it) }
     }
+
+fun saveFeatured(modelId: String, simulationId: String, authorId: String, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        val featured = emptyFeatured(modelId = modelId, simulationId = simulationId, authorId = authorId)
+        fetch("POST", "/api/featured", bearer, Json.stringify(FeaturedDescription.serializer(), featured))
+            .then { Json.parse(FeaturedDescription.serializer(), it) }
+    }
+
+
+fun deleteFeatured(featured: FeaturedDescription, instance: KeycloakInstance) =
+    executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("DELETE", "/api/featured/${featured._id}", bearer)
+    }
+
 
 fun fetchEvents(instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->
     fetch("GET", "/api/event", bearer).then { Json.parse(Event.serializer().list, it) }

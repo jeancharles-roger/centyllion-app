@@ -20,12 +20,15 @@ class FeaturedController(featured: FeaturedDescription, size: ColumnSize = Colum
     val name = SubTitle(data.name)
     val description = Label(data.description)
 
+    val author = Label(data.authorName)
+
     fun thumbnail() =
         if (data.thumbnailId.isNotEmpty()) Image("/asset/${data.thumbnailId}", ImageSize.S128) else null
 
     val body = Media(
         left = listOfNotNull(thumbnail()),
-        center = listOf(name, description, dots)
+        center = listOf(name, description, dots),
+        right = listOf(author)
     )
 
     override val container = Column(body, size = size)
@@ -35,5 +38,6 @@ class FeaturedController(featured: FeaturedDescription, size: ColumnSize = Colum
         dots.columns = dotColumns()
         name.text = data.name
         description.text = data.description
+        author.text = data.authorName
     }
 }

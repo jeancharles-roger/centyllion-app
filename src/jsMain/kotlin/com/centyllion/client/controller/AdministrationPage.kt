@@ -3,16 +3,20 @@ package com.centyllion.client.controller
 import KeycloakInstance
 import bulma.*
 import com.centyllion.client.*
-import com.centyllion.model.Event
-import com.centyllion.model.FeaturedDescription
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.SimulationDescription
+import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
 class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { _, featured, previous ->  previous ?: FeaturedController(featured) }
+    { _, featured, previous ->
+        val controller = previous ?: FeaturedController(featured)
+        controller.body.right = listOf(Delete {
+            // forces delete with this toggle
+            toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, featured)
+        })
+        controller
+    }
 
     val publicModelsController = columnsController<GrainModelDescription, List<FeaturedDescription>, GrainModelFeaturedController>(
         emptyList(), emptyList()

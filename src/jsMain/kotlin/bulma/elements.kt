@@ -82,18 +82,23 @@ class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
 
 }
 
+enum class IconStyle(override val className: String): HasClassName {
+    Solid("fas"), Regular("far"), Light("fal"), Brands("fab")
+}
+
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */
 class Icon(
     icon: String, size: Size = Size.None, color: TextColor = TextColor.None,
-    rotate: FaRotate = FaRotate.None, flip: FaFlip = FaFlip.None, spin: Boolean = false
+    rotate: FaRotate = FaRotate.None, flip: FaFlip = FaFlip.None, spin: Boolean = false,
+    style: IconStyle = IconStyle.Solid
 ) : ControlElement {
     override val root: HTMLElement = document.create.span("icon") {
-        i("fas fa-$icon") {
+        i("${style.className} fa-$icon") {
             attributes["aria-hidden"] = "true"
         }
     }
 
-    private val iconNode = root.querySelector(".fas") as HTMLElement
+    private val iconNode = root.querySelector("i") as HTMLElement
 
     var icon by className(icon, iconNode, "fa-")
 
@@ -109,6 +114,8 @@ class Icon(
     var iconSize by className(size.toFas(), iconNode)
 
     var color by className(color, root)
+
+    var style by className(style, iconNode)
 
     var rotate by className(rotate, iconNode)
 

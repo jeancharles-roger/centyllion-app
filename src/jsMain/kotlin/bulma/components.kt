@@ -113,7 +113,8 @@ class DropdownDivider : DropdownItem {
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
 class Dropdown(
     text: String, vararg items: DropdownItem,
-    rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down"
+    rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down",
+    onDropdown: (Dropdown) -> Unit = {}
 ) : ControlElement {
 
     override val root: HTMLElement = document.create.div(classes = "dropdown") {
@@ -128,7 +129,10 @@ class Dropdown(
                     }
                 }
             }
-            onClickFunction = { toggleDropdown() }
+            onClickFunction = {
+                if (!active) onDropdown(this@Dropdown)
+                toggleDropdown()
+            }
         }
         div("dropdown-menu") {
             div("dropdown-content")
@@ -140,8 +144,13 @@ class Dropdown(
     private val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
     private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
 
+
+    var active: Boolean
+        get() = root.classList.contains("is-active")
+        set(value) { root.classList.toggle("is-active", value)}
+
     fun toggleDropdown() {
-        root.classList.toggle("is-active")
+        active = !active
     }
 
     override var text: String

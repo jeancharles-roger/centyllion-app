@@ -141,10 +141,6 @@ fun Application.centyllion() {
 
     val data = Data("localhost", 27017)
 
-    val filename = "/Users/charlie/Desktop/voitures.png"
-    val bytes = Files.readAllBytes(Paths.get(filename))
-    data.createAsset("voitures.png", bytes)
-
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)

@@ -165,11 +165,10 @@ class Data(
     }
 
     fun createFeatured(user: User, model: GrainModelDescription, simulation: SimulationDescription, author: User): FeaturedDescription {
-        // TODO create thumbnail
-
+        val asset = createAsset("simulation.png", createThumbnail(model.model, simulation.simulation))
         val date = rfc1123Format.format(Date())
         val new = FeaturedDescription(
-            newId<SimulationDescription>().toString(), date, "",
+            newId<SimulationDescription>().toString(), date, asset._id,
             model._id, simulation._id, author._id,
             listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
             listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
@@ -183,6 +182,8 @@ class Data(
     }
 
     fun deleteFeatured(user: User, delete: FeaturedDescription) {
+        // delete thumbnail asset
+        if (delete.thumbnailId.isNotEmpty()) deleteAsset(delete.thumbnailId)
         // delete the featured
         featured.deleteOneById(delete._id)
         insertEvent(Action.Delete, user, featuredCollectionName, delete._id)
@@ -204,6 +205,10 @@ class Data(
         document.append("data", data)
         assets.save(document)
         return Asset(id, name, data)
+    }
+
+    fun deleteAsset(id: String) {
+        assets.deleteOneById(ObjectId(id))
     }
 
     fun getEvents(): List<Event> {

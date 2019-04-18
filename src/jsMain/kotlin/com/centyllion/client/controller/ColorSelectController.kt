@@ -39,7 +39,7 @@ class ColorSelectController(
     }
 
     private fun colors() = listOf(DropdownContentItem(
-        Columns(multiline = true, mobile = true).apply { columns = colorNames.map { column(it) } }
+        Columns(multiline = true, mobile = true).apply { columns = colorNames.keys.map { column(it) } }
     ))
 
     override fun refresh() {

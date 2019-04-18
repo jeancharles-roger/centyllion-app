@@ -16,6 +16,10 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.readRemaining
 import kotlinx.io.core.readText
 import kotlinx.serialization.json.Json
+import java.awt.Color
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 @KtorExperimentalAPI
 class JsonConverter : ContentConverter {
@@ -52,3 +56,47 @@ class JsonConverter : ContentConverter {
         }
     }
 }
+
+fun createThumbnail(model: GrainModel, simulation: Simulation): ByteArray {
+    val canvasWidth = simulation.width * 5
+    val canvasHeight = simulation.height * 5
+
+    val buffer = BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_BYTE_INDEXED)
+    val context = buffer.createGraphics()
+
+    val xStep = canvasWidth / simulation.width
+    val yStep = canvasHeight / simulation.height
+    val xMax = simulation.width * xStep
+
+    val colors = model.indexedGrains.map {
+        val triple = colorNames[it.value.color] ?: Triple(255, 0, 0)
+        it.value to Color(triple.first, triple.second, triple.third)
+    }.toMap()
+
+    context.color = Color.WHITE
+    context.fillRect(0, 0, canvasWidth, canvasHeight)
+    var currentX = 0
+    var currentY = 0
+    simulation.agents.forEach {
+        val grain = model.indexedGrains[it]
+
+        if (grain != null) {
+            context.color = colors[grain]
+            //context.fillStyle = grain.color
+            context.fillRect(currentX - xStep, currentY - yStep, xStep, yStep)
+        }
+
+        currentX += xStep
+        if (currentX >= xMax) {
+            currentX = 0
+            currentY += yStep
+        }
+    }
+
+    val stream = ByteArrayOutputStream(simulation.dataSize)
+    ImageIO.write(buffer, "png", stream)
+    stream.close()
+
+    return stream.toByteArray()
+}
+

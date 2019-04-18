@@ -164,7 +164,7 @@ data class GrainModel(
         return grains.size
     }
 
-    fun availableGrainColor(): String = (colorNames - grains.map { it.color }).let {
+    fun availableGrainColor(): String = (colorNames.keys - grains.map { it.color }).let {
         if (it.isEmpty()) "red" else it.random()
     }
 

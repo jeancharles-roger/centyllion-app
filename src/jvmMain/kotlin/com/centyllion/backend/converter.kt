@@ -29,6 +29,7 @@ class JsonConverter : ContentConverter {
         is GrainModelDescription -> Json.stringify(GrainModelDescription.serializer(), value)
         is Simulation -> Json.stringify(Simulation.serializer(), value)
         is SimulationDescription -> Json.stringify(SimulationDescription.serializer(), value)
+        is FeaturedDescription -> Json.stringify(FeaturedDescription.serializer(), value)
         is Event -> Json.stringify(Event.serializer(), value)
         is List<*> -> "[${if (value.isNotEmpty()) value.joinToString(",") { convertForSend(it) } else ""}]"
         else -> throw Exception("Can't transform ${value?.javaClass?.simpleName} to Json")
@@ -46,6 +47,7 @@ class JsonConverter : ContentConverter {
             GrainModelDescription::class -> Json.parse(GrainModelDescription.serializer(), text)
             Simulation::class -> Json.parse(Simulation.serializer(), text)
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
+            FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

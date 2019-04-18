@@ -8,11 +8,9 @@ import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import org.bson.Document
-import org.litote.kmongo.deleteOneById
-import org.litote.kmongo.find
-import org.litote.kmongo.findOne
-import org.litote.kmongo.newId
-import org.litote.kmongo.save
+import org.bson.types.Binary
+import org.bson.types.ObjectId
+import org.litote.kmongo.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.toList
@@ -29,14 +27,15 @@ class Data(
     val usersCollectionName = "users"
     val grainModelsCollectionName = "grainModels"
     val simulationsCollectionName = "simulations"
+    val featuredCollectionName = "featured"
+    val assetsCollectionName = "assets"
     val eventsCollectionName = "events"
 
     val users: MongoCollection<Document> = db.getCollection(usersCollectionName)
-
     val grainModels: MongoCollection<Document> = db.getCollection(grainModelsCollectionName)
-
     val simulations: MongoCollection<Document> = db.getCollection(simulationsCollectionName)
-
+    val featured: MongoCollection<Document> = db.getCollection(featuredCollectionName)
+    val assets: MongoCollection<Document> = db.getCollection(assetsCollectionName)
     val events: MongoCollection<Document> = db.getCollection(eventsCollectionName)
 
     private val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
@@ -55,7 +54,7 @@ class Data(
                             val claims = principal.payload.claims
                             val name = claims["name"]?.asString() ?: ""
                             val email = claims["email"]?.asString() ?: ""
-                            val new = User(newId<User>().toString(), keycloakId = id, name = name, email = email)
+                            val new = User(newId<User>().toString(), id, name, email)
                             users.insertOne(createDocument(User.serializer(), new))
                             insertEvent(Action.Create, new, usersCollectionName, new.name)
                             new
@@ -70,6 +69,11 @@ class Data(
                 parseDocument(User.serializer(), it)
             }
         }
+    }
+
+    fun getUser(id: String): User? {
+        val result = users.findOneById(id)
+        return result?.let { parseDocument(User.serializer(), result) }
     }
 
     fun saveUser(user: User) {
@@ -89,7 +93,7 @@ class Data(
     }
 
     fun getGrainModel(id: String): GrainModelDescription? {
-        val result = grainModels.findOne("{_id: '$id'}")
+        val result = grainModels.findOneById(id)
         return result?.let { parseDocument(GrainModelDescription.serializer(), result) }
     }
 
@@ -97,8 +101,8 @@ class Data(
         val date = rfc1123Format.format(Date())
         val model = GrainModelDescription(
             newId<GrainModelDescription>().toString(),
-            info = DescriptionInfo(user._id, null, null, date),
-            model = sent
+            DescriptionInfo(user._id, null, null, date),
+            sent
         )
         grainModels.save(createDocument(GrainModelDescription.serializer(), model))
         insertEvent(Action.Create, user, grainModelsCollectionName, model._id, model.model.name)
@@ -112,7 +116,7 @@ class Data(
 
     fun deleteGrainModel(user: User, model: GrainModelDescription) {
         // first delete all simulation for model
-        getSimulationForModel(model._id).forEach{ deleteSimulation(user, it) }
+        getSimulationForModel(model._id).forEach { deleteSimulation(user, it) }
         // delete the model
         grainModels.deleteOneById(model._id)
         insertEvent(Action.Delete, user, grainModelsCollectionName, model._id)
@@ -124,7 +128,7 @@ class Data(
     }
 
     fun getSimulation(id: String): SimulationDescription? {
-        val result = simulations.findOne("{_id: '$id'}")
+        val result = simulations.findOneById(id)
         return result?.let { parseDocument(SimulationDescription.serializer(), result) }
     }
 
@@ -132,8 +136,8 @@ class Data(
         val date = rfc1123Format.format(Date())
         val simulation = SimulationDescription(
             newId<SimulationDescription>().toString(),
-            info = DescriptionInfo(user._id, null, null, date),
-            modelId = modelId, simulation = sent
+            DescriptionInfo(user._id, null, null, date),
+            modelId, sent
         )
         simulations.save(createDocument(SimulationDescription.serializer(), simulation))
         insertEvent(Action.Create, user, simulationsCollectionName, simulation._id)
@@ -147,7 +151,59 @@ class Data(
 
     fun deleteSimulation(user: User, simulation: SimulationDescription) {
         simulations.deleteOneById(simulation._id)
-        insertEvent(Action.Delete, user,  simulationsCollectionName, simulation._id)
+        insertEvent(Action.Delete, user, simulationsCollectionName, simulation._id)
+    }
+
+    fun getAllFeatured(): List<FeaturedDescription> {
+        val result = featured.find()
+        return result.map { parseDocument(FeaturedDescription.serializer(), it) }.toList()
+    }
+
+    fun getFeatured(id: String): FeaturedDescription? {
+        val result = featured.findOneById(id)
+        return result?.let { parseDocument(FeaturedDescription.serializer(), result) }
+    }
+
+    fun createFeatured(user: User, model: GrainModelDescription, simulation: SimulationDescription, author: User): FeaturedDescription {
+        // TODO create thumbnail
+
+        val date = rfc1123Format.format(Date())
+        val new = FeaturedDescription(
+            newId<SimulationDescription>().toString(), date, "",
+            model._id, simulation._id, author._id,
+            listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
+            listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
+            author.name, model.model.grains.map { it.color }
+        )
+
+        val document = createDocument(FeaturedDescription.serializer(), new)
+        featured.save(document)
+        insertEvent(Action.Create, user, featuredCollectionName, new._id, new.name)
+        return new
+    }
+
+    fun deleteFeatured(user: User, delete: FeaturedDescription) {
+        // delete the featured
+        featured.deleteOneById(delete._id)
+        insertEvent(Action.Delete, user, featuredCollectionName, delete._id)
+    }
+
+    fun getAsset(id: String): Asset? {
+        val result = assets.findOneById(ObjectId(id))
+        return result?.let {
+            val name = it.getString("name")
+            val data = it.get("data", Binary::class.java)
+            Asset(id, name, data.data)
+        }
+    }
+
+    fun createAsset(name: String, data: ByteArray): Asset {
+        val id = newId<Asset>().toString()
+        val document = Document("_id", ObjectId(id))
+        document.append("name", name)
+        document.append("data", data)
+        assets.save(document)
+        return Asset(id, name, data)
     }
 
     fun getEvents(): List<Event> {
@@ -160,9 +216,8 @@ class Data(
     fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
         val date = rfc1123Format.format(Date())
         val event = Event(
-            newId<Event>().toString(), date = date, userId = user?._id ?: "",
-            action = action, collection = collection, arguments = arguments.toList()
-         )
+            newId<Event>().toString(), date, user?._id ?: "", action, collection, arguments.toList()
+        )
         events.insertOne(createDocument(Event.serializer(), event))
     }
 

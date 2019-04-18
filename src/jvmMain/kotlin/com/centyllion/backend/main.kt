@@ -33,6 +33,7 @@ import io.ktor.http.withCharset
 import io.ktor.network.tls.certificates.generateCertificate
 import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondBytes
 import io.ktor.routing.*
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
@@ -130,7 +131,6 @@ fun main(args: Array<String>) {
     // do some checking first
     checkVersionsAndMigrations()
 
-
     // start server command
     ServerCommand().main(args)
 }
@@ -140,6 +140,10 @@ fun Application.centyllion() {
     val debug = environment.config.property("debug").getString() == "true"
 
     val data = Data("localhost", 27017)
+
+    val filename = "/Users/charlie/Desktop/voitures.png"
+    val bytes = Files.readAllBytes(Paths.get(filename))
+    data.createAsset("voitures.png", bytes)
 
     install(Compression)
     install(DefaultHeaders)
@@ -214,9 +218,22 @@ fun Application.centyllion() {
     routing {
         get("/") { context.respondHtml { index() } }
 
-        static {
-            files("webroot")
+        // API for binary assets
+        route("/asset") {
+
+            get("{asset}") {
+                val id = call.parameters["asset"]!!
+                val asset = data.getAsset(id)
+                if (asset != null) {
+                    context.respondBytes(asset.data, ContentType.Image.PNG)
+                } else {
+                    context.respond(HttpStatusCode.NotFound)
+                }
+            }
         }
+
+        // Static files
+        static { files("webroot") }
 
         authenticate {
             route("/api") {
@@ -240,12 +257,62 @@ fun Application.centyllion() {
                 }
 
 
-                // featured models
+                // featured
                 route("featured") {
                     get {
-                        // TODO create featured models
-                        val models = data.publicGrainModels()
-                        context.respond(models)
+                        val allFeatured = data.getAllFeatured()
+                        context.respond(allFeatured)
+                    }
+
+                    // post a new featured
+                    post {
+                        withPrincipal(setOf(adminRole)) {
+                            val user = data.getOrCreateUserFromPrincipal(it)
+                            val newFeatured = call.receive(FeaturedDescription::class)
+                            val model = data.getGrainModel(newFeatured.modelId)
+                            val simulation = data.getSimulation(newFeatured.simulationId)
+                            val author = data.getUser(newFeatured.authorId)
+
+                            context.respond(
+                                when {
+                                    model == null || simulation == null || author == null -> HttpStatusCode.NotFound
+                                    model.info.userId != author._id && simulation.info.userId != author._id -> HttpStatusCode.Unauthorized
+                                    else -> data.createFeatured(user, model, simulation, author)
+                                }
+                            )
+                        }
+                    }
+
+                    // access a given featured
+                    route("{featured}") {
+                        get {
+                            val id = call.parameters["featured"]!!
+                            val featured = data.getFeatured(id)
+                            context.respond(
+                                when {
+                                    featured == null -> HttpStatusCode.NotFound
+                                    else -> featured
+                                }
+                            )
+                        }
+
+                        // delete an existing featured
+                        delete {
+                            withPrincipal(setOf(adminRole)) {
+                                val user = data.getOrCreateUserFromPrincipal(it)
+                                val id = call.parameters["featured"]!!
+                                val featured = data.getFeatured(id)
+                                context.respond(
+                                    when {
+                                        featured == null -> HttpStatusCode.NotFound
+                                        else -> {
+                                            data.deleteFeatured(user, featured)
+                                            HttpStatusCode.OK
+                                        }
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
 

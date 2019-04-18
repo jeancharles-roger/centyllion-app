@@ -6,10 +6,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(
     val _id: String,
-    @Optional val version: Int = version(serializer()),
     val keycloakId: String,
     val name: String,
-    val email: String
+    val email: String,
+    @Optional val version: Int = version(serializer())
 )
 
 enum class Action {
@@ -19,10 +19,16 @@ enum class Action {
 @Serializable
 data class Event(
     val _id: String,
-    @Optional val version: Int = version(serializer()),
     val date: String,
     val userId: String,
     val action: Action,
     val collection: String,
-    val arguments: List<String>
+    val arguments: List<String>,
+    @Optional val version: Int = version(serializer())
+)
+
+class Asset(
+    val _id: String,
+    val name: String,
+    val data: ByteArray
 )

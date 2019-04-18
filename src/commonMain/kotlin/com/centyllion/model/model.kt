@@ -16,7 +16,8 @@ val emptyModel = GrainModel("Empty model")
 val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
 val emptySimulation = Simulation("Simulation")
-val emptySimulationDescription = SimulationDescription("", info = emptyDescription, modelId = "", simulation = emptySimulation)
+val emptySimulationDescription =
+    SimulationDescription("", info = emptyDescription, modelId = "", simulation = emptySimulation)
 
 enum class Direction {
     Left, Right, Up, Down, Front, Back
@@ -102,7 +103,7 @@ data class Behaviour(
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
-    val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int =  -1,
+    val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
     val reaction: List<Reaction> = emptyList()
 ) {
 
@@ -263,16 +264,31 @@ data class DescriptionInfo(
 @Serializable
 data class GrainModelDescription(
     val _id: String,
-    @Optional val version: Int = version(serializer()),
     val info: DescriptionInfo,
-    val model: GrainModel
+    val model: GrainModel,
+    @Optional val version: Int = version(serializer())
 )
 
 @Serializable
 data class SimulationDescription(
     val _id: String,
-    @Optional val version: Int = version(serializer()),
     val info: DescriptionInfo,
     val modelId: String,
-    val simulation: Simulation
+    val simulation: Simulation,
+    @Optional val version: Int = version(serializer())
+)
+
+@Serializable
+data class FeaturedDescription(
+    val _id: String,
+    val date: String,
+    val thumbnailId: String,
+    val modelId: String,
+    val simulationId: String,
+    val authorId: String,
+    val name: String,
+    val description: String,
+    val authorName: String,
+    val dotColors: List<String>,
+    val version: Int = version(serializer())
 )

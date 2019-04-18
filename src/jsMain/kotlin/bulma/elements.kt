@@ -4,6 +4,7 @@ import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLImageElement
 import kotlin.browser.document
 
 /** [Box](https://bulma.io/documentation/elements/box) element. */
@@ -122,6 +123,30 @@ class Icon(
     var flip by className(flip, iconNode)
 
     var spin by className(spin, "fa-spin", iconNode)
+
+}
+
+enum class ImageSize(override val className: String): HasClassName {
+    None(""), S16("is-16x16"), S24("is-24x24"), S32("is-32x32"),
+    S48("is-48x48"), S64("is-64x64"), S96("is-96x96"), S128("is-128x128"),
+    Square("is-square"), S1by1("is-1by1"), S5by4("is-5by4"), S4by3("is-4by3"),
+    S3by2("is-3by2"), S5by3("is-5by3"), S16by9("is-16by9"), S2by1("is-2by1"),
+    S3by1("is-3by1"), S4by5("is-4by5"), S3by4("is-3by4"), S2by3("is-2by3"),
+    S3by5("is-3by5"), S9by16("is-9by16"), S1by2("is-1by2"), S1by3("is-1by3")
+}
+
+/** [Image](https://bulma.io/documentation/elements/image/) */
+class Image(url: String, size: ImageSize = ImageSize.None, rounded: Boolean = false): BulmaElement {
+
+    override val root: HTMLElement = document.create.figure("image") {
+        img(null, url)
+    }
+
+    private val imgNode = root.querySelector("img") as HTMLImageElement
+
+    var rounded by className(rounded, "is-rounded", imgNode)
+
+    var size by className(size, root)
 
 }
 

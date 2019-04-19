@@ -30,7 +30,10 @@ fun fetch(method: String, url: String, bearer: String? = null, content: String? 
 
 fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance?, block: (bearer: String?) -> Promise<T>) =
     Promise<T> { resolve, reject ->
-        val result = instance?.updateToken(5)?.then { instance.idToken } ?: Promise.resolve<String?>(null)
+        val result = when {
+            instance == null || !instance.authenticated -> Promise.resolve<String?>(null)
+            else -> instance.updateToken(5).then { instance.idToken }
+        }
         result.then { bearer -> block(bearer).then(resolve).catch(reject) }
     }
 

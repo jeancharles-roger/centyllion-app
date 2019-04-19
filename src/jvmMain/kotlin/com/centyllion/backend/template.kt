@@ -27,7 +27,9 @@ fun BODY.centyllionHeader() =
             nav("navbar is-transparent") {
                 div("navbar-brand") {
                     a(href = "/", classes = "navbar-item ") {
-                        img("Centyllion", "images/logo.png")
+                        img("Centyllion", "images/logo_2by1.png") {
+
+                        }
                     }
                     div("navbar-burger burger") {
                         attributes["data-target"] = navBarId
@@ -52,7 +54,7 @@ fun BODY.centyllionFooter() {
     footer("footer") {
         div("level") {
             div("level-item has-text-centered") {
-                img("Centyllion", "images/logo.png") { width = "300px" }
+                img("Centyllion", "images/logo_2by1.png") { width = "300px" }
                 strong { +"platform" }
             }
             div("level-right") {

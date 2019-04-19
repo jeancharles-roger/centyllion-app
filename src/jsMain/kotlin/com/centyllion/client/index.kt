@@ -50,7 +50,7 @@ fun openPage(
     }
 
     // tries to load page if authorized
-    if (instance != null && page.authorized(instance)) {
+    if (page.authorized(instance)) {
         page.callback(root, instance)
     } else {
         error(root, "Unauthorized", "You are not authorized to access this page")
@@ -99,7 +99,8 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     showVersion()
 
     val isCentyllionHost = window.location.host == centyllionHost
-    val requiredRoles = if (!isCentyllionHost) roles + betaRole else roles
+    //val requiredRoles = if (!isCentyllionHost) roles + betaRole else roles
+    val requiredRoles = roles
 
     return authenticate(requiredRoles.isNotEmpty()).then { keycloak ->
         if (keycloak != null) {

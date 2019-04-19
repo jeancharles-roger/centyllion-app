@@ -17,9 +17,13 @@ data class Page(
     val id: String,
     val role: String,
     val header: Boolean,
-    val callback: (root: HTMLElement, instance: KeycloakInstance) -> Unit
+    val callback: (root: HTMLElement, instance: KeycloakInstance?) -> Unit
 ) {
-    fun authorized(keycloak: KeycloakInstance): Boolean = if (role != "") keycloak.hasRealmRole(role) else true
+    fun authorized(keycloak: KeycloakInstance?): Boolean = when {
+        role.isEmpty() -> true
+        keycloak == null -> false
+        else -> keycloak.hasRealmRole(role)
+    }
 }
 
 const val contentSelector = "section.cent-main"
@@ -36,7 +40,7 @@ val mainPage = pages[0]
 
 val showPage = pages.find { it.id == "show" }!!
 
-fun explore(root: HTMLElement, instance: KeycloakInstance) {
+fun explore(root: HTMLElement, instance: KeycloakInstance?) {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { index, data, previous ->
         val controller = previous ?: FeaturedController(data)
@@ -54,7 +58,7 @@ fun explore(root: HTMLElement, instance: KeycloakInstance) {
     fetchAllFeatured(instance).then { models -> featuredController.data = models }
 }
 
-fun profile(root: HTMLElement, instance: KeycloakInstance) {
+fun profile(root: HTMLElement, instance: KeycloakInstance?) {
     val userController = UserController()
     val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))
     root.appendChild(columns.root)
@@ -68,16 +72,22 @@ fun profile(root: HTMLElement, instance: KeycloakInstance) {
     }
 }
 
-fun model(root: HTMLElement, instance: KeycloakInstance) {
-    root.appendChild(ModelPage(instance).root)
+fun model(root: HTMLElement, instance: KeycloakInstance?) {
+    // for model, user should be logged in
+    if (instance != null) {
+        root.appendChild(ModelPage(instance).root)
+    }
 }
 
-fun administration(root: HTMLElement, instance: KeycloakInstance) {
-    root.appendChild(AdministrationPage(instance).root)
+fun administration(root: HTMLElement, instance: KeycloakInstance?) {
+    // for admin, user must be logged in
+    if (instance != null) {
+        root.appendChild(AdministrationPage(instance).root)
+    }
 }
 
 
-fun show(root: HTMLElement, instance: KeycloakInstance) {
+fun show(root: HTMLElement, instance: KeycloakInstance?) {
     val params = URLSearchParams(window.location.search)
     val simulationId = params.get("simulation")
     val modelId = params.get("model")

@@ -28,52 +28,49 @@ fun fetch(method: String, url: String, bearer: String? = null, content: String? 
         request.send(content)
     }
 
-fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance, block: (bearer: String) -> Promise<T>) =
+fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance?, block: (bearer: String?) -> Promise<T>) =
     Promise<T> { resolve, reject ->
-        instance.updateToken(5).then {
-            instance.idToken?.let { bearer -> block(bearer).then(resolve).catch(reject) }
-        }.catch {
-            reject(Exception("Keycloak token refresh failed: $it"))
-        }
+        val result = instance?.updateToken(5)?.then { instance.idToken } ?: Promise.resolve<String?>(null)
+        result.then { bearer -> block(bearer).then(resolve).catch(reject) }
     }
 
-fun fetchUser(instance: KeycloakInstance): Promise<User> =
+fun fetchUser(instance: KeycloakInstance?): Promise<User> =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me", bearer).then { Json.parse(User.serializer(), it) }
     }
 
-fun saveUser(user: User, instance: KeycloakInstance) =
+fun saveUser(user: User, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
     }
 
-fun fetchMyGrainModels(instance: KeycloakInstance) =
+fun fetchMyGrainModels(instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
-fun fetchPublicGrainModels(instance: KeycloakInstance) =
+fun fetchPublicGrainModels(instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
     }
 
-fun fetchGrainModel(modelId: String, instance: KeycloakInstance) =
+fun fetchGrainModel(modelId: String, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/model/${modelId}", bearer).then { Json.parse(GrainModelDescription.serializer(), it) }
+        fetch("GET", "/api/model/$modelId", bearer).then { Json.parse(GrainModelDescription.serializer(), it) }
     }
 
-fun saveGrainModel(model: GrainModel, instance: KeycloakInstance) =
+fun saveGrainModel(model: GrainModel, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("POST", "/api/model", bearer, Json.stringify(GrainModel.serializer(), model))
             .then { Json.parse(GrainModelDescription.serializer(), it) }
     }
 
-fun deleteGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+fun deleteGrainModel(model: GrainModelDescription, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("DELETE", "/api/model/${model._id}", bearer)
     }
 
-fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
+fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch(
             "PATCH",
@@ -83,30 +80,30 @@ fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance) =
         )
     }
 
-fun fetchSimulations(modelId: String, instance: KeycloakInstance) =
+fun fetchSimulations(modelId: String, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/model/$modelId/simulation", bearer)
             .then { Json.parse(SimulationDescription.serializer().list, it) }
     }
 
-fun fetchSimulation(simulationId: String, instance: KeycloakInstance) =
+fun fetchSimulation(simulationId: String, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/simulation/$simulationId", bearer)
             .then { Json.parse(SimulationDescription.serializer(), it) }
     }
 
-fun saveSimulation(modelId: String, simulation: Simulation, instance: KeycloakInstance) =
+fun saveSimulation(modelId: String, simulation: Simulation, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("POST", "/api/model/$modelId/simulation", bearer, Json.stringify(Simulation.serializer(), simulation))
             .then { Json.parse(SimulationDescription.serializer(), it) }
     }
 
-fun deleteSimulation(simulation: SimulationDescription, instance: KeycloakInstance) =
+fun deleteSimulation(simulation: SimulationDescription, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("DELETE", "/api/simulation/${simulation._id}", bearer)
     }
 
-fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstance) =
+fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch(
             "PATCH",
@@ -116,12 +113,12 @@ fun updateSimulation(simulation: SimulationDescription, instance: KeycloakInstan
         )
     }
 
-fun fetchAllFeatured(instance: KeycloakInstance) =
+fun fetchAllFeatured(instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/featured", bearer).then { Json.parse(FeaturedDescription.serializer().list, it) }
     }
 
-fun saveFeatured(modelId: String, simulationId: String, authorId: String, instance: KeycloakInstance) =
+fun saveFeatured(modelId: String, simulationId: String, authorId: String, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         val featured = emptyFeatured(modelId = modelId, simulationId = simulationId, authorId = authorId)
         fetch("POST", "/api/featured", bearer, Json.stringify(FeaturedDescription.serializer(), featured))
@@ -129,12 +126,12 @@ fun saveFeatured(modelId: String, simulationId: String, authorId: String, instan
     }
 
 
-fun deleteFeatured(featured: FeaturedDescription, instance: KeycloakInstance) =
+fun deleteFeatured(featured: FeaturedDescription, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
         fetch("DELETE", "/api/featured/${featured._id}", bearer)
     }
 
 
-fun fetchEvents(instance: KeycloakInstance) = executeWithRefreshedIdToken(instance) { bearer ->
+fun fetchEvents(instance: KeycloakInstance?) = executeWithRefreshedIdToken(instance) { bearer ->
     fetch("GET", "/api/event", bearer).then { Json.parse(Event.serializer().list, it) }
 }

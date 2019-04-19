@@ -100,11 +100,19 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
 
     return authenticate(requiredRoles.isNotEmpty()).then { keycloak ->
         if (keycloak != null) {
+            val userLink = document.querySelector("a.cent-user") as HTMLAnchorElement?
             if (keycloak.tokenParsed != null) {
-                val userName = document.querySelector("a.cent-user") as HTMLAnchorElement?
-                userName?.innerText = keycloak.tokenParsed.asDynamic().name as String
-                userName?.href = keycloak.createAccountUrl()
+                userLink?.let {
+                    it.innerText = keycloak.tokenParsed.asDynamic().name as String
+                    it.href = keycloak.createAccountUrl()
+                }
+            } else {
+                userLink?.let {
+                    it.innerText = "Log in"
+                    it.href = keycloak.createLoginUrl(null)
+                }
             }
+
             val granted = keycloak.authenticated &&
                     requiredRoles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
 

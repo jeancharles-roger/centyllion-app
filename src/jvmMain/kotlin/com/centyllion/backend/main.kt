@@ -217,27 +217,26 @@ fun Application.centyllion() {
         // Static files
         static { files("webroot") }
 
-        authenticate {
+        authenticate(optional = true) {
             route("/api") {
                 // me route for user own data
                 route("me") {
                     // get the user's profile
                     get {
-                        withPrincipal {
+                        withRequiredPrincipal {
                             context.respond(data.getOrCreateUserFromPrincipal(it))
                         }
                     }
 
                     // get all user's saved models
                     get("model") {
-                        withPrincipal(setOf(modelRole)) {
+                        withRequiredPrincipal(setOf(modelRole)) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val models = data.grainModelsForUser(user)
                             context.respond(models)
                         }
                     }
                 }
-
 
                 // featured
                 route("featured") {
@@ -248,7 +247,7 @@ fun Application.centyllion() {
 
                     // post a new featured
                     post {
-                        withPrincipal(setOf(adminRole)) {
+                        withRequiredPrincipal(setOf(adminRole)) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val newFeatured = call.receive(FeaturedDescription::class)
                             val model = data.getGrainModel(newFeatured.modelId)
@@ -280,7 +279,7 @@ fun Application.centyllion() {
 
                         // delete an existing featured
                         delete {
-                            withPrincipal(setOf(adminRole)) {
+                            withRequiredPrincipal(setOf(adminRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["featured"]!!
                                 val featured = data.getFeatured(id)
@@ -298,7 +297,6 @@ fun Application.centyllion() {
                     }
                 }
 
-
                 // user's model access
                 route("model") {
                     get {
@@ -308,7 +306,7 @@ fun Application.centyllion() {
 
                     // post a new model
                     post {
-                        withPrincipal(setOf(modelRole)) {
+                        withRequiredPrincipal(setOf(modelRole)) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val newModel = call.receive(GrainModel::class)
                             val newDescription = data.createGrainModel(user, newModel)
@@ -318,24 +316,25 @@ fun Application.centyllion() {
 
                     // access a given model
                     route("{model}") {
+                        // model get with user
                         get {
-                            withPrincipal {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val id = call.parameters["model"]!!
-                                val model = data.getGrainModel(id)
-                                context.respond(
-                                    when {
-                                        model == null -> HttpStatusCode.NotFound
-                                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> model
-                                    }
-                                )
+                            val user = call.principal<JWTPrincipal>()?.let {
+                                data.getOrCreateUserFromPrincipal(it)
                             }
+                            val id = call.parameters["model"]!!
+                            val model = data.getGrainModel(id)
+                            context.respond(
+                                when {
+                                    model == null -> HttpStatusCode.NotFound
+                                    !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
+                                    else -> model
+                                }
+                            )
                         }
 
                         // patch an existing model
                         patch {
-                            withPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = call.receive(GrainModelDescription::class)
@@ -354,7 +353,7 @@ fun Application.centyllion() {
 
                         // delete an existing model
                         delete {
-                            withPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = data.getGrainModel(id)
@@ -374,26 +373,26 @@ fun Application.centyllion() {
                         route("simulation") {
                             // model's simulations
                             get {
-                                withPrincipal {
-                                    val user = data.getOrCreateUserFromPrincipal(it)
-                                    val modelId = call.parameters["model"]!!
-                                    val model = data.getGrainModel(modelId)
-                                    context.respond(
-                                        when {
-                                            model == null -> HttpStatusCode.NotFound
-                                            !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                                            else -> {
-                                                val simulations = data.getSimulationForModel(modelId)
-                                                simulations.filter { hasReadAccess(it.info, user) }
-                                            }
-                                        }
-                                    )
+                                val user = call.principal<JWTPrincipal>()?.let {
+                                    data.getOrCreateUserFromPrincipal(it)
                                 }
+                                val modelId = call.parameters["model"]!!
+                                val model = data.getGrainModel(modelId)
+                                context.respond(
+                                    when {
+                                        model == null -> HttpStatusCode.NotFound
+                                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
+                                        else -> {
+                                            val simulations = data.getSimulationForModel(modelId)
+                                            simulations.filter { hasReadAccess(it.info, user) }
+                                        }
+                                    }
+                                )
                             }
 
                             // post a new simulation for model
                             post {
-                                withPrincipal(setOf(modelRole)) {
+                                withRequiredPrincipal(setOf(modelRole)) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
                                     val modelId = call.parameters["model"]!!
                                     val model = data.getGrainModel(modelId)
@@ -420,23 +419,23 @@ fun Application.centyllion() {
 
                     route("{simulation}") {
                         get {
-                            withPrincipal {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val simulationId = call.parameters["simulation"]!!
-                                val simulation = data.getSimulation(simulationId)
-                                context.respond(
-                                    when {
-                                        simulation == null -> HttpStatusCode.NotFound
-                                        !hasReadAccess(simulation.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> simulation
-                                    }
-                                )
+                            val user = call.principal<JWTPrincipal>()?.let {
+                                data.getOrCreateUserFromPrincipal(it)
                             }
+                            val simulationId = call.parameters["simulation"]!!
+                            val simulation = data.getSimulation(simulationId)
+                            context.respond(
+                                when {
+                                    simulation == null -> HttpStatusCode.NotFound
+                                    !hasReadAccess(simulation.info, user) -> HttpStatusCode.Unauthorized
+                                    else -> simulation
+                                }
+                            )
                         }
 
                         // patch an existing simulation for user
                         patch {
-                            withPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = call.receive(SimulationDescription::class)
@@ -455,7 +454,7 @@ fun Application.centyllion() {
 
                         // delete an existing model for user
                         delete {
-                            withPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(setOf(modelRole)) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = data.getSimulation(simulationId)
@@ -475,7 +474,7 @@ fun Application.centyllion() {
                 }
 
                 // binary assets
-                route("/asset") {
+                route("asset") {
                     get("{asset}") {
                         val id = call.parameters["asset"]!!
                         val asset = data.getAsset(id)
@@ -490,7 +489,7 @@ fun Application.centyllion() {
                 // events
                 route("event") {
                     get {
-                        withPrincipal(setOf(adminRole)) {
+                        withRequiredPrincipal(setOf(adminRole)) {
                             val events = data.getEvents()
                             context.respond(events)
                         }
@@ -502,12 +501,12 @@ fun Application.centyllion() {
 }
 
 /** Checks if [info] authorizes access for [user] to [Access.Read]*/
-fun hasReadAccess(info: DescriptionInfo, user: User) =
-    info.access.contains(Access.Read) || isOwner(info, user)
+fun hasReadAccess(info: DescriptionInfo, user: User?) =
+    info.access.contains(Access.Read) || (user != null && isOwner(info, user))
 
 fun isOwner(info: DescriptionInfo, user: User) = info.userId == user._id
 
-suspend fun PipelineContext<Unit, ApplicationCall>.withPrincipal(
+suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
     requiredRoles: Set<String> = emptySet(),
     block: suspend (JWTPrincipal) -> Unit
 ) {

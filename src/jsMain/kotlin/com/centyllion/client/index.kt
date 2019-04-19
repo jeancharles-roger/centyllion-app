@@ -7,8 +7,6 @@ import bulma.ElementColor
 import bulma.Message
 import bulma.Title
 import bulma.span
-import com.centyllion.common.betaRole
-import com.centyllion.common.centyllionHost
 import kotlinx.html.a
 import kotlinx.html.dom.create
 import kotlinx.html.js.onClickFunction
@@ -98,8 +96,6 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
     activateNavBar()
     showVersion()
 
-    val isCentyllionHost = window.location.host == centyllionHost
-    //val requiredRoles = if (!isCentyllionHost) roles + betaRole else roles
     val requiredRoles = roles
 
     return authenticate(requiredRoles.isNotEmpty()).then { keycloak ->
@@ -113,7 +109,7 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
                     requiredRoles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
 
             listenToPopstate(keycloak)
-            addMenu(isCentyllionHost, keycloak)
+            addMenu(keycloak)
 
             val page = findPageInUrl()
             if (page != null) openPage(page, keycloak, register = false)
@@ -156,19 +152,17 @@ fun activateNavBar() {
     }
 }
 
-fun addMenu(isCentyllionHost: Boolean, keycloak: KeycloakInstance) {
-    if (isCentyllionHost || keycloak.hasRealmRole(betaRole)) {
-        val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
-        pages.filter { page -> page.header && page.authorized(keycloak) }
-            .forEach { page ->
-                menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
-                    +page.title
-                    onClickFunction = {
-                        openPage(page, keycloak)
-                    }
-                })
-            }
-    }
+fun addMenu(keycloak: KeycloakInstance) {
+    val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
+    pages.filter { page -> page.header && page.authorized(keycloak) }
+        .forEach { page ->
+            menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
+                +page.title
+                onClickFunction = {
+                    openPage(page, keycloak)
+                }
+            })
+        }
 }
 
 fun listenToPopstate(instance: KeycloakInstance) {

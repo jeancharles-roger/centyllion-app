@@ -15,25 +15,27 @@ import kotlin.js.Promise
 data class Page(
     val title: String,
     val id: String,
-    val role: String,
+    val needUser: Boolean,
+    val role: String?,
     val header: Boolean,
     val callback: (root: HTMLElement, instance: KeycloakInstance?) -> Unit
 ) {
     fun authorized(keycloak: KeycloakInstance?): Boolean = when {
-        role.isEmpty() -> true
-        keycloak == null -> false
-        else -> keycloak.hasRealmRole(role)
+        !needUser -> true
+        role == null -> keycloak?.authenticated ?: false
+        else -> keycloak?.hasRealmRole(role) ?: false
+
     }
 }
 
 const val contentSelector = "section.cent-main"
 
 val pages = listOf(
-    Page("Explore", "explore", "", true, ::explore),
-    Page("Model", "model", modelRole, true, ::model),
-    Page("Profile", "profile", "", true, ::profile),
-    Page("Administration", "administration", adminRole, true, ::administration),
-    Page("Show", "show", "", false, ::show)
+    Page("Explore", "explore", false, null, true, ::explore),
+    Page("Model", "model", true, modelRole, true, ::model),
+    Page("Profile", "profile", true, null, true, ::profile),
+    Page("Administration", "administration", true, adminRole, true, ::administration),
+    Page("Show", "show", false, null, false, ::show)
 )
 
 val mainPage = pages[0]

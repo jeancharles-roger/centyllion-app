@@ -23,7 +23,7 @@ class FeaturedController(featured: FeaturedDescription, size: ColumnSize = Colum
     val author = Label(data.authorName)
 
     fun thumbnail() =
-        if (data.thumbnailId.isNotEmpty()) Image("/asset/${data.thumbnailId}", ImageSize.S128) else null
+        if (data.thumbnailId.isNotEmpty()) Image("/api/asset/${data.thumbnailId}", ImageSize.S128) else null
 
     val body = Media(
         left = listOfNotNull(thumbnail()),

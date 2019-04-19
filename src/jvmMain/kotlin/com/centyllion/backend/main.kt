@@ -214,20 +214,6 @@ fun Application.centyllion() {
     routing {
         get("/") { context.respondHtml { index() } }
 
-        // API for binary assets
-        route("/asset") {
-
-            get("{asset}") {
-                val id = call.parameters["asset"]!!
-                val asset = data.getAsset(id)
-                if (asset != null) {
-                    context.respondBytes(asset.data, ContentType.Image.PNG)
-                } else {
-                    context.respond(HttpStatusCode.NotFound)
-                }
-            }
-        }
-
         // Static files
         static { files("webroot") }
 
@@ -488,6 +474,20 @@ fun Application.centyllion() {
                     }
                 }
 
+                // binary assets
+                route("/asset") {
+                    get("{asset}") {
+                        val id = call.parameters["asset"]!!
+                        val asset = data.getAsset(id)
+                        if (asset != null) {
+                            context.respondBytes(asset.data, ContentType.Image.PNG)
+                        } else {
+                            context.respond(HttpStatusCode.NotFound)
+                        }
+                    }
+                }
+
+                // events
                 route("event") {
                     get {
                         withPrincipal(setOf(adminRole)) {

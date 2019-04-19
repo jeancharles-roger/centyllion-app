@@ -373,6 +373,7 @@ fun Application.centyllion() {
                         route("simulation") {
                             // model's simulations
                             get {
+                                val publicOnly = call.request.queryParameters["public"] != null
                                 val user = call.principal<JWTPrincipal>()?.let {
                                     data.getOrCreateUserFromPrincipal(it)
                                 }
@@ -384,7 +385,7 @@ fun Application.centyllion() {
                                         !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             val simulations = data.getSimulationForModel(modelId)
-                                            simulations.filter { hasReadAccess(it.info, user) }
+                                            simulations.filter { hasReadAccess(it.info, if (publicOnly) null else user) }
                                         }
                                     }
                                 )

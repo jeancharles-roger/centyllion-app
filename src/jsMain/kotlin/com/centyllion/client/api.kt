@@ -80,9 +80,10 @@ fun updateGrainModel(model: GrainModelDescription, instance: KeycloakInstance?) 
         )
     }
 
-fun fetchSimulations(modelId: String, instance: KeycloakInstance?) =
+fun fetchSimulations(modelId: String, public: Boolean, instance: KeycloakInstance?) =
     executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/model/$modelId/simulation", bearer)
+        val params = if (public) "?public" else ""
+        fetch("GET", "/api/model/$modelId/simulation$params", bearer)
             .then { Json.parse(SimulationDescription.serializer().list, it) }
     }
 

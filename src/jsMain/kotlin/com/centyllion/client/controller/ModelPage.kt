@@ -53,7 +53,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 // fetches new simulations or return one empty simulation
                 val newSimulations = when {
                     selectedModel._id.isNotEmpty() ->
-                        fetchSimulations(selectedModel._id, instance).then {
+                        fetchSimulations(selectedModel._id, false, instance).then {
                             message("Simulations for ${selectedModel.model.name} loaded")
                             if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
                         }.catch {

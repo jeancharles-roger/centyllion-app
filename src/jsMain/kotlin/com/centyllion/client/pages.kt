@@ -103,7 +103,7 @@ fun show(root: HTMLElement, instance: KeycloakInstance?) {
         // if there is a model id, use it to list all simulation and take the first one
         modelId != null && modelId.isNotEmpty() ->
             fetchGrainModel(modelId, instance).then { model ->
-                fetchSimulations(model._id, instance).then { simulations ->
+                fetchSimulations(model._id, true, instance).then { simulations ->
                     (simulations.firstOrNull() ?: emptySimulationDescription) to model
                 }
             }.then { it }

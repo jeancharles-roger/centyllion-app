@@ -35,7 +35,7 @@ class GrainEditController(
         data = data.copy(description = new)
     }
 
-    val movementProbabilityController = editableDoubleController(data.movementProbability, "p") { _, new, _ ->
+    val movementProbabilityController = editableDoubleController(data.movementProbability, "speed") { _, new, _ ->
         this.data = this.data.copy(movementProbability = new)
     }
 
@@ -57,7 +57,7 @@ class GrainEditController(
                 Level(left = listOf(colorController), right = listOf(nameController), mobile = true),
                 descriptionController,
                 HorizontalField(Help("Half life"), halfLifeController.container),
-                HorizontalField(Help("Probability"), movementProbabilityController.container),
+                HorizontalField(Help("Speed"), movementProbabilityController.container),
                 HorizontalField(Help("Directions"), directionController.container)
             ),
             right = listOf(delete)

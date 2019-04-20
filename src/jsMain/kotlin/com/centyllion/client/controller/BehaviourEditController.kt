@@ -51,7 +51,7 @@ class BehaviourEditController(
         this.data = this.data.copy(description = new)
     }
 
-    val probabilityController = editableDoubleController(data.probability, "Probability")
+    val probabilityController = editableDoubleController(data.probability, "Speed")
     { _, new, _ ->
         this.data = this.data.copy(probability = new)
     }
@@ -130,7 +130,7 @@ class BehaviourEditController(
             Columns(
                 // first line
                 Column(nameController, size = ColumnSize.S7),
-                Column(HorizontalField(Help("Probability"), probabilityController.container), size = ColumnSize.S5),
+                Column(HorizontalField(Help("Speed"), probabilityController.container), size = ColumnSize.S5),
                 // second line
                 Column(descriptionController, size = ColumnSize.S7),
                 Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),

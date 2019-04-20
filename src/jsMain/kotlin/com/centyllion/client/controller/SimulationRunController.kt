@@ -29,9 +29,9 @@ class SimulationRunController(
         if (old != new) {
             grainsController.data = new.grains
             behaviourController.data = new.behaviours
-            behaviourController.context = new
             selectedGrainController.context = new.grains
             simulator = Simulator(new, data)
+            behaviourController.context = simulator
             simulationViewController.data = simulator
             running = false
             refresh()
@@ -70,10 +70,14 @@ class SimulationRunController(
         }
 
     val behaviourController =
-        columnsController<Behaviour, GrainModel, BehaviourDisplayController>(
-            model.behaviours, model
-        ) { _, behaviour, previous ->
-            previous ?: BehaviourDisplayController(behaviour, model)
+        columnsController<Behaviour, Simulator, BehaviourRunController>(model.behaviours, simulator)
+        { _, behaviour, previous ->
+            val controller = previous ?: BehaviourRunController(behaviour, simulator)
+            controller.onSpeedChange = { behaviour, speed ->
+                simulator.setSpeed(behaviour, speed)
+
+            }
+            controller
         }
 
     val selectedGrainController = GrainSelectController(null, model.grains)

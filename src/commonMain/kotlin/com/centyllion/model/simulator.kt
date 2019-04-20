@@ -56,11 +56,19 @@ class Simulator(
 
     private val allBehaviours = model.behaviours + model.grains.mapNotNull { it.moveBehaviour() }
 
+    private val speeds = allBehaviours.map { it to it.probability }.toMap().toMutableMap()
+
     private val reactiveGrains = allBehaviours.mapNotNull { model.indexedGrains[it.mainReactiveId] }.toSet()
 
     fun grainAtIndex(index: Int) = model.indexedGrains[idAtIndex(index)]
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
+
+    fun getSpeed(behaviour: Behaviour) = speeds[behaviour] ?: 0.0
+
+    fun setSpeed(behaviour: Behaviour, speed: Double) {
+        speeds[behaviour] = speed
+    }
 
     fun oneStep() {
 
@@ -96,7 +104,7 @@ class Simulator(
                         // searches for applicable behaviours
                         val applicable = allBehaviours
                             .filter { it.applicable(grain, age, neighbours) } // found applicable behaviours
-                            .filter { random.nextDouble() < it.probability } // filters by probability
+                            .filter { random.nextDouble() < speeds[it]!! } // filters by probability
 
                         // selects behaviour if any is applicable
                         if (applicable.isNotEmpty()) {

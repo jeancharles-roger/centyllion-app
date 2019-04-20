@@ -19,7 +19,8 @@ interface DisplayElement {
 open class SimulatorViewController(simulator: Simulator) : NoContextController<Simulator, BulmaElement>() {
 
     override var data: Simulator by observable(simulator) { _, old, new ->
-        simulationCanvas.root.height = simulator.simulation.height * simulationCanvas.root.width / simulator.simulation.width
+        simulationCanvas.root.height =
+            simulator.simulation.height * simulationCanvas.root.width / simulator.simulation.width
         refresh()
     }
 
@@ -170,17 +171,18 @@ class SimulatorEditController(
                     toolElement = object : DisplayElement {
                         override fun draw(gc: CanvasRenderingContext2D) {
                             gc.save()
-                            gc.strokeStyle = if (x == sourceX || y == sourceY) "blue" else "black"
-
-                            gc.strokeText("$sourceX, $sourceY", canvasSourceX, canvasSourceY)
-                            gc.strokeText("$x, $y", canvasX, canvasY)
 
                             gc.beginPath()
                             gc.moveTo(canvasSourceX, canvasSourceY)
                             gc.lineTo(canvasX, canvasY)
-                            gc.lineWidth = 1.0
-                            gc.setLineDash(arrayOf(5.0, 15.0))
+                            gc.lineWidth = 4.0
+                            gc.strokeStyle = selectedGrainController.data?.color ?: "grey"
                             gc.stroke()
+
+                            gc.lineWidth = 0.75
+                            gc.strokeStyle = if (x == sourceX || y == sourceY) "blue" else "black"
+                            gc.strokeText("$sourceX, $sourceY", canvasSourceX, canvasSourceY)
+                            gc.strokeText("$x, $y", canvasX, canvasY)
 
                             gc.restore()
                         }
@@ -252,22 +254,41 @@ class SimulatorEditController(
             val y = ((mouseY - 4) / stepY).roundToInt()
             drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
         } else {
-            val brushElement = object : DisplayElement {
+            val paintElement = object : DisplayElement {
                 override fun draw(gc: CanvasRenderingContext2D) {
                     gc.save()
 
                     gc.beginPath()
-                    gc.fillStyle = "grey"
-                    gc.strokeStyle = "black"
-                    gc.lineWidth = 1.0
-                    gc.setLineDash(arrayOf(5.0, 10.0))
+
 
                     val factor = if (selectedTool == EditTools.Spray) 4 else 1
                     val brushSize = ToolSize.valueOf(sizeDropdown.text).size
-                    val radiusX = brushSize * factor * stepX / 2.0
-                    val radiusY = brushSize * factor * stepY / 2.0
+                    val size = brushSize * factor
+                    val radiusX = size * stepX / 2.0
+                    val radiusY = size * stepY / 2.0
                     gc.ellipse(mouseX, mouseY, radiusX, radiusY, (mouseX + mouseY) / 20, 0.0, 6.30 /* 2pi */)
-                    if (brushSize * factor == 1) gc.fill() else gc.stroke()
+
+                    gc.strokeStyle = "black"
+                    gc.lineWidth = 1.0
+
+                    when (selectedTool) {
+                        EditTools.Eraser -> {
+                            gc.globalAlpha = 0.7
+                            gc.fillStyle = "white"
+                        }
+                        EditTools.Spray -> {
+                            gc.globalAlpha = 0.3
+                            gc.fillStyle = selectedGrainController.data?.color ?: "grey"
+                        }
+                        else -> {
+                            gc.globalAlpha = 0.7
+                            gc.fillStyle = selectedGrainController.data?.color ?: "grey"
+                        }
+                    }
+
+                    gc.fill()
+                    gc.globalAlpha = 1.0
+                    if (selectedTool == EditTools.Eraser || size > 1) gc.stroke()
 
                     gc.restore()
                 }
@@ -275,9 +296,9 @@ class SimulatorEditController(
 
 
             toolElement = when {
-                selectedTool == EditTools.Pen && selectedGrainController.data != null -> brushElement
-                selectedTool == EditTools.Spray && selectedGrainController.data != null -> brushElement
-                selectedTool == EditTools.Eraser -> brushElement
+                selectedTool == EditTools.Pen && selectedGrainController.data != null -> paintElement
+                selectedTool == EditTools.Spray && selectedGrainController.data != null -> paintElement
+                selectedTool == EditTools.Eraser -> paintElement
                 else -> null
             }
             refresh()
@@ -326,9 +347,9 @@ class SimulatorEditController(
 
     init {
         simulationCanvas.root.apply {
-            onmouseup  = { mouseChange(it) }
-            onmousedown  = { mouseChange(it) }
-            onmousemove  = { mouseChange(it) }
+            onmouseup = { mouseChange(it) }
+            onmousedown = { mouseChange(it) }
+            onmousemove = { mouseChange(it) }
             onmouseout = {
                 toolElement = null
                 refresh()

@@ -34,7 +34,6 @@ class BehaviourRunController(
 
     val speedValue = Help(data.probability.toString())
 
-    // TODO use a log scale
     val speedSlider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01")
     { _, new ->
         val probability = toProbability(new)

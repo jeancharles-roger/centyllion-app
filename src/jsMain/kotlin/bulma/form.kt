@@ -336,3 +336,57 @@ class Checkbox(
 // TODO radio groups http://bulma.io/documentation/form/radio/
 
 // TODO file https://bulma.io/documentation/form/file/
+
+
+/**
+ * [Slider](https://wikiki.github.io/form/slider/) element .
+ * The extension needs to be imported.
+ */
+class Slider(
+    value: String = "", min: String = "0", max: String = "100", step: String = "5",
+    color: ElementColor = ElementColor.None, size: Size = Size.None,
+    var onChange: (event: Event, value: String) -> Unit = { _, _ -> }
+) : ControlElement {
+
+    override val root = document.create.input(InputType.range, classes = "slider is-fullwidth") {
+        this.value = value
+        this.min = min
+        this.max = max
+        this.step = step
+        onInputFunction = {
+            val target = it.target
+            if (target is HTMLInputElement) {
+                onChange(it, target.value)
+            }
+        }
+    }
+
+    var value: String
+        get() = root.value
+        set(value) {
+            root.value = value
+        }
+
+    var min: String
+        get() = root.min
+        set(value) {
+            root.min = value
+        }
+
+    var max: String
+        get() = root.max
+        set(value) {
+            root.max = value
+        }
+
+    var step: String
+        get() = root.step
+        set(value) {
+            root.step = value
+        }
+
+    var color by className(color, root)
+
+    var size by className(size, root)
+
+}

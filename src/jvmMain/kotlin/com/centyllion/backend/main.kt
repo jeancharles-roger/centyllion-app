@@ -19,7 +19,6 @@ import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
-import io.ktor.config.MapApplicationConfig
 import io.ktor.features.*
 import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
@@ -116,10 +115,8 @@ class ServerCommand : CliktCommand("Start the server") {
             }
             watchPaths = if (debug) listOf("src/jvmMain/") else emptyList()
 
-            val map = config as MapApplicationConfig
-            map.put("debug", "$debug")
-
-            module(Application::centyllion)
+            val data = MongoData("localhost", 27017)
+            module { centyllion(debug, data)}
 
         }
 
@@ -136,11 +133,7 @@ fun main(args: Array<String>) {
 }
 
 @KtorExperimentalAPI
-fun Application.centyllion() {
-    val debug = environment.config.property("debug").getString() == "true"
-
-    val data = Data("localhost", 27017)
-
+fun Application.centyllion(debug: Boolean, data: Data) {
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)

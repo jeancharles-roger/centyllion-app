@@ -93,6 +93,7 @@ kotlin {
             // JVM-specific tests and their dependencies:
             compilations["test"].defaultSourceSet {
                 dependencies {
+                    implementation("io.ktor:ktor-server-test-host:$ktor_version")
                     implementation(kotlin("test-junit"))
                 }
             }

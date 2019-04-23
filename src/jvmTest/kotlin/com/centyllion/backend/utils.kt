@@ -23,10 +23,11 @@ private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator 
 }
 
 /** Creates a JWT token for test API */
-fun createTextJwtToken(user: User) =
+fun createTextJwtToken(user: User, vararg role: String) =
     JWT.create()
         .withAudience(authClient).withClaim("sub", user.keycloakId)
         .withClaim("name", user.name).withClaim("email", user.email)
+        .withArrayClaim("roles", role)
         .withIssuer(authBase).sign(jwtAlgorithm)!!
 
 /** Execute tests with the Centyllion API testing rig */
@@ -40,11 +41,11 @@ fun <R> withCentyllion(test: TestApplicationEngine.() -> R): R =
     )
 
 fun TestApplicationEngine.handleLoggedInRequest(
-    method: HttpMethod, uri: String, user: User,
+    method: HttpMethod, uri: String, user: User, vararg role: String,
     setup: TestApplicationRequest.() -> Unit = {}
 ): TestApplicationCall = handleRequest {
     this.uri = uri
     this.method = method
-    this.addHeader("Authorization", "Bearer ${createTextJwtToken(user)}")
+    this.addHeader("Authorization", "Bearer ${createTextJwtToken(user, *role)}")
     setup()
 }

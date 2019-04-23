@@ -21,8 +21,8 @@ class BehaviourRunController(
         if (old != new) refresh()
     }
 
-    val titleLabel = Label()
-    val descriptionLabel = p()
+    val titleLabel = Label(behaviour.name)
+    val descriptionLabel = p().apply { text = behaviour.description }
 
     fun toSlider(p: Double) = (10.0.pow(p)).toString()
 

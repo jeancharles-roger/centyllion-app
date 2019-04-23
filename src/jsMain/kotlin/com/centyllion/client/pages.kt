@@ -45,7 +45,7 @@ val showPage = pages.find { it.id == "show" }!!
 fun explore(root: HTMLElement, instance: KeycloakInstance?) {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { index, data, previous ->
-        val controller = previous ?: FeaturedController(data)
+        val controller = previous ?: FeaturedController(data, instance)
         controller.body.root.onclick = {
             openPage(showPage, instance, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }

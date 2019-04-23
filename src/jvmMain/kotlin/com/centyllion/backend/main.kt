@@ -2,6 +2,7 @@ package com.centyllion.backend
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
+import com.auth0.jwt.JWTVerifier
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.*
@@ -116,7 +117,7 @@ class ServerCommand : CliktCommand("Start the server") {
             watchPaths = if (debug) listOf("src/jvmMain/") else emptyList()
 
             val data = MongoData("localhost", 27017)
-            module { centyllion(debug, data)}
+            module { centyllion(debug, data) }
 
         }
 
@@ -133,7 +134,10 @@ fun main(args: Array<String>) {
 }
 
 @KtorExperimentalAPI
-fun Application.centyllion(debug: Boolean, data: Data) {
+fun Application.centyllion(
+    debug: Boolean, data: Data,
+    verifier: JWTVerifier? = null
+) {
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)
@@ -147,7 +151,6 @@ fun Application.centyllion(debug: Boolean, data: Data) {
                 type.match(ContentType.Image.Any) -> CachingOptions(CacheControl.MaxAge(30 * 24 * 60 * 60 /* about a month */))
                 else -> CachingOptions(CacheControl.MaxAge(60 * 60 /* one hours */))
             }
-
         }
     }
 
@@ -192,11 +195,9 @@ fun Application.centyllion(debug: Boolean, data: Data) {
 
     install(Authentication) {
         jwt {
-            verifier(makeJwkProvider(), authBase)
+            if (verifier != null) { verifier(verifier) } else { verifier(makeJwkProvider(), authBase) }
             realm = authRealm
-            validate {
-                if (it.payload.audience.contains(authClient)) JWTPrincipal(it.payload) else null
-            }
+            validate { if (it.payload.audience?.contains(authClient) == true) JWTPrincipal(it.payload) else null }
         }
     }
 
@@ -378,7 +379,12 @@ fun Application.centyllion(debug: Boolean, data: Data) {
                                         !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             val simulations = data.getSimulationForModel(modelId)
-                                            simulations.filter { hasReadAccess(it.info, if (publicOnly) null else user) }
+                                            simulations.filter {
+                                                hasReadAccess(
+                                                    it.info,
+                                                    if (publicOnly) null else user
+                                                )
+                                            }
                                         }
                                     }
                                 )

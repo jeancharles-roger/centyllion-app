@@ -24,13 +24,17 @@ class FeaturedController(
             (listOf(behaviour.mainReactiveId) + behaviour.reaction.map { it.reactiveId})
             .mapNotNull { model.indexedGrains[it] }
             .map { Icon("circle").apply { root.style.color = it.color } }
+            .toTypedArray()
 
         val products =
             (listOf(behaviour.mainProductId) + behaviour.reaction.map { it.productId})
             .mapNotNull { model.indexedGrains[it] }
             .map { Icon("circle").apply { root.style.color = it.color } }
+            .toTypedArray()
 
-        val center = listOf(Help(behaviour.name)) + reactives + Icon("arrow-right") + products
+        val center =
+            listOf(Help(behaviour.name)) + div(*reactives) +
+            Icon("arrow-right") + div(*products)
         return Level(center = center)
     }
 

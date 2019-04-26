@@ -20,39 +20,15 @@ fun HTML.centyllionHead(title: String) =
     }
 
 @HtmlTagMarker
-fun BODY.centyllionHeader() =
-    section("section") {
-        val navBarId = "mainNavBar"
-        div("container") {
-            nav("navbar is-transparent") {
-                div("navbar-brand") {
-                    a(href = "/", classes = "navbar-item ") {
-                        img("Centyllion", "images/logo_2by1.png") {
-
-                        }
-                    }
-                    div("navbar-burger burger") {
-                        attributes["data-target"] = navBarId
-                        span { }
-                        span { }
-                        span { }
-                    }
-                }
-                div("navbar-menu") {
-                    id = navBarId
-                    div("navbar-start")
-                    div("navbar-end") {
-                        a("/", classes = "cent-user navbar-item") { +"Not connected" }
-                    }
-                }
-            }
-        }
-    }
-
-@HtmlTagMarker
 fun BODY.centyllionFooter() {
     footer("footer") {
         div("level") {
+            div("level-left") {
+                p {
+                    +"For any problem or question, contact "
+                    a("mailto:bug@centyllion.com") { +"us" }
+                }
+            }
             div("level-item has-text-centered") {
                 img("Centyllion", "images/logo_2by1.png") { width = "300px" }
                 strong { +"platform" }
@@ -76,7 +52,6 @@ fun BODY.centyllionFooter() {
 fun HTML.index() {
     centyllionHead("Centyllion")
     body {
-        centyllionHeader()
         section("central cent-main") {
             div("container")
         }

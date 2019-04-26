@@ -3,11 +3,8 @@ package com.centyllion.client
 import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
-import bulma.ElementColor
-import bulma.Message
-import bulma.Title
-import bulma.span
-import kotlinx.html.a
+import bulma.*
+import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.*
@@ -93,12 +90,10 @@ fun findPageInUrl(): Page? {
 }
 
 fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
-    activateNavBar()
+    createNavBar()
     showVersion()
 
-    val requiredRoles = roles
-
-    return authenticate(requiredRoles.isNotEmpty()).then { keycloak ->
+    return authenticate(roles.isNotEmpty()).then { keycloak ->
         if (keycloak != null) {
             val userLink = document.querySelector("a.cent-user") as HTMLAnchorElement?
             if (keycloak.tokenParsed != null) {
@@ -114,7 +109,7 @@ fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
             }
 
             val granted = keycloak.authenticated &&
-                    requiredRoles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
+                    roles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
 
             listenToPopstate(keycloak)
             addMenu(keycloak)
@@ -144,7 +139,41 @@ fun updateActivePage(page: Page) {
     }
 }
 
-fun activateNavBar() {
+
+@HtmlTagMarker
+fun centyllionHeader() =
+    document.create.section("section") {
+        val navBarId = "mainNavBar"
+        div("container") {
+            nav("navbar is-transparent") {
+                div("navbar-brand") {
+                    a(href = "/", classes = "navbar-item ") {
+                        img("Centyllion", "images/logo_2by1.png") {
+
+                        }
+                    }
+                    div("navbar-burger burger") {
+                        attributes["data-target"] = navBarId
+                        span { }
+                        span { }
+                        span { }
+                    }
+                }
+                div("navbar-menu") {
+                    id = navBarId
+                    div("navbar-start")
+                    div("navbar-end") {
+                        a("/", classes = "cent-user navbar-item") { +"Not connected" }
+                    }
+                }
+            }
+        }
+    }
+
+fun createNavBar() {
+    val body = document.querySelector("body") as HTMLBodyElement
+    body.insertAdjacentElement(Position.AfterBegin.toString(), centyllionHeader())
+
     val all = document.querySelectorAll(".navbar-burger")
     for (i in 0 until all.length) {
         val burger = all[i] as HTMLElement

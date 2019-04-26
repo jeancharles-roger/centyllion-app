@@ -10,7 +10,7 @@ class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { _, featured, previous ->
-        val controller = previous ?: FeaturedController(featured, instance, ColumnSize.Full)
+        val controller = previous ?: FeaturedController(featured, ColumnSize.Full)
         controller.body.right = listOf(Delete {
             // forces delete with this toggle
             toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, featured)

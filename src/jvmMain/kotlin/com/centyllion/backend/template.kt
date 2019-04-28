@@ -30,7 +30,7 @@ fun BODY.centyllionFooter() {
                 }
             }
             div("level-item has-text-centered") {
-                img("Centyllion", "images/logo_2by1.png") { width = "300px" }
+                img("Centyllion", "images/logo-2by1.png") { width = "300px" }
                 strong { +"platform" }
             }
             div("level-right") {

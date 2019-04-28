@@ -287,11 +287,18 @@ class NavBarBurger(onClick: (NavBarBurger) -> Unit = {}): NavBarItem {
 
 }
 
-class NavBarLinkItem(text: String, href: String? = null, onClick: (NavBarLinkItem) -> Unit = {}): NavBarItem {
+class NavBarLinkItem(text: String, href: String? = null, id: String? = null, onClick: (NavBarLinkItem) -> Unit = {}): NavBarItem {
     override val root = document.create.a(href, null, "navbar-item") {
         +text
+        if (id != null)  attributes["id"] = id
         onClickFunction = { onClick(this@NavBarLinkItem) }
-    }
+    } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) { root.href = value }
+
+
 }
 
 class NavBarImageItem(
@@ -334,7 +341,7 @@ class NavBar(
         div("navbar-menu")
     }
 
-    private val menuNode = root.querySelector("div.navbar-menu") as HTMLElement
+    val menuNode = root.querySelector("div.navbar-menu") as HTMLElement
 
     var transparent by className(transparent, "is-transparent", root)
 

@@ -4,11 +4,9 @@ import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
 import bulma.*
-import kotlinx.html.*
-import kotlinx.html.dom.create
-import kotlinx.html.js.onClickFunction
 import kotlinx.io.IOException
-import org.w3c.dom.*
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
@@ -16,46 +14,51 @@ import kotlin.js.Promise
 
 @JsName("index")
 fun index() {
+    // creates nav bar and adds it to body
+    val navBar = navBar()
+    document.body?.insertAdjacentElement(Position.AfterBegin.toString(), Section(Container(navBar)).root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
-
-    createNavBar()
-
     authenticate(false).then { keycloak ->
 
+        // creates context
         val context = object : AppContext {
+            override val navBar = navBar
             override val root = root
             override val keycloak = keycloak
             override val api = Api(keycloak)
         }
 
         // updates login link
-        val userLink = document.querySelector("a.cent-user") as HTMLAnchorElement?
+        val userItem = navBar.end.first() as NavBarLinkItem
         if (keycloak.tokenParsed != null) {
-            userLink?.let {
-                it.innerText = keycloak.tokenParsed.asDynamic().name as String
-                it.href = keycloak.createAccountUrl()
-            }
+            userItem.text = keycloak.tokenParsed.asDynamic().name as String
+            userItem.href = keycloak.createAccountUrl()
         } else {
-            userLink?.let {
-                it.innerText = "Log in"
-                it.href = keycloak.createLoginUrl(null)
-            }
+            userItem.text = "Log In"
+            userItem.href = keycloak.createLoginUrl(null)
         }
 
-        listenToPopstate(context)
-        addMenu(context)
+        // listens to pop state
+        window.addEventListener("popstate", {
+            findPageInUrl()?.let { openPage(it, context, register = false) }
+        })
+
+        // adds menu
+        context.navBar.start = pages.filter { page -> page.header && page.authorized(context.keycloak) }
+            .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
+
+        // shows version
+        showVersion(context.api)
 
         console.log("Starting function")
 
-        showVersion(context.api)
+        openPage(findPageInUrl() ?: mainPage, context, register = false)
 
-        val page = findPageInUrl()
-        openPage(if (page != null) page else mainPage, context, register = false)
     }.catch {
         error(root, it)
         console.error("Error on initialize")
-        console.error(it)
+        console.error(it.asDynamic().stack)
     }
 }
 
@@ -65,7 +68,16 @@ fun openPage(
     parameters: Map<String, String> = emptyMap(), register: Boolean = true
 ) {
     // highlight active page
-    updateActivePage(page)
+    appContext.navBar.start.forEach {
+        if (it.root.id == page.id) {
+            it.root.classList.add("has-text-weight-bold")
+            it.root.classList.add("is-active")
+
+        } else {
+            it.root.classList.remove("has-text-weight-bold")
+            it.root.classList.remove("is-active")
+        }
+    }
 
     // updates locations and register to history
     updateLocation(page, parameters, register)
@@ -122,88 +134,20 @@ fun findPageInUrl(): Page? {
     return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
 
-fun updateActivePage(page: Page) {
-    // clear active status
-    val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
-    for (item in menu.querySelectorAll(".navbar-item").asList()) {
-        if (item is HTMLElement) {
-            item.classList.remove("has-text-weight-bold")
+fun navBar(): NavBar {
+    val navBar = NavBar(
+        end = listOf(
+            NavBarLinkItem("Not connected")
+        )
+    )
+    navBar.brand = listOf(
+        NavBarImageItem("images/logo-2by1.png"),
+        NavBarBurger() {
+            it.active = !it.active
+            navBar.menuNode.classList.toggle("is-active")
         }
-    }
-    // adds active status to current menu
-    val item = menu.querySelector("a.cent-${page.id}")
-    if (item is HTMLElement) {
-        item.classList.add("has-text-weight-bold")
-    }
-}
-
-
-@HtmlTagMarker
-fun centyllionHeader() =
-    document.create.section("section") {
-        val navBarId = "mainNavBar"
-        div("container") {
-            nav("navbar is-transparent") {
-                div("navbar-brand") {
-                    a(href = "/", classes = "navbar-item ") {
-                        img("Centyllion", "images/logo-2by1.png") {
-
-                        }
-                    }
-                    div("navbar-burger burger") {
-                        attributes["data-target"] = navBarId
-                        span { }
-                        span { }
-                        span { }
-                    }
-                }
-                div("navbar-menu") {
-                    id = navBarId
-                    div("navbar-start")
-                    div("navbar-end") {
-                        a("/", classes = "cent-user navbar-item") { +"Not connected" }
-                    }
-                }
-            }
-        }
-    }
-
-fun createNavBar() {
-    val body = document.querySelector("body") as HTMLBodyElement
-    body.insertAdjacentElement(Position.AfterBegin.toString(), centyllionHeader())
-
-    val all = document.querySelectorAll(".navbar-burger")
-    for (i in 0 until all.length) {
-        val burger = all[i] as HTMLElement
-        burger.addEventListener("click", { _ ->
-            // Get the target from the "data-target" attribute
-            val target = burger.dataset["target"]
-            if (target != null) {
-                val targetElement = document.getElementById(target) as HTMLElement
-                burger.classList.toggle("is-active")
-                targetElement.classList.toggle("is-active")
-            }
-        })
-    }
-}
-
-fun addMenu(context: AppContext) {
-    val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
-    pages.filter { page -> page.header && page.authorized(context.keycloak) }
-        .forEach { page ->
-            menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
-                +page.title
-                onClickFunction = {
-                    openPage(page, context)
-                }
-            })
-        }
-}
-
-fun listenToPopstate(context: AppContext) {
-    window.addEventListener("popstate", {
-        findPageInUrl()?.let { openPage(it, context, register = false) }
-    })
+    )
+    return navBar
 }
 
 fun error(root: HTMLElement, throwable: Throwable) =

@@ -1,12 +1,12 @@
 package com.centyllion.client
 
 import KeycloakInstance
+import bulma.NavBar
 import org.w3c.dom.HTMLElement
 
 interface AppContext {
 
-    // TODO Add NavBar
-    //val navbar: NavBar
+    val navBar: NavBar
 
     val root: HTMLElement
 

@@ -30,10 +30,10 @@ fun canvas(classes: String? = null, block: CANVAS.() -> Unit = {}) =
     HtmlWrapper(document.create.canvas(classes, block) as HTMLCanvasElement)
 
 /** [Container](https://bulma.io/documentation/layout/container) element */
-class Container(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
+class Container(vararg body: BulmaElement) : BulmaElement {
     override val root: HTMLElement = document.create.div("container")
 
-    var body by bulmaList(initialBody, root)
+    var body by bulmaList(body.toList(), root)
 }
 
 /** [Level](https://bulma.io/documentation/layout/level) element */
@@ -108,10 +108,10 @@ class Hero : BulmaElement {
 }
 
 /** [Section](https://bulma.io/documentation/layout/section) element */
-class Section(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
+class Section(vararg body: BulmaElement) : BulmaElement {
     override val root: HTMLElement = document.create.div("section")
 
-    var body by bulmaList(initialBody, root)
+    var body by bulmaList(body.toList(), root)
 }
 
 /** [Footer](https://bulma.io/documentation/layout/footer) element */

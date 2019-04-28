@@ -1,7 +1,6 @@
 package com.centyllion.client
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 import kotlin.js.Date
@@ -13,17 +12,13 @@ data class Version(
     val date: String
 )
 
-fun fetchVersion() =
-    fetch("GET", "/version.json").then {Json.parse(Version.serializer(), it) }
-
-
-fun showVersion() {
+fun showVersion(api: Api) {
     val versionElement = document.getElementById("version")
     val buildElement = document.getElementById("build")
     val dateElement = document.getElementById("date")
 
     if (versionElement != null || buildElement != null || dateElement != null) {
-        fetchVersion().then {
+        api.fetchVersion().then {
             if (versionElement is HTMLElement) versionElement.innerText = it.version
             if (buildElement is HTMLElement) buildElement.innerText = it.build
             if (dateElement is HTMLElement) {

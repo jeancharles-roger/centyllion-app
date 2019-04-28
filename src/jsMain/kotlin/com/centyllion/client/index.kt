@@ -7,6 +7,7 @@ import bulma.*
 import kotlinx.html.*
 import kotlinx.html.dom.create
 import kotlinx.html.js.onClickFunction
+import kotlinx.io.IOException
 import org.w3c.dom.*
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
@@ -15,11 +16,43 @@ import kotlin.js.Promise
 
 @JsName("index")
 fun index() {
-    initialize().then { (instance, page) ->
+
+    val root = document.querySelector(contentSelector) as HTMLElement
+
+    createNavBar()
+
+    authenticate(false).then { keycloak ->
+
+        val context = object : AppContext {
+            override val root = root
+            override val keycloak = keycloak
+            override val api = Api(keycloak)
+        }
+
+        // updates login link
+        val userLink = document.querySelector("a.cent-user") as HTMLAnchorElement?
+        if (keycloak.tokenParsed != null) {
+            userLink?.let {
+                it.innerText = keycloak.tokenParsed.asDynamic().name as String
+                it.href = keycloak.createAccountUrl()
+            }
+        } else {
+            userLink?.let {
+                it.innerText = "Log in"
+                it.href = keycloak.createLoginUrl(null)
+            }
+        }
+
+        listenToPopstate(context)
+        addMenu(context)
+
         console.log("Starting function")
-        if (page == null) openPage(mainPage, instance)
+
+        showVersion(context.api)
+
+        val page = findPageInUrl()
+        openPage(if (page != null) page else mainPage, context, register = false)
     }.catch {
-        val root = document.querySelector(contentSelector) as HTMLElement
         error(root, it)
         console.error("Error on initialize")
         console.error(it)
@@ -28,7 +61,7 @@ fun index() {
 
 /** Open the given [page] */
 fun openPage(
-    page: Page, instance: KeycloakInstance?,
+    page: Page, appContext: AppContext,
     parameters: Map<String, String> = emptyMap(), register: Boolean = true
 ) {
     // highlight active page
@@ -45,8 +78,8 @@ fun openPage(
     }
 
     // tries to load page if authorized
-    if (page.authorized(instance)) {
-        page.callback(root, instance)
+    if (page.authorized(appContext.keycloak)) {
+        page.callback(appContext)
     } else {
         error(root, "Unauthorized", "You are not authorized to access this page")
     }
@@ -75,53 +108,18 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, register: Boole
 
 fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
 
-fun authenticate(required: Boolean): Promise<KeycloakInstance?> {
+fun authenticate(required: Boolean): Promise<KeycloakInstance> {
     val keycloak = Keycloak()
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", timeSkew = 60)
     options.onLoad = if (required) "login-required" else "check-sso"
     val promise = keycloak.init(options)
-    return promise.then(onFulfilled = { keycloak }, onRejected = { null })
+    return promise.then(onFulfilled = { keycloak }, onRejected = { throw IOException("Can't connect to Keycloak") })
 }
 
 fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
     return params.get("page")?.let { id -> pages.find { it.id == id } }
-}
-
-fun initialize(vararg roles: String): Promise<Pair<KeycloakInstance?, Page?>> {
-    createNavBar()
-    showVersion()
-
-    return authenticate(roles.isNotEmpty()).then { keycloak ->
-        if (keycloak != null) {
-            val userLink = document.querySelector("a.cent-user") as HTMLAnchorElement?
-            if (keycloak.tokenParsed != null) {
-                userLink?.let {
-                    it.innerText = keycloak.tokenParsed.asDynamic().name as String
-                    it.href = keycloak.createAccountUrl()
-                }
-            } else {
-                userLink?.let {
-                    it.innerText = "Log in"
-                    it.href = keycloak.createLoginUrl(null)
-                }
-            }
-
-            val granted = keycloak.authenticated &&
-                    roles.fold(true) { a, r -> a && keycloak.hasRealmRole(r) }
-
-            listenToPopstate(keycloak)
-            addMenu(keycloak)
-
-            val page = findPageInUrl()
-            if (page != null) openPage(page, keycloak, register = false)
-
-            (if (granted) keycloak else null) to page
-        } else {
-            null to null
-        }
-    }
 }
 
 fun updateActivePage(page: Page) {
@@ -148,7 +146,7 @@ fun centyllionHeader() =
             nav("navbar is-transparent") {
                 div("navbar-brand") {
                     a(href = "/", classes = "navbar-item ") {
-                        img("Centyllion", "images/logo_2by1.png") {
+                        img("Centyllion", "images/logo-2by1.png") {
 
                         }
                     }
@@ -189,22 +187,22 @@ fun createNavBar() {
     }
 }
 
-fun addMenu(keycloak: KeycloakInstance) {
+fun addMenu(context: AppContext) {
     val menu = document.querySelector(".navbar-menu > .navbar-start") as HTMLDivElement
-    pages.filter { page -> page.header && page.authorized(keycloak) }
+    pages.filter { page -> page.header && page.authorized(context.keycloak) }
         .forEach { page ->
             menu.appendChild(document.create.a(classes = "navbar-item cent-${page.id}") {
                 +page.title
                 onClickFunction = {
-                    openPage(page, keycloak)
+                    openPage(page, context)
                 }
             })
         }
 }
 
-fun listenToPopstate(instance: KeycloakInstance) {
+fun listenToPopstate(context: AppContext) {
     window.addEventListener("popstate", {
-        findPageInUrl()?.let { openPage(it, instance, register = false) }
+        findPageInUrl()?.let { openPage(it, context, register = false) }
     })
 }
 

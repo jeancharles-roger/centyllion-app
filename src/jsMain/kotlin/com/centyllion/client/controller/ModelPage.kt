@@ -1,14 +1,17 @@
 package com.centyllion.client.controller
 
-import KeycloakInstance
 import bulma.*
-import com.centyllion.client.*
+import com.centyllion.client.AppContext
+import com.centyllion.client.getLocationParams
+import com.centyllion.client.updateLocation
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import kotlin.js.Promise.Companion.resolve
 import kotlin.properties.Delegates.observable
 
-class ModelPage(val instance: KeycloakInstance) : BulmaElement {
+class ModelPage(appContext: AppContext) : BulmaElement {
+
+    val api = appContext.api
 
     val newIcon = "plus"
     val saveIcon = "cloud-upload-alt"
@@ -53,7 +56,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
                 // fetches new simulations or return one empty simulation
                 val newSimulations = when {
                     selectedModel._id.isNotEmpty() ->
-                        fetchSimulations(selectedModel._id, false, instance).then {
+                        api.fetchSimulations(selectedModel._id, false).then {
                             message("Simulations for ${selectedModel.model.name} loaded")
                             if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
                         }.catch {
@@ -132,7 +135,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val deleteModelButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedModel = selectedModel
         if (deletedModel._id.isNotEmpty()) {
-            deleteGrainModel(deletedModel, instance).then {
+            api.deleteGrainModel(deletedModel).then {
                 removeModel(deletedModel)
                 message("Model ${deletedModel.model.name} deleted")
             }.catch { this.error(it) }
@@ -159,7 +162,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedSimulation = selectedSimulation
         if (deletedSimulation._id.isNotEmpty()) {
-            deleteSimulation(deletedSimulation, instance).then {
+            api.deleteSimulation(deletedSimulation).then {
                 removeSimulation(deletedSimulation)
                 message("Simulation ${deletedSimulation.simulation.name} deleted")
             }.catch { this.error(it) }
@@ -220,11 +223,11 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
     fun save() {
         if (needModelSave() && selectedModel._id.isEmpty()) {
             // The model needs to be save first
-            saveGrainModel(selectedModel.model, instance)
+            api.saveGrainModel(selectedModel.model)
                 .then { newModel ->
                     updateModel(selectedModel, newModel, false)
                     modelStatus[selectedModel] = Status.Saved
-                    saveSimulation(newModel._id, selectedSimulation.simulation, instance)
+                    api.saveSimulation(newModel._id, selectedSimulation.simulation)
                 }.then { newSimulation ->
                     simulationStatus[selectedSimulation] = Status.Saved
                     updateSimulation(selectedSimulation, newSimulation, false)
@@ -233,7 +236,7 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         } else {
 
             if (needModelSave()) {
-                updateGrainModel(selectedModel, instance).then {
+                api.updateGrainModel(selectedModel).then {
                     modelStatus[selectedModel] = Status.Saved
                     refreshModels()
                     refreshSelectedModel()
@@ -243,13 +246,13 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
 
             if (needSimulationSave()) {
                 if (selectedSimulation._id.isEmpty()) {
-                    saveSimulation(selectedModel._id, selectedSimulation.simulation, instance).then {
+                    api.saveSimulation(selectedModel._id, selectedSimulation.simulation).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         updateSimulation(selectedSimulation, it, false)
                         message("Simulation ${selectedSimulation.simulation.name} saved")
                     }.catch { this.error(it) }
                 } else {
-                    updateSimulation(selectedSimulation, instance).then {
+                    api.updateSimulation(selectedSimulation).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         refreshSimulations()
                         refreshSelectedSimulation()
@@ -313,24 +316,22 @@ class ModelPage(val instance: KeycloakInstance) : BulmaElement {
         refreshSimulations()
         refreshSelectedSimulation()
 
-        fetchMyGrainModels(instance)
-            .then {
-                // refreshes modelStatus before models to obtain the correct icons
-                val newModels = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
-                modelStatus = newModels
-                    .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
-                    .toMap().toMutableMap()
-                models = newModels
+        api.fetchMyGrainModels().then {
+            // refreshes modelStatus before models to obtain the correct icons
+            val newModels = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
+            modelStatus = newModels
+                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                .toMap().toMutableMap()
+            models = newModels
 
-                val modelId = getLocationParams("model")
-                selectedModel = models.find { it._id == modelId } ?: models.first()
-                message("Models loaded")
-            }
-            .catch {
-                models = listOf(emptyGrainModelDescription)
-                selectedModel = models.first()
-                error(it.message ?: it.toString())
-            }
+            val modelId = getLocationParams("model")
+            selectedModel = models.find { it._id == modelId } ?: models.first()
+            message("Models loaded")
+        }.catch {
+            models = listOf(emptyGrainModelDescription)
+            selectedModel = models.first()
+            error(it.message ?: it.toString())
+        }
     }
 
     fun error(throwable: Throwable) {

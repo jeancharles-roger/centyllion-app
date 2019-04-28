@@ -7,7 +7,6 @@ import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.emptySimulationDescription
-import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise
@@ -18,7 +17,7 @@ data class Page(
     val needUser: Boolean,
     val role: String?,
     val header: Boolean,
-    val callback: (root: HTMLElement, instance: KeycloakInstance?) -> Unit
+    val callback: (appContext: AppContext) -> Unit
 ) {
     fun authorized(keycloak: KeycloakInstance?): Boolean = when {
         !needUser -> true
@@ -42,12 +41,12 @@ val mainPage = pages[0]
 
 val showPage = pages.find { it.id == "show" }!!
 
-fun explore(root: HTMLElement, instance: KeycloakInstance?) {
+fun explore(appContext: AppContext) {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { index, data, previous ->
         val controller = previous ?: FeaturedController(data)
         controller.body.root.onclick = {
-            openPage(showPage, instance, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+            openPage(showPage, appContext, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
         controller.body.root.style.cursor = "pointer"
         controller
@@ -55,41 +54,41 @@ fun explore(root: HTMLElement, instance: KeycloakInstance?) {
     val page = div(
         Title("Explore featured models"), featuredController
     )
-    root.appendChild(page.root)
+    appContext.root.appendChild(page.root)
 
-    fetchAllFeatured(instance).then { models -> featuredController.data = models }
+    appContext.api.fetchAllFeatured().then { models -> featuredController.data = models }
 }
 
-fun profile(root: HTMLElement, instance: KeycloakInstance?) {
+fun profile(appContext: AppContext) {
     val userController = UserController()
     val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))
-    root.appendChild(columns.root)
+    appContext.root.appendChild(columns.root)
 
     // initialize controller
-    fetchUser(instance).then { userController.data = it }
+    appContext.api.fetchUser().then { userController.data = it }
 
     // sets callbacks for update
     userController.onUpdate = { _, new, _ ->
-        if (new != null) saveUser(new, instance) else null
+        if (new != null) appContext.api.saveUser(new) else null
     }
 }
 
-fun model(root: HTMLElement, instance: KeycloakInstance?) {
+fun model(appContext: AppContext) {
     // for model, user should be logged in
-    if (instance != null) {
-        root.appendChild(ModelPage(instance).root)
+    if (appContext.keycloak != null) {
+        appContext.root.appendChild(ModelPage(appContext).root)
     }
 }
 
-fun administration(root: HTMLElement, instance: KeycloakInstance?) {
+fun administration(appContext: AppContext) {
     // for admin, user must be logged in
-    if (instance != null) {
-        root.appendChild(AdministrationPage(instance).root)
+    if (appContext.keycloak != null) {
+        appContext.root.appendChild(AdministrationPage(appContext).root)
     }
 }
 
 
-fun show(root: HTMLElement, instance: KeycloakInstance?) {
+fun show(appContext: AppContext) {
     val params = URLSearchParams(window.location.search)
     val simulationId = params.get("simulation")
     val modelId = params.get("model")
@@ -98,14 +97,14 @@ fun show(root: HTMLElement, instance: KeycloakInstance?) {
     val result = when {
         // if there is a simulation id, use it to find the model
         simulationId != null && simulationId.isNotEmpty() ->
-            fetchSimulation(simulationId, instance).then { simulation ->
-                fetchGrainModel(simulation.modelId, instance).then { simulation to it }
+            appContext.api.fetchSimulation(simulationId).then { simulation ->
+                appContext.api.fetchGrainModel(simulation.modelId).then { simulation to it }
             }.then { it }
 
         // if there is a model id, use it to list all simulation and take the first one
         modelId != null && modelId.isNotEmpty() ->
-            fetchGrainModel(modelId, instance).then { model ->
-                fetchSimulations(model._id, true, instance).then { simulations ->
+            appContext.api.fetchGrainModel(modelId).then { model ->
+                appContext.api.fetchSimulations(model._id, true).then { simulations ->
                     (simulations.firstOrNull() ?: emptySimulationDescription) to model
                 }
             }.then { it }
@@ -115,9 +114,9 @@ fun show(root: HTMLElement, instance: KeycloakInstance?) {
 
     result.then {
         val controller = SimulationRunController(it.first.simulation, it.second.model, true)
-        root.appendChild(controller.root)
+        appContext.root.appendChild(controller.root)
     }.catch {
-        root.appendChild(
+        appContext.root.appendChild(
             Message(
                 color = ElementColor.Danger,
                 header = listOf(Title("Error: ${it::class}")),

@@ -1,12 +1,13 @@
 package com.centyllion.client.controller
 
-import KeycloakInstance
 import bulma.*
-import com.centyllion.client.*
+import com.centyllion.client.AppContext
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
-class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
+class AdministrationPage(appContext: AppContext) : BulmaElement {
+
+    val api = appContext.api
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { _, featured, previous ->
@@ -21,7 +22,7 @@ class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
     val publicModelsController = columnsController<GrainModelDescription, List<FeaturedDescription>, GrainModelFeaturedController>(
         emptyList(), emptyList()
     ) { _, model, previous ->
-        val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, instance)
+        val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, api)
         controller.toggleFeature = ::toggleFeatured
         controller
     }
@@ -40,11 +41,11 @@ class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
     val container: BulmaElement = TabPages(featuredPage, eventPage, tabs = Tabs(boxed = true)) {
        when (it) {
            featuredPage -> {
-               fetchAllFeatured(instance).then { featuredController.data = it}
-               fetchPublicGrainModels(instance).then { publicModelsController.data = it}
+               api.fetchAllFeatured().then { featuredController.data = it}
+               api.fetchPublicGrainModels().then { publicModelsController.data = it}
            }
            eventPage -> {
-               fetchEvents(instance).then { eventsController.data = it }
+               api.fetchEvents().then { eventsController.data = it }
            }
        }
     }
@@ -53,11 +54,11 @@ class AdministrationPage(val instance: KeycloakInstance) : BulmaElement {
 
     fun toggleFeatured(model: GrainModelDescription, simulation: SimulationDescription, featured: FeaturedDescription?) {
         val result = if (featured == null) {
-            saveFeatured(model._id, simulation._id, model.info.userId, instance).then {
+            api.saveFeatured(model._id, simulation._id, model.info.userId).then {
                 featuredController.data + it
             }
         } else {
-            deleteFeatured(featured, instance).then {
+            api.deleteFeatured(featured).then {
                 featuredController.data - featured
             }
         }

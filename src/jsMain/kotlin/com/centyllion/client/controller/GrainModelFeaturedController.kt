@@ -1,8 +1,7 @@
 package com.centyllion.client.controller
 
-import KeycloakInstance
 import bulma.*
-import com.centyllion.client.fetchSimulations
+import com.centyllion.client.Api
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
@@ -10,7 +9,7 @@ import kotlin.properties.Delegates.observable
 
 class GrainModelFeaturedController(
     model: GrainModelDescription, allFeatured: List<FeaturedDescription>,
-    instance: KeycloakInstance, size: ColumnSize = ColumnSize.Half,
+    api: Api, size: ColumnSize = ColumnSize.Half,
     var toggleFeature: (
         model: GrainModelDescription, simulation: SimulationDescription, featured: FeaturedDescription?
     ) -> Unit = { _, _, _ -> }
@@ -48,7 +47,7 @@ class GrainModelFeaturedController(
 
     val simulationDropDown = Dropdown("Simulations", rounded = true, icon = Icon("play")) { dropdown ->
         dropdown.items = listOf(DropdownSimpleItem("Loading", Icon("sync", spin = true)))
-        fetchSimulations(model._id, true, instance).then { simulations ->
+        api.fetchSimulations(model._id, true).then { simulations ->
             dropdown.items = simulations.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
                     toggleFeature(model, simulation, featured(simulation))

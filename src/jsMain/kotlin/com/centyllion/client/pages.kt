@@ -12,18 +12,13 @@ import kotlin.browser.window
 import kotlin.js.Promise
 
 data class Page(
-    val title: String,
-    val id: String,
-    val needUser: Boolean,
-    val role: String?,
-    val header: Boolean,
-    val callback: (appContext: AppContext) -> Unit
+    val title: String, val id: String, val needUser: Boolean,
+    val role: String?, val header: Boolean, val callback: (appContext: AppContext) -> Unit
 ) {
     fun authorized(keycloak: KeycloakInstance?): Boolean = when {
         !needUser -> true
         role == null -> keycloak?.authenticated ?: false
         else -> keycloak?.hasRealmRole(role) ?: false
-
     }
 }
 

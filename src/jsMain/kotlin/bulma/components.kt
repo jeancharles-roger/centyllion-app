@@ -59,35 +59,73 @@ class Breadcrumb(
     var alignment by className(Alignment.Left, root)
 }
 
-class CardHeader(val text: String = "", val icon: String? = null)
+
+interface CardItem : BulmaElement
+
+class CardHeader(text: String = "", icon: Icon? = null) : CardItem {
+    override val root = document.create.header("card-header") {
+        p("card-header-title") { +text }
+    }
+
+    private val titleNode = root.querySelector("p.card-header-title") as HTMLParagraphElement
+
+    override var text
+        get() = titleNode.innerText
+        set(value) { titleNode.innerText = value }
+
+    var icon by bulma(icon, root)
+
+}
+
+class CardImage(image: Image) : CardItem {
+    override val root = document.create.header("card-image")
+
+    var image by bulma(image, root)
+}
+
+class CardContent(vararg body: BulmaElement): CardItem {
+    override val root = document.create.header("card-content")
+
+    var body by bulmaList(body.toList(), root)
+}
+
+interface CardFooterItem: BulmaElement
+
+class CardFooterLinkItem(
+    text: String, href: String? = null, onClick: (CardFooterLinkItem) -> Unit = {}
+) : CardFooterItem {
+    override val root = document.create.a(href, null, "card-footer-item") {
+        +text
+        onClickFunction = { onClick(this@CardFooterLinkItem) }
+    } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) {
+            root.href = value
+        }
+}
+
+class CardFooterContentItem(vararg content: BulmaElement) : CardFooterItem {
+    override val root = document.create.p("card-footer-item")
+
+    var content by bulmaList(content.toList(), root)
+}
+
+class CardFooter(vararg body: CardFooterItem): CardItem {
+    override val root = document.create.header("card-footer")
+
+    var body by bulmaList(body.toList(), root)
+}
 
 /** [Card](https://bulma.io/documentation/components/card/) element */
 class Card(
-    vararg content: BulmaElement,
-    header: CardHeader? = null, footer: List<BulmaElement> = emptyList()
+    vararg content: CardItem
 ) : BulmaElement {
     override val root = document.create.div("card")
 
-    var header by html(header, root, Position.AfterBegin) {
-        document.create.header("card-header") {
-            p("card-header-title") { +it.text }
-            span("icon") {
-                i("fas fa-${it.icon}") {
-                    attributes["aria-hidden"] = "true"
-                }
-            }
-        }
-    }
+    var content by bulmaList(content.toList(), root)
 
-    var content by embeddedBulmaList(content.toList(), root, Position.AfterBegin) {
-        document.create.div("card-content")
-    }
-
-    var footer by embeddedBulmaList(
-        content.toList(), root, Position.BeforeEnd,
-        { it.root.apply { classList.add("card-footer-item") } },
-        { document.create.footer("card-footer") }
-    )
 }
 
 interface DropdownItem : BulmaElement
@@ -294,8 +332,6 @@ class NavBarLinkItem(text: String, href: String? = null, id: String? = null, onC
         set(value) {
             root.href = value
         }
-
-
 }
 
 class NavBarImageItem(
@@ -371,7 +407,8 @@ class NavBar(
 
     var end by embeddedBulmaList(end, menuNode, Position.AfterBegin) { document.create.div("navbar-end") }
 
-    var active: Boolean  get() = menuNode.classList.contains("is-active")
+    var active: Boolean
+        get() = menuNode.classList.contains("is-active")
         set(value) {
             menuNode.classList.toggle("is-active", value)
             burgerNode.classList.toggle("is-active", value)

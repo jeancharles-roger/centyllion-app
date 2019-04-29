@@ -11,11 +11,12 @@ class AdministrationPage(appContext: AppContext) : BulmaElement {
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { _, featured, previous ->
-        val controller = previous ?: FeaturedController(featured, ColumnSize.Full)
-        controller.body.right = listOf(Delete {
+        val controller = previous ?: FeaturedController(featured, ColumnSize.Half)
+        val footer = CardFooter(CardFooterContentItem(Delete {
             // forces delete with this toggle
             toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, featured)
-        })
+        }))
+        controller.body.content = controller.body.content.let { if (previous == null) it else it.dropLast(1)} + footer
         controller
     }
 

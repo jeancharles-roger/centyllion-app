@@ -41,8 +41,8 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
     }
 
     override fun refresh() {
-        simulationCanvas.root.classList.toggle("is-primary", data.step > 0)
-        simulationCanvas.root.classList.toggle("is-success", data.step == 0)
+        simulationCanvas.root.classList.toggle("is-danger", data.step > 0)
+        simulationCanvas.root.classList.toggle("is-primary", data.step == 0)
 
         val scale = 0.1
         val canvasWidth = simulationCanvas.root.width.toDouble()
@@ -358,6 +358,11 @@ class SimulatorEditController(
     }
 
     override fun refresh() {
+
+        toolButtons.forEach {
+            it.color = if (data.step > 0) ElementColor.Danger else ElementColor.Primary
+        }
+
         super.refresh()
         toolElement?.draw(simulationContext)
 

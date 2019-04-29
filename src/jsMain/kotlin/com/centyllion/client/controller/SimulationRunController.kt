@@ -213,6 +213,7 @@ class SimulationRunController(
         runButton.disabled = running
         stepButton.disabled = running
         stopButton.disabled = !running
+        stopButton.icon?.spin = !running && simulator.step != 0
         resetButton.disabled = running
     }
 

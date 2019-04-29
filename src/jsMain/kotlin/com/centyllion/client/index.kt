@@ -4,8 +4,6 @@ import Keycloak
 import KeycloakInitOptions
 import KeycloakInstance
 import bulma.*
-import kotlinx.html.*
-import kotlinx.html.dom.create
 import kotlinx.io.IOException
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
@@ -17,7 +15,10 @@ import kotlin.js.Promise
 @JsName("index")
 fun index() {
     // creates nav bar and adds it to body
-    val navBar = navBar()
+    val navBar = NavBar(
+        brand = listOf(NavBarImageItem("images/logo-2by1.png", "/")),
+        end = listOf(NavBarLinkItem("Not connected"))
+    )
     document.body?.insertAdjacentElement(Position.AfterBegin.toString(), Section(Container(navBar)).root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
@@ -135,42 +136,6 @@ fun findPageInUrl(): Page? {
     val params = URLSearchParams(window.location.search)
     return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
-
-fun navBar() = NavBar(
-    brand = listOf(NavBarImageItem("images/logo-2by1.png", "/")),
-    end = listOf(NavBarLinkItem("Not connected"))
-)
-
-
-@HtmlTagMarker
-fun centyllionHeader() =
-    document.create.section("section") {
-        val navBarId = "mainNavBar"
-        div("container") {
-            nav("navbar is-transparent") {
-                div("navbar-brand") {
-                    a(href = "/", classes = "navbar-item ") {
-                        img("Centyllion", "images/logo-2by1.png") {
-
-                        }
-                    }
-                    div("navbar-burger burger") {
-                        attributes["data-target"] = navBarId
-                        span { }
-                        span { }
-                        span { }
-                    }
-                }
-                div("navbar-menu") {
-                    id = navBarId
-                    div("navbar-start")
-                    div("navbar-end") {
-                        a("/", classes = "cent-user navbar-item") { +"Not connected" }
-                    }
-                }
-            }
-        }
-    }
 
 fun error(root: HTMLElement, throwable: Throwable) =
     error(root, "Error: ${throwable::class.simpleName}", throwable.message.toString())

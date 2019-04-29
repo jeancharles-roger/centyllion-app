@@ -15,10 +15,10 @@ data class Page(
     val title: String, val id: String, val needUser: Boolean,
     val role: String?, val header: Boolean, val callback: (appContext: AppContext) -> Unit
 ) {
-    fun authorized(keycloak: KeycloakInstance?): Boolean = when {
+    fun authorized(keycloak: KeycloakInstance): Boolean = when {
         !needUser -> true
-        role == null -> keycloak?.authenticated ?: false
-        else -> keycloak?.hasRealmRole(role) ?: false
+        role == null -> keycloak.authenticated
+        else -> keycloak.hasRealmRole(role)
     }
 }
 
@@ -69,17 +69,13 @@ fun profile(appContext: AppContext) {
 }
 
 fun model(appContext: AppContext) {
-    // for model, user should be logged in
-    if (appContext.keycloak != null) {
-        appContext.root.appendChild(ModelPage(appContext).root)
-    }
+    // authorization has been checked
+    appContext.root.appendChild(ModelPage(appContext).root)
 }
 
 fun administration(appContext: AppContext) {
-    // for admin, user must be logged in
-    if (appContext.keycloak != null) {
-        appContext.root.appendChild(AdministrationPage(appContext).root)
-    }
+    // authorization has been checked
+    appContext.root.appendChild(AdministrationPage(appContext).root)
 }
 
 

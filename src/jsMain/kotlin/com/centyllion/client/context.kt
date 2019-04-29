@@ -10,7 +10,7 @@ interface AppContext {
 
     val root: HTMLElement
 
-    val keycloak: KeycloakInstance?
+    val keycloak: KeycloakInstance
 
     val api: Api
 }

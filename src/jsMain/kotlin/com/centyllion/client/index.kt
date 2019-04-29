@@ -2,15 +2,12 @@ package com.centyllion.client
 
 import Keycloak
 import KeycloakInitOptions
-import KeycloakInstance
 import bulma.*
-import kotlinx.io.IOException
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.Promise
 
 @JsName("index")
 fun index() {
@@ -22,15 +19,20 @@ fun index() {
     document.body?.insertAdjacentElement(Position.AfterBegin.toString(), Section(Container(navBar)).root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
-    authenticate(false).then { keycloak ->
 
-        // creates context
-        val context = object : AppContext {
-            override val navBar = navBar
-            override val root = root
-            override val keycloak = keycloak
-            override val api = Api(keycloak)
-        }
+    // creates keycloak instance
+    val keycloak = Keycloak()
+
+    // creates context
+    val context = object : AppContext {
+        override val navBar = navBar
+        override val root = root
+        override val keycloak = keycloak
+        override val api = Api(keycloak)
+    }
+
+    val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
+    keycloak.init(options).then { success ->
 
         // updates login link
         val userItem = navBar.end.first() as NavBarLinkItem
@@ -122,14 +124,6 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, register: Boole
 }
 
 fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
-
-fun authenticate(required: Boolean): Promise<KeycloakInstance> {
-    val keycloak = Keycloak()
-    val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", timeSkew = 60)
-    options.onLoad = if (required) "login-required" else "check-sso"
-    val promise = keycloak.init(options)
-    return promise.then(onFulfilled = { keycloak }, onRejected = { throw IOException("Can't connect to Keycloak") })
-}
 
 fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed

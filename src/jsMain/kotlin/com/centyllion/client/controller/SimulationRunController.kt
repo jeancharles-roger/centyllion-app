@@ -56,10 +56,10 @@ class SimulationRunController(
     }
 
     // simulation execution controls
+    val rewindButton = iconButton(Icon("fast-backward"), ElementColor.Danger, rounded = true) { reset() }
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
-    val stopButton = iconButton(Icon("stop"), ElementColor.Danger, rounded = true) { stop() }
-    val resetButton = iconButton(Icon("history"), ElementColor.Warning, rounded = true) { reset() }
+    val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
 
     val stepLabel = Label()
@@ -97,7 +97,7 @@ class SimulationRunController(
             Level(
                 center = listOf(
                     Field(
-                        Control(runButton), Control(stepButton), Control(stopButton), Control(resetButton),
+                        Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
                         addons = true
                     ),
                     stepLabel,
@@ -133,8 +133,8 @@ class SimulationRunController(
     fun run() {
         if (!running) {
             running = true
-            refreshButtons()
             runningCallback()
+            refreshButtons()
         }
     }
 
@@ -209,12 +209,12 @@ class SimulationRunController(
     }
 
     fun refreshButtons() {
+        rewindButton.disabled = running
+        rewindButton.color = if (simulator.step == 0) ElementColor.Primary else ElementColor.Danger
         runButton.loading = running
         runButton.disabled = running
         stepButton.disabled = running
         stopButton.disabled = !running
-        stopButton.icon?.spin = !running && simulator.step != 0
-        resetButton.disabled = running
     }
 
     fun refreshCanvas() {

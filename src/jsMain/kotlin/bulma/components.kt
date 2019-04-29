@@ -65,7 +65,7 @@ class CardHeader(val text: String = "", val icon: String? = null)
 class Card(
     vararg content: BulmaElement,
     header: CardHeader? = null, footer: List<BulmaElement> = emptyList()
-): BulmaElement {
+) : BulmaElement {
     override val root = document.create.div("card")
 
     var header by html(header, root, Position.AfterBegin) {
@@ -147,7 +147,9 @@ class Dropdown(
 
     var active: Boolean
         get() = root.classList.contains("is-active")
-        set(value) { root.classList.toggle("is-active", value)}
+        set(value) {
+            root.classList.toggle("is-active", value)
+        }
 
     fun toggleDropdown() {
         active = !active
@@ -258,45 +260,40 @@ class ModalCard(
     var buttons by bulmaList(buttons, footNode)
 }
 
-interface NavBarItem: BulmaElement {
+interface NavBarItem : BulmaElement {
 
     var active: Boolean
         get() = root.classList.contains("is-active")
-        set(value) { root.classList.toggle("is-active", value)}
+        set(value) {
+            root.classList.toggle("is-active", value)
+        }
 
     var expanded: Boolean
         get() = root.classList.contains("is-expanded")
-        set(value) { root.classList.toggle("is-expanded", value)}
+        set(value) {
+            root.classList.toggle("is-expanded", value)
+        }
 
     var tab: Boolean
         get() = root.classList.contains("is-tab")
-        set(value) { root.classList.toggle("is-tab", value)}
+        set(value) {
+            root.classList.toggle("is-tab", value)
+        }
 }
 
-class NavBarBurger(onClick: (NavBarBurger) -> Unit = {}): NavBarItem {
-
-    override val root = document.create.a("navbar-burger") {
-        role = "button"
-        attributes["aria-label"] = "menu"
-        attributes["aria-expanded"] = "false"
-        span { attributes["aria-hidden"] = "true" }
-        span { attributes["aria-hidden"] = "true" }
-        span { attributes["aria-hidden"] = "true" }
-        onClickFunction = { onClick(this@NavBarBurger) }
-    }
-
-}
-
-class NavBarLinkItem(text: String, href: String? = null, id: String? = null, onClick: (NavBarLinkItem) -> Unit = {}): NavBarItem {
+class NavBarLinkItem(text: String, href: String? = null, id: String? = null, onClick: (NavBarLinkItem) -> Unit = {}) :
+    NavBarItem {
     override val root = document.create.a(href, null, "navbar-item") {
         +text
-        if (id != null)  attributes["id"] = id
+        if (id != null) attributes["id"] = id
         onClickFunction = { onClick(this@NavBarLinkItem) }
     } as HTMLAnchorElement
 
     var href: String
         get() = root.href
-        set(value) { root.href = value }
+        set(value) {
+            root.href = value
+        }
 
 
 }
@@ -304,7 +301,7 @@ class NavBarLinkItem(text: String, href: String? = null, id: String? = null, onC
 class NavBarImageItem(
     image: String, href: String? = null, width: String? = null, height: String? = null,
     onClick: (NavBarImageItem) -> Unit = {}
-): NavBarItem {
+) : NavBarItem {
     override val root = document.create.a(href, null, "navbar-item") {
         img(null, image) {
             this@img.width = width ?: ""
@@ -315,7 +312,9 @@ class NavBarImageItem(
 
     private val imgNode = root.querySelector("img") as HTMLElement
 
-    var image by attribute(image, "href", imgNode)
+    var href by attribute(href, "href", root)
+
+    var image by attribute(image, "src", imgNode)
 }
 
 class NavBarContentItem(vararg body: BulmaElement) : DropdownItem {
@@ -323,7 +322,7 @@ class NavBarContentItem(vararg body: BulmaElement) : DropdownItem {
     var body by bulmaList(body.toList(), root)
 }
 
-enum class Fixed(override val className: String): HasClassName {
+enum class Fixed(override val className: String) : HasClassName {
     Not(""), Top("is-fixed-top"), Bottom("is-fixed-bottom")
 }
 
@@ -338,10 +337,25 @@ class NavBar(
     override val root = document.create.nav("navbar") {
         role = "navigation"
         attributes["aria-label"] = "main navigation"
+        div("navbar-brand") {
+            a(classes = "navbar-burger") {
+                role = "button"
+                attributes["aria-label"] = "menu"
+                attributes["aria-expanded"] = "false"
+                span { attributes["aria-hidden"] = "true" }
+                span { attributes["aria-hidden"] = "true" }
+                span { attributes["aria-hidden"] = "true" }
+                onClickFunction = {
+                    this@NavBar.active = !this@NavBar.active
+                }
+            }
+        }
         div("navbar-menu")
     }
 
-    val menuNode = root.querySelector("div.navbar-menu") as HTMLElement
+    private val brandNode = root.querySelector("div.navbar-brand") as HTMLElement
+    private val burgerNode = root.querySelector("a.navbar-burger") as HTMLElement
+    private val menuNode = root.querySelector("div.navbar-menu") as HTMLElement
 
     var transparent by className(transparent, "is-transparent", root)
 
@@ -351,11 +365,17 @@ class NavBar(
 
     var color by className(color, root)
 
-    var brand by embeddedBulmaList(brand, root, Position.AfterBegin) { document.create.div("navbar-brand") }
+    var brand by bulmaList(brand, brandNode, { burgerNode })
 
     var start by embeddedBulmaList(start, menuNode, Position.AfterBegin) { document.create.div("navbar-start") }
 
     var end by embeddedBulmaList(end, menuNode, Position.AfterBegin) { document.create.div("navbar-end") }
+
+    var active: Boolean  get() = menuNode.classList.contains("is-active")
+        set(value) {
+            menuNode.classList.toggle("is-active", value)
+            burgerNode.classList.toggle("is-active", value)
+        }
 }
 
 // TODO [Pagination](https://bulma.io/documentation/components/pagination)

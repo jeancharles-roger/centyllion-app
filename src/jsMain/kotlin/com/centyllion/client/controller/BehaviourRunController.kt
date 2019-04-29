@@ -24,7 +24,7 @@ class BehaviourRunController(
     val titleLabel = Label(behaviour.name)
     val descriptionLabel = p().apply { text = behaviour.description }
 
-    val header = Level(listOf(titleLabel), grains())
+    val header = Level(listOf(titleLabel), grains(), mobile = true)
 
     val speedValue = Help(data.probability.toString())
 

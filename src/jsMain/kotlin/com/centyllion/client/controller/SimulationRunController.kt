@@ -176,6 +176,7 @@ class SimulationRunController(
 
         refreshCanvas()
         refreshCounts()
+        refreshButtons()
 
         // appends data to charts
         if (presentCharts) {

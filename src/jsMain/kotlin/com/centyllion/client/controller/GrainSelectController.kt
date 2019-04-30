@@ -23,14 +23,14 @@ class GrainSelectController(
         }
     }
 
-    val icon = Icon("circle")
+    val icon = Icon(data?.icon ?: "circle")
 
     val dropdown: Dropdown = Dropdown(grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
 
     override val container: Field = Field(Control(dropdown))
 
     private fun item(grain: Grain): DropdownSimpleItem {
-        val grainIcon = Icon("circle")
+        val grainIcon = Icon(grain.icon)
         grainIcon.root.style.color = grain.color
         return DropdownSimpleItem(grain.label(), grainIcon) {
             this.data = grain
@@ -47,7 +47,7 @@ class GrainSelectController(
 
     override fun refresh() {
         dropdown.text = data?.label() ?: "none"
-        icon.icon = if (data != null) "circle" else "times-circle"
+        icon.icon = data?.icon ?: "times-circle"
         icon.root.style.color = data?.color ?: ""
     }
 

@@ -54,7 +54,8 @@ class SourceReactiveSelectController(
             val grainId = if (index == 0)
                 context.first.mainReactiveId else
                 context.first.reaction[index - 1].reactiveId
-            if (index >= 0 && grainId >= 0) "circle" else "times-circle"
+            val grain = if (grainId >= 0) context.second.indexedGrains[grainId] else null
+            if (grain != null) grain.icon else "times-circle"
         }
     }
 

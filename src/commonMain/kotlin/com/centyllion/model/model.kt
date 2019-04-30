@@ -7,7 +7,7 @@ import kotlinx.serialization.Transient
 import kotlin.math.pow
 
 val versions = mapOf(
-    GrainModelDescription.serializer() to 1
+    GrainModelDescription.serializer() to 2
 )
 
 fun version(serializer: KSerializer<*>) = versions[serializer] ?: 0
@@ -53,7 +53,8 @@ data class Grain(
     val id: Int = 0,
     val name: String = "",
     val color: String = "red",
-    val figure: Figure = Figure.Square,
+    val icon: String = "square",
+    val size: Double = 1.0,
     val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
@@ -72,6 +73,9 @@ data class Grain(
 
     @Transient
     val deathProbability = if (halfLife > 0.0) 1.0 - 2.0.pow(-1.0 / halfLife) else 0.0
+
+    @Transient
+    val iconString = solidIconNames[icon]
 
     @Transient
     val valid

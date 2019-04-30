@@ -10,6 +10,7 @@ abstract class Migration(val from: Int, val to: Int) {
     abstract fun migrate(document: Document)
 }
 
+// Moves from transform to sourceReactive
 val migrationGrainModelDescriptionV0toV1 = object : Migration(0, 1) {
     override fun migrate(document: Document) {
         val model = document["model"]
@@ -35,8 +36,27 @@ val migrationGrainModelDescriptionV0toV1 = object : Migration(0, 1) {
     }
 }
 
+// Moves from figure to icon and size
+val migrationGrainModelDescriptionV1toV2 = object : Migration(1, 2) {
+    override fun migrate(document: Document) {
+        val model = document["model"]
+        if (model is Document) {
+            val grains = model["grains"]
+            if (grains is List<*>) {
+                grains.filterIsInstance<Document>().forEach { grain ->
+                    grain.remove("figure")
+                    grain["icon"] = "square"
+                    grain["size"] = 1.0
+                }
+            }
+        }
+    }
+}
+
 val migrations: Map<KSerializer<*>, List<Migration>> = mapOf(
-    GrainModelDescription.serializer() to listOf(migrationGrainModelDescriptionV0toV1)
+    GrainModelDescription.serializer() to listOf(
+        migrationGrainModelDescriptionV0toV1, migrationGrainModelDescriptionV1toV2
+    )
 )
 
 fun latestVersion(serializer: KSerializer<*>) =

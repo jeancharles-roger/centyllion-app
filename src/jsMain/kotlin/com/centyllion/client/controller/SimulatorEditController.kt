@@ -54,7 +54,12 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         val xDelta = xStep * (scale / 2.0)
         val ySize = xStep * (1.0 + scale)
         val yDelta = xStep * (scale / 2.0)
+
+        simulationContext.save()
+        // sets font awesome
+        simulationContext.font = "${xSize.roundToInt()}px 'Font Awesome 5 Free'"
         simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
+
         var currentX = 0.0
         var currentY = 0.0
         for (i in 0 until data.currentAgents.size) {
@@ -62,7 +67,11 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
 
             if (grain != null) {
                 simulationContext.fillStyle = grain.color
-                simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
+                if (grain.iconString != null) {
+                    simulationContext.fillText(grain.iconString, currentX - xDelta, currentY - yDelta)
+                } else {
+                    simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
+                }
             }
 
             currentX += xStep
@@ -71,6 +80,8 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
                 currentY += yStep
             }
         }
+
+        simulationContext.restore()
     }
 }
 

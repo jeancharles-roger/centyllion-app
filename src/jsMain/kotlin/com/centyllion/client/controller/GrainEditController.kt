@@ -27,6 +27,10 @@ class GrainEditController(
         data = data.copy(color = new)
     }
 
+    val iconController = IconSelectController(data.icon) { _, new, _ ->
+        data = data.copy(icon = new)
+    }
+
     val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
         data = data.copy(name = new)
     }
@@ -43,18 +47,16 @@ class GrainEditController(
         this.data = this.data.copy(allowedDirection = new)
     }
 
-
     val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
         this.data = this.data.copy(halfLife = new)
     }
-
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
     override val container = Column(
         Media(
             center = listOf(
-                Level(left = listOf(colorController), right = listOf(nameController), mobile = true),
+                Level(left = listOf(colorController, iconController), right = listOf(nameController), mobile = true),
                 descriptionController,
                 HorizontalField(Help("Half life"), halfLifeController.container),
                 HorizontalField(Help("Speed"), movementProbabilityController.container),

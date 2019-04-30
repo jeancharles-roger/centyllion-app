@@ -17,8 +17,10 @@ import kotlinx.coroutines.io.readRemaining
 import kotlinx.io.core.readText
 import kotlinx.serialization.json.Json
 import java.awt.Color
+import java.awt.Font
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.File
 import javax.imageio.ImageIO
 
 @KtorExperimentalAPI
@@ -57,6 +59,8 @@ class JsonConverter : ContentConverter {
     }
 }
 
+val fontAwesome = Font.createFont(Font.TRUETYPE_FONT, File("webroot/font/fa-solid-900.ttf"))
+
 fun createThumbnail(model: GrainModel, simulation: Simulation): ByteArray {
     val canvasWidth = simulation.width * 5
     val canvasHeight = simulation.height * 5
@@ -73,6 +77,8 @@ fun createThumbnail(model: GrainModel, simulation: Simulation): ByteArray {
         it.value to Color(triple.first, triple.second, triple.third)
     }.toMap()
 
+    context.font = fontAwesome.deriveFont(xStep.toFloat())
+
     context.color = Color.WHITE
     context.fillRect(0, 0, canvasWidth, canvasHeight)
     var currentX = 0
@@ -83,7 +89,11 @@ fun createThumbnail(model: GrainModel, simulation: Simulation): ByteArray {
         if (grain != null) {
             context.color = colors[grain]
             //context.fillStyle = grain.color
-            context.fillRect(currentX - xStep, currentY - yStep, xStep, yStep)
+            if (grain.iconString != null) {
+                context.drawString(grain.iconString, currentX - xStep, currentY - yStep)
+            } else {
+                context.fillRect(currentX - xStep, currentY - yStep, xStep, yStep)
+            }
         }
 
         currentX += xStep

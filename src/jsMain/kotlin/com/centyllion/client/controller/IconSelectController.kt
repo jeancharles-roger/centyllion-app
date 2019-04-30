@@ -19,7 +19,7 @@ class IconSelectController(
     val icon = Icon(iconName(data))
 
     val dropdown: Dropdown = Dropdown("", icon = icon, rounded = true).apply {
-        menuSize = "40rem"
+        menuSize = "30rem"
         items = icons()
     }
 

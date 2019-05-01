@@ -30,7 +30,10 @@ fun index() {
         override val keycloak = keycloak
         override val api = Api(keycloak)
 
-        override fun error(throwable: Throwable) = error(throwable.message.toString())
+        override fun error(throwable: Throwable) {
+            fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
+            error(findCause(throwable).message.toString())
+        }
 
         override fun error(content: String) = notification(root, content, ElementColor.Danger)
 

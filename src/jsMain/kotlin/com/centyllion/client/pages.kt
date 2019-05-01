@@ -107,13 +107,7 @@ fun show(appContext: AppContext) {
         val controller = SimulationRunController(it.first.simulation, it.second.model, true)
         appContext.root.appendChild(controller.root)
     }.catch {
-        appContext.root.appendChild(
-            Message(
-                color = ElementColor.Danger,
-                header = listOf(Title("Error: ${it::class}")),
-                body = listOf(span(it.message.toString()))
-            ).root
-        )
+        appContext.error(it)
     }
 
 

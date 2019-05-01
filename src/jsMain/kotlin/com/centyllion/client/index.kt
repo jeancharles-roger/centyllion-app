@@ -2,6 +2,7 @@ package com.centyllion.client
 
 import Keycloak
 import KeycloakInitOptions
+import KeycloakInstance
 import bulma.*
 import bulmatoast.ToastAnimation
 import bulmatoast.ToastOptions
@@ -11,6 +12,7 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
+import kotlin.js.Date
 
 @JsName("index")
 fun index() {
@@ -27,23 +29,7 @@ fun index() {
     val keycloak = Keycloak()
 
     // creates context
-    val context = object : AppContext {
-        override val navBar = navBar
-        override val root = root
-        override val keycloak = keycloak
-        override val api = Api(keycloak)
-
-        override fun error(throwable: Throwable) {
-            fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
-            error(findCause(throwable).message.toString())
-        }
-
-        override fun error(content: String) = notification(content, ElementColor.Danger)
-
-        override fun warning(content: String) = notification(content, ElementColor.Warning)
-
-        override fun message(content: String) = notification(content, ElementColor.None)
-    }
+    val context = BrowserContext(navBar, root, keycloak)
 
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
     keycloak.init(options).then { success ->
@@ -143,6 +129,38 @@ fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
     return params.get("page")?.let { id -> pages.find { it.id == id } }
+}
+
+
+class BrowserContext(
+    override val navBar: NavBar,
+    override val root: HTMLElement,
+    override val keycloak: KeycloakInstance
+) : AppContext {
+
+    private val storedEvents = mutableListOf<ClientEvent>()
+
+    override val api = Api(keycloak)
+
+    override val events: List<ClientEvent> get() = storedEvents
+
+    override fun error(throwable: Throwable) {
+        fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
+        error(findCause(throwable).message.toString())
+    }
+
+    override fun error(content: String) = event(content, ElementColor.Danger)
+
+    override fun warning(content: String) = event(content, ElementColor.Warning)
+
+    override fun message(content: String) = event(content, ElementColor.None)
+
+    private fun event(content: String, color: ElementColor) {
+        val date = Date().toISOString()
+        val event = ClientEvent(date, content, color)
+        storedEvents.add(event)
+        notification(event.context, event.color)
+    }
 }
 
 private fun notification(content: String, color: ElementColor = ElementColor.None) {

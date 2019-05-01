@@ -153,12 +153,14 @@ class Image(url: String, size: ImageSize = ImageSize.None, rounded: Boolean = fa
 /** [Notification](https://bulma.io/documentation/elements/notification) element. */
 class Notification(
     vararg body: BulmaElement, color: ElementColor = ElementColor.None,
-    val onDelete: (Notification) -> Unit = {}
+    val onDelete: ((Notification) -> Unit)? = null
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("notification") {
-        button(classes = "delete") {
-            onClickFunction = { onDelete(this@Notification) }
+        if (onDelete != null) {
+            button(classes = "delete") {
+                onClickFunction = { onDelete.invoke(this@Notification) }
+            }
         }
     }
 

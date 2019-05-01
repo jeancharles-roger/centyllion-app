@@ -9,9 +9,9 @@ import org.w3c.dom.HTMLElement
 import kotlin.js.Promise.Companion.resolve
 import kotlin.properties.Delegates.observable
 
-class ModelPage(appContext: AppContext) : BulmaElement {
+class ModelPage(val context: AppContext) : BulmaElement {
 
-    val api = appContext.api
+    val api = context.api
 
     val newIcon = "plus"
     val saveIcon = "cloud-upload-alt"
@@ -57,10 +57,10 @@ class ModelPage(appContext: AppContext) : BulmaElement {
                 val newSimulations = when {
                     selectedModel._id.isNotEmpty() ->
                         api.fetchSimulations(selectedModel._id, false).then {
-                            message("Simulations for ${selectedModel.model.name} loaded")
+                            context.message("Simulations for ${selectedModel.model.name} loaded")
                             if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
                         }.catch {
-                            error(it.message ?: it.toString())
+                            context.error(it.message ?: it.toString())
                             listOf(emptySimulationDescription)
                         }
                     else -> resolve(listOf(emptySimulationDescription))
@@ -137,11 +137,15 @@ class ModelPage(appContext: AppContext) : BulmaElement {
         if (deletedModel._id.isNotEmpty()) {
             api.deleteGrainModel(deletedModel).then {
                 removeModel(deletedModel)
-                message("Model ${deletedModel.model.name} deleted")
-            }.catch { this.error(it) }
+                context.message("Model ${deletedModel.model.name} deleted")
+                Unit
+            }.catch {
+                this.context.error(it)
+                Unit
+            }
         } else {
             removeModel(deletedModel)
-            message("Model ${deletedModel.model.name} removed")
+            context.message("Model ${deletedModel.model.name} removed")
         }
         modelStatus.remove(deletedModel)
     }
@@ -164,11 +168,15 @@ class ModelPage(appContext: AppContext) : BulmaElement {
         if (deletedSimulation._id.isNotEmpty()) {
             api.deleteSimulation(deletedSimulation).then {
                 removeSimulation(deletedSimulation)
-                message("Simulation ${deletedSimulation.simulation.name} deleted")
-            }.catch { this.error(it) }
+                context.message("Simulation ${deletedSimulation.simulation.name} deleted")
+                Unit
+            }.catch {
+                this.context.error(it)
+                Unit
+            }
         } else {
             removeSimulation(deletedSimulation)
-            message("Simulation ${deletedSimulation.simulation.name} removed")
+            context.message("Simulation ${deletedSimulation.simulation.name} removed")
         }
     }
 
@@ -231,8 +239,12 @@ class ModelPage(appContext: AppContext) : BulmaElement {
                 }.then { newSimulation ->
                     simulationStatus[selectedSimulation] = Status.Saved
                     updateSimulation(selectedSimulation, newSimulation, false)
-                    message("Model ${selectedModel.model.name} and simulation ${newSimulation.simulation.name} saved")
-                }.catch { this.error(it) }
+                    context.message("Model ${selectedModel.model.name} and simulation ${newSimulation.simulation.name} saved")
+                    Unit
+                }.catch {
+                    this.context.error(it)
+                    Unit
+                }
         } else {
 
             if (needModelSave()) {
@@ -240,8 +252,12 @@ class ModelPage(appContext: AppContext) : BulmaElement {
                     modelStatus[selectedModel] = Status.Saved
                     refreshModels()
                     refreshSelectedModel()
-                    message("Model ${selectedModel.model.name} saved")
-                }.catch { this.error(it) }
+                    context.message("Model ${selectedModel.model.name} saved")
+                    Unit
+                }.catch {
+                    this.context.error(it)
+                    Unit
+                }
             }
 
             if (needSimulationSave()) {
@@ -249,15 +265,23 @@ class ModelPage(appContext: AppContext) : BulmaElement {
                     api.saveSimulation(selectedModel._id, selectedSimulation.simulation).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         updateSimulation(selectedSimulation, it, false)
-                        message("Simulation ${selectedSimulation.simulation.name} saved")
-                    }.catch { this.error(it) }
+                        context.message("Simulation ${selectedSimulation.simulation.name} saved")
+                        Unit
+                    }.catch {
+                        this.context.error(it)
+                        Unit
+                    }
                 } else {
                     api.updateSimulation(selectedSimulation).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         refreshSimulations()
                         refreshSelectedSimulation()
-                        message("Simulation ${selectedSimulation.simulation.name} saved")
-                    }.catch { this.error(it) }
+                        context.message("Simulation ${selectedSimulation.simulation.name} saved")
+                        Unit
+                    }.catch {
+                        this.context.error(it)
+                        Unit
+                    }
                 }
             }
         }
@@ -326,27 +350,14 @@ class ModelPage(appContext: AppContext) : BulmaElement {
 
             val modelId = getLocationParams("model")
             selectedModel = models.find { it._id == modelId } ?: models.first()
-            message("Models loaded")
+            context.message("Models loaded")
+            Unit
         }.catch {
             models = listOf(emptyGrainModelDescription)
             selectedModel = models.first()
-            error(it.message ?: it.toString())
+            context.error(it.message ?: it.toString())
+            Unit
         }
-    }
-
-    fun error(throwable: Throwable) {
-        message.color = ElementColor.Danger
-        messageContent.text = "${throwable.message}"
-    }
-
-    fun error(string: String) {
-        message.color = ElementColor.Danger
-        messageContent.text = string
-    }
-
-    fun message(string: String) {
-        message.color = ElementColor.None
-        messageContent.text = string
     }
 
     private fun iconForModel(model: GrainModelDescription) = Icon(

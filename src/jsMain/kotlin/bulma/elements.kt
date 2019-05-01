@@ -151,7 +151,10 @@ class Image(url: String, size: ImageSize = ImageSize.None, rounded: Boolean = fa
 }
 
 /** [Notification](https://bulma.io/documentation/elements/notification) element. */
-class Notification(vararg body: BulmaElement, val onDelete: (Notification) -> Unit = {}) : BulmaElement {
+class Notification(
+    vararg body: BulmaElement, color: ElementColor = ElementColor.None,
+    val onDelete: (Notification) -> Unit = {}
+) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("notification") {
         button(classes = "delete") {
@@ -159,7 +162,7 @@ class Notification(vararg body: BulmaElement, val onDelete: (Notification) -> Un
         }
     }
 
-    var color by className(ElementColor.None, root)
+    var color by className(color, root)
 
     var body by bulmaList(body.toList(), root)
 }

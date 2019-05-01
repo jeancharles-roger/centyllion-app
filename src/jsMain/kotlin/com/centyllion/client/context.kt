@@ -16,5 +16,9 @@ interface AppContext {
 
     fun error(throwable: Throwable)
 
-    fun error(title: String, content: String)
+    fun error(content: String)
+
+    fun warning(content: String)
+
+    fun message(content: String)
 }

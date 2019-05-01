@@ -3,6 +3,9 @@ package com.centyllion.client
 import Keycloak
 import KeycloakInitOptions
 import bulma.*
+import bulmatoast.ToastAnimation
+import bulmatoast.ToastOptions
+import bulmatoast.bulmaToast
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
@@ -35,11 +38,11 @@ fun index() {
             error(findCause(throwable).message.toString())
         }
 
-        override fun error(content: String) = notification(root, content, ElementColor.Danger)
+        override fun error(content: String) = notification(content, ElementColor.Danger)
 
-        override fun warning(content: String) = notification(root, content, ElementColor.Warning)
+        override fun warning(content: String) = notification(content, ElementColor.Warning)
 
-        override fun message(content: String) = notification(root, content, ElementColor.None, true)
+        override fun message(content: String) = notification(content, ElementColor.None)
     }
 
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
@@ -142,11 +145,11 @@ fun findPageInUrl(): Page? {
     return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
 
-private fun notification(
-    root: HTMLElement, content: String, color: ElementColor = ElementColor.None, autoDelete: Boolean = false
-) {
-    fun deleteNotification(it: Notification) { it.root.parentElement?.removeChild(it.root) }
-    val notification = Notification(span(content, "is-size-6"), color = color, onDelete = ::deleteNotification)
-    if (autoDelete) window.setTimeout( {deleteNotification(notification) }, 1000)
-    root.insertAdjacentElement(Position.AfterBegin.toString(), notification.root)
+private fun notification(content: String, color: ElementColor = ElementColor.None) {
+    val animation = ToastAnimation("fadeIn", "fadeOut")
+    val options = ToastOptions(
+        content, color.className, 2000, "bottom-center",
+        false, true, true, 0.8, animation
+    )
+    bulmaToast.toast(options)
 }

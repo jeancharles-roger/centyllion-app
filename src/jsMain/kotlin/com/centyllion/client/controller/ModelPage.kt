@@ -308,9 +308,6 @@ class ModelPage(val context: AppContext) : BulmaElement {
 
     val tools = Level(center = listOf(modelField, simulationField, rightTools))
 
-    val messageContent = span()
-    val message = Message(body = listOf(messageContent), size = Size.Small)
-
     val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true), initialTabIndex = 1) {
         if (it == simulationPage) {
             rightTools.body = listOf(
@@ -325,7 +322,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val container: BulmaElement = div(tools, message, editionTab)
+    val container: BulmaElement = div(tools, editionTab)
 
     override val root: HTMLElement = container.root
 

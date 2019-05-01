@@ -39,7 +39,7 @@ fun index() {
 
         override fun warning(content: String) = notification(root, content, ElementColor.Warning)
 
-        override fun message(content: String) = notification(root, content, ElementColor.None)
+        override fun message(content: String) = notification(root, content, ElementColor.None, true)
     }
 
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
@@ -143,10 +143,10 @@ fun findPageInUrl(): Page? {
 }
 
 private fun notification(
-    root: HTMLElement, content: String, color: ElementColor = ElementColor.None
+    root: HTMLElement, content: String, color: ElementColor = ElementColor.None, autoDelete: Boolean = false
 ) {
-    val notification = Notification(span(content, "is-size-6"), color = color) {
-        it.root.parentElement?.removeChild(it.root)
-    }
+    fun deleteNotification(it: Notification) { it.root.parentElement?.removeChild(it.root) }
+    val notification = Notification(span(content, "is-size-6"), color = color, onDelete = ::deleteNotification)
+    if (autoDelete) window.setTimeout( {deleteNotification(notification) }, 1000)
     root.insertAdjacentElement(Position.AfterBegin.toString(), notification.root)
 }

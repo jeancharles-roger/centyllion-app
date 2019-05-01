@@ -67,3 +67,25 @@ canvas.is-danger {
 .delete {
   background-color: #b3cde0;
 }
+
+.notification.bottom {
+  position: absolute;
+  bottom: 0px;
+  right: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.removing {
+  animation: fadeOut 1s ease-out;
+  overflow: hidden;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

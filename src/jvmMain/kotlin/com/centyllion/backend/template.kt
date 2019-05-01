@@ -6,13 +6,26 @@ import kotlinx.html.*
 fun HTML.centyllionHead(title: String) = head {
     title { +title }
     meta("viewport", "width=device-width, initial-scale=1", "UTF-8")
+    link("css/animate.css", "stylesheet")
     link("css/centyllion-bulma.css", "stylesheet")
     link("css/centyllion.css", "stylesheet")
-    link("https://use.fontawesome.com/releases/v5.7.2/css/all.css", "stylesheet") {
-        integrity = "sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+
+    // Font Awesome
+    link("https://use.fontawesome.com/releases/v5.8.1/css/solid.css", "stylesheet") {
+        integrity = "sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm"
+        attributes["crossorigin"] = "anonymous"
+    }
+    link("https://use.fontawesome.com/releases/v5.8.1/css/brands.css", "stylesheet") {
+        integrity = "sha384-n9+6/aSqa9lBidZMRCQHTHKJscPq6NW4pCQBiMmHdUCvPN8ZOg2zJJTkC7WIezWv"
+        attributes["crossorigin"] = "anonymous"
+    }
+    link("https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css", "stylesheet") {
+        integrity = "sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq"
         attributes["crossorigin"] = "anonymous"
     }
 
+    // Javascript
+    script(src = "js/bulma-toast-1.5.0/bulma-toast.min.js") {}
     script(src = "js/Keycloak-4.8.0/keycloak.js") {}
     script(src = "js/require.js") { }
     script(src = "js/centyllion/requirejs.config.json") { }

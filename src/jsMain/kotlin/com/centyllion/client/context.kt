@@ -13,4 +13,8 @@ interface AppContext {
     val keycloak: KeycloakInstance
 
     val api: Api
+
+    fun error(throwable: Throwable)
+
+    fun error(title: String, content: String)
 }

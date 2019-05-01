@@ -29,6 +29,13 @@ fun index() {
         override val root = root
         override val keycloak = keycloak
         override val api = Api(keycloak)
+
+        override fun error(throwable: Throwable) =
+            error("Error: ${throwable::class.simpleName}", throwable.message.toString())
+
+        override fun error(title: String, content: String) = errorMessage(root, title, content)
+
+
     }
 
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
@@ -61,7 +68,7 @@ fun index() {
         openPage(findPageInUrl() ?: mainPage, context, register = false)
 
     }.catch {
-        error(root, it)
+        context.error(it)
         console.error("Error on initialize")
         console.error(it.asDynamic().stack)
     }
@@ -98,7 +105,7 @@ fun openPage(
     if (page.authorized(appContext.keycloak)) {
         page.callback(appContext)
     } else {
-        error(root, "Unauthorized", "You are not authorized to access this page")
+        appContext.error("Unauthorized", "You are not authorized to access this page")
     }
 }
 
@@ -131,10 +138,12 @@ fun findPageInUrl(): Page? {
     return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
 
-fun error(root: HTMLElement, throwable: Throwable) =
-    error(root, "Error: ${throwable::class.simpleName}", throwable.message.toString())
-
-fun error(root: HTMLElement, title: String, content: String) {
-    val message = Message(color = ElementColor.Danger, header = listOf(Title(title)), body = listOf(span(content)))
-    root.appendChild(message.root)
+private fun errorMessage(root: HTMLElement, title: String, content: String) {
+    val message = Message(
+        color = ElementColor.Danger,
+        header = listOf(span(title)),
+        body = listOf(span(content))
+    )
+    message.header += Delete { message.root.parentElement?.removeChild(message.root) }
+    root.insertAdjacentElement(Position.AfterBegin.toString(), message.root)
 }

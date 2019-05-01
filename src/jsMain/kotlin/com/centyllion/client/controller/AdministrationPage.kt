@@ -5,9 +5,9 @@ import com.centyllion.client.AppContext
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
-class AdministrationPage(appContext: AppContext) : BulmaElement {
+class AdministrationPage(val context: AppContext) : BulmaElement {
 
-    val api = appContext.api
+    val api = context.api
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { _, featured, previous ->
@@ -42,11 +42,11 @@ class AdministrationPage(appContext: AppContext) : BulmaElement {
     val container: BulmaElement = TabPages(featuredPage, eventPage, tabs = Tabs(boxed = true)) {
        when (it) {
            featuredPage -> {
-               api.fetchAllFeatured().then { featuredController.data = it}
-               api.fetchPublicGrainModels().then { publicModelsController.data = it}
+               api.fetchAllFeatured().then { featuredController.data = it}.catch { context.error(it) }
+               api.fetchPublicGrainModels().then { publicModelsController.data = it}.catch { context.error(it) }
            }
            eventPage -> {
-               api.fetchEvents().then { eventsController.data = it }
+               api.fetchEvents().then { eventsController.data = it }.catch { context.error(it) }
            }
        }
     }
@@ -66,6 +66,6 @@ class AdministrationPage(appContext: AppContext) : BulmaElement {
         result.then {
             featuredController.data = it
             publicModelsController.context = it
-        }
+        }.catch { context.error(it) }
     }
 }

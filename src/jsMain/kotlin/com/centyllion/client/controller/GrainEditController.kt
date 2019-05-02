@@ -56,8 +56,9 @@ class GrainEditController(
     override val container = Column(
         Media(
             center = listOf(
-                Level(left = listOf(colorController, iconController), right = listOf(nameController), mobile = true),
+                nameController,
                 descriptionController,
+                Level(center = listOf(colorController, iconController), mobile = true),
                 HorizontalField(Help("Half life"), halfLifeController.container),
                 HorizontalField(Help("Speed"), movementProbabilityController.container),
                 HorizontalField(Help("Directions"), directionController.container)

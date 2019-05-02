@@ -18,32 +18,41 @@ class ColorSelectController(
 
     val icon = Icon("circle")
 
-    val dropdown: Dropdown = Dropdown("", icon = icon, rounded = true).apply {
-        menuSize = "30rem"
-        items = colors()
+    val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
+
+    val colorColumns = Columns(multiline = true, mobile = true).apply {
+        columns = colorNames.keys.map { column(it) }
     }
 
-    override val container = dropdown
-
+    override val container = Dropdown(color, icon = icon, rounded = true).apply {
+        menuSize = "30rem"
+        items = listOf(
+            DropdownContentItem(Field(
+                Control(
+                    search,
+                    Icon("search")
+                )
+            )),
+            DropdownContentItem(colorColumns)
+        )
+    }
 
     private fun column(color: String): Column {
         val colorIcon = Icon("circle")
         colorIcon.root.style.color = color
         val item = DropdownSimpleItem("", colorIcon) {
             this.data = color
-            this.dropdown.toggleDropdown()
+            this.container.toggleDropdown()
         }
         val column = Column(item, size = ColumnSize.S1, mobileSize = ColumnSize.S2)
         column.root.style.padding = "0rem"
         return column
     }
 
-    private fun colors() = listOf(DropdownContentItem(
-        Columns(multiline = true, mobile = true).apply { columns = colorNames.keys.map { column(it) } }
-    ))
-
     override fun refresh() {
+        container.text = data
         icon.root.style.color = data
+        colorColumns.columns = colorNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }
 
 }

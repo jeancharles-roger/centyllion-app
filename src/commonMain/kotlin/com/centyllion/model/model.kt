@@ -53,7 +53,7 @@ data class Grain(
     val id: Int = 0,
     val name: String = "",
     val color: String = "red",
-    val icon: String = "square",
+    val icon: String = "square-full",
     val size: Double = 1.0,
     val description: String = "",
     val halfLife: Int = 0,

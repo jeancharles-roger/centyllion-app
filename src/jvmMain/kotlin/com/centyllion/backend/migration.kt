@@ -45,7 +45,7 @@ val migrationGrainModelDescriptionV1toV2 = object : Migration(1, 2) {
             if (grains is List<*>) {
                 grains.filterIsInstance<Document>().forEach { grain ->
                     grain.remove("figure")
-                    grain["icon"] = "square"
+                    grain["icon"] = "square-full"
                     grain["size"] = 1.0
                 }
             }

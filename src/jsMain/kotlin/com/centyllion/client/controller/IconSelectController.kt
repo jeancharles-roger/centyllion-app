@@ -24,7 +24,7 @@ class IconSelectController(
         columns = solidIconNames.keys.map { column(it) }
     }
 
-    override val container = Dropdown("", icon = icon, rounded = true).apply {
+    override val container = Dropdown(data, icon = icon, rounded = true).apply {
         menuSize = "30rem"
         items = listOf(
             DropdownContentItem(Field(
@@ -51,9 +51,10 @@ class IconSelectController(
     fun iconName(icon: String) = if (icon.startsWith("fa-")) icon.substring(4) else icon
 
     override fun refresh() {
+        container.text = data
         icon.icon = iconName(data)
         icon.root.style.color = data
-        iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value) }.map { column(it) }
+        iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }
 
 }

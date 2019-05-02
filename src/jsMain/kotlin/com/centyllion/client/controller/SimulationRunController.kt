@@ -41,7 +41,11 @@ class SimulationRunController(
     private var simulator = Simulator(context, data)
 
     private var running = false
-    private var lastRefresh = 0
+    private var fps = 50.0
+    private var lastTimestamp = 0.0
+    private var lastRequestSkipped = true
+    private var lastFpsColorRefresh = 0
+    private var lastChartRefresh = 0
 
     private var presentCharts = false
 
@@ -61,6 +65,12 @@ class SimulationRunController(
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
+
+    val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
+        fpsLabel.text = "$value fps"
+        fps = value.toDouble()
+    }
+    val fpsLabel = Button("$fps fps", rounded = true, color = ElementColor.Info)
 
     val stepLabel = Label()
 
@@ -100,6 +110,7 @@ class SimulationRunController(
                         Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
                         addons = true
                     ),
+                    Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
                     stepLabel,
                     toggleChartsButton
                 ),
@@ -133,32 +144,49 @@ class SimulationRunController(
     fun run() {
         if (!running) {
             running = true
-            runningCallback()
+            runningCallback(0.0)
             refreshButtons()
         }
     }
 
-    fun runningCallback() {
+    fun runningCallback(timestamp: Double) {
         if (running) {
-            executeStep(lastRefresh >= 10)
-            lastRefresh += 1
+            val time = 1000 / fps
+            val delta = timestamp - lastTimestamp
 
-            // if the document was removed, stop the simulation
-            if (container.root.ownerDocument != container.root.getRootNode()) stop()
+            lastFpsColorRefresh += 1
+            if (lastFpsColorRefresh > fps) {
+                val color = if (delta > time && lastRequestSkipped) ElementColor.Warning else ElementColor.Info
+                fpsLabel.color = color
+                fpsSlider.color = color
+            }
 
-            window.setTimeout(this::runningCallback, 0)
+            val refresh = lastTimestamp == 0.0 || delta >= time
+            if (refresh) {
+                lastTimestamp = timestamp
+                executeStep(lastChartRefresh >= 10)
+                lastChartRefresh += 1
+
+                // if the document was removed, stop the simulation
+                if (container.root.ownerDocument != container.root.getRootNode()) stop()
+            }
+            lastRequestSkipped = refresh
+
+            window.requestAnimationFrame(this::runningCallback)
         }
     }
 
     fun step() {
         if (!running) {
             executeStep(true)
+            refreshButtons()
         }
     }
 
     fun stop() {
         if (running) {
             running = false
+            lastTimestamp = 0.0
             refresh()
         }
     }
@@ -176,7 +204,6 @@ class SimulationRunController(
 
         refreshCanvas()
         refreshCounts()
-        refreshButtons()
 
         // appends data to charts
         if (presentCharts) {
@@ -191,7 +218,7 @@ class SimulationRunController(
 
         if (updateChart) {
             chart.update(ChartUpdateConfig(duration = 0, lazy = true))
-            lastRefresh = 0
+            lastChartRefresh = 0
         }
     }
 
@@ -255,7 +282,7 @@ class SimulationRunController(
                 }
             }.toTypedArray()
             chart.update()
-            lastRefresh = 0
+            lastChartRefresh = 0
         } else {
             chart.data.datasets = emptyArray()
             chart.update()

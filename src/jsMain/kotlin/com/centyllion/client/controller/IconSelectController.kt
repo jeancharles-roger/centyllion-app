@@ -18,33 +18,42 @@ class IconSelectController(
 
     val icon = Icon(iconName(data))
 
-    val dropdown: Dropdown = Dropdown("", icon = icon, rounded = true).apply {
-        menuSize = "30rem"
-        items = icons()
+    val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
+
+    val iconColumns = Columns(multiline = true, mobile = true).apply {
+        columns = solidIconNames.keys.map { column(it) }
     }
 
-    override val container = dropdown
+    override val container = Dropdown("", icon = icon, rounded = true).apply {
+        menuSize = "30rem"
+        items = listOf(
+            DropdownContentItem(Field(
+                Control(
+                    search,
+                    Icon("search")
+                )
+            )),
+            DropdownContentItem(iconColumns)
+        )
+    }
 
     private fun column(icon: String): Column {
         val colorIcon = Icon(icon, color = TextColor.Black)
         val item = DropdownSimpleItem("", colorIcon) {
             this.data = icon
-            this.dropdown.toggleDropdown()
+            this.container.toggleDropdown()
         }
         val column = Column(item, size = ColumnSize.S1, mobileSize = ColumnSize.S2)
         column.root.style.padding = "0rem"
         return column
     }
 
-    private fun icons() = listOf(DropdownContentItem(
-        Columns(multiline = true, mobile = true).apply { columns = solidIconNames.keys.map { column(it) } }
-    ))
-
     fun iconName(icon: String) = if (icon.startsWith("fa-")) icon.substring(4) else icon
 
     override fun refresh() {
         icon.icon = iconName(data)
         icon.root.style.color = data
+        iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value) }.map { column(it) }
     }
 
 }

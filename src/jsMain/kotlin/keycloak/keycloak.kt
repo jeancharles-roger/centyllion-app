@@ -1,5 +1,5 @@
 @file:Suppress("unused", "FunctionName", "PropertyName")
-//package keycloak
+package keycloak
 
 import kotlin.js.Promise
 

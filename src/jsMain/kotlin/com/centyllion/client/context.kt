@@ -1,8 +1,8 @@
 package com.centyllion.client
 
-import KeycloakInstance
 import bulma.ElementColor
 import bulma.NavBar
+import keycloak.KeycloakInstance
 import org.w3c.dom.HTMLElement
 
 

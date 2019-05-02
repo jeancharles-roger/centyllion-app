@@ -1,12 +1,12 @@
 package com.centyllion.client
 
-import KeycloakInstance
 import bulma.*
 import com.centyllion.client.controller.*
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.emptySimulationDescription
+import keycloak.KeycloakInstance
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise

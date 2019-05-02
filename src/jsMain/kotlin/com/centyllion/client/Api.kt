@@ -1,7 +1,7 @@
 package com.centyllion.client
 
-import KeycloakInstance
 import com.centyllion.model.*
+import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.list
 import org.w3c.xhr.XMLHttpRequest

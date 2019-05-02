@@ -1,12 +1,12 @@
 package com.centyllion.client
 
-import Keycloak
-import KeycloakInitOptions
-import KeycloakInstance
 import bulma.*
 import bulmatoast.ToastAnimation
 import bulmatoast.ToastOptions
 import bulmatoast.bulmaToast
+import keycloak.Keycloak
+import keycloak.KeycloakInitOptions
+import keycloak.KeycloakInstance
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams

@@ -164,6 +164,13 @@ class BrowserContext(
 }
 
 private fun notification(content: String, color: ElementColor = ElementColor.None) {
+
+    when (color) {
+        ElementColor.Danger -> console.error(content)
+        ElementColor.Warning -> console.warn(content)
+        else -> console.log(content)
+    }
+
     val animation = ToastAnimation("fadeIn", "fadeOut")
     val options = ToastOptions(
         content, color.className, 2000, "bottom-center",

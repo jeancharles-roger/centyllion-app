@@ -18,10 +18,10 @@ import kotlin.js.Date
 fun index() {
     // creates nav bar and adds it to body
     val navBar = NavBar(
-        brand = listOf(NavBarImageItem("images/logo-2by1.png", "/")),
-        end = listOf(NavBarLinkItem("Not connected"))
+        brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-2by1.png", "/")),
+        end = listOf(NavBarLinkItem("Not connected")), transparent = true
     )
-    document.body?.insertAdjacentElement(Position.AfterBegin.toString(), Section(Container(navBar)).root)
+    document.body?.insertAdjacentElement(Position.AfterBegin.toString(),navBar.root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
 

@@ -1,30 +1,3 @@
-/*
-$color1: rgba(240, 101, 67, 1);
-$color2: rgba(232, 233, 235, 1);
-$color3: rgba(224, 223, 213, 1);
-$color4: rgba(49, 54, 56, 1);
-$color5: rgba(240, 157, 81, 1);
-*/
-/*
-// 6. Moonlight Bytes 6 
-$color1: #4a4e4d;
-$color2: #0e9aa7;
-$color3: #3da4ab ;
-$color4: #f6cd61;
-$color5: #fe8a71;
-*/
-/*
-// 10. Rainbow dash
-$color1: #ee4035;
-$color2: #f37736;
-$color3: #fdf498 ;
-$color4: #7bc043;
-$color5: #0392cf;
-*/
-body {
-  font-family: Avenir;
-}
-
 .media {
   border-radius: 6px;
   box-shadow: 0 3px 4px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
@@ -66,26 +39,4 @@ canvas.is-danger {
 
 .delete {
   background-color: #b3cde0;
-}
-
-.notification.bottom {
-  position: absolute;
-  bottom: 0px;
-  right: 25%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.removing {
-  animation: fadeOut 1s ease-out;
-  overflow: hidden;
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
 }

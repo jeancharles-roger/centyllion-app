@@ -304,7 +304,7 @@ class SimulatorEditController(
 
                     gc.fill()
                     gc.globalAlpha = 1.0
-                    if (selectedTool == EditTools.Eraser || size > 1) gc.stroke()
+                    gc.stroke()
 
                     gc.restore()
                 }

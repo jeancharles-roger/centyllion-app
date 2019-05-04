@@ -7,6 +7,7 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
 import kotlin.math.absoluteValue
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
@@ -24,11 +25,7 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         refresh()
     }
 
-    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
-        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
-        width = "$canvasWidth"
-        height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
-    }
+    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation")
 
     override val container = div(
         div(simulationCanvas, classes = "has-text-centered")
@@ -37,7 +34,8 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
     val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
 
     init {
-        //refresh()
+        setCanvasSize()
+        window.onresize = { setCanvasSize() }
     }
 
     override fun refresh() {
@@ -82,6 +80,13 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         }
 
         simulationContext.restore()
+    }
+
+    fun setCanvasSize() {
+        val screen = window.screen
+        val size = min(screen.width, screen.height) - 120
+        simulationCanvas.root.width = size
+        simulationCanvas.root.height = size
     }
 }
 

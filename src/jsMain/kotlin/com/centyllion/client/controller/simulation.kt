@@ -7,7 +7,6 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import kotlin.browser.window
 import kotlin.math.absoluteValue
-import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
@@ -19,24 +18,21 @@ interface DisplayElement {
 
 open class SimulatorViewController(simulator: Simulator) : NoContextController<Simulator, BulmaElement>() {
 
-    override var data: Simulator by observable(simulator) { _, old, new ->
-        simulationCanvas.root.height =
-            simulator.simulation.height * simulationCanvas.root.width / simulator.simulation.width
+    override var data: Simulator by observable(simulator) { _, _, _ ->
         refresh()
     }
 
-    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation")
+    val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
+        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
+        width = "$canvasWidth"
+        height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
+    }
 
     override val container = div(
         div(simulationCanvas, classes = "has-text-centered")
     )
 
     val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D
-
-    init {
-        setCanvasSize()
-        window.onresize = { setCanvasSize() }
-    }
 
     override fun refresh() {
         simulationCanvas.root.classList.toggle("is-danger", data.step > 0)
@@ -46,8 +42,8 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         val canvasWidth = simulationCanvas.root.width.toDouble()
         val canvasHeight = simulationCanvas.root.height.toDouble()
         val xStep = canvasWidth / data.simulation.width
-        val xMax = data.simulation.width * xStep
         val yStep = canvasHeight / data.simulation.height
+
         val xSize = xStep * (1.0 + scale)
         val xDelta = xStep * (scale / 2.0)
         val ySize = xStep * (1.0 + scale)
@@ -73,20 +69,13 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
             }
 
             currentX += xStep
-            if (currentX >= xMax) {
+            if (currentX >= canvasWidth) {
                 currentX = 0.0
                 currentY += yStep
             }
         }
 
         simulationContext.restore()
-    }
-
-    fun setCanvasSize() {
-        val screen = window.screen
-        val size = min(screen.width, screen.height) - 120
-        simulationCanvas.root.width = size
-        simulationCanvas.root.height = size
     }
 }
 

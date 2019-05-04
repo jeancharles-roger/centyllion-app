@@ -53,7 +53,7 @@ class BehaviourRunController(
         val reactives =
             (listOf(data.mainReactiveId) + data.reaction.map { it.reactiveId })
                 .mapNotNull { context.model.indexedGrains[it] }
-                .map { Icon("circle").apply { root.style.color = it.color } }
+                .map { Icon(it.icon).apply { root.style.color = it.color } }
                 .fold(emptyList<Icon>()) { a, e ->
                     if (a.isNotEmpty()) a + Icon("plus", color = TextColor.GreyLight) + e else a + e
                 }.toTypedArray()
@@ -61,7 +61,7 @@ class BehaviourRunController(
         val products =
             (listOf(data.mainProductId) + data.reaction.map { it.productId })
                 .mapNotNull { context.model.indexedGrains[it] }
-                .map { Icon("circle").apply { root.style.color = it.color } }
+                .map { Icon(it.icon).apply { root.style.color = it.color } }
                 .fold(emptyList<Icon>()) { a, e ->
                     if (a.isNotEmpty()) a + Icon("plus", color = TextColor.GreyLight) + e else a + e
                 }.toTypedArray()

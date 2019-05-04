@@ -14,7 +14,7 @@ class GrainDisplayController(grain: Grain): NoContextController<Grain, Column>()
         countLabel.text = if (new < 0) "" else "$new"
     }
 
-    val icon = Icon("circle").apply {
+    val icon = Icon(grain.icon).apply {
         root.style.color = data.color
     }
 

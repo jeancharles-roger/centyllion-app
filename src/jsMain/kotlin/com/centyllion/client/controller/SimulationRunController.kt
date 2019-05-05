@@ -67,8 +67,8 @@ class SimulationRunController(
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
 
     val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
-        fpsLabel.text = "$value fps"
         fps = value.toDouble()
+        fpsLabel.text = if (fps >= 200) "warp" else "$value fps"
     }
     val fpsLabel = Button("$fps fps", rounded = true, color = ElementColor.Info)
 
@@ -138,6 +138,7 @@ class SimulationRunController(
     ))
 
     init {
+        fpsSlider.root.style.width = "200px"
         refresh()
     }
 
@@ -161,7 +162,7 @@ class SimulationRunController(
                 fpsSlider.color = color
             }
 
-            val refresh = lastTimestamp == 0.0 || delta >= time
+            val refresh = fps >= 200 || lastTimestamp == 0.0 || delta >= time
             if (refresh) {
                 lastTimestamp = timestamp
                 executeStep(lastChartRefresh >= 10)

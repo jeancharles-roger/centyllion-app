@@ -826,7 +826,7 @@ val solidIconNames = mapOf(
     "thumbtack" to "\uf08d",
     "ticket-alt" to "\uf3ff",
     "times" to "\uf00d",
-    "times-circle" to "\uf057",
+    //"times-circle" to "\uf057", /* Removes since it's used for empty grains */
     "tint" to "\uf043",
     "tint-slash" to "\uf5c7",
     "tired" to "\uf5c8",

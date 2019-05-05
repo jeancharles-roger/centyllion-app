@@ -49,23 +49,18 @@ class BehaviourRunController(
         it.substring(0, min(it.lastIndexOf(".") + 3, it.length))
     }
 
+    fun grainIcon(id: Int) = context.model.indexedGrains[id].let {
+        if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")
+    }
+
+    fun grainIcons(mainId: Int, reactionIds: List<Int>) = (listOf(mainId) + reactionIds)
+        .map { grainIcon(it) }.fold(emptyList<Icon>()) { a, e ->
+            if (a.isNotEmpty()) a + Icon("plus", color = TextColor.GreyLight) + e else a + e
+        }
+
     private fun grains(): List<BulmaElement> {
-        val reactives =
-            (listOf(data.mainReactiveId) + data.reaction.map { it.reactiveId })
-                .mapNotNull { context.model.indexedGrains[it] }
-                .map { Icon(it.icon).apply { root.style.color = it.color } }
-                .fold(emptyList<Icon>()) { a, e ->
-                    if (a.isNotEmpty()) a + Icon("plus", color = TextColor.GreyLight) + e else a + e
-                }.toTypedArray()
-
-        val products =
-            (listOf(data.mainProductId) + data.reaction.map { it.productId })
-                .mapNotNull { context.model.indexedGrains[it] }
-                .map { Icon(it.icon).apply { root.style.color = it.color } }
-                .fold(emptyList<Icon>()) { a, e ->
-                    if (a.isNotEmpty()) a + Icon("plus", color = TextColor.GreyLight) + e else a + e
-                }.toTypedArray()
-
+        val reactives = grainIcons(data.mainReactiveId, data.reaction.map { it.reactiveId }).toTypedArray()
+        val products = grainIcons(data.mainProductId, data.reaction.map { it.productId }).toTypedArray()
         return listOf(div(*reactives)) + Icon("arrow-right", color = TextColor.Primary) + div(*products)
     }
 

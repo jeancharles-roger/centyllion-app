@@ -68,6 +68,7 @@ class SimulationRunController(
 
     val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
         fps = value.toDouble()
+        setFpsColor(false)
         fpsLabel.text = if (fps >= 200) "warp" else "$value fps"
     }
     val fpsLabel = Button("$fps fps", rounded = true, color = ElementColor.Info)
@@ -142,6 +143,16 @@ class SimulationRunController(
         refresh()
     }
 
+    fun setFpsColor(slowed: Boolean) {
+        val color = when {
+            fps >= 200.0 -> ElementColor.Success
+            slowed -> ElementColor.Warning
+            else -> ElementColor.Info
+        }
+        fpsLabel.color = color
+        fpsSlider.color = color
+    }
+
     fun run() {
         if (!running) {
             running = true
@@ -157,9 +168,7 @@ class SimulationRunController(
 
             lastFpsColorRefresh += 1
             if (lastFpsColorRefresh > fps) {
-                val color = if (delta > time && lastRequestSkipped) ElementColor.Warning else ElementColor.Info
-                fpsLabel.color = color
-                fpsSlider.color = color
+                setFpsColor(delta > time && lastRequestSkipped)
             }
 
             val refresh = fps >= 200 || lastTimestamp == 0.0 || delta >= time

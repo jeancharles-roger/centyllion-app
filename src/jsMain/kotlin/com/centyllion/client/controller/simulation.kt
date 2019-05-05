@@ -255,8 +255,8 @@ class SimulatorEditController(
 
             val sourceX = (canvasSourceX / stepX).roundToInt()
             val sourceY = (canvasSourceY / stepY).roundToInt()
-            val x = ((mouseX - 4) / stepX).roundToInt()
-            val y = ((mouseY - 4) / stepY).roundToInt()
+            val x = ((mouseX - 1) / stepX).roundToInt()
+            val y = ((mouseY ) / stepY).roundToInt()
             drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
         } else {
             val paintElement = object : DisplayElement {
@@ -264,7 +264,6 @@ class SimulatorEditController(
                     gc.save()
 
                     gc.beginPath()
-
 
                     val factor = if (selectedTool == EditTools.Spray) 4 else 1
                     val brushSize = ToolSize.valueOf(sizeDropdown.text).size

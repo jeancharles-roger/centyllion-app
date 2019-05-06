@@ -21,7 +21,7 @@ fun index() {
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-2by1.png", "/")),
         end = listOf(NavBarLinkItem("Not connected")), transparent = true
     )
-    document.body?.insertAdjacentElement(Position.AfterBegin.toString(),navBar.root)
+    document.body?.insertAdjacentElement(Position.AfterBegin.value,navBar.root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
 

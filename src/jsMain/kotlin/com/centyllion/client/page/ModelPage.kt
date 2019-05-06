@@ -1,7 +1,9 @@
-package com.centyllion.client.controller
+package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.GrainModelEditController
+import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.getLocationParams
 import com.centyllion.client.updateLocation
 import com.centyllion.model.*
@@ -114,15 +116,16 @@ class ModelPage(val context: AppContext) : BulmaElement {
     private var undoSimulation = false
     private var choosingSimulation = false
 
-    val simulationController = SimulationRunController(selectedSimulation.simulation, selectedModel.model)
-    { old, new, _ ->
-        if (old != new) {
-            if (!choosingSimulation) {
-                // update selected simulation
-                updateSimulation(selectedSimulation, selectedSimulation.copy(simulation = new))
+    val simulationController =
+        SimulationRunController(selectedSimulation.simulation, selectedModel.model)
+        { old, new, _ ->
+            if (old != new) {
+                if (!choosingSimulation) {
+                    // update selected simulation
+                    updateSimulation(selectedSimulation, selectedSimulation.copy(simulation = new))
+                }
             }
         }
-    }
 
     val modelSelect = Dropdown("", rounded = true)
 

@@ -1,7 +1,13 @@
 package com.centyllion.client
 
-import bulma.*
-import com.centyllion.client.controller.*
+import bulma.Title
+import bulma.div
+import bulma.noContextColumnsController
+import com.centyllion.client.controller.FeaturedController
+import com.centyllion.client.controller.SimulationRunController
+import com.centyllion.client.page.AdministrationPage
+import com.centyllion.client.page.ModelPage
+import com.centyllion.client.page.ProfilePage
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
@@ -55,17 +61,8 @@ fun explore(appContext: AppContext) {
 }
 
 fun profile(appContext: AppContext) {
-    val userController = UserController()
-    val columns = Columns(Column(userController.container, size = ColumnSize.TwoThirds))
-    appContext.root.appendChild(columns.root)
-
-    // initialize controller
-    appContext.api.fetchUser().then { userController.data = it }
-
-    // sets callbacks for update
-    userController.onUpdate = { _, new, _ ->
-        if (new != null) appContext.api.saveUser(new) else null
-    }
+    // authorization has been checked
+    appContext.root.appendChild(ProfilePage(appContext).root)
 }
 
 fun model(appContext: AppContext) {

@@ -1,7 +1,10 @@
-package com.centyllion.client.controller
+package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.EventController
+import com.centyllion.client.controller.FeaturedController
+import com.centyllion.client.controller.GrainModelFeaturedController
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
@@ -23,7 +26,11 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val publicModelsController = columnsController<GrainModelDescription, List<FeaturedDescription>, GrainModelFeaturedController>(
         emptyList(), emptyList()
     ) { _, model, previous ->
-        val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, api)
+        val controller = previous ?: GrainModelFeaturedController(
+            model,
+            featuredController.data,
+            api
+        )
         controller.toggleFeature = ::toggleFeatured
         controller
     }

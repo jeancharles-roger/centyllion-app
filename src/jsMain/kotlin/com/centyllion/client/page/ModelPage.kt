@@ -49,7 +49,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
     { _, old, new ->
         if (old != new) {
-            updateLocation(null, mapOf("model" to new._id), true)
+            updateLocation(null, mapOf("model" to new._id), false, true)
 
             refreshSelectedModel()
 
@@ -90,7 +90,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
     var selectedSimulation by observable(emptySimulationDescription)
     { _, old, new ->
         if (old != new) {
-            updateLocation(null, mapOf("simulation" to new._id), true)
+            updateLocation(null, mapOf("simulation" to new._id), false, true)
             refreshSelectedSimulation()
         }
     }

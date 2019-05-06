@@ -3,6 +3,8 @@ package com.centyllion.client.page
 import bulma.*
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.UserController
+import com.centyllion.client.openPage
+import com.centyllion.client.showPage
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 import org.w3c.dom.HTMLElement
@@ -72,6 +74,17 @@ class ProfilePage(val context: AppContext) : BulmaElement {
 
     init {
         allTabItem.active = true
+
+        panelController.onClick = { data, _ ->
+            when (data) {
+                is GrainModelDescription -> {
+                    openPage(showPage, context, mapOf("model" to data._id))
+                }
+                is SimulationDescription -> {
+                    openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data._id))
+                }
+            }
+        }
 
         // initialize controller
         context.api.fetchUser().then { userController.data = it }

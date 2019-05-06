@@ -69,15 +69,14 @@ fun index() {
 
 /** Open the given [page] */
 fun openPage(
-    page: Page, appContext: AppContext,
-    parameters: Map<String, String> = emptyMap(), register: Boolean = true
+    page: Page, appContext: AppContext, parameters: Map<String, String> = emptyMap(),
+    clearParameters: Boolean = true, register: Boolean = true
 ) {
     // highlight active page
     appContext.navBar.start.forEach {
         if (it.root.id == page.id) {
             it.root.classList.add("has-text-weight-bold")
             it.root.classList.add("is-active")
-
         } else {
             it.root.classList.remove("has-text-weight-bold")
             it.root.classList.remove("is-active")
@@ -85,7 +84,7 @@ fun openPage(
     }
 
     // updates locations and register to history
-    updateLocation(page, parameters, register)
+    updateLocation(page, parameters, clearParameters, register)
 
     // gets root element
     val root = document.querySelector(contentSelector) as HTMLElement
@@ -103,10 +102,10 @@ fun openPage(
 }
 
 /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
-fun updateLocation(page: Page?, parameters: Map<String, String>, register: Boolean) {
+fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
     window.location.let {
         // sets parameters
-        val params = URLSearchParams(it.search)
+        val params = URLSearchParams(if (clearParameters) "" else it.search)
         parameters.forEach { params.set(it.key, it.value) }
         val currentPage = if (page != null) {
             params.set("page", page.id)
@@ -164,7 +163,6 @@ class BrowserContext(
 }
 
 private fun notification(content: String, color: ElementColor = ElementColor.None) {
-
     when (color) {
         ElementColor.Danger -> console.error(content)
         ElementColor.Warning -> console.warn(content)

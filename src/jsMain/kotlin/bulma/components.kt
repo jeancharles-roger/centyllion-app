@@ -436,18 +436,30 @@ class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
     var items by bulmaList(items.toList(), root)
 }
 
-class PanelSimpleBlock(text: String, icon: String? = null) : PanelItem {
-    override val root: HTMLElement = document.create.div("panel-block") {
-        +text
+class PanelSimpleBlock(text: String, icon: String, var onClick: (PanelSimpleBlock) -> Unit = {}) : PanelItem {
+
+    override val root: HTMLElement = document.create.a(classes="panel-block") {
+        span { +text }
+        onClickFunction = { onClick(this@PanelSimpleBlock) }
     }
 
-    var icon = html(icon, root, Position.AfterBegin) {
+    private val textNode = root.querySelector("span") as HTMLElement
+
+    override var text: String
+        get() = textNode.innerText
+        set(value) {
+            textNode.innerText = value
+        }
+
+    var icon by html(icon, root, Position.AfterBegin) {
         document.create.span("panel-icon") {
             i("fas fa-$it") {
                 attributes["aria-hidden"] = "true"
             }
         }
     }
+
+    var active by className(false, "is-active", root)
 }
 
 class PanelContentBlock(vararg content: BulmaElement) : PanelItem {
@@ -464,7 +476,7 @@ class Panel(text: String, vararg items: PanelItem) : BulmaElement {
         p("panel-heading") { +text }
     }
 
-    var items by bulmaList(items.toList(), root)
+    var items by embeddedBulmaList(items.toList(), root) { document.create.div() }
 }
 
 class TabItem(
@@ -478,7 +490,7 @@ class TabItem(
 
     private val aNode = root.querySelector("a") as HTMLElement
 
-    var icon = html(icon, aNode, Position.AfterBegin) {
+    var icon by html(icon, aNode, Position.AfterBegin) {
         document.create.span("icon") {
             i("fas fa-$it") {
                 attributes["aria-hidden"] = "true"

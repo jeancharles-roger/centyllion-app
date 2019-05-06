@@ -100,8 +100,8 @@ class BulmaElementListProperty<T : BulmaElement>(
                     DiffAction.Added -> when {
                             parent.childElementCount == 0 && reference != null -> parent.insertBefore(it.element, reference)
                             parent.childElementCount == 0 -> parent.insertAdjacentElement(position.value, it.element)
-                            it.index < parent.childElementCount && reference != null -> parent.insertBefore(it.element, parent.children.item(it.index))
-                            else -> parent.insertAdjacentElement(position.toString(), it.element)
+                            it.index < parent.childElementCount -> parent.insertBefore(it.element, parent.children.item(it.index))
+                            else -> parent.insertAdjacentElement(position.value, it.element)
                         }
                     DiffAction.Removed -> parent.removeChild(it.element)
                     DiffAction.Replaced -> parent.replaceChild(it.element, oldElements[it.index])

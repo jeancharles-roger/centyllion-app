@@ -96,4 +96,16 @@ class DiffTest {
         // Tests diff apply over totally random list
         (0 until 50).forEach { testDiff(randomList(), randomList()) }
     }
+
+    @Test
+    fun testEmpty1() = testDiff(listOf(), listOf("1", "2"))
+
+    @Test
+    fun testEmpty2() = testDiff(listOf("1", "2"), listOf())
+
+    @Test
+    fun testInsertion1() = testDiff(
+        listOf("1", "2", "3", "4"), listOf("1", "1.1", "1.2", "2", "2.1", "2.2", "3", "3.1", "3.2", "4", "4.1", "4.2")
+    )
+
 }

@@ -4,7 +4,7 @@ import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
 /** Controller interface that bind a Data to a BulmaElement within a Context */
-interface Controller<Data, Context, Element : BulmaElement> : BulmaElement {
+interface Controller<Data, Context, out Element : BulmaElement> : BulmaElement {
 
     var data: Data
 
@@ -18,7 +18,7 @@ interface Controller<Data, Context, Element : BulmaElement> : BulmaElement {
 }
 
 /** A [Controller] with no context */
-abstract class NoContextController<Data, Element : BulmaElement> : Controller<Data, Unit, Element> {
+abstract class NoContextController<Data, out Element : BulmaElement> : Controller<Data, Unit, Element> {
     override var context: Unit = Unit
 }
 
@@ -120,3 +120,18 @@ fun <Data, Ctrl : Controller<Data, Unit, DropdownItem>> noContextDropdownControl
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
     controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
 ) = dropdownController(container, initialList, Unit, header, footer, controllerBuilder)
+
+
+fun <Data, Context, Ctrl : Controller<Data, Context, PanelItem>> panelController(
+    container: Panel, initialList: List<Data>, initialContext: Context,
+    header: List<PanelItem> = emptyList(), footer: List<PanelItem> = emptyList(),
+    controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
+) = MultipleController(
+    initialList, initialContext, header, footer, container, controllerBuilder
+) { parent, items -> parent.items = items }
+
+fun <Data, Ctrl : Controller<Data, Unit, PanelItem>> noContextPanelController(
+    container: Panel, initialList: List<Data>,
+    header: List<PanelItem> = emptyList(), footer: List<PanelItem> = emptyList(),
+    controllerBuilder: (index: Int, data: Data, previous: Ctrl?) -> Ctrl
+) = panelController(container, initialList, Unit, header, footer, controllerBuilder)

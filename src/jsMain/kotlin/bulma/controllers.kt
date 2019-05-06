@@ -1,5 +1,8 @@
 package bulma
 
+import com.centyllion.model.Diff
+import com.centyllion.model.DiffAction
+import com.centyllion.model.diff
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
@@ -36,7 +39,7 @@ class MultipleController<
 
     override var data: List<Data> by observable(initialList) { _, old, new ->
         if (old != new) {
-            refreshControllers()
+            refreshControllers(old.diff(new))
             refresh()
         }
     }
@@ -54,31 +57,29 @@ class MultipleController<
     val dataControllers: List<Ctrl> get() = controllers
 
     init {
-        refreshControllers()
+        refreshControllers(emptyList<Data>().diff(initialList))
     }
 
-    fun refreshControllers() {
-        // constructs a resized controllers list to match new size and populates with controllers that haven't changed nor moved
-        val resizedControllers = List(data.size) { controllers.getOrNull(it) }
-            .zip(data).map { (c, d) -> if (c != null && c.data == d) c else null }
-
-        // gets unused controllers
-        val availableControllers = controllers.filter { !resizedControllers.contains(it) }.toMutableList()
-        // constructs new controller passing already existing one (only once) if available.
-        controllers = resizedControllers.zip(data).mapIndexed { i, (c, d) ->
-            c ?: availableControllers.let {
-                val previous = availableControllers.find { it.data == d }
-                availableControllers.remove(previous)
-                val newController = controllerBuilder(i, d, previous)
-                if (previous == null) {
-                    newController.root.onclick = {
-                        onClick(newController.data, newController)
-                    }
+    private fun refreshControllers(diff: List<Diff<Data>>) {
+        val newControllers = controllers.toMutableList()
+        diff.forEach {
+            when (it.action) {
+                DiffAction.Added -> {
+                    val newController = controllerBuilder(it.index, it.element, null)
+                    newController.root.onclick = { onClick(newController.data, newController) }
+                    newControllers.add(it.index, newController)
                 }
-                newController
+                DiffAction.Removed -> {
+                    newControllers.removeAt(it.index)
+                }
+                DiffAction.Replaced -> {
+                    val controller = controllerBuilder(it.index, it.element, newControllers[it.index])
+                    controller.data = it.element
+                    newControllers[it.index] = controller
+                }
             }
         }
-
+        controllers = newControllers
         updateParents()
     }
 

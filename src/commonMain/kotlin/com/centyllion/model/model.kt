@@ -25,10 +25,6 @@ enum class Direction {
 
 val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 
-enum class Figure {
-    Square, Triangle, Disk, Diamond, Star
-}
-
 enum class Operator(val label: String) {
     Equals("="), NotEquals("!="), LessThan("<"), LessThanOrEquals("<="), GreaterThan(">"), GreaterThanOrEquals(">=")
 }

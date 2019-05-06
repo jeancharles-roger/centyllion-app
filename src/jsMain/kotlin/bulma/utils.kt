@@ -97,12 +97,11 @@ class BulmaElementListProperty<T : BulmaElement>(
             val diff = oldElements.diff(elements)
             diff.forEach {
                 when (it.action) {
-                    //result.add(it.index, it.element)
                     DiffAction.Added -> when {
                             parent.childElementCount == 0 && reference != null -> parent.insertBefore(it.element, reference)
                             parent.childElementCount == 0 -> parent.insertAdjacentElement(position.value, it.element)
-                            it.index < parent.childElementCount -> parent.insertBefore(it.element, parent.children.item(it.index))
-                            else -> parent.insertAdjacentElement(Position.BeforeEnd.value, it.element)
+                            it.index < parent.childElementCount && reference != null -> parent.insertBefore(it.element, parent.children.item(it.index))
+                            else -> parent.insertAdjacentElement(position.toString(), it.element)
                         }
                     DiffAction.Removed -> parent.removeChild(it.element)
                     DiffAction.Replaced -> parent.replaceChild(it.element, oldElements[it.index])
@@ -126,9 +125,7 @@ fun <T : BulmaElement> bulmaList(
     initialValue: List<T> = emptyList(), parent: HTMLElement,
     before: () -> Element? = { null },
     prepare: (T) -> HTMLElement = { it.root }
-) =
-    BulmaElementListProperty(initialValue, parent, before, Position.BeforeEnd, prepare)
-
+) = BulmaElementListProperty(initialValue, parent, before, Position.BeforeEnd, prepare)
 
 class BulmaElementEmbeddedListProperty<T : BulmaElement>(
     initialValue: List<T>,

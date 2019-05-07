@@ -40,32 +40,34 @@ class GrainModelEditController(
         this.data = data.copy(behaviours = data.behaviours + Behaviour())
     }
 
-    val grainsController = noContextColumnsController<Grain, GrainEditController>(data.grains) { index, grain, previous ->
-        val controller = previous ?: GrainEditController(grain)
-        controller.onUpdate = { _, new, _ ->
-            val newGrains = data.grains.toMutableList()
-            newGrains[index] = new
-            data = data.copy(grains = newGrains)
+    val grainsController =
+        noContextColumnsController<Grain, GrainEditController>(data.grains) { parent, grain ->
+            val controller = GrainEditController(grain)
+            controller.onUpdate = { _, new, _ ->
+                val newGrains = data.grains.toMutableList()
+                newGrains[parent.indexOf(controller)] = new
+                data = data.copy(grains = newGrains)
+            }
+            controller.onDelete = { _, _ ->
+                val newGrains = data.grains.toMutableList()
+                newGrains.removeAt(parent.indexOf(controller))
+                data = data.copy(grains = newGrains)
+            }
+            controller
         }
-        controller.onDelete = { _, _ ->
-            val newGrains = data.grains.toMutableList()
-            newGrains.removeAt(index)
-            data = data.copy(grains = newGrains)
-        }
-        controller
-    }
 
     val behavioursController =
-        columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data) { index, behaviour, previous ->
-            val controller = previous ?: BehaviourEditController(behaviour, data)
+        columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data)
+        { parent, behaviour ->
+            val controller = BehaviourEditController(behaviour, data)
             controller.onUpdate = { _, new, _ ->
                 val behaviours = data.behaviours.toMutableList()
-                behaviours[index] = new
+                behaviours[parent.indexOf(controller)] = new
                 data = data.copy(behaviours = behaviours)
             }
             controller.onDelete = { _, _ ->
                 val behaviours = data.behaviours.toMutableList()
-                behaviours.removeAt(index)
+                behaviours.removeAt(parent.indexOf(controller))
                 data = data.copy(behaviours = behaviours)
             }
             controller

@@ -6,11 +6,9 @@ import bulma.div
 import bulma.noContextColumnsController
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.page.AdministrationPage
-import com.centyllion.client.page.ModelPage
-import com.centyllion.client.page.ProfilePage
+import com.centyllion.client.page.HomePage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.common.adminRole
-import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
 import keycloak.KeycloakInstance
 
@@ -28,9 +26,8 @@ data class Page(
 const val contentSelector = "section.cent-main"
 
 val pages = listOf(
+    Page("Home", "home", true, null, true, ::HomePage),
     Page("Explore", "explore", false, null, true, ::explore),
-    Page("Model", "model", true, modelRole, true, ::ModelPage),
-    Page("Profile", "profile", true, null, true, ::ProfilePage),
     Page("Administration", "administration", true, adminRole, true, ::AdministrationPage),
     Page("Show", "show", false, null, false, ::ShowPage)
 )
@@ -41,8 +38,8 @@ val showPage = pages.find { it.id == "show" }!!
 
 fun explore(appContext: AppContext): BulmaElement {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { index, data, previous ->
-        val controller = previous ?: FeaturedController(data)
+    { parent, data ->
+        val controller = FeaturedController(data)
         controller.body.root.onclick = {
             openPage(showPage, appContext, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }

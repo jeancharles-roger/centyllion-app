@@ -11,7 +11,7 @@ import org.w3c.dom.HTMLElement
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class ProfilePage(val context: AppContext) : BulmaElement {
+class HomePage(val context: AppContext) : BulmaElement {
 
     class PanelItemController(source: Any) : NoContextController<Any, PanelSimpleBlock>() {
 
@@ -63,7 +63,7 @@ class ProfilePage(val context: AppContext) : BulmaElement {
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
-    ) { _, data, previous -> previous ?: PanelItemController(data) }
+    ) { _, data -> PanelItemController(data) }
 
     val container = Columns(
         Column(panelController, size = ColumnSize.OneThird),

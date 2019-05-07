@@ -76,18 +76,14 @@ class SimulationRunController(
     val stepLabel = Label()
 
     val grainsController =
-        noContextColumnsController<Grain, GrainDisplayController>(model.grains) { _, grain, previous ->
-            previous ?: GrainDisplayController(grain)
-        }
+        noContextColumnsController<Grain, GrainDisplayController>(model.grains)
+        { parent, grain -> GrainDisplayController(grain) }
 
     val behaviourController =
         columnsController<Behaviour, Simulator, BehaviourRunController>(model.behaviours, simulator)
-        { _, behaviour, previous ->
-            val controller = previous ?: BehaviourRunController(behaviour, simulator)
-            controller.onSpeedChange = { behaviour, speed ->
-                simulator.setSpeed(behaviour, speed)
-
-            }
+        { ctrl, behaviour ->
+            val controller = BehaviourRunController(behaviour, simulator)
+            controller.onSpeedChange = { behaviour, speed -> simulator.setSpeed(behaviour, speed) }
             controller
         }
 

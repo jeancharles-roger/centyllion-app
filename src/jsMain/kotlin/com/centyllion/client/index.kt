@@ -95,7 +95,7 @@ fun openPage(
 
     // tries to load page if authorized
     if (page.authorized(appContext.keycloak)) {
-        page.callback(appContext)
+        appContext.root.appendChild(page.callback(appContext).root)
     } else {
         appContext.error("You are not authorized to access this page")
     }

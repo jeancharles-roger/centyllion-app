@@ -1,25 +1,22 @@
 package com.centyllion.client
 
+import bulma.BulmaElement
 import bulma.Title
 import bulma.div
 import bulma.noContextColumnsController
 import com.centyllion.client.controller.FeaturedController
-import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.page.AdministrationPage
 import com.centyllion.client.page.ModelPage
 import com.centyllion.client.page.ProfilePage
+import com.centyllion.client.page.ShowPage
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
-import com.centyllion.model.emptySimulationDescription
 import keycloak.KeycloakInstance
-import org.w3c.dom.url.URLSearchParams
-import kotlin.browser.window
-import kotlin.js.Promise
 
 data class Page(
     val title: String, val id: String, val needUser: Boolean,
-    val role: String?, val header: Boolean, val callback: (appContext: AppContext) -> Unit
+    val role: String?, val header: Boolean, val callback: (appContext: AppContext) -> BulmaElement
 ) {
     fun authorized(keycloak: KeycloakInstance): Boolean = when {
         !needUser -> true
@@ -32,17 +29,17 @@ const val contentSelector = "section.cent-main"
 
 val pages = listOf(
     Page("Explore", "explore", false, null, true, ::explore),
-    Page("Model", "model", true, modelRole, true, ::model),
-    Page("Profile", "profile", true, null, true, ::profile),
-    Page("Administration", "administration", true, adminRole, true, ::administration),
-    Page("Show", "show", false, null, false, ::show)
+    Page("Model", "model", true, modelRole, true, ::ModelPage),
+    Page("Profile", "profile", true, null, true, ::ProfilePage),
+    Page("Administration", "administration", true, adminRole, true, ::AdministrationPage),
+    Page("Show", "show", false, null, false, ::ShowPage)
 )
 
 val mainPage = pages[0]
 
 val showPage = pages.find { it.id == "show" }!!
 
-fun explore(appContext: AppContext) {
+fun explore(appContext: AppContext): BulmaElement {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { index, data, previous ->
         val controller = previous ?: FeaturedController(data)
@@ -55,57 +52,7 @@ fun explore(appContext: AppContext) {
     val page = div(
         Title("Explore featured models"), featuredController
     )
-    appContext.root.appendChild(page.root)
 
     appContext.api.fetchAllFeatured().then { models -> featuredController.data = models }
-}
-
-fun profile(appContext: AppContext) {
-    // authorization has been checked
-    appContext.root.appendChild(ProfilePage(appContext).root)
-}
-
-fun model(appContext: AppContext) {
-    // authorization has been checked
-    appContext.root.appendChild(ModelPage(appContext).root)
-}
-
-fun administration(appContext: AppContext) {
-    // authorization has been checked
-    appContext.root.appendChild(AdministrationPage(appContext).root)
-}
-
-
-fun show(appContext: AppContext) {
-    val params = URLSearchParams(window.location.search)
-    val simulationId = params.get("simulation")
-    val modelId = params.get("model")
-
-    // selects the pair simulation and model to run
-    val result = when {
-        // if there is a simulation id, use it to find the model
-        simulationId != null && simulationId.isNotEmpty() ->
-            appContext.api.fetchSimulation(simulationId).then { simulation ->
-                appContext.api.fetchGrainModel(simulation.modelId).then { simulation to it }
-            }.then { it }
-
-        // if there is a model id, use it to list all simulation and take the first one
-        modelId != null && modelId.isNotEmpty() ->
-            appContext.api.fetchGrainModel(modelId).then { model ->
-                appContext.api.fetchSimulations(model._id, true).then { simulations ->
-                    (simulations.firstOrNull() ?: emptySimulationDescription) to model
-                }
-            }.then { it }
-
-        else -> Promise.reject(Exception("No simulation found"))
-    }
-
-    result.then {
-        val controller = SimulationRunController(it.first.simulation, it.second.model, true)
-        appContext.root.appendChild(controller.root)
-    }.catch {
-        appContext.error(it)
-    }
-
-
+    return page
 }

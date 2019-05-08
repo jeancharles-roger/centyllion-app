@@ -12,6 +12,8 @@ class FeaturedController(
         if (old != new)  refresh()
     }
 
+    override var readOnly = false
+
     val name = SubTitle(data.name)
     val description = Label(data.description)
 

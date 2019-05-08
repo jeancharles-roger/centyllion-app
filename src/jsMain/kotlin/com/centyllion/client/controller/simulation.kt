@@ -22,6 +22,12 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         refresh()
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            // TODO
+        }
+    }
+
     val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
         val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
         width = "$canvasWidth"

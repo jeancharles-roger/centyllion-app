@@ -13,6 +13,8 @@ interface Controller<Data, Context, out Element : BulmaElement> : BulmaElement {
 
     var context: Context
 
+    var readOnly: Boolean
+
     val container: Element
 
     override val root: HTMLElement get() = container.root
@@ -50,6 +52,13 @@ class MultipleController<
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            controllers.forEach { it.readOnly = new }
+        }
+    }
+
+
     var onClick: (Data, Ctrl) -> Unit = { _, _ -> }
 
     private var controllers: List<Ctrl> = listOf()
@@ -67,6 +76,7 @@ class MultipleController<
                 DiffAction.Added -> {
                     val newController = controllerBuilder(this, it.element)
                     newController.root.onclick = { onClick(newController.data, newController) }
+                    newController.readOnly = readOnly
                     newControllers.add(it.index, newController)
                 }
                 DiffAction.Removed -> {
@@ -122,7 +132,6 @@ fun <Data, Ctrl : Controller<Data, Unit, DropdownItem>> noContextDropdownControl
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
     controllerBuilder: (MultipleController<Data, Unit, Dropdown, DropdownItem, Ctrl>, data: Data) -> Ctrl
 ) = dropdownController(container, initialList, Unit, header, footer, controllerBuilder)
-
 
 fun <Data, Context, Ctrl : Controller<Data, Context, PanelItem>> panelController(
     container: Panel, initialList: List<Data>, initialContext: Context,

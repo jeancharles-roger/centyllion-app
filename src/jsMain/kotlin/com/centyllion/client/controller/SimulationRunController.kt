@@ -38,6 +38,14 @@ class SimulationRunController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            nameController.readOnly = new
+            descriptionController.readOnly = new
+            simulationViewController.readOnly = true
+        }
+    }
+
     private var simulator = Simulator(context, data)
 
     private var running = false

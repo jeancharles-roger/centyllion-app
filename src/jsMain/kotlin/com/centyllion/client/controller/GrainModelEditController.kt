@@ -7,7 +7,7 @@ import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
-    model: GrainModel, readOnly: Boolean = false,
+    model: GrainModel,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
@@ -22,10 +22,12 @@ class GrainModelEditController(
         }
     }
 
-    var readOnly by observable(readOnly) { _, old, new ->
+    override var readOnly by observable(false) { _, old, new ->
         if (old != new) {
             addGrainButton.invisible = new
             addBehaviourButton.invisible = new
+            grainsController.readOnly = new
+            behavioursController.readOnly = new
         }
     }
 

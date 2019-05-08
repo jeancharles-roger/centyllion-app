@@ -288,6 +288,8 @@ class Select(
             selectMultiple = value
         }
 
+    var disabled by booleanAttribute(false, "disabled", root)
+
     private var rootMultiple by className(multiple, "is-multiple", root)
     private var selectMultiple by booleanAttribute(multiple, "multiple", selectNode)
 
@@ -320,7 +322,7 @@ class Checkbox(
         get() = inputNode.checked
         set(value) { inputNode.checked = value }
 
-    var disable
+    var disabled
         get() = disabledRoot
         set(_) {
             disabledInput = true

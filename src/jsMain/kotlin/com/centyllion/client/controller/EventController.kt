@@ -11,6 +11,8 @@ class EventController(event: Event, size: ColumnSize) : NoContextController<Even
         if (old != new) refresh()
     }
 
+    override var readOnly = false
+
     val title = span("${data.action} on ${data.collection}")
     val date = span(data.date)
     val level = Level(left = listOf(title), right = listOf(date))

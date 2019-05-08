@@ -21,6 +21,8 @@ class BehaviourRunController(
         if (old != new) refresh()
     }
 
+    override var readOnly = false
+
     val titleLabel = Label(behaviour.name)
     val descriptionLabel = p().apply { text = behaviour.description }
 

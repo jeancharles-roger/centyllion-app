@@ -19,6 +19,13 @@ class IntPredicateController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            select.disabled = new
+            value.readOnly = new
+        }
+    }
+
     val select = Select(Operator.values().map { Option(it.label, it.name) }, rounded = true) { _: Event, value: String ->
         data = data.copy(op = Operator.valueOf(value))
     }

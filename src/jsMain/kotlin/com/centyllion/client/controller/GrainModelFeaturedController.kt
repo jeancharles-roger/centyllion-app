@@ -20,6 +20,8 @@ class GrainModelFeaturedController(
         if (old != new) refresh()
     }
 
+    override var readOnly = false
+
     override var context: List<FeaturedDescription> = allFeatured
 
     private fun dotColumns() =

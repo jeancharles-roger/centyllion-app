@@ -23,6 +23,15 @@ class DirectionSetEditController(
         }
     }
 
+    override var readOnly: Boolean by Delegates.observable(false) { _, old, new ->
+        if (old != new) {
+            up.disabled = new
+            down.disabled = new
+            left.disabled = new
+            right.disabled = new
+        }
+    }
+
     val left = buttonForDirection(Direction.Left)
     val up = buttonForDirection(Direction.Up)
     val down = buttonForDirection(Direction.Down)

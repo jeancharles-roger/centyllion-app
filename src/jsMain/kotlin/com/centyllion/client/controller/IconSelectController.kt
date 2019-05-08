@@ -16,6 +16,12 @@ class IconSelectController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            container.disabled = readOnly
+        }
+    }
+
     val icon = Icon(iconName(data))
 
     val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }

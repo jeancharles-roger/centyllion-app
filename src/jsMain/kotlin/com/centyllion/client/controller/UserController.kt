@@ -5,11 +5,17 @@ import com.centyllion.model.User
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class UserController : NoContextController<User?, BulmaElement>() {
+class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
 
-    override var data: User? by observable<User?>(null) { _, _, _ ->
+    override var data: User? by observable(user) { _, _, _ ->
         newData = data
         refresh()
+    }
+
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            // TODO
+        }
     }
 
     var newData: User? = data

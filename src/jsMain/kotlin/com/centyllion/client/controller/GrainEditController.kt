@@ -13,6 +13,7 @@ class GrainEditController(
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
             colorController.data = new.color
+            iconController.data = new.icon
             nameController.data = new.name
             descriptionController.data = new.description
             movementProbabilityController.data = "${new.movementProbability}"
@@ -21,6 +22,19 @@ class GrainEditController(
             onUpdate(old, new, this@GrainEditController)
         }
         refresh()
+    }
+
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            colorController.readOnly = new
+            iconController.readOnly = new
+            nameController.readOnly = new
+            descriptionController.readOnly = new
+            movementProbabilityController.readOnly = new
+            directionController.readOnly = new
+            halfLifeController.readOnly = new
+            body.right = if (new) emptyList() else listOf(delete)
+        }
     }
 
     val colorController = ColorSelectController(data.color) { _, new, _ ->
@@ -53,19 +67,19 @@ class GrainEditController(
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
-    override val container = Column(
-        Media(
-            center = listOf(
-                nameController,
-                descriptionController,
-                Level(center = listOf(colorController, iconController), mobile = true),
-                HorizontalField(Help("Half life"), halfLifeController.container),
-                HorizontalField(Help("Speed"), movementProbabilityController.container),
-                HorizontalField(Help("Directions"), directionController.container)
-            ),
-            right = listOf(delete)
-        ), size = ColumnSize.Full
+    val body = Media(
+        center = listOf(
+            nameController,
+            descriptionController,
+            Level(center = listOf(colorController, iconController), mobile = true),
+            HorizontalField(Help("Half life"), halfLifeController.container),
+            HorizontalField(Help("Speed"), movementProbabilityController.container),
+            HorizontalField(Help("Directions"), directionController.container)
+        ),
+        right = listOf(delete)
     )
+
+    override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
         colorController.refresh()

@@ -37,6 +37,16 @@ class ReactionEditController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            reactiveController.readOnly = new
+            directionController.readOnly = new
+            productController.readOnly = new
+            sourceReactiveController.readOnly = new
+            body.right = if (new) emptyList() else listOf(delete)
+        }
+    }
+
     val reactiveController = GrainSelectController(context.second.indexedGrains[data.reactiveId], context.second.grains)
     { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
@@ -62,13 +72,15 @@ class ReactionEditController(
         onDelete(this.data, this@ReactionEditController)
     }
 
+    val body = Level(
+        left = listOf(reactiveController),
+        center = listOf(directionController, productController, sourceReactiveController),
+        right = listOf(delete),
+        mobile = true
+    )
+
     override val container = Column(
-        Level(
-            left = listOf(reactiveController),
-            center = listOf(directionController, productController, sourceReactiveController),
-            right = listOf(delete),
-            mobile = true
-        ),
+        body,
         size = ColumnSize.Full
     )
 

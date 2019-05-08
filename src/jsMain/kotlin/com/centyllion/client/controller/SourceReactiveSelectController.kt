@@ -24,6 +24,12 @@ class SourceReactiveSelectController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            dropdown.disabled = readOnly
+        }
+    }
+
     val icon = Icon(indexIcon(data)).apply {
         root.style.color = indexColor(data)
     }

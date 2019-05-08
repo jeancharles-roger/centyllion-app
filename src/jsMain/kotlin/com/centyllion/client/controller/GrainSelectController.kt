@@ -23,6 +23,12 @@ class GrainSelectController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            dropdown.disabled = readOnly
+        }
+    }
+
     val icon = Icon(data?.icon ?: "circle")
 
     val dropdown: Dropdown = Dropdown(grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }

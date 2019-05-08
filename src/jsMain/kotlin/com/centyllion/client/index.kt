@@ -31,7 +31,9 @@ fun index() {
 
     val api = Api(keycloak)
 
-    val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
+    val options = KeycloakInitOptions(
+        checkLoginIframe = false, promiseType = "native", onLoad = "check-sso", timeSkew = 10
+    )
     keycloak.init(options)
         .then { _ -> api.fetchUser() }
         .then { user ->

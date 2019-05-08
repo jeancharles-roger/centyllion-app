@@ -19,7 +19,7 @@ class EditableStringController(
         }
     }
 
-    var disabled: Boolean by observable(disabled) { _, old, new ->
+    override var readOnly: Boolean by observable(disabled) { _, old, new ->
         if (old != new) edit(false)
     }
 
@@ -31,7 +31,7 @@ class EditableStringController(
 
     val input = Input(value = data, placeholder = placeHolder, readonly = true, static = true).apply {
         root.onclick = {
-            if (!this@EditableStringController.disabled) edit(true)
+            if (!this@EditableStringController.readOnly) edit(true)
             Unit
         }
         root.onkeyup = {
@@ -65,7 +65,7 @@ class EditableStringController(
             input.root.focus()
         } else {
             container.body = listOfNotNull(inputControl)
-            inputControl.rightIcon = if (this.disabled) null else penIcon
+            inputControl.rightIcon = if (this.readOnly) null else penIcon
         }
     }
 

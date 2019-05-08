@@ -41,6 +41,21 @@ class BehaviourEditController(
         }
     }
 
+    override var readOnly: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            addReactionButton.invisible = new
+            nameController.readOnly = new
+            descriptionController.readOnly = new
+            probabilityController.readOnly = new
+            agePredicateController.readOnly = new
+            mainReactiveController.readOnly = new
+            mainProductController.readOnly = new
+            sourceReactiveController.readOnly = new
+            reactionController.readOnly = new
+            body.right = if (new) emptyList() else listOf(delete)
+        }
+    }
+
     val nameController = EditableStringController(data.name, "Name")
     { _, new, _ ->
         this.data = this.data.copy(name = new)

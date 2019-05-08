@@ -21,6 +21,8 @@ class HomePage(val context: AppContext) : BulmaElement {
 
         override val container = PanelSimpleBlock(elementText(source), elementIcon(source))
 
+        override var readOnly = false
+
         override fun refresh() {
             container.text = elementText(data)
             container.icon = elementIcon(data)
@@ -33,7 +35,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val userController = UserController()
+    val userController = UserController(context.me)
 
     val media = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
@@ -85,9 +87,6 @@ class HomePage(val context: AppContext) : BulmaElement {
                 }
             }
         }
-
-        // initialize controller
-        context.api.fetchUser().then { userController.data = it }
 
         context.api.fetchMyGrainModels().then {
             //elements = it

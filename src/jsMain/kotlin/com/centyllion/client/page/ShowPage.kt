@@ -19,11 +19,12 @@ class ShowPage(val context: AppContext) : BulmaElement {
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
             val readonly = model.info.userId != context.me?._id
+            println("Model user ${model.info.userId}, user ${context.me?._id}, readonly $readonly")
             modelController.readOnly = readonly
             modelController.data = new.model
-            modelNameController.disabled = readonly
+            modelNameController.readOnly = readonly
             modelNameController.data = new.model.name
-            modelDescriptionController.disabled = readonly
+            modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
             simulationController.context = new.model
         }

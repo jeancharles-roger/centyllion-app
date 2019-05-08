@@ -10,6 +10,8 @@ class GrainDisplayController(grain: Grain): NoContextController<Grain, Column>()
         if (old != new) refresh()
     }
 
+    override var readOnly = false
+
     var count: Int by observable(-1) { _, _ , new ->
         countLabel.text = if (new < 0) "" else "$new"
     }

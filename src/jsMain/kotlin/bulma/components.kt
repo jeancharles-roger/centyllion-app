@@ -152,7 +152,7 @@ class DropdownDivider : DropdownItem {
 class Dropdown(
     text: String, vararg items: DropdownItem,
     rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down",
-    onDropdown: (Dropdown) -> Unit = {}
+    var onDropdown: (Dropdown) -> Unit = {}
 ) : ControlElement {
 
     override val root: HTMLElement = document.create.div(classes = "dropdown") {
@@ -177,7 +177,9 @@ class Dropdown(
         }
     }
 
+    private val triggerNode = root.querySelector("div.dropdown-trigger") as HTMLDivElement
     private val buttonNode = root.querySelector("button.button") as HTMLButtonElement
+    private val toggleNode = root.querySelector("span.icon.is-small") as HTMLSpanElement
     private val titleNode = root.querySelector(".dropdown-title") as HTMLSpanElement
     private val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
     private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
@@ -212,6 +214,17 @@ class Dropdown(
         set(value) {
             menuNode.style.width = value
         }
+
+    var disabled by observable(false) { _, old, new ->
+        if (old != new) {
+            triggerNode.onclick = if (new) null else {
+                if (!active) onDropdown(this@Dropdown)
+                this@Dropdown.toggleDropdown()
+                Unit.asDynamic()
+            }
+            toggleNode.classList.toggle("is-hidden", new)
+        }
+    }
 }
 
 // TODO [Menu](http://bulma.io/documentation/components/menu)

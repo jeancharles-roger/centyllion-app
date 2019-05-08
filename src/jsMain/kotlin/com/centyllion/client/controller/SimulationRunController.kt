@@ -8,7 +8,6 @@ import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
     simulation: Simulation, model: GrainModel,
-    readonly: Boolean = false,
     val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Simulation, GrainModel, BulmaElement> {
@@ -42,7 +41,8 @@ class SimulationRunController(
         if (old != new) {
             nameController.readOnly = new
             descriptionController.readOnly = new
-            simulationViewController.readOnly = true
+            simulationViewController = createSimulationViewController()
+            simulationViewController.readOnly = new
         }
     }
 
@@ -57,12 +57,12 @@ class SimulationRunController(
 
     private var presentCharts = false
 
-    val nameController = EditableStringController(data.name, "Name", readonly)
+    val nameController = EditableStringController(data.name, "Name")
     { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description", readonly)
+    val descriptionController = EditableStringController(data.description, "Description")
     { _, new, _ ->
         data = data.copy(description = new)
     }
@@ -99,30 +99,38 @@ class SimulationRunController(
 
     val chartCanvas = canvas {}
 
-    val simulationViewController: SimulatorViewController =
-        if (readonly) SimulatorViewController(simulator) else
-            SimulatorEditController(simulator) { ended, new, _ ->
-                updatedSimulatorFromView(ended, new)
-            }
+    var simulationViewController: SimulatorViewController by observable(createSimulationViewController())
+    { _, old, new ->
+        if (old != new) {
+            simulationView.body = listOf(simulationViewController)
+        }
+    }
+
+    val simulationView = Column(simulationViewController.container, size = ColumnSize.Full)
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
         Column(
-            Level(
-                center = listOf(
-                    Field(
-                        Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
-                        addons = true
-                    ),
-                    Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
-                    stepLabel,
-                    toggleChartsButton
+            Columns(
+                Column(
+                    Level(
+                        center = listOf(
+                            Field(
+                                Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
+                                addons = true
+                            ),
+                            Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
+                            stepLabel,
+                            toggleChartsButton
+                        ),
+                        mobile = true
+                    ), size = ColumnSize.Full
                 ),
-                mobile = true
+                simulationView,
+                Column(div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
+                multiline = true
             ),
-            simulationViewController.container,
-            div(chartCanvas, classes = "has-text-centered"),
             desktopSize = ColumnSize.TwoThirds
         ),
         Column(
@@ -132,7 +140,6 @@ class SimulationRunController(
         ),
         multiline = true
     )
-
 
     val chart = Chart(chartCanvas.root, LineChartConfig(
         options = LineChartOptions().apply {
@@ -240,6 +247,13 @@ class SimulationRunController(
         presentCharts = !presentCharts
         toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
         refresh()
+    }
+
+    private fun createSimulationViewController(): SimulatorViewController {
+        return if (readOnly) SimulatorViewController(simulator) else
+            SimulatorEditController(simulator) { ended, new, _ ->
+                updatedSimulatorFromView(ended, new)
+            }
     }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {

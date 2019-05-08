@@ -19,7 +19,6 @@ class ShowPage(val context: AppContext) : BulmaElement {
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
             val readonly = model.info.userId != context.me?._id
-            println("Model user ${model.info.userId}, user ${context.me?._id}, readonly $readonly")
             modelController.readOnly = readonly
             modelController.data = new.model
             modelNameController.readOnly = readonly
@@ -41,6 +40,14 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val modelController = GrainModelEditController(model.model) { old, new, _ ->
         if (old != new) {
             model = model.copy(model = new)
+        }
+    }
+
+    var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
+        if (new != old) {
+            val readonly = simulation.info.userId != context.me?._id
+            simulationController.readOnly = readonly
+            simulationController.data = new.simulation
         }
     }
 
@@ -88,8 +95,8 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
 
         result.then {
+            simulation = it.first
             model = it.second
-            simulationController.data = it.first.simulation
         }.catch {
             context.error(it)
         }

@@ -3,6 +3,7 @@ package com.centyllion.client
 import com.centyllion.model.*
 import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
 import org.w3c.xhr.XMLHttpRequest
 import kotlin.js.Promise
@@ -11,6 +12,8 @@ class Api(val instance: KeycloakInstance?) {
 
     val finalState: Short = 4
     val successStatus: Short = 200
+
+    val json = Json(JsonConfiguration.Companion.Stable)
 
     private fun fetch(method: String, url: String, bearer: String? = null, content: String? = null): Promise<String> =
         Promise { resolve, reject ->
@@ -41,38 +44,43 @@ class Api(val instance: KeycloakInstance?) {
 
 
     fun fetchVersion() =
-        fetch("GET", "/version.json").then {Json.parse(Version.serializer(), it) }
+        fetch("GET", "/version.json").then {json.parse(Version.serializer(), it) }
 
 
-    fun fetchUser(): Promise<User> =
+    fun fetchUser(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me", bearer).then { Json.parse(User.serializer(), it) }
+            fetch("GET", "/api/me", bearer).then { json.parse(User.serializer(), it) }.catch { null }
         }
 
     fun saveUser(user: User) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("PATCH", "/api/me", bearer, Json.stringify(User.serializer(), user))
+            fetch("PATCH", "/api/me", bearer, json.stringify(User.serializer(), user))
         }
 
     fun fetchMyGrainModels() =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
+            fetch("GET", "/api/me/model", bearer).then { json.parse(GrainModelDescription.serializer().list, it) }
         }
 
     fun fetchPublicGrainModels() =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/model", bearer).then { Json.parse(GrainModelDescription.serializer().list, it) }
+            fetch("GET", "/api/model", bearer).then { json.parse(GrainModelDescription.serializer().list, it) }
         }
 
     fun fetchGrainModel(modelId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/model/$modelId", bearer).then { Json.parse(GrainModelDescription.serializer(), it) }
+            fetch("GET", "/api/model/$modelId", bearer).then {
+                val result = json.parse(GrainModelDescription.serializer(), it)
+                println(it)
+                println(result.info)
+                result
+            }
         }
 
     fun saveGrainModel(model: GrainModel) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/model", bearer, Json.stringify(GrainModel.serializer(), model))
-                .then { Json.parse(GrainModelDescription.serializer(), it) }
+            fetch("POST", "/api/model", bearer, json.stringify(GrainModel.serializer(), model))
+                .then { json.parse(GrainModelDescription.serializer(), it) }
         }
 
     fun deleteGrainModel(model: GrainModelDescription) =
@@ -86,7 +94,7 @@ class Api(val instance: KeycloakInstance?) {
                 "PATCH",
                 "/api/model/${model._id}",
                 bearer,
-                Json.stringify(GrainModelDescription.serializer(), model)
+                json.stringify(GrainModelDescription.serializer(), model)
             )
         }
 
@@ -94,19 +102,19 @@ class Api(val instance: KeycloakInstance?) {
         executeWithRefreshedIdToken(instance) { bearer ->
             val params = if (public) "?public" else ""
             fetch("GET", "/api/model/$modelId/simulation$params", bearer)
-                .then { Json.parse(SimulationDescription.serializer().list, it) }
+                .then { json.parse(SimulationDescription.serializer().list, it) }
         }
 
     fun fetchSimulation(simulationId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/simulation/$simulationId", bearer)
-                .then { Json.parse(SimulationDescription.serializer(), it) }
+                .then { json.parse(SimulationDescription.serializer(), it) }
         }
 
     fun saveSimulation(modelId: String, simulation: Simulation) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/model/$modelId/simulation", bearer, Json.stringify(Simulation.serializer(), simulation))
-                .then { Json.parse(SimulationDescription.serializer(), it) }
+            fetch("POST", "/api/model/$modelId/simulation", bearer, json.stringify(Simulation.serializer(), simulation))
+                .then { json.parse(SimulationDescription.serializer(), it) }
         }
 
     fun deleteSimulation(simulation: SimulationDescription) =
@@ -120,20 +128,20 @@ class Api(val instance: KeycloakInstance?) {
                 "PATCH",
                 "/api/simulation/${simulation._id}",
                 bearer,
-                Json.stringify(SimulationDescription.serializer(), simulation)
+                json.stringify(SimulationDescription.serializer(), simulation)
             )
         }
 
     fun fetchAllFeatured() =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/featured", bearer).then { Json.parse(FeaturedDescription.serializer().list, it) }
+            fetch("GET", "/api/featured", bearer).then { json.parse(FeaturedDescription.serializer().list, it) }
         }
 
     fun saveFeatured(modelId: String, simulationId: String, authorId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val featured = emptyFeatured(modelId = modelId, simulationId = simulationId, authorId = authorId)
-            fetch("POST", "/api/featured", bearer, Json.stringify(FeaturedDescription.serializer(), featured))
-                .then { Json.parse(FeaturedDescription.serializer(), it) }
+            fetch("POST", "/api/featured", bearer, json.stringify(FeaturedDescription.serializer(), featured))
+                .then { json.parse(FeaturedDescription.serializer(), it) }
         }
 
 
@@ -144,6 +152,6 @@ class Api(val instance: KeycloakInstance?) {
 
 
     fun fetchEvents() = executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/event", bearer).then { Json.parse(Event.serializer().list, it) }
+        fetch("GET", "/api/event", bearer).then { json.parse(Event.serializer().list, it) }
     }
 }

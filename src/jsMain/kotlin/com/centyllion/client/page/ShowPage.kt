@@ -2,21 +2,46 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.EditableStringController
 import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
-import com.centyllion.model.emptyModel
-import com.centyllion.model.emptySimulation
-import com.centyllion.model.emptySimulationDescription
+import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise
+import kotlin.properties.Delegates.observable
 
 class ShowPage(val context: AppContext) : BulmaElement {
 
     val api = context.api
 
-    val modelController = GrainModelEditController(emptyModel)
+    var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
+        if (new != old) {
+            val readonly = model.info.userId != context.me?._id
+            modelController.readOnly = readonly
+            modelController.data = new.model
+            modelNameController.disabled = readonly
+            modelNameController.data = new.model.name
+            modelDescriptionController.disabled = readonly
+            modelDescriptionController.data = new.model.description
+            simulationController.context = new.model
+        }
+    }
+
+    val modelNameController = EditableStringController(model.model.name, "Name") { _, new, _ ->
+        model = model.copy(model = model.model.copy(name = new))
+    }
+
+    val modelDescriptionController = EditableStringController(model.model.description, "Description") { _, new, _ ->
+        model = model.copy(model = model.model.copy(description = new))
+    }
+
+    val modelController = GrainModelEditController(model.model) { old, new, _ ->
+        if (old != new) {
+            model = model.copy(model = new)
+        }
+    }
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel)
 
@@ -25,7 +50,12 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true), initialTabIndex = 1)
 
-    val container: BulmaElement = editionTab
+    val container: BulmaElement = Columns(
+        Column(modelNameController, size = ColumnSize.OneThird),
+        Column(modelDescriptionController, size = ColumnSize.TwoThirds),
+        Column(editionTab, size = ColumnSize.Full),
+        multiline = true
+    )
 
     override val root: HTMLElement = container.root
 
@@ -57,8 +87,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
 
         result.then {
-            modelController.data = it.second.model
-            simulationController.context = it.second.model
+            model = it.second
             simulationController.data = it.first.simulation
         }.catch {
             context.error(it)

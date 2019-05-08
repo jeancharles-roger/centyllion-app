@@ -4,6 +4,7 @@ import bulma.*
 import bulmatoast.ToastAnimation
 import bulmatoast.ToastOptions
 import bulmatoast.bulmaToast
+import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
@@ -12,7 +13,7 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.Date
+import kotlin.js.*
 
 @JsName("index")
 fun index() {
@@ -21,50 +22,54 @@ fun index() {
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-2by1.png", "/")),
         end = listOf(NavBarLinkItem("Not connected")), transparent = true
     )
-    document.body?.insertAdjacentElement(Position.AfterBegin.value,navBar.root)
+    document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
     val root = document.querySelector(contentSelector) as HTMLElement
 
     // creates keycloak instance
     val keycloak = Keycloak()
 
-    // creates context
-    val context = BrowserContext(navBar, root, keycloak)
+    val api = Api(keycloak)
 
     val options = KeycloakInitOptions(checkLoginIframe = false, promiseType = "native", onLoad = "check-sso")
-    keycloak.init(options).then { success ->
+    keycloak.init(options)
+        .then { _ -> api.fetchUser() }
+        .then { user ->
+            // creates context
+            val context = BrowserContext(navBar, root, keycloak, user, api)
 
-        // updates login link
-        val userItem = navBar.end.first() as NavBarLinkItem
-        if (keycloak.tokenParsed != null) {
-            userItem.text = keycloak.tokenParsed.asDynamic().name as String
-            userItem.href = keycloak.createAccountUrl()
-        } else {
-            userItem.text = "Log In"
-            userItem.href = keycloak.createLoginUrl(null)
+            // updates login link
+            val userItem = navBar.end.first() as NavBarLinkItem
+            if (keycloak.tokenParsed != null) {
+                userItem.text = keycloak.tokenParsed.asDynamic().name as String
+                userItem.href = keycloak.createAccountUrl()
+            } else {
+                userItem.text = "Log In"
+                userItem.href = keycloak.createLoginUrl(null)
+            }
+
+            // listens to pop state
+            window.addEventListener("popstate", {
+                findPageInUrl()?.let { openPage(it, context, register = false) }
+            })
+
+            // adds menu
+            context.navBar.start = pages
+                .filter { page -> page.header && page.authorized(context.keycloak) }
+                .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
+
+            // shows version
+            showVersion(context.api)
+
+            console.log("Starting function")
+
+            openPage(findPageInUrl() ?: mainPage, context, register = false)
+        }.catch {
+            val context = BrowserContext(navBar, root, keycloak, null, api)
+            context.error(it)
+            console.error("Error on initialize")
+            console.error(it.asDynamic().stack)
         }
-
-        // listens to pop state
-        window.addEventListener("popstate", {
-            findPageInUrl()?.let { openPage(it, context, register = false) }
-        })
-
-        // adds menu
-        context.navBar.start = pages.filter { page -> page.header && page.authorized(context.keycloak) }
-            .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
-
-        // shows version
-        showVersion(context.api)
-
-        console.log("Starting function")
-
-        openPage(findPageInUrl() ?: mainPage, context, register = false)
-
-    }.catch {
-        context.error(it)
-        console.error("Error on initialize")
-        console.error(it.asDynamic().stack)
-    }
 }
 
 /** Open the given [page] */
@@ -130,16 +135,15 @@ fun findPageInUrl(): Page? {
     return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
 
-
 class BrowserContext(
     override val navBar: NavBar,
     override val root: HTMLElement,
-    override val keycloak: KeycloakInstance
+    override val keycloak: KeycloakInstance,
+    override val me: User?,
+    override val api: Api = Api(keycloak)
 ) : AppContext {
 
     private val storedEvents = mutableListOf<ClientEvent>()
-
-    override val api = Api(keycloak)
 
     override val events: List<ClientEvent> get() = storedEvents
 

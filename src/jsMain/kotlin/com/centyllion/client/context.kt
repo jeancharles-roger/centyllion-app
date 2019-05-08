@@ -2,6 +2,7 @@ package com.centyllion.client
 
 import bulma.ElementColor
 import bulma.NavBar
+import com.centyllion.model.User
 import keycloak.KeycloakInstance
 import org.w3c.dom.HTMLElement
 
@@ -19,6 +20,8 @@ interface AppContext {
     val root: HTMLElement
 
     val keycloak: KeycloakInstance
+
+    val me: User?
 
     val api: Api
 

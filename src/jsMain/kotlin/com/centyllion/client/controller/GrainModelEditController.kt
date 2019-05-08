@@ -7,15 +7,13 @@ import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
-    model: GrainModel,
+    model: GrainModel, readOnly: Boolean = false,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
 
     override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            nameController.data = data.name
-            descriptionController.data = data.description
             grainsController.data = data.grains
             behavioursController.data = data.behaviours
             behavioursController.context = data
@@ -24,12 +22,11 @@ class GrainModelEditController(
         }
     }
 
-    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
-        data = data.copy(name = new)
-    }
-
-    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
-        data = data.copy(description = new)
+    var readOnly by observable(readOnly) { _, old, new ->
+        if (old != new) {
+            addGrainButton.invisible = new
+            addBehaviourButton.invisible = new
+        }
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
@@ -74,8 +71,6 @@ class GrainModelEditController(
         }
 
     override val container = Columns(
-        Column(nameController, size = ColumnSize.OneThird),
-        Column(descriptionController, size = ColumnSize.TwoThirds),
         Column(
             Level(
                 left = listOf(Title("Grains", TextSize.S4)),
@@ -105,8 +100,6 @@ class GrainModelEditController(
     }
 
     override fun refresh() {
-        nameController.refresh()
-        descriptionController.refresh()
         grainsController.refresh()
         behavioursController.refresh()
     }

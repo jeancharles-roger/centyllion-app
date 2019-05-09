@@ -518,7 +518,7 @@ class TabItem(
 class Tabs(
     vararg items: TabItem, alignment: Alignment = Alignment.Left, size: Size = Size.None,
     boxed: Boolean = false, toggle: Boolean = false, toggleRounded: Boolean = false,
-    fullwidth: Boolean = false
+    fullWidth: Boolean = false
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("tabs")
@@ -535,7 +535,7 @@ class Tabs(
 
     var boxed by className(boxed, "is-boxed", root)
 
-    var fullWidth by className(fullwidth, "is-fullwidth", root)
+    var fullWidth by className(fullWidth, "is-fullwidth", root)
 }
 
 class TabPage(val title: TabItem, val body: BulmaElement)
@@ -558,7 +558,7 @@ class TabPages(
     init {
         tabs.apply { items = pages.map { it.title } }
         preparePages(this.pages)
-        pages.getOrNull(initialTabIndex)?.let { selectPage(it) }
+        pages.getOrNull(initialTabIndex)?.let { selectPage(it, false) }
         root.insertAdjacentElement(Position.AfterBegin.value, tabs.root)
     }
 
@@ -569,7 +569,9 @@ class TabPages(
         }
     }
 
-    fun selectPage(page: TabPage) {
+    val selectedPage get() = pages.firstOrNull { it.title.active }
+
+    fun selectPage(page: TabPage, notify: Boolean = true) {
         pages.forEach {
             it.body.hidden = true
             it.title.active = false
@@ -577,7 +579,7 @@ class TabPages(
 
         page.body.hidden = false
         page.title.active = true
-        onTabChange(page)
+        if (notify) onTabChange(page)
     }
 
 }

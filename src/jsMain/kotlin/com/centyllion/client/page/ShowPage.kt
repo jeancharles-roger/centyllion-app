@@ -14,11 +14,47 @@ import kotlin.properties.Delegates.observable
 
 class ShowPage(val context: AppContext) : BulmaElement {
 
+    val saveIcon = "cloud-upload-alt"
+    val shareIcon = "share"
+
     val api = context.api
+
+    private var undoModel = false
+
+    private var modelHistory: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
+        undoModelButton.disabled = new.isEmpty()
+    }
+
+    private var modelFuture: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
+        redoModelButton.disabled = new.isEmpty()
+    }
+
+    private var simulationHistory: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
+        undoSimulationButton.disabled = new.isEmpty()
+    }
+
+    private var simulationFuture: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
+        redoSimulationButton.disabled = new.isEmpty()
+    }
+
+    private var undoSimulation = false
+
+    private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
-            val readonly = model.info.userId != context.me?._id
+            if (undoModel) {
+                modelFuture += old
+            } else {
+                modelHistory += old
+                if (modelFuture.lastOrNull() == new) {
+                    modelFuture = modelFuture.dropLast(1)
+                } else {
+                    modelFuture = emptyList()
+                }
+            }
+
+            val readonly = model._id.isNotEmpty() && model.info.userId != context.me?._id
             modelController.readOnly = readonly
             modelController.data = new.model
             modelNameController.readOnly = readonly
@@ -26,6 +62,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
             simulationController.context = new.model
+            refreshButtons()
         }
     }
 
@@ -43,24 +80,83 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
+    var originalSimulation: SimulationDescription = emptySimulationDescription
+
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
-            val readonly = simulation.info.userId != context.me?._id
+            if (undoSimulation) {
+                simulationFuture += old
+            } else {
+                simulationHistory += old
+                if (simulationFuture.lastOrNull() == new) {
+                    simulationFuture = simulationFuture.dropLast(1)
+                } else {
+                    simulationFuture = emptyList()
+                }
+            }
+
+            val readonly = simulation._id.isNotEmpty() && simulation.info.userId != context.me?._id
             simulationController.readOnly = readonly
             simulationController.data = new.simulation
+            refreshButtons()
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel)
+    val simulationController = SimulationRunController(emptySimulation, emptyModel) { old, new, _ ->
+        if (old != new) {
+            simulation = simulation.copy(simulation = new)
+        }
+    }
+
+    val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelHistory.last()
+        modelHistory = modelHistory.dropLast(1)
+        undoModel = true
+        modelController.data = restoredModel.model
+        undoModel = false
+    }
+
+    val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredModel = modelFuture.last()
+        modelController.data = restoredModel.model
+    }
+
+    val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
+        val restoredSimulation = simulationHistory.last()
+        simulationHistory = simulationHistory.dropLast(1)
+        undoSimulation = true
+        simulationController.data = restoredSimulation.simulation
+        undoSimulation = false
+    }
+
+    val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
+        val restoredSimulation = simulationFuture.last()
+        simulationFuture = simulationFuture.dropLast(1)
+        simulationController.data = restoredSimulation.simulation
+    }
+
+    val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
+
+    val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { togglePublication() }
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
 
-    val editionTab = TabPages(modelPage, simulationPage, tabs = Tabs(boxed = true), initialTabIndex = 1)
+    val tools = Field(
+        Control(undoModelButton), Control(redoModelButton), Control(saveButton), Control(publishButton),
+        grouped = true
+    )
+
+    val tabs = Tabs(boxed = true)
+
+    val editionTab = TabPages(modelPage, simulationPage, tabs = tabs, initialTabIndex = 1) {
+        refreshButtons()
+    }
 
     val container: BulmaElement = Columns(
-        Column(modelNameController, size = ColumnSize.OneThird),
-        Column(modelDescriptionController, size = ColumnSize.TwoThirds),
+        Column(modelNameController, size = ColumnSize.S2),
+        Column(modelDescriptionController, size = ColumnSize.S6),
+        Column(tools, size = ColumnSize.S4),
         Column(editionTab, size = ColumnSize.Full),
         multiline = true
     )
@@ -95,11 +191,126 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
 
         result.then {
-            simulation = it.first
-            model = it.second
+            setModelAndSimulation(it.second, it.first)
         }.catch {
             context.error(it)
         }
     }
 
+    fun setModelAndSimulation(model: GrainModelDescription, simulation: SimulationDescription) {
+        this.originalSimulation = simulation
+        this.simulation = originalSimulation
+        this.simulationHistory = emptyList()
+        this.simulationFuture = emptyList()
+
+        this.originalModel = model
+        this.model = originalModel
+        this.modelHistory = emptyList()
+        this.modelFuture = emptyList()
+        refreshButtons()
+    }
+
+    fun save() {
+        val needModelSave = model != originalModel
+        if (needModelSave && model._id.isEmpty()) {
+            // The model needs to be created first
+            api.saveGrainModel(model.model)
+                .then { newModel ->
+                    originalModel = newModel
+                    model = newModel
+                    // Saves the simulation
+                    api.saveSimulation(newModel._id, simulation.simulation)
+                }.then { newSimulation ->
+                    originalSimulation = newSimulation
+                    simulation = newSimulation
+                    refreshButtons()
+                    context.message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
+                    Unit
+                }.catch {
+                    this.context.error(it)
+                    Unit
+                }
+        } else {
+
+            // Save the model if needed
+            if (needModelSave) {
+                api.updateGrainModel(model).then {
+                    originalModel = model
+                    refreshButtons()
+                    context.message("Model ${model.model.name} saved")
+                    Unit
+                }.catch {
+                    this.context.error(it)
+                    Unit
+                }
+            }
+
+            // Save the simulation
+            if (simulation != originalSimulation) {
+                if (simulation._id.isEmpty()) {
+                    // simulation must be created
+                    api.saveSimulation(model._id, simulation.simulation).then { newSimulation ->
+                        originalSimulation = newSimulation
+                        simulation = newSimulation
+                        refreshButtons()
+                        context.message("Simulation ${simulation.simulation.name} saved")
+                        Unit
+                    }.catch {
+                        this.context.error(it)
+                        Unit
+                    }
+                } else {
+                    // saves the simulation
+                    api.updateSimulation(simulation).then {
+                        originalSimulation = simulation
+                        refreshButtons()
+                        context.message("Simulation ${simulation.simulation.name} saved")
+                        Unit
+                    }.catch {
+                        this.context.error(it)
+                        Unit
+                    }
+                }
+            }
+        }
+    }
+
+    private val canPublish get() = model.info.access.isEmpty() || simulation.info.access.isEmpty()
+
+    fun togglePublication() {
+        val accessSet = if (canPublish) setOf(Access.Read) else emptySet()
+        model = model.copy(info = model.info.copy(access = accessSet))
+        simulation = simulation.copy(info = simulation.info.copy(access = accessSet))
+        save()
+    }
+
+    fun refreshButtons() {
+        when (editionTab.selectedPage) {
+            modelPage -> {
+                val readonly = model._id.isNotEmpty() && model.info.userId != context.me?._id
+                tools.body = if (readonly) emptyList() else listOf(
+                    Control(undoModelButton),
+                    Control(redoModelButton),
+                    Control(saveButton),
+                    Control(publishButton)
+                )
+            }
+            simulationPage -> {
+                val readonly = simulation._id.isNotEmpty() && simulation.info.userId != context.me?._id
+                tools.body = if (readonly) emptyList() else listOf(
+                    Control(undoSimulationButton),
+                    Control(redoSimulationButton),
+                    Control(saveButton),
+                    Control(publishButton)
+                )
+            }
+        }
+
+        undoModelButton.disabled = modelHistory.isEmpty()
+        redoModelButton.disabled = modelFuture.isEmpty()
+        undoSimulationButton.disabled = simulationHistory.isEmpty()
+        redoSimulationButton.disabled = simulationFuture.isEmpty()
+        saveButton.disabled = model == originalModel && simulation == originalSimulation
+        publishButton.title = if (!canPublish) "Un-Publish" else "Publish"
+    }
 }

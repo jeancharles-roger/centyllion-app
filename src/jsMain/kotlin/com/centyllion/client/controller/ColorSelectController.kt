@@ -30,7 +30,7 @@ class ColorSelectController(
         columns = colorNames.keys.map { column(it) }
     }
 
-    override val container = Dropdown(color, icon = icon, rounded = true).apply {
+    override val container = Dropdown("", icon = icon, rounded = true).apply {
         menuSize = "30rem"
         items = listOf(
             DropdownContentItem(Field(
@@ -56,7 +56,6 @@ class ColorSelectController(
     }
 
     override fun refresh() {
-        container.text = data
         icon.root.style.color = data
         colorColumns.columns = colorNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }

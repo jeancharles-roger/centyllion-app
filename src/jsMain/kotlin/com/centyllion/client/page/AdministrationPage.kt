@@ -67,7 +67,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
         featured: FeaturedDescription?
     ) {
         val result = if (featured == null) {
-            api.saveFeatured(model._id, simulation._id, model.info.userId).then {
+            api.saveFeatured(model.id, simulation.id, model.info.userId).then {
                 featuredController.data + it
             }
         } else {

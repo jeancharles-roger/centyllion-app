@@ -6,7 +6,10 @@ import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.getLocationParams
 import com.centyllion.client.updateLocation
-import com.centyllion.model.*
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.emptyGrainModelDescription
+import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 import kotlin.js.Promise.Companion.resolve
 import kotlin.properties.Delegates.observable
@@ -49,16 +52,16 @@ class ModelPage(val context: AppContext) : BulmaElement {
     var selectedModel: GrainModelDescription by observable(emptyGrainModelDescription)
     { _, old, new ->
         if (old != new) {
-            updateLocation(null, mapOf("model" to new._id), false, true)
+            updateLocation(null, mapOf("model" to new.id), false, true)
 
             refreshSelectedModel()
 
-            // updates simulation only if model _id changed
-            if (old._id != new._id) {
+            // updates simulation only if model id changed
+            if (old.id != new.id) {
                 // fetches new simulations or return one empty simulation
                 val newSimulations = when {
-                    selectedModel._id.isNotEmpty() ->
-                        api.fetchSimulations(selectedModel._id, false).then {
+                    selectedModel.id.isNotEmpty() ->
+                        api.fetchSimulations(selectedModel.id, false).then {
                             context.message("Simulations for ${selectedModel.model.name} loaded")
                             if (it.isNotEmpty()) it else listOf(emptySimulationDescription)
                         }.catch {
@@ -71,12 +74,12 @@ class ModelPage(val context: AppContext) : BulmaElement {
                 // updates status and simulations
                 newSimulations.then {
                     simulationStatus = it
-                        .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                        .map { it to if (it.id.isNotEmpty()) Status.Saved else Status.New }
                         .toMap().toMutableMap()
                     simulations = it
 
                     val simulationId = getLocationParams("simulation")
-                    selectedSimulation = simulations.find { it._id == simulationId } ?: simulations.first()
+                    selectedSimulation = simulations.find { it.id == simulationId } ?: simulations.first()
                 }
             }
         }
@@ -90,7 +93,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
     var selectedSimulation by observable(emptySimulationDescription)
     { _, old, new ->
         if (old != new) {
-            updateLocation(null, mapOf("simulation" to new._id), false, true)
+            updateLocation(null, mapOf("simulation" to new.id), false, true)
             refreshSelectedSimulation()
         }
     }
@@ -137,7 +140,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
 
     val deleteModelButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedModel = selectedModel
-        if (deletedModel._id.isNotEmpty()) {
+        if (deletedModel.id.isNotEmpty()) {
             api.deleteGrainModel(deletedModel).then {
                 removeModel(deletedModel)
                 context.message("Model ${deletedModel.model.name} deleted")
@@ -168,7 +171,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
 
     val deleteSimulationButton = iconButton(Icon(deleteIcon), color = ElementColor.Danger, rounded = true) {
         val deletedSimulation = selectedSimulation
-        if (deletedSimulation._id.isNotEmpty()) {
+        if (deletedSimulation.id.isNotEmpty()) {
             api.deleteSimulation(deletedSimulation).then {
                 removeSimulation(deletedSimulation)
                 context.message("Simulation ${deletedSimulation.simulation.name} deleted")
@@ -220,25 +223,25 @@ class ModelPage(val context: AppContext) : BulmaElement {
     val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { togglePublication() }
 
     private val modelAndSimulationNotLocal
-        get() = selectedModel._id.isEmpty() && selectedSimulation._id.isEmpty()
+        get() = selectedModel.id.isEmpty() && selectedSimulation.id.isEmpty()
 
     private val canPublish
-        get() = selectedModel.info.access.isEmpty() || selectedSimulation.info.access.isEmpty()
+        get() = selectedModel.info.readAccess || selectedSimulation.info.readAccess
 
     private fun needModelSave() =
         modelStatus.getOrElse(selectedModel) { Status.Saved } != Status.Saved
 
     private fun needSimulationSave() =
-        selectedModel._id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
+        selectedModel.id.isEmpty() || simulationStatus[selectedSimulation] != Status.Saved
 
     fun save() {
-        if (needModelSave() && selectedModel._id.isEmpty()) {
+        if (needModelSave() && selectedModel.id.isEmpty()) {
             // The model needs to be save first
             api.saveGrainModel(selectedModel.model)
                 .then { newModel ->
                     updateModel(selectedModel, newModel, false)
                     modelStatus[selectedModel] = Status.Saved
-                    api.saveSimulation(newModel._id, selectedSimulation.simulation)
+                    api.saveSimulation(newModel.id, selectedSimulation.simulation)
                 }.then { newSimulation ->
                     simulationStatus[selectedSimulation] = Status.Saved
                     updateSimulation(selectedSimulation, newSimulation, false)
@@ -264,8 +267,8 @@ class ModelPage(val context: AppContext) : BulmaElement {
             }
 
             if (needSimulationSave()) {
-                if (selectedSimulation._id.isEmpty()) {
-                    api.saveSimulation(selectedModel._id, selectedSimulation.simulation).then {
+                if (selectedSimulation.id.isEmpty()) {
+                    api.saveSimulation(selectedModel.id, selectedSimulation.simulation).then {
                         simulationStatus[selectedSimulation] = Status.Saved
                         updateSimulation(selectedSimulation, it, false)
                         context.message("Simulation ${selectedSimulation.simulation.name} saved")
@@ -291,12 +294,10 @@ class ModelPage(val context: AppContext) : BulmaElement {
     }
 
     fun togglePublication() {
-        val accessSet = if (canPublish) setOf(Access.Read) else emptySet()
-
-        val newModelInfo = selectedModel.info.copy(access = accessSet)
+        val newModelInfo = selectedModel.info.copy(readAccess = canPublish)
         updateModel(selectedModel, selectedModel.copy(info = newModelInfo))
 
-        val newSimulationInfo = selectedSimulation.info.copy(access = accessSet)
+        val newSimulationInfo = selectedSimulation.info.copy(readAccess = canPublish)
         updateSimulation(selectedSimulation, selectedSimulation.copy(info = newSimulationInfo))
         save()
     }
@@ -344,12 +345,12 @@ class ModelPage(val context: AppContext) : BulmaElement {
             // refreshes modelStatus before models to obtain the correct icons
             val newModels = if (it.isEmpty()) listOf(emptyGrainModelDescription) else it
             modelStatus = newModels
-                .map { it to if (it._id.isNotEmpty()) Status.Saved else Status.New }
+                .map { it to if (it.id.isNotEmpty()) Status.Saved else Status.New }
                 .toMap().toMutableMap()
             models = newModels
 
             val modelId = getLocationParams("model")
-            selectedModel = models.find { it._id == modelId } ?: models.first()
+            selectedModel = models.find { it.id == modelId } ?: models.first()
             context.message("Models loaded")
             Unit
         }.catch {

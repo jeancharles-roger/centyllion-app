@@ -80,10 +80,10 @@ class HomePage(val context: AppContext) : BulmaElement {
         panelController.onClick = { data, _ ->
             when (data) {
                 is GrainModelDescription -> {
-                    openPage(showPage, context, mapOf("model" to data._id))
+                    openPage(showPage, context, mapOf("model" to data.id))
                 }
                 is SimulationDescription -> {
-                    openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data._id))
+                    openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.id))
                 }
             }
         }
@@ -92,7 +92,7 @@ class HomePage(val context: AppContext) : BulmaElement {
             //elements = it
 
             Promise.all(it.map { model ->
-                context.api.fetchSimulations(model._id, false).then { listOf(model) + it }
+                context.api.fetchSimulations(model.id, false).then { listOf(model) + it }
             }.toTypedArray()).then { it -> it.flatMap { it } }.then {
                 elements = it
             }

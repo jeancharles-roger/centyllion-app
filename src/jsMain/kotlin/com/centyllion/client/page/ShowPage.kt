@@ -54,7 +54,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 }
             }
 
-            val readonly = model._id.isNotEmpty() && model.info.userId != context.me?._id
+            val readonly = model.id.isNotEmpty() && model.info.userId != context.me?.id
             modelController.readOnly = readonly
             modelController.data = new.model
             modelNameController.readOnly = readonly
@@ -95,7 +95,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 }
             }
 
-            val readonly = simulation._id.isNotEmpty() && simulation.info.userId != context.me?._id
+            val readonly = simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
             simulationController.readOnly = readonly
             simulationController.data = new.simulation
             refreshButtons()
@@ -182,7 +182,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             // if there is a model id, use it to list all simulation and take the first one
             modelId != null && modelId.isNotEmpty() ->
                 context.api.fetchGrainModel(modelId).then { model ->
-                    context.api.fetchSimulations(model._id, true).then { simulations ->
+                    context.api.fetchSimulations(model.id, true).then { simulations ->
                         (simulations.firstOrNull() ?: emptySimulationDescription) to model
                     }
                 }.then { it }
@@ -212,14 +212,14 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     fun save() {
         val needModelSave = model != originalModel
-        if (needModelSave && model._id.isEmpty()) {
+        if (needModelSave && model.id.isEmpty()) {
             // The model needs to be created first
             api.saveGrainModel(model.model)
                 .then { newModel ->
                     originalModel = newModel
                     model = newModel
                     // Saves the simulation
-                    api.saveSimulation(newModel._id, simulation.simulation)
+                    api.saveSimulation(newModel.id, simulation.simulation)
                 }.then { newSimulation ->
                     originalSimulation = newSimulation
                     simulation = newSimulation
@@ -247,9 +247,9 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
             // Save the simulation
             if (simulation != originalSimulation) {
-                if (simulation._id.isEmpty()) {
+                if (simulation.id.isEmpty()) {
                     // simulation must be created
-                    api.saveSimulation(model._id, simulation.simulation).then { newSimulation ->
+                    api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
                         originalSimulation = newSimulation
                         simulation = newSimulation
                         refreshButtons()
@@ -275,19 +275,18 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    private val canPublish get() = model.info.access.isEmpty() || simulation.info.access.isEmpty()
+    private val canPublish get() = model.info.readAccess || simulation.info.readAccess
 
     fun togglePublication() {
-        val accessSet = if (canPublish) setOf(Access.Read) else emptySet()
-        model = model.copy(info = model.info.copy(access = accessSet))
-        simulation = simulation.copy(info = simulation.info.copy(access = accessSet))
+        model = model.copy(info = model.info.copy(readAccess = canPublish))
+        simulation = simulation.copy(info = simulation.info.copy(readAccess = canPublish))
         save()
     }
 
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                val readonly = model._id.isNotEmpty() && model.info.userId != context.me?._id
+                val readonly = model.id.isNotEmpty() && model.info.userId != context.me?.id
                 tools.body = if (readonly) emptyList() else listOf(
                     Control(undoModelButton),
                     Control(redoModelButton),
@@ -296,7 +295,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 )
             }
             simulationPage -> {
-                val readonly = simulation._id.isNotEmpty() && simulation.info.userId != context.me?._id
+                val readonly = simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
                 tools.body = if (readonly) emptyList() else listOf(
                     Control(undoSimulationButton),
                     Control(redoSimulationButton),

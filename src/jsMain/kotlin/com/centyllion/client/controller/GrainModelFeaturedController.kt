@@ -35,7 +35,7 @@ class GrainModelFeaturedController(
     val description = Label(data.model.description)
 
     fun featured(simulation: SimulationDescription) = context.find {
-        it.modelId == data._id && it.simulationId == simulation._id
+        it.modelId == data.id && it.simulationId == simulation.id
     }
 
     fun icon(simulation: SimulationDescription): Icon {
@@ -49,7 +49,7 @@ class GrainModelFeaturedController(
 
     val simulationDropDown = Dropdown("Simulations", rounded = true, icon = Icon("play")) { dropdown ->
         dropdown.items = listOf(DropdownSimpleItem("Loading", Icon("sync", spin = true)))
-        api.fetchSimulations(model._id, true).then { simulations ->
+        api.fetchSimulations(model.id, true).then { simulations ->
             dropdown.items = simulations.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
                     toggleFeature(model, simulation, featured(simulation))

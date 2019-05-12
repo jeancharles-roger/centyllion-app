@@ -83,14 +83,14 @@ class Api(val instance: KeycloakInstance?) {
 
     fun deleteGrainModel(model: GrainModelDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("DELETE", "/api/model/${model._id}", bearer)
+            fetch("DELETE", "/api/model/${model.id}", bearer)
         }
 
     fun updateGrainModel(model: GrainModelDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch(
                 "PATCH",
-                "/api/model/${model._id}",
+                "/api/model/${model.id}",
                 bearer,
                 json.stringify(GrainModelDescription.serializer(), model)
             )
@@ -117,14 +117,14 @@ class Api(val instance: KeycloakInstance?) {
 
     fun deleteSimulation(simulation: SimulationDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("DELETE", "/api/simulation/${simulation._id}", bearer)
+            fetch("DELETE", "/api/simulation/${simulation.id}", bearer)
         }
 
     fun updateSimulation(simulation: SimulationDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch(
                 "PATCH",
-                "/api/simulation/${simulation._id}",
+                "/api/simulation/${simulation.id}",
                 bearer,
                 json.stringify(SimulationDescription.serializer(), simulation)
             )
@@ -145,7 +145,7 @@ class Api(val instance: KeycloakInstance?) {
 
     fun deleteFeatured(featured: FeaturedDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("DELETE", "/api/featured/${featured._id}", bearer)
+            fetch("DELETE", "/api/featured/${featured.id}", bearer)
         }
 
 

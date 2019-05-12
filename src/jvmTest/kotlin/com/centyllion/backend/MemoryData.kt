@@ -2,8 +2,19 @@ package com.centyllion.backend
 
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
-import org.litote.kmongo.newId
+import java.util.*
 import kotlin.math.max
+
+fun createUser(principal: JWTPrincipal, keycloakId: String): User {
+    val claims = principal.payload.claims
+    val name = claims["name"]?.asString() ?: ""
+    val email = claims["email"]?.asString() ?: ""
+    return User(newId(), keycloakId, name, email)
+}
+
+fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {
+    GrainModelDescription(newId(), DescriptionInfo(user.id, it, it, false, false), sent)
+}
 
 /** Memory implementation for Data. Only used for tests, not optimal at all */
 class MemoryData(
@@ -19,7 +30,7 @@ class MemoryData(
         users.values.find { it.keycloakId == principal.payload.subject }.let {
             if (it == null) {
                 val user = createUser(principal, principal.payload.subject)
-                users[user._id] = user
+                users[user.id] = user
                 user
             } else {
                 it
@@ -29,31 +40,31 @@ class MemoryData(
     override fun getUser(id: String): User? = users[id]
 
     override fun saveUser(user: User) {
-        users[user._id] = user
+        users[user.id] = user
     }
 
-    override fun publicGrainModels(max: Int) =
-        grainModels.values.toList().dropLast(max(0, grainModels.size - max))
+    override fun publicGrainModels(offset: Int, limit: Int) =
+        grainModels.values.toList().drop(offset).dropLast(max(0, grainModels.size - limit))
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = grainModels.values.filter {
-        it.info.userId == user._id
+        it.info.userId == user.id
     }
 
     override fun getGrainModel(id: String) = grainModels[id]
 
     override fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription {
         val model = createGrainModelDescription(user, sent)
-        grainModels[model._id] = model
+        grainModels[model.id] = model
         return model
     }
 
     override fun saveGrainModel(user: User, model: GrainModelDescription) {
-        grainModels[model._id] = model
+        grainModels[model.id] = model
     }
 
     override fun deleteGrainModel(user: User, model: GrainModelDescription) {
-        getSimulationForModel(model._id).forEach { deleteSimulation(user, it) }
-        grainModels.remove(model._id)
+        getSimulationForModel(model.id).forEach { deleteSimulation(user, it) }
+        grainModels.remove(model.id)
     }
 
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
@@ -64,16 +75,16 @@ class MemoryData(
 
     override fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription {
         val result = createSimulation(user, modelId, sent)
-        simulations[result._id] = result
+        simulations[result.id] = result
         return result
     }
 
     override fun saveSimulation(user: User, simulation: SimulationDescription) {
-        simulations[simulation._id] = simulation
+        simulations[simulation.id] = simulation
     }
 
     override fun deleteSimulation(user: User, simulation: SimulationDescription) {
-        simulations.remove(simulation._id)
+        simulations.remove(simulation.id)
     }
 
     override fun getAllFeatured(): List<FeaturedDescription> = featured.values.toList()
@@ -85,7 +96,7 @@ class MemoryData(
     ): FeaturedDescription {
         val asset = createAsset("simulation.png", createThumbnail(model.model, simulation.simulation))
         val new = createFeaturedDescription(asset, model, simulation, author)
-        featured[new._id] = new
+        featured[new.id] = new
         return new
     }
 
@@ -93,15 +104,14 @@ class MemoryData(
         // delete thumbnail asset
         if (delete.thumbnailId.isNotEmpty()) deleteAsset(delete.thumbnailId)
         // delete the featured
-        featured.remove(delete._id)
+        featured.remove(delete.id)
     }
 
     override fun getAsset(id: String) = assets[id]
 
     override fun createAsset(name: String, data: ByteArray): Asset {
-        val id = newId<Asset>().toString()
-        val result = Asset(id, name, data)
-        assets[id] = result
+        val result = Asset(newId(), name, data)
+        assets[newId()] = result
         return result
     }
 
@@ -113,7 +123,7 @@ class MemoryData(
 
     override fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
         val event = createEvent(action, user, collection, arguments)
-        events[event._id] = event
+        events[event.id] = event
     }
 
 }

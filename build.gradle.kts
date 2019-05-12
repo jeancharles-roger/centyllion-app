@@ -22,7 +22,8 @@ val coroutine_version: String by project
 val clikt_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
-val kmongo_version: String by project
+val exposed_version: String by project
+val postgresql_version: String by project
 
 buildscript {
     repositories {
@@ -85,9 +86,8 @@ kotlin {
 
                     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 
-                    implementation("org.litote.kmongo:kmongo:$kmongo_version")
-
-                    implementation("ch.qos.logback:logback-classic:1.2.1")
+                    implementation("org.jetbrains.exposed:exposed:$exposed_version")
+                    implementation("org.postgresql:postgresql:$postgresql_version")
                 }
             }
             // JVM-specific tests and their dependencies:

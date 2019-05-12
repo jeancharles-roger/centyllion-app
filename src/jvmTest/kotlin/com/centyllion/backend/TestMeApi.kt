@@ -34,13 +34,13 @@ class TestMeApi {
     }
 
     private fun TestApplicationEngine.deleteModel(model: GrainModelDescription, user: User, vararg role: String) {
-        val request = handleLoggedInDelete("/api/model/${model._id}", user, *role)
+        val request = handleLoggedInDelete("/api/model/${model.id}", user, *role)
         assertEquals(HttpStatusCode.OK, request.response.status())
     }
 
     private fun TestApplicationEngine.patchModel(model: GrainModelDescription, user: User, vararg role: String) {
         val content = Json.stringify(GrainModelDescription.serializer(), model)
-        val request = handleLoggedInPatch("/api/model/${model._id}", content, user, *role)
+        val request = handleLoggedInPatch("/api/model/${model.id}", content, user, *role)
         assertEquals(HttpStatusCode.OK, request.response.status())
     }
 
@@ -85,8 +85,8 @@ class TestMeApi {
         testGet("/api/me/model", listOf(model1, model2), GrainModelDescription.serializer().list, testUser, modelRole)
 
         // Test delete a model
-        testUnauthorized("/api/me/model/${model1._id}", HttpMethod.Delete)
-        testUnauthorized("/api/me/model/${model1._id}", HttpMethod.Delete, testUser)
+        testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
+        testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete, testUser)
         deleteModel(model1, testUser, modelRole)
 
         // Checks if delete happened
@@ -94,8 +94,8 @@ class TestMeApi {
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
-        testUnauthorized("/api/me/model/${model2._id}", HttpMethod.Patch)
-        testUnauthorized("/api/me/model/${model2._id}", HttpMethod.Patch, testUser)
+        testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch)
+        testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch, testUser)
         patchModel(newModel2, testUser, modelRole)
 
         // Checks if patch happened

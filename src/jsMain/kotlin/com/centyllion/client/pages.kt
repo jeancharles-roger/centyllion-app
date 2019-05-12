@@ -7,8 +7,10 @@ import bulma.noContextColumnsController
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.page.AdministrationPage
 import com.centyllion.client.page.HomePage
+import com.centyllion.client.page.ModelPage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.common.adminRole
+import com.centyllion.common.modelRole
 import com.centyllion.model.FeaturedDescription
 import keycloak.KeycloakInstance
 
@@ -27,6 +29,7 @@ const val contentSelector = "section.cent-main"
 
 val pages = listOf(
     Page("Home", "home", true, null, true, ::HomePage),
+    Page("Model", "model", true, modelRole, true, ::ModelPage),
     Page("Explore", "explore", false, null, true, ::explore),
     Page("Administration", "administration", true, adminRole, true, ::AdministrationPage),
     Page("Show", "show", false, null, false, ::ShowPage)

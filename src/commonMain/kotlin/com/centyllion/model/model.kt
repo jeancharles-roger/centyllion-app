@@ -1,7 +1,6 @@
 package com.centyllion.model
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
@@ -17,7 +16,7 @@ val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
 val emptySimulation = Simulation("Simulation")
 val emptySimulationDescription =
-    SimulationDescription("", info = emptyDescription, modelId = "", simulation = emptySimulation)
+    SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 enum class Direction {
     Left, Right, Up, Down, Front, Back
@@ -255,32 +254,31 @@ enum class Access {
 @Serializable
 data class DescriptionInfo(
     val userId: String = "",
-    val previousId: String? = null,
-    val nextId: String? = null,
-    val date: String = "",
-    val access: Set<Access> = emptySet()
+    val createdOn: String = "",
+    val lastModifiedOn: String = "",
+    val readAccess: Boolean = false,
+    val cloneAccess: Boolean = false
 )
 
 @Serializable
 data class GrainModelDescription(
-    val _id: String,
+    val id: String,
     val info: DescriptionInfo,
-    val model: GrainModel,
-    @Optional val version: Int = version(serializer())
+    val model: GrainModel
 )
 
 @Serializable
 data class SimulationDescription(
-    val _id: String,
+    val id: String,
     val info: DescriptionInfo,
     val modelId: String,
-    val simulation: Simulation,
-    @Optional val version: Int = version(serializer())
+    val thumbnailId: String?,
+    val simulation: Simulation
 )
 
 @Serializable
 data class FeaturedDescription(
-    val _id: String,
+    val id: String,
     val date: String,
     val thumbnailId: String,
     val modelId: String,
@@ -289,8 +287,7 @@ data class FeaturedDescription(
     val name: String,
     val description: String,
     val authorName: String,
-    val dotColors: List<String>,
-    val version: Int = version(serializer())
+    val dotColors: List<String>
 )
 
 fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(

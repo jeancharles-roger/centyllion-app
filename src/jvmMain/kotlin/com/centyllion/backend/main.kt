@@ -91,6 +91,13 @@ class ServerCommand : CliktCommand("Start the server") {
     val host by option(help = "Host to listen").default("localhost")
     val port by option(help = "Port to listen").int().default(0)
 
+    val dbType by option("--db-type", help = "Database type").default("postgresql")
+    val dbHost by option("--db-host", help = "Database host").default("localhost")
+    val dbPort by option("--db-port", help = "Database port").int().default(5432)
+    val dbName by option("--db-name", help = "Database name").default("centyllion")
+    val dbUser by option("--db-user", help = "Database user name").default("centyllion")
+    val dbPassword by option("--db-password", help = "Database user password").default("")
+
     @KtorExperimentalAPI
     override fun run() {
         val effectivePort = if (port <= 0) if (ssl) 8443 else 8080 else port
@@ -114,9 +121,8 @@ class ServerCommand : CliktCommand("Start the server") {
                     port = effectivePort
                 }
             }
-            watchPaths = if (debug) listOf("src/jvmMain/") else emptyList()
 
-            val data = MongoData("localhost", 27017)
+            val data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
             module { centyllion(debug, data) }
 
         }
@@ -127,7 +133,7 @@ class ServerCommand : CliktCommand("Start the server") {
 
 fun main(args: Array<String>) {
     // do some checking first
-    checkVersionsAndMigrations()
+    //checkVersionsAndMigrations()
 
     // start server command
     ServerCommand().main(args)
@@ -161,6 +167,8 @@ fun Application.centyllion(
     // TODO create nice error pages
     install(StatusPages) {
         exception<Throwable> { cause ->
+            if (debug) cause.printStackTrace()
+
             // insert an event when see a problem
             val principal = call.principal<JWTPrincipal>()
             val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
@@ -251,7 +259,7 @@ fun Application.centyllion(
                             context.respond(
                                 when {
                                     model == null || simulation == null || author == null -> HttpStatusCode.NotFound
-                                    model.info.userId != author._id && simulation.info.userId != author._id -> HttpStatusCode.Unauthorized
+                                    model.info.userId != author.id && simulation.info.userId != author.id -> HttpStatusCode.Unauthorized
                                     else -> data.createFeatured(user, model, simulation, author)
                                 }
                             )
@@ -334,7 +342,7 @@ fun Application.centyllion(
                                 val model = call.receive(GrainModelDescription::class)
                                 context.respond(
                                     when {
-                                        model._id != id -> HttpStatusCode.Forbidden
+                                        model.id != id -> HttpStatusCode.Forbidden
                                         !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.saveGrainModel(user, model)
@@ -441,7 +449,7 @@ fun Application.centyllion(
                                 val simulation = call.receive(SimulationDescription::class)
                                 context.respond(
                                     when {
-                                        simulation._id != simulationId -> HttpStatusCode.Forbidden
+                                        simulation.id != simulationId -> HttpStatusCode.Forbidden
                                         !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
                                             data.saveSimulation(user, simulation)
@@ -502,9 +510,9 @@ fun Application.centyllion(
 
 /** Checks if [info] authorizes access for [user] to [Access.Read]*/
 fun hasReadAccess(info: DescriptionInfo, user: User?) =
-    info.access.contains(Access.Read) || (user != null && isOwner(info, user))
+    info.readAccess || (user != null && isOwner(info, user))
 
-fun isOwner(info: DescriptionInfo, user: User) = info.userId == user._id
+fun isOwner(info: DescriptionInfo, user: User) = info.userId == user.id
 
 suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
     requiredRoles: Set<String> = emptySet(),

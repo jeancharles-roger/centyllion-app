@@ -280,16 +280,15 @@ data class SimulationDescription(
 data class FeaturedDescription(
     val id: String,
     val date: String,
-    val thumbnailId: String,
+    val thumbnailId: String?,
     val modelId: String,
     val simulationId: String,
     val authorId: String,
     val name: String,
     val description: String,
-    val authorName: String,
-    val dotColors: List<String>
+    val authorName: String
 )
 
 fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(
-    "", "", "", modelId, simulationId, authorId, "", "", "", emptyList()
+    "", "", null, modelId, simulationId, authorId, "", "", ""
 )

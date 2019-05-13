@@ -302,7 +302,7 @@ fun Application.centyllion(
                 // user's model access
                 route("model") {
                     get {
-                        val models = data.publicGrainModels(50)
+                        val models = data.publicGrainModels(0, 50)
                         context.respond(models)
                     }
 

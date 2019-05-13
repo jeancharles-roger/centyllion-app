@@ -16,6 +16,17 @@ fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.fo
     GrainModelDescription(newId(), DescriptionInfo(user.id, it, it, false, false), sent)
 }
 
+fun createFeaturedDescription(
+    asset: Asset, model: GrainModelDescription, simulation: SimulationDescription, author: User
+) = FeaturedDescription(
+    newId(), rfc1123Format.format(Date()), asset.id,
+    model.id, simulation.id, author.id,
+    listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
+    listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
+    author.name
+)
+
+
 /** Memory implementation for Data. Only used for tests, not optimal at all */
 class MemoryData(
     val users: LinkedHashMap<String, User> = linkedMapOf(),
@@ -87,7 +98,8 @@ class MemoryData(
         simulations.remove(simulation.id)
     }
 
-    override fun getAllFeatured(): List<FeaturedDescription> = featured.values.toList()
+    override fun getAllFeatured(offset: Int, limit: Int): List<FeaturedDescription> =
+        featured.values.toList().drop(offset).dropLast(max(0, featured.size - limit))
 
     override fun getFeatured(id: String) = featured[id]
 
@@ -102,7 +114,7 @@ class MemoryData(
 
     override fun deleteFeatured(user: User, delete: FeaturedDescription) {
         // delete thumbnail asset
-        if (delete.thumbnailId.isNotEmpty()) deleteAsset(delete.thumbnailId)
+        if (delete.thumbnailId != null) deleteAsset(delete.thumbnailId!!)
         // delete the featured
         featured.remove(delete.id)
     }

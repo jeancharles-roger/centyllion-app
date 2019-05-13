@@ -125,3 +125,35 @@ class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     }
 
 }
+
+object DbFeaturedTable : UUIDTable("featured") {
+    val featuredId = uuid("featuredId")
+}
+
+class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DbFeatured>(DbFeaturedTable)
+
+    var featuredId by DbFeaturedTable.featuredId
+
+    fun toModel(): FeaturedDescription {
+        // TODO find a clearer way
+       return  DbSimulationDescription.findById(featuredId)?.let { simulation ->
+            DbModelDescription.findById(simulation.modelId)?.let { model ->
+                val simulationModel = simulation.toModel()
+                val modelModel = model.toModel()
+                FeaturedDescription(
+                    id.toString(), simulationModel.info.lastModifiedOn, null,
+                    modelModel.id, simulationModel.id, simulationModel.info.userId,
+                    listOf(simulationModel.simulation.name, modelModel.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
+                    listOf(simulationModel.simulation.description, modelModel.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
+                    ""
+                )
+            }
+        }?: FeaturedDescription(id.toString(), "", null, "", featuredId.toString(), "", "", "", "")
+    }
+
+    fun fromModel(source: FeaturedDescription) {
+       featuredId = UUID.fromString(source.simulationId)
+    }
+
+}

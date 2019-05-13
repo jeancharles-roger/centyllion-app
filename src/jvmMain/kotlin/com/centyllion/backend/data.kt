@@ -31,7 +31,7 @@ interface Data {
     // TODO only pass simulation id
     fun deleteSimulation(user: User, simulation: SimulationDescription)
 
-    fun getAllFeatured(): List<FeaturedDescription>
+    fun getAllFeatured(offset: Int = 0, limit: Int = 20): List<FeaturedDescription>
     fun getFeatured(id: String): FeaturedDescription?
     fun createFeatured(
         user: User,
@@ -40,7 +40,9 @@ interface Data {
         author: User
     ): FeaturedDescription
 
+    // TODO only pass featured id
     fun deleteFeatured(user: User, delete: FeaturedDescription)
+
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)
@@ -51,20 +53,6 @@ interface Data {
 val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
 
 fun newId() = UUID.randomUUID().toString()
-
-fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {
-    GrainModelDescription(newId(), DescriptionInfo(user.id, it, it, false, false), sent)
-}
-
-fun createFeaturedDescription(
-    asset: Asset, model: GrainModelDescription, simulation: SimulationDescription, author: User
-) = FeaturedDescription(
-    newId(), rfc1123Format.format(Date()), asset.id,
-    model.id, simulation.id, author.id,
-    listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
-    listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
-    author.name, model.model.grains.map { it.color }
-)
 
 fun createEvent(
     action: Action,
@@ -93,11 +81,12 @@ class SqlData(
 
     init {
         transaction(database) {
-            SchemaUtils.create(DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions)
+            SchemaUtils.create(
+                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions, DbFeaturedTable
+            )
         }
     }
 
-    val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf()
     val assets: LinkedHashMap<String, Asset> = linkedMapOf()
     val events: LinkedHashMap<String, Event> = linkedMapOf()
 
@@ -123,6 +112,7 @@ class SqlData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
+        // TODO find only public ones
         DbModelDescription.all().limit(limit, offset).map { it.toModel() }
     }
 
@@ -222,24 +212,22 @@ class SqlData(
         }
     }
 
-    override fun getAllFeatured(): List<FeaturedDescription> = featured.values.toList()
+    override fun getAllFeatured(offset: Int, limit: Int): List<FeaturedDescription> = transaction(database) {
+        DbFeatured.all().limit(limit, offset).map { it.toModel() }
+    }
 
-    override fun getFeatured(id: String) = featured[id]
+    override fun getFeatured(id: String) = transaction(database) {
+        DbFeatured.findById(UUID.fromString(id))?.toModel()
+    }
 
     override fun createFeatured(
         user: User, model: GrainModelDescription, simulation: SimulationDescription, author: User
-    ): FeaturedDescription {
-        val asset = createAsset("simulation.png", createThumbnail(model.model, simulation.simulation))
-        val new = createFeaturedDescription(asset, model, simulation, author)
-        featured[new.id] = new
-        return new
+    ) = transaction(database) {
+        DbFeatured.new { featuredId = UUID.fromString(simulation.id) }.toModel()
     }
 
     override fun deleteFeatured(user: User, delete: FeaturedDescription) {
-        // delete thumbnail asset
-        if (delete.thumbnailId.isNotEmpty()) deleteAsset(delete.thumbnailId)
-        // delete the featured
-        featured.remove(delete.id)
+        DbFeatured.findById(UUID.fromString(delete.id))?.delete()
     }
 
     override fun getAsset(id: String) = assets[id]

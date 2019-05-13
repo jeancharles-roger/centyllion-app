@@ -19,7 +19,10 @@ class FeaturedController(
 
     val author = Label(data.authorName)
 
-    fun thumbnail() = Image("/api/asset/${data.thumbnailId}", ImageSize.Square)
+    fun thumbnail() = Image(
+        if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png",
+        ImageSize.Square
+    )
 
     val body = Card(
         CardImage(thumbnail()),

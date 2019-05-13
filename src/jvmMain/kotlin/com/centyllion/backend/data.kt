@@ -11,6 +11,7 @@ import org.joda.time.DateTime
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.sql.rowset.serial.SerialBlob
 
 interface Data {
     fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
@@ -82,12 +83,11 @@ class SqlData(
     init {
         transaction(database) {
             SchemaUtils.create(
-                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions, DbFeaturedTable
+                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions, DbFeaturedTable, DbAssets
             )
         }
     }
 
-    val assets: LinkedHashMap<String, Asset> = linkedMapOf()
     val events: LinkedHashMap<String, Event> = linkedMapOf()
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
@@ -195,8 +195,20 @@ class SqlData(
         }
 
     override fun saveSimulation(user: User, simulation: SimulationDescription) {
+        // TODO thumbnails should be sent from client
         transaction(database) {
-            DbSimulationDescription.findById(UUID.fromString(simulation.id))?.fromModel(simulation)
+            val found = DbSimulationDescription.findById(UUID.fromString(simulation.id))
+            // removes current asset if exists
+            val toSave = simulation.let {
+                simulation.thumbnailId?.let { deleteAsset(it) }
+                // creates new asset
+                val asset = getGrainModel(simulation.modelId)?.let {
+                    createAsset("${simulation.simulation.name}.png", createThumbnail(it.model, simulation.simulation))
+                }
+                simulation.copy(thumbnailId = asset?.id)
+            }
+            // updates simulation
+            found?.fromModel(toSave)
         }
     }
 
@@ -230,17 +242,19 @@ class SqlData(
         DbFeatured.findById(UUID.fromString(delete.id))?.delete()
     }
 
-    override fun getAsset(id: String) = assets[id]
+    override fun getAsset(id: String) = transaction(database) {
+        DbAsset.findById(UUID.fromString(id))?.toModel()
+    }
 
-    override fun createAsset(name: String, data: ByteArray): Asset {
-        val id = newId()
-        val result = Asset(id, name, data)
-        assets[id] = result
-        return result
+    override fun createAsset(name: String, data: ByteArray): Asset = transaction(database) {
+        DbAsset.new {
+            this.name = name
+            this.content = SerialBlob(data)
+        }.toModel()
     }
 
     override fun deleteAsset(id: String) {
-        assets.remove(id)
+        transaction(database) { DbAsset.findById(UUID.fromString(id))?.delete() }
     }
 
     override fun getEvents() = events.values.toList()

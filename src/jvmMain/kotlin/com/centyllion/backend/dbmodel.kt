@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
 import org.joda.time.DateTime
 import java.util.*
+import javax.sql.rowset.serial.SerialBlob
 
 object DbUsers : UUIDTable("users") {
     val name = text("name")
@@ -142,7 +143,7 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
                 val simulationModel = simulation.toModel()
                 val modelModel = model.toModel()
                 FeaturedDescription(
-                    id.toString(), simulationModel.info.lastModifiedOn, null,
+                    id.toString(), simulationModel.info.lastModifiedOn, simulationModel.thumbnailId,
                     modelModel.id, simulationModel.id, simulationModel.info.userId,
                     listOf(simulationModel.simulation.name, modelModel.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
                     listOf(simulationModel.simulation.description, modelModel.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
@@ -154,6 +155,30 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
 
     fun fromModel(source: FeaturedDescription) {
        featuredId = UUID.fromString(source.simulationId)
+    }
+
+}
+
+
+object DbAssets : UUIDTable("assets") {
+    val name = text("name")
+    val content = blob("content")
+}
+
+class DbAsset(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DbAsset>(DbAssets)
+
+    var name by DbAssets.name
+    var content by DbAssets.content
+
+    fun toModel() = Asset(
+        id.toString(), name,
+        content.getBytes(1, content.length().toInt())
+    )
+
+    fun fromModel(source: Asset) {
+        name = source.name
+        content = SerialBlob(source.data)
     }
 
 }

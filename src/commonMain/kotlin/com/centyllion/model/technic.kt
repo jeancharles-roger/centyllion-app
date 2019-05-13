@@ -17,11 +17,11 @@ enum class Action {
 @Serializable
 data class Event(
     val id: String,
-    val date: String,
+    val createOn: String,
     val userId: String,
     val action: Action,
-    val collection: String,
-    val arguments: List<String>
+    val targetId: String,
+    val argument: String
 )
 
 class Asset(

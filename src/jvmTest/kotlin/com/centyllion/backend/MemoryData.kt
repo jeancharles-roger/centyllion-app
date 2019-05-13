@@ -5,6 +5,8 @@ import io.ktor.auth.jwt.JWTPrincipal
 import java.util.*
 import kotlin.math.max
 
+fun newId() = UUID.randomUUID().toString()
+
 fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val claims = principal.payload.claims
     val name = claims["name"]?.asString() ?: ""
@@ -25,6 +27,11 @@ fun createFeaturedDescription(
     listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
     author.name
 )
+
+fun createEvent(action: Action, user: User?, targetId: String, argument: String): Event {
+    val date = rfc1123Format.format(Date())
+    return Event(newId(), date, user?.id ?: "", action, targetId, argument)
+}
 
 
 /** Memory implementation for Data. Only used for tests, not optimal at all */
@@ -131,10 +138,10 @@ class MemoryData(
         assets.remove(id)
     }
 
-    override fun getEvents() = events.values.toList()
+    override fun getEvents(offset: Int, limit: Int) = events.values.toList()
 
-    override fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
-        val event = createEvent(action, user, collection, arguments)
+    override fun insertEvent(action: Action, user: User?, targetId: String, argument: String) {
+        val event = createEvent(action, user, targetId, argument)
         events[event.id] = event
     }
 

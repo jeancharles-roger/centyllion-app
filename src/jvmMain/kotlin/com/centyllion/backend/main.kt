@@ -172,12 +172,8 @@ fun Application.centyllion(
             // insert an event when see a problem
             val principal = call.principal<JWTPrincipal>()
             val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
-            data.insertEvent(Action.Error, user, "",
-                cause.javaClass.simpleName,
-                cause.message.toString(),
-                cause.stackTrace.joinToString("\n") { it.toString() }
-            )
-
+            val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
+            data.insertEvent(Action.Error, user, "", argument)
             call.respond(HttpStatusCode.InternalServerError)
         }
 
@@ -203,7 +199,11 @@ fun Application.centyllion(
 
     install(Authentication) {
         jwt {
-            if (verifier != null) { verifier(verifier) } else { verifier(makeJwkProvider(), authBase) }
+            if (verifier != null) {
+                verifier(verifier)
+            } else {
+                verifier(makeJwkProvider(), authBase)
+            }
             realm = authRealm
             validate { if (it.payload.audience?.contains(authClient) == true) JWTPrincipal(it.payload) else null }
         }

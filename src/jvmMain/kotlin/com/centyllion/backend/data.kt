@@ -47,23 +47,11 @@ interface Data {
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)
-    fun getEvents(): List<Event>
-    fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String)
+    fun getEvents(offset: Int = 0, limit: Int = 20): List<Event>
+    fun insertEvent(action: Action, user: User?, targetId: String, argument: String)
 }
 
 val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
-
-fun newId() = UUID.randomUUID().toString()
-
-fun createEvent(
-    action: Action,
-    user: User?,
-    collection: String,
-    arguments: Array<out String>
-): Event {
-    val date = rfc1123Format.format(Date())
-    return Event(newId(), date, user?.id ?: "", action, collection, arguments.toList())
-}
 
 class SqlData(
     type: String = "postgresql",
@@ -83,12 +71,11 @@ class SqlData(
     init {
         transaction(database) {
             SchemaUtils.create(
-                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions, DbFeaturedTable, DbAssets
+                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions,
+                DbFeaturedTable, DbAssets, DbEvents
             )
         }
     }
-
-    val events: LinkedHashMap<String, Event> = linkedMapOf()
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         val user = transaction(database) {
@@ -257,11 +244,18 @@ class SqlData(
         transaction(database) { DbAsset.findById(UUID.fromString(id))?.delete() }
     }
 
-    override fun getEvents() = events.values.toList()
+    override fun getEvents(offset: Int, limit: Int) = transaction(database) {
+        DbEvent.all().limit(limit, offset).map { it.toModel() }
+    }
 
-    override fun insertEvent(action: Action, user: User?, collection: String, vararg arguments: String) {
-        val event = createEvent(action, user, collection, arguments)
-        events[event.id] = event
+    override fun insertEvent(action: Action, user: User?, targetId: String, argument: String) {
+        DbEvent.new {
+            this.createdOn = DateTime.now()
+            this.userId = UUID.fromString(user?.id)
+            this.action = action.toString()
+            this.targetId = UUID.fromString(targetId)
+            this.argument = argument
+        }
     }
 }
 

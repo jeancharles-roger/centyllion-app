@@ -13,12 +13,12 @@ class EventController(event: Event, size: ColumnSize) : NoContextController<Even
 
     override var readOnly = false
 
-    val title = span("${data.action} on ${data.collection}")
-    val date = span(data.date)
+    val title = span("${data.action} on ${data.targetId}")
+    val date = span(data.createOn )
     val level = Level(left = listOf(title), right = listOf(date))
 
     val body = Message(
-        body = listOf(level) + data.arguments.map { span(it) },
+        body = listOf(level),
         color = color()
     )
 
@@ -32,8 +32,7 @@ class EventController(event: Event, size: ColumnSize) : NoContextController<Even
     }
 
     override fun refresh() {
-        title.text = "${data.action} on ${data.collection}"
-        date.text = data.date
-        body.body = listOf(level) + data.arguments.map { span(it) }
+        title.text = "${data.action} on ${data.targetId}"
+        date.text = data.createOn
     }
 }

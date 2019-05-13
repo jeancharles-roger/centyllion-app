@@ -93,11 +93,7 @@ class SqlData(
 
     init {
         transaction(database) {
-            SchemaUtils.create(
-                DbUsers, DbDescriptionInfos,
-                DbGrainModelDescriptions,
-                DbSimulations, DbSimulationDescriptions
-            )
+            SchemaUtils.create(DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions)
         }
     }
 
@@ -127,20 +123,20 @@ class SqlData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
-        DbGrainModelDescription.all().limit(limit, offset).map { it.toModel() }
+        DbModelDescription.all().limit(limit, offset).map { it.toModel() }
     }
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = transaction(database) {
         val userUUID = UUID.fromString(user.id)
-        DbGrainModelDescription.wrapRows(
-            DbGrainModelDescriptions
+        DbModelDescription.wrapRows(
+            DbModelDescriptions
                 .innerJoin(DbDescriptionInfos)
                 .select { DbDescriptionInfos.userId eq userUUID }
         ).map { it.toModel() }
     }
 
     override fun getGrainModel(id: String) = transaction(database) {
-        DbGrainModelDescription.findById(UUID.fromString(id))?.toModel()
+        DbModelDescription.findById(UUID.fromString(id))?.toModel()
     }
 
     override fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription = transaction(database) {
@@ -151,23 +147,32 @@ class SqlData(
             readAccess = false
             cloneAccess = false
         }
-        DbGrainModelDescription.new {
+        DbModelDescription.new {
             info = newInfo
             model = Json.stringify(GrainModel.serializer(), sent)
             version = 0
+            type = DbModelType.Grain.toString()
         }.toModel()
     }
 
     override fun saveGrainModel(user: User, model: GrainModelDescription) {
-        transaction(database) { DbGrainModelDescription.findById(UUID.fromString(model.id))?.fromModel(model) }
+        transaction(database) { DbModelDescription.findById(UUID.fromString(model.id))?.fromModel(model) }
     }
 
     override fun deleteGrainModel(user: User, model: GrainModelDescription) {
         transaction(database) {
             DbSimulationDescription
                 .find { DbSimulationDescriptions.modelId eq UUID.fromString(model.id) }
-                .forEach { it.delete() }
-            DbGrainModelDescription.findById(UUID.fromString(model.id))?.delete()
+                .forEach { deleteSimulation(it) }
+            deleteGrainModel(DbModelDescription.findById(UUID.fromString(model.id)))
+        }
+    }
+
+    /** Must be called inside transaction */
+    private fun deleteGrainModel(model: DbModelDescription?) {
+        model?.let {
+            it.delete()
+            it.info.delete()
         }
     }
 
@@ -183,7 +188,6 @@ class SqlData(
 
     override fun createSimulation(user: User, modelId: String, sent: Simulation) =
         transaction(database) {
-
             val newInfo = DbDescriptionInfo.new {
                 userId = UUID.fromString(user.id)
                 createdOn = DateTime.now()
@@ -191,11 +195,12 @@ class SqlData(
                 readAccess = false
                 cloneAccess = false
             }
-            val newSimulation = DbSimulation.new { fromModel(sent) }
             DbSimulationDescription.new {
                 info = newInfo
                 this.modelId = UUID.fromString(modelId)
-                this.simulation = newSimulation
+                simulation = Json.stringify(Simulation.serializer(), sent)
+                version = 0
+                type = DbModelType.Grain.toString()
             }.toModel()
         }
 
@@ -206,7 +211,15 @@ class SqlData(
     }
 
     override fun deleteSimulation(user: User, simulation: SimulationDescription) {
-        transaction(database) { DbSimulationDescription.findById(UUID.fromString(simulation.id))?.delete() }
+        transaction(database) { deleteSimulation(DbSimulationDescription.findById(UUID.fromString(simulation.id))) }
+    }
+
+    /** Must be called inside transaction */
+    private fun deleteSimulation(simulation: DbSimulationDescription?) {
+        simulation?.let {
+            it.delete()
+            it.info.delete()
+        }
     }
 
     override fun getAllFeatured(): List<FeaturedDescription> = featured.values.toList()

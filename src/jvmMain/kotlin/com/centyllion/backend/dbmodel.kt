@@ -7,11 +7,7 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
 import org.joda.time.DateTime
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
 import java.util.*
-import javax.sql.rowset.serial.SerialBlob
 
 object DbUsers : UUIDTable("users") {
     val name = text("name")
@@ -65,79 +61,33 @@ class DbDescriptionInfo(id: EntityID<UUID>) : UUIDEntity(id) {
     }
 }
 
-object DbGrainModelDescriptions : UUIDTable("modelDescriptions") {
+enum class DbModelType { Grain }
+
+object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val info = reference("info", DbDescriptionInfos)
     val model = text("model")
+    val type = text("type")
     val version = integer("version")
 }
 
-class DbGrainModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<DbGrainModelDescription>(DbGrainModelDescriptions)
+class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DbModelDescription>(DbModelDescriptions)
 
-    var info by DbDescriptionInfo referencedOn DbGrainModelDescriptions.info
-    var model by DbGrainModelDescriptions.model
-    var version by DbGrainModelDescriptions.version
+    var info by DbDescriptionInfo referencedOn DbModelDescriptions.info
+    var model by DbModelDescriptions.model
+    var type by DbModelDescriptions.type
+    var version by DbModelDescriptions.version
 
     fun toModel(): GrainModelDescription {
+        // TODO handle migrations
         val model = Json.parse(GrainModel.serializer(), model)
         return GrainModelDescription(id.toString(), info.toModel(), model)
     }
 
     fun fromModel(source: GrainModelDescription) {
+        // TODO handle migrations
         info.fromModel(source.info)
         model = Json.stringify(GrainModel.serializer(), source.model)
-    }
-
-}
-
-object DbSimulations : UUIDTable("simulations") {
-    val name = text("name")
-    val description = text("description")
-    val width = integer("width")
-    val height = integer("height")
-    val depth = integer("depth")
-    val agents = blob("agents")
-}
-
-class DbSimulation(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<DbSimulation>(DbSimulations)
-
-    var name by DbSimulations.name
-    var description by DbSimulations.description
-    var width by DbSimulations.width
-    var height by DbSimulations.height
-    var depth by DbSimulations.depth
-    var agents by DbSimulations.agents
-
-    fun toModel(): Simulation {
-        // constructs the list of int from the blob
-        var length = width * height * depth
-        val stream = DataInputStream(agents.binaryStream)
-        val list = mutableListOf<Int>()
-        stream.use {
-            try {
-                while (true) {
-                    list.add(it.readInt())
-                }
-            } catch (e: Throwable) {
-                // end reading
-            }
-        }
-        return Simulation(name, description, width, height, depth, list)
-    }
-
-    fun fromModel(source: Simulation) {
-        name = source.name
-        description = source.description
-        width = source.width
-        height = source.height
-        depth = source.depth
-
-        // writes the blob from the list of int
-        val agentBlogSize = width * height * depth * Int.SIZE_BYTES
-        val stream = ByteArrayOutputStream(agentBlogSize)
-        DataOutputStream(stream).use { d -> source.agents.forEach { d.writeInt(it) } }
-        agents = SerialBlob(stream.toByteArray())
     }
 }
 
@@ -145,7 +95,9 @@ object DbSimulationDescriptions : UUIDTable("simulationDescriptions") {
     val info = reference("info", DbDescriptionInfos)
     val modelId = uuid("modelId")
     val thumbnailId = uuid("thumbnailId").nullable()
-    val simulation = reference("simulation", DbSimulations)
+    val simulation = text("simulation")
+    val type = text("type")
+    val version = integer("version")
 }
 
 class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -154,15 +106,20 @@ class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var info by DbDescriptionInfo referencedOn DbSimulationDescriptions.info
     var modelId by DbSimulationDescriptions.modelId
     var thumbnailId by DbSimulationDescriptions.thumbnailId
-    var simulation by DbSimulation referencedOn DbSimulationDescriptions.simulation
+    var simulation by DbSimulationDescriptions.simulation
+    var type by DbSimulationDescriptions.type
+    var version by DbSimulationDescriptions.version
 
-    fun toModel(): SimulationDescription = SimulationDescription(
-        id.toString(), info.toModel(), modelId.toString(), thumbnailId?.toString(), simulation.toModel()
-    )
+    fun toModel(): SimulationDescription {
+        // TODO handle migrations
+        val simulation = Json.parse(Simulation.serializer(), simulation)
+        return SimulationDescription(id.toString(), info.toModel(), modelId.toString(), thumbnailId?.toString(), simulation)
+    }
 
     fun fromModel(source: SimulationDescription) {
+        // TODO handle migrations
         info.fromModel(source.info)
-        simulation.fromModel(source.simulation)
+        simulation = Json.stringify(Simulation.serializer(), source.simulation)
         modelId = UUID.fromString(source.modelId)
         thumbnailId = if (source.thumbnailId != null) UUID.fromString(source.thumbnailId) else null
     }

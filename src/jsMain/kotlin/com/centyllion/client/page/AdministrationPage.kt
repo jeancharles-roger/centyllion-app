@@ -47,7 +47,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
     val eventPage = TabPage(TabItem("Events", "bolt"), eventsController)
 
-    val container: BulmaElement = TabPages(featuredPage, eventPage, tabs = Tabs(boxed = true)) {
+    val onTabChange: (TabPage) -> Unit = {
         when (it) {
             featuredPage -> {
                 api.fetchAllFeatured().then { featuredController.data = it }.catch { context.error(it) }
@@ -58,6 +58,8 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
             }
         }
     }
+
+    val container: BulmaElement = TabPages(featuredPage, eventPage, tabs = Tabs(boxed = true), onTabChange = onTabChange)
 
     override val root: HTMLElement = container.root
 
@@ -79,5 +81,9 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
             featuredController.data = it
             publicModelsController.context = it
         }.catch { context.error(it) }
+    }
+
+    init {
+        onTabChange(featuredPage)
     }
 }

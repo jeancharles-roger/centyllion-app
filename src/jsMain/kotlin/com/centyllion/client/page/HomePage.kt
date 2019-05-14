@@ -46,6 +46,10 @@ class HomePage(val context: AppContext) : BulmaElement {
         updateElements()
     }
 
+    val newModelButton = Button("Model", Icon("plus"), ElementColor.Primary, rounded = true) {
+        openPage(showPage, context)
+    }
+
     val allTabItem = PanelTabsItem("all") { activateFilter(it) }
 
     val modelsTabItem = PanelTabsItem("models") { activateFilter(it) }
@@ -62,6 +66,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     val panelController = noContextPanelController(
         Panel("My models and simulations"), emptyList<Any>(),
         header = listOf(
+            PanelContentBlock(Control(newModelButton)),
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )

@@ -3,49 +3,13 @@ package com.centyllion.backend
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.sql.DriverManager
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
-interface Data {
-    fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
-    fun getUser(id: String): User?
-    fun saveUser(user: User)
-
-    fun publicGrainModels(offset: Int = 0, limit: Int = 20): List<GrainModelDescription>
-    fun grainModelsForUser(user: User): List<GrainModelDescription>
-    fun getGrainModel(id: String): GrainModelDescription?
-    fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription
-    fun saveGrainModel(user: User, model: GrainModelDescription)
-    fun deleteGrainModel(user: User, modelId: String)
-
-    fun getSimulationForModel(modelId: String): List<SimulationDescription>
-    fun getSimulation(id: String): SimulationDescription?
-    fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription
-    fun saveSimulation(user: User, simulation: SimulationDescription)
-    fun deleteSimulation(user: User, simulationId: String)
-
-    fun getAllFeatured(offset: Int = 0, limit: Int = 20): List<FeaturedDescription>
-    fun getFeatured(id: String): FeaturedDescription?
-    fun createFeatured(
-        user: User,
-        model: GrainModelDescription,
-        simulation: SimulationDescription,
-        author: User
-    ): FeaturedDescription
-
-    fun deleteFeatured(user: User, featuredId: String)
-
-    fun getAsset(id: String): Asset?
-    fun createAsset(name: String, data: ByteArray): Asset
-    fun deleteAsset(id: String)
-}
 
 class SqlData(
     type: String = "postgresql",
@@ -104,6 +68,7 @@ class SqlData(
             DbModelDescriptions
                 .innerJoin(DbDescriptionInfos)
                 .select { DbDescriptionInfos.userId eq userUUID }
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
     }
 
@@ -128,7 +93,11 @@ class SqlData(
     }
 
     override fun saveGrainModel(user: User, model: GrainModelDescription) {
-        transaction(database) { DbModelDescription.findById(UUID.fromString(model.id))?.fromModel(model) }
+        transaction(database) {
+            val found = DbModelDescription.findById(UUID.fromString(model.id))
+            found?.fromModel(model)
+            found?.info?.lastModifiedOn = DateTime.now()
+        }
     }
 
     override fun deleteGrainModel(user: User, modelId: String) {
@@ -191,6 +160,7 @@ class SqlData(
             }
             // updates simulation
             found?.fromModel(toSave)
+            found?.info?.lastModifiedOn = DateTime.now()
         }
     }
 

@@ -46,7 +46,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         updateElements()
     }
 
-    val newModelButton = Button("Model", Icon("plus"), ElementColor.Primary, rounded = true) {
+    val newModelButton = Button("Model", Icon("plus"), ElementColor.Link, size = Size.Small) {
         openPage(showPage, context)
     }
 
@@ -80,6 +80,9 @@ class HomePage(val context: AppContext) : BulmaElement {
     override val root: HTMLElement = container.root
 
     init {
+        // Makes new model button full panel width
+        newModelButton.root.classList.add("is-fullwidth")
+
         allTabItem.active = true
 
         panelController.onClick = { data, _ ->
@@ -129,8 +132,8 @@ class HomePage(val context: AppContext) : BulmaElement {
 }
 
 private fun elementText(source: Any) = when (source) {
-    is GrainModelDescription -> source.model.name
-    is SimulationDescription -> source.simulation.name
+    is GrainModelDescription -> source.model.name.let { if (it.isNotEmpty()) it else source.id }
+    is SimulationDescription -> source.simulation.name.let { if (it.isNotEmpty()) it else source.id }
     else -> source.toString()
 }
 

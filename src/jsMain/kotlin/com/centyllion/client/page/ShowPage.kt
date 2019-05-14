@@ -15,7 +15,7 @@ import kotlin.properties.Delegates.observable
 class ShowPage(val context: AppContext) : BulmaElement {
 
     val saveIcon = "cloud-upload-alt"
-    val shareIcon = "share"
+    val shareIcon = "share-square"
 
     val api = context.api
 

@@ -275,7 +275,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    private val canPublish get() = model.info.readAccess || simulation.info.readAccess
+    private val canPublish get() = !model.info.readAccess || !simulation.info.readAccess
 
     fun togglePublication() {
         model = model.copy(info = model.info.copy(readAccess = canPublish))

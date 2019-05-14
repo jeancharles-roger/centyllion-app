@@ -66,7 +66,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val modelNameController = EditableStringController(model.model.name, "Name") { _, new, _ ->
+    val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
     }
 
@@ -187,7 +187,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                     }
                 }.then { it }
 
-            else -> Promise.reject(Exception("No simulation found"))
+            else -> Promise.resolve(emptySimulationDescription to emptyGrainModelDescription)
         }
 
         result.then {

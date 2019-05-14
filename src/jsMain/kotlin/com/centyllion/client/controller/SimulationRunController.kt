@@ -57,7 +57,7 @@ class SimulationRunController(
 
     private var presentCharts = false
 
-    val nameController = EditableStringController(data.name, "Name")
+    val nameController = EditableStringController(data.name, "Simulation Name")
     { _, new, _ ->
         data = data.copy(name = new)
     }

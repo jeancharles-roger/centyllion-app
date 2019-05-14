@@ -11,10 +11,10 @@ val versions = mapOf(
 
 fun version(serializer: KSerializer<*>) = versions[serializer] ?: 0
 
-val emptyModel = GrainModel("Empty model")
+val emptyModel = GrainModel("")
 val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
-val emptySimulation = Simulation("Simulation")
+val emptySimulation = Simulation("")
 val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 

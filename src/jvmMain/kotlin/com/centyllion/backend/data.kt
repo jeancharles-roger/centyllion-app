@@ -226,7 +226,9 @@ class SqlData(
     }
 
     override fun deleteFeatured(user: User, delete: FeaturedDescription) {
-        DbFeatured.findById(UUID.fromString(delete.id))?.delete()
+        transaction(database) {
+            DbFeatured.findById(UUID.fromString(delete.id))?.delete()
+        }
     }
 
     override fun getAsset(id: String) = transaction(database) {
@@ -249,12 +251,14 @@ class SqlData(
     }
 
     override fun insertEvent(action: Action, user: User?, targetId: String, argument: String) {
-        DbEvent.new {
-            this.createdOn = DateTime.now()
-            this.userId = UUID.fromString(user?.id)
-            this.action = action.toString()
-            this.targetId = UUID.fromString(targetId)
-            this.argument = argument
+        transaction(database) {
+            DbEvent.new {
+                this.createdOn = DateTime.now()
+                this.userId = UUID.fromString(user?.id)
+                this.action = action.toString()
+                this.targetId = UUID.fromString(targetId)
+                this.argument = argument
+            }
         }
     }
 }

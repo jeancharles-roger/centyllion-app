@@ -138,12 +138,4 @@ class MemoryData(
     override fun deleteAsset(id: String) {
         assets.remove(id)
     }
-
-    override fun getEvents(offset: Int, limit: Int) = events.values.toList()
-
-    override fun insertEvent(action: Action, user: User?, targetId: String, argument: String) {
-        val event = createEvent(action, user, targetId, argument)
-        events[event.id] = event
-    }
-
 }

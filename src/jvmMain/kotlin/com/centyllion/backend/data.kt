@@ -45,9 +45,6 @@ interface Data {
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)
-
-    fun getEvents(offset: Int = 0, limit: Int = 20): List<Event>
-    fun insertEvent(action: Action, user: User?, targetId: String, argument: String)
 }
 
 class SqlData(
@@ -242,22 +239,6 @@ class SqlData(
 
     override fun deleteAsset(id: String) {
         transaction(database) { DbAsset.findById(UUID.fromString(id))?.delete() }
-    }
-
-    override fun getEvents(offset: Int, limit: Int) = transaction(database) {
-        DbEvent.all().limit(limit, offset).map { it.toModel() }
-    }
-
-    override fun insertEvent(action: Action, user: User?, targetId: String, argument: String) {
-        transaction(database) {
-            DbEvent.new {
-                this.createdOn = DateTime.now()
-                this.userId = UUID.fromString(user?.id)
-                this.action = action.toString()
-                this.targetId = UUID.fromString(targetId)
-                this.argument = argument
-            }
-        }
     }
 }
 

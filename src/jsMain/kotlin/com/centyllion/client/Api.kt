@@ -147,9 +147,4 @@ class Api(val instance: KeycloakInstance?) {
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("DELETE", "/api/featured/${featured.id}", bearer)
         }
-
-
-    fun fetchEvents() = executeWithRefreshedIdToken(instance) { bearer ->
-        fetch("GET", "/api/event", bearer).then { json.parse(Event.serializer().list, it) }
-    }
 }

@@ -173,7 +173,7 @@ fun Application.centyllion(
             val principal = call.principal<JWTPrincipal>()
             val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
             val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
-            data.insertEvent(Action.Error, user, "", argument)
+            // TODO reponds error
             call.respond(HttpStatusCode.InternalServerError)
         }
 
@@ -493,16 +493,6 @@ fun Application.centyllion(
                             context.respondBytes(asset.data, ContentType.Image.PNG)
                         } else {
                             context.respond(HttpStatusCode.NotFound)
-                        }
-                    }
-                }
-
-                // events
-                route("event") {
-                    get {
-                        withRequiredPrincipal(setOf(adminRole)) {
-                            val events = data.getEvents()
-                            context.respond(events)
                         }
                     }
                 }

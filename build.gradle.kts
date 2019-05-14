@@ -260,7 +260,7 @@ tasks {
                     url.path("hooks","deploy-beta")
 
                     val dbPassword = System.getenv("DB_PASSWORD")?: System.getProperty("db.password")
-                    if (dbPassword != null) url.parameters["db_password"] = dbPassword
+                    if (dbPassword != null) header("X-DbPassword", dbPassword)
 
                     val key = System.getenv("DEPLOY_KEY").let {
                         if (it != null) it else  System.getProperty("deploy.key")

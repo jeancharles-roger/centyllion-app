@@ -2,10 +2,13 @@ package com.centyllion.backend
 
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
 
 fun newId() = UUID.randomUUID().toString()
+
+val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
 
 fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val claims = principal.payload.claims
@@ -80,9 +83,9 @@ class MemoryData(
         grainModels[model.id] = model
     }
 
-    override fun deleteGrainModel(user: User, model: GrainModelDescription) {
-        getSimulationForModel(model.id).forEach { deleteSimulation(user, it) }
-        grainModels.remove(model.id)
+    override fun deleteGrainModel(user: User, modelId: String) {
+        getSimulationForModel(modelId).forEach { deleteSimulation(user, it.id) }
+        grainModels.remove(modelId)
     }
 
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
@@ -101,8 +104,8 @@ class MemoryData(
         simulations[simulation.id] = simulation
     }
 
-    override fun deleteSimulation(user: User, simulation: SimulationDescription) {
-        simulations.remove(simulation.id)
+    override fun deleteSimulation(user: User, simulationId: String) {
+        simulations.remove(simulationId)
     }
 
     override fun getAllFeatured(offset: Int, limit: Int): List<FeaturedDescription> =
@@ -119,11 +122,9 @@ class MemoryData(
         return new
     }
 
-    override fun deleteFeatured(user: User, delete: FeaturedDescription) {
-        // delete thumbnail asset
-        if (delete.thumbnailId != null) deleteAsset(delete.thumbnailId!!)
+    override fun deleteFeatured(user: User, featuredId: String) {
         // delete the featured
-        featured.remove(delete.id)
+        featured.remove(featuredId)
     }
 
     override fun getAsset(id: String) = assets[id]

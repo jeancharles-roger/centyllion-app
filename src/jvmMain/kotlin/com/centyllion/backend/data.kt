@@ -5,11 +5,11 @@ import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.sql.DriverManager
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
@@ -17,20 +17,19 @@ interface Data {
     fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
     fun getUser(id: String): User?
     fun saveUser(user: User)
+
     fun publicGrainModels(offset: Int = 0, limit: Int = 20): List<GrainModelDescription>
     fun grainModelsForUser(user: User): List<GrainModelDescription>
     fun getGrainModel(id: String): GrainModelDescription?
     fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription
     fun saveGrainModel(user: User, model: GrainModelDescription)
-    // TODO only pass model id
-    fun deleteGrainModel(user: User, model: GrainModelDescription)
+    fun deleteGrainModel(user: User, modelId: String)
 
     fun getSimulationForModel(modelId: String): List<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription
     fun saveSimulation(user: User, simulation: SimulationDescription)
-    // TODO only pass simulation id
-    fun deleteSimulation(user: User, simulation: SimulationDescription)
+    fun deleteSimulation(user: User, simulationId: String)
 
     fun getAllFeatured(offset: Int = 0, limit: Int = 20): List<FeaturedDescription>
     fun getFeatured(id: String): FeaturedDescription?
@@ -41,17 +40,15 @@ interface Data {
         author: User
     ): FeaturedDescription
 
-    // TODO only pass featured id
-    fun deleteFeatured(user: User, delete: FeaturedDescription)
+    fun deleteFeatured(user: User, featuredId: String)
 
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)
+
     fun getEvents(offset: Int = 0, limit: Int = 20): List<Event>
     fun insertEvent(action: Action, user: User?, targetId: String, argument: String)
 }
-
-val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
 
 class SqlData(
     type: String = "postgresql",
@@ -99,8 +96,9 @@ class SqlData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
-        // TODO find only public ones
-        DbModelDescription.all().limit(limit, offset).map { it.toModel() }
+        DbModelDescription.wrapRows(DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
+            (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+        }.limit(limit, offset)).map { it.toModel() }
     }
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = transaction(database) {
@@ -136,12 +134,12 @@ class SqlData(
         transaction(database) { DbModelDescription.findById(UUID.fromString(model.id))?.fromModel(model) }
     }
 
-    override fun deleteGrainModel(user: User, model: GrainModelDescription) {
+    override fun deleteGrainModel(user: User, modelId: String) {
         transaction(database) {
             DbSimulationDescription
-                .find { DbSimulationDescriptions.modelId eq UUID.fromString(model.id) }
+                .find { DbSimulationDescriptions.modelId eq UUID.fromString(modelId) }
                 .forEach { deleteSimulation(it) }
-            deleteGrainModel(DbModelDescription.findById(UUID.fromString(model.id)))
+            deleteGrainModel(DbModelDescription.findById(UUID.fromString(modelId)))
         }
     }
 
@@ -199,8 +197,8 @@ class SqlData(
         }
     }
 
-    override fun deleteSimulation(user: User, simulation: SimulationDescription) {
-        transaction(database) { deleteSimulation(DbSimulationDescription.findById(UUID.fromString(simulation.id))) }
+    override fun deleteSimulation(user: User, simulationId: String) {
+        transaction(database) { deleteSimulation(DbSimulationDescription.findById(UUID.fromString(simulationId))) }
     }
 
     /** Must be called inside transaction */
@@ -225,9 +223,9 @@ class SqlData(
         DbFeatured.new { featuredId = UUID.fromString(simulation.id) }.toModel()
     }
 
-    override fun deleteFeatured(user: User, delete: FeaturedDescription) {
+    override fun deleteFeatured(user: User, featuredId: String) {
         transaction(database) {
-            DbFeatured.findById(UUID.fromString(delete.id))?.delete()
+            DbFeatured.findById(UUID.fromString(featuredId))?.delete()
         }
     }
 

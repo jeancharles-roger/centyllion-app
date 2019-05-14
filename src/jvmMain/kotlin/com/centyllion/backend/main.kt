@@ -289,7 +289,7 @@ fun Application.centyllion(
                                     when {
                                         featured == null -> HttpStatusCode.NotFound
                                         else -> {
-                                            data.deleteFeatured(user, featured)
+                                            data.deleteFeatured(user, id)
                                             HttpStatusCode.OK
                                         }
                                     }
@@ -364,7 +364,7 @@ fun Application.centyllion(
                                         model == null -> HttpStatusCode.NotFound
                                         !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
-                                            data.deleteGrainModel(user, model)
+                                            data.deleteGrainModel(user, id)
                                             HttpStatusCode.OK
                                         }
                                     }
@@ -471,7 +471,10 @@ fun Application.centyllion(
                                         simulation == null -> HttpStatusCode.NotFound
                                         !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                                         else -> {
-                                            data.deleteSimulation(user, simulation)
+                                            data.deleteSimulation(user, simulationId)
+                                            if (simulation.thumbnailId != null) {
+                                                data.deleteAsset(simulation.thumbnailId)
+                                            }
                                             HttpStatusCode.OK
                                         }
                                     }

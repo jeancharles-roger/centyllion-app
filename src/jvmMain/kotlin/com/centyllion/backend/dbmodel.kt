@@ -179,34 +179,3 @@ class DbAsset(id: EntityID<UUID>) : UUIDEntity(id) {
         content = SerialBlob(source.data)
     }
 }
-
-object DbEvents : UUIDTable("events") {
-    val createdOn = datetime("createdOn")
-    val userId = uuid("userId").nullable()
-    val action = text("action")
-    val targetId = uuid("targetId")
-    val argument = text("argument")
-}
-
-class DbEvent(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<DbEvent>(DbEvents)
-
-    var createdOn by DbEvents.createdOn
-    var userId by DbEvents.userId
-    var action by DbEvents.action
-    var targetId by DbEvents.targetId
-    var argument by DbEvents.argument
-
-    fun toModel() = Event(
-        id.toString(), createdOn.toString(), userId.toString(), Action.valueOf(action), targetId.toString(), argument
-    )
-
-    fun fromModel(source: Event) {
-        createdOn = DateTime.parse(source.createOn)
-        userId = UUID.fromString(source.userId)
-        action = source.toString()
-        targetId = UUID.fromString(targetId.toString())
-        argument = argument
-    }
-}
-

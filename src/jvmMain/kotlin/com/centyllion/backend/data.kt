@@ -66,7 +66,7 @@ class SqlData(
         transaction(database) {
             SchemaUtils.create(
                 DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions,
-                DbFeaturedTable, DbAssets, DbEvents
+                DbFeaturedTable, DbAssets
             )
         }
     }

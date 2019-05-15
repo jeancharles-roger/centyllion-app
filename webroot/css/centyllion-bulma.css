@@ -2845,6 +2845,13 @@ fieldset[disabled] .textarea:-ms-input-placeholder {
 .textarea.has-fixed-size {
   resize: none;
 }
+.textarea.is-static {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
 
 .checkbox,
 .radio {

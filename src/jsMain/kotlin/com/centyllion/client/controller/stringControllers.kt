@@ -8,6 +8,8 @@ import kotlin.properties.Delegates.observable
  */
 class EditableStringController(
     initialData: String = "", placeHolder: String = "", disabled: Boolean = false,
+    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = true, static = true),
+    validateOnEnter: Boolean = true,
     var isValid: (value: String) -> Boolean = { true },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, Field>() {
@@ -29,31 +31,10 @@ class EditableStringController(
     val okControl = Control(okButton)
     val cancelControl = Control(cancelButton)
 
-    val input = Input(value = data, placeholder = placeHolder, readonly = true, static = true).apply {
-        root.onclick = {
-            if (!this@EditableStringController.readOnly) edit(true)
-            Unit
-        }
-        root.onkeyup = {
-            if (!readonly) {
-                when (it.key) {
-                    "Enter" -> validate()
-                    "Esc", "Escape" -> cancel()
-                }
-            }
-        }
-        onChange = { _, value ->
-            isValid(value).let {
-                color = if (it) ElementColor.None else ElementColor.Danger
-                okButton.disabled = !it
-            }
-        }
-        onFocus = { if (!it) validate() }
-    }
-
     val penIcon = Icon("pen")
 
-    val inputControl = Control(input, expanded = true, rightIcon = if (disabled) null else penIcon)
+
+    val inputControl = Control(this.input, expanded = true, rightIcon = if (disabled) null else penIcon)
 
     fun edit(editable: Boolean) {
         input.static = !editable
@@ -71,6 +52,31 @@ class EditableStringController(
 
     override val container: Field = Field(inputControl)
 
+    init {
+        input.apply {
+            root.onclick = {
+                if (!this@EditableStringController.readOnly) edit(true)
+                Unit
+            }
+            root.onkeyup = {
+                if (!readonly) {
+                    when (it.key) {
+                        "Enter" -> if (validateOnEnter) validate()
+                        "Esc", "Escape" -> cancel()
+                    }
+                }
+            }
+            onChange = { _, value ->
+                isValid(value).let {
+                    color = if (it) ElementColor.None else ElementColor.Danger
+                    okButton.disabled = !it
+                }
+            }
+            onFocus = { if (it) edit(true) else validate() }
+        }
+
+    }
+
     override fun refresh() {
         input.value = data
     }
@@ -84,23 +90,32 @@ class EditableStringController(
         input.value = this.data
         edit(false)
     }
-
 }
 
 fun editableDoubleController(
-    initialData: Double = 0.0, placeHolder: String = "", disabled: Boolean = false,
+    initialData: Double = 0.0, placeHolder: String = "",
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData.toString(), placeHolder, disabled, { it.toDoubleOrNull() != null }, { old, new, controller ->
-        onUpdate(old.toDouble(), new.toDouble(), controller)
-    }
+    initialData.toString(), placeHolder, false,
+    isValid = { it.toDoubleOrNull() != null },
+    onUpdate = { old, new, controller -> onUpdate(old.toDouble(), new.toDouble(), controller) }
 )
 
 fun editableIntController(
     initialData: Int = 0, placeHolder: String = "", disabled: Boolean = false,
     onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData.toString(), placeHolder, disabled, { it.toIntOrNull() != null }, { old, new, controller ->
-        onUpdate(old.toInt(), new.toInt(), controller)
-    }
+    initialData.toString(), placeHolder, false,
+    isValid = { it.toIntOrNull() != null },
+    onUpdate = { old, new, controller -> onUpdate(old.toInt(), new.toInt(), controller) }
+)
+
+fun multilineStringController(
+    initialData: String = "", placeHolder: String = "", disabled: Boolean = false,
+    isValid: (value: String) -> Boolean = { true },
+    onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
+) = EditableStringController(
+    initialData, placeHolder, disabled,
+    TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "4"),
+    validateOnEnter = false, isValid = isValid, onUpdate = onUpdate
 )

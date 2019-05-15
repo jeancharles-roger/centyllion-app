@@ -63,7 +63,9 @@ class Level(
 
 /** [Media](https://bulma.io/documentation/layout/media) element */
 class Media(
-    left: List<BulmaElement> = emptyList(), center: List<BulmaElement> = emptyList(), right: List<BulmaElement> = emptyList()
+    left: List<BulmaElement> = emptyList(),
+    center: List<BulmaElement> = emptyList(),
+    right: List<BulmaElement> = emptyList()
 ) : BulmaElement {
     override val root: HTMLElement = document.create.article("media") {
         div("media-content")
@@ -121,4 +123,71 @@ class Footer(initialBody: List<BulmaElement> = emptyList()) : BulmaElement {
     var body by bulmaList(initialBody, root)
 }
 
-/** TODO [Tile](https://bulma.io/documentation/layout/tiles) element */
+
+enum class TileSize(override val className: String) : HasClassName {
+    None(""),
+    S1("is-1"),
+    S2("is-2"),
+    S3("is-3"),
+    S4("is-4"),
+    S5("is-5"),
+    S6("is-6"),
+    S7("is-7"),
+    S8("is-8"),
+    S9("is-9"),
+    S10("is-10"),
+    S11("is-11"),
+    S12("is-12")
+}
+
+/** Child [Tile](https://bulma.io/documentation/layout/tiles) element */
+class TileChild(vararg body: BulmaElement, size: TileSize = TileSize.None, vertical: Boolean = false) : BulmaElement {
+    override val root: HTMLElement = document.create.div("tile is-child")
+
+    var body by bulmaList(body.toList(), root)
+
+    var size by className(size, root)
+
+    /** Vertical property */
+    var vertical by className(vertical, "is-vertical", root)
+}
+
+/** Tile with no class ore Parent */
+interface TileInner: BulmaElement
+
+/** Parent [Tile](https://bulma.io/documentation/layout/tiles) element */
+class TileParent(vararg body: TileChild, size: TileSize = TileSize.None, vertical: Boolean = false) : TileInner {
+    override val root: HTMLElement = document.create.div("tile is-parent")
+
+    var body by bulmaList(body.toList(), root)
+
+    var size by className(size, root)
+
+    /** Vertical property */
+    var vertical by className(vertical, "is-vertical", root)
+}
+
+/** No class [Tile](https://bulma.io/documentation/layout/tiles) element */
+class Tile(vararg body: TileInner, size: TileSize = TileSize.None, vertical: Boolean = false) : TileInner {
+    override val root: HTMLElement = document.create.div("tile")
+
+    var body by bulmaList(body.toList(), root)
+
+    var size by className(size, root)
+
+    /** Vertical property */
+    var vertical by className(vertical, "is-vertical", root)
+}
+
+/** Ancestor [Tile](https://bulma.io/documentation/layout/tiles) element */
+class TileAncestor(vararg body: TileParent, size: TileSize = TileSize.None, vertical: Boolean = false) : BulmaElement {
+    override val root: HTMLElement = document.create.div("tile is-ancestor")
+
+    var body by bulmaList(body.toList(), root)
+
+    var size by className(size, root)
+
+    /** Vertical property */
+    var vertical by className(vertical, "is-vertical", root)
+}
+

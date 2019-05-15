@@ -2,9 +2,11 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.UserController
 import com.centyllion.client.openPage
 import com.centyllion.client.showPage
+import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 import org.w3c.dom.HTMLElement
@@ -37,11 +39,6 @@ class HomePage(val context: AppContext) : BulmaElement {
 
     val userController = UserController(context.me)
 
-    val media = Media(
-        left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
-        center = listOf(userController)
-    )
-
     val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
         updateElements()
     }
@@ -72,9 +69,23 @@ class HomePage(val context: AppContext) : BulmaElement {
         )
     ) { _, data -> PanelItemController(data) }
 
-    val container = Columns(
-        Column(panelController, size = ColumnSize.OneThird),
-        Column(media, size = ColumnSize.TwoThirds)
+    val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
+    { parent, data ->
+        val controller = FeaturedController(data)
+        controller.body.root.onclick = {
+            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+        }
+        controller.body.root.style.cursor = "pointer"
+        controller
+    }
+
+    val container = TileAncestor(
+        TileParent(TileChild(panelController), size = TileSize.S3),
+        TileParent(
+            TileChild(userController),
+            TileChild(div(Title("Featured models"),featuredController)),
+            size = TileSize.S9, vertical = true
+        )
     )
 
     override val root: HTMLElement = container.root
@@ -111,6 +122,10 @@ class HomePage(val context: AppContext) : BulmaElement {
         userController.onUpdate = { _, new, _ ->
             if (new != null) context.api.saveUser(new) else null
         }
+
+        // retrieves featured models
+        context.api.fetchAllFeatured().then { models -> featuredController.data = models }
+
     }
 
     private fun activateFilter(selected: PanelTabsItem) {

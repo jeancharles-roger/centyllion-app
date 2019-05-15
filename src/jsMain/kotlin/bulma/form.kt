@@ -139,15 +139,28 @@ class Control(
     }
 }
 
+interface TextView: ControlElement {
+    var value: String
+    var placeholder: String?
+    var readonly: Boolean
+    var static: Boolean
+
+    var color: ElementColor
+    var size: Size
+
+    var onFocus: (Boolean) -> Unit
+    var onChange: (event: InputEvent, value: String) -> Unit
+}
+
 /** [Input](https://bulma.io/documentation/form/input/) */
 class Input(
     value: String = "", placeholder: String = "",
     color: ElementColor = ElementColor.None, size: Size = Size.None,
     rounded: Boolean = false, loading: Boolean = false,
     readonly: Boolean = false, static: Boolean = false,
-    var onFocus: (Boolean) -> Unit = { },
-    var onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
-) : ControlElement {
+    override var onFocus: (Boolean) -> Unit = { },
+    override var onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
+) : TextView {
 
     override val root = document.create.input(InputType.text, classes = "input") {
         this.value = value
@@ -168,19 +181,19 @@ class Input(
         }
     }
 
-    var value: String
+    override var value: String
         get() = root.value
         set(value) {
             root.value = value
         }
 
-    var placeholder by attribute(placeholder, "placeholder", root)
+    override var placeholder by attribute(placeholder, "placeholder", root)
 
     // TODO support input type (text, password, email, tel)
 
-    var color by className(color, root)
+    override var color by className(color, root)
 
-    var size by className(size, root)
+    override var size by className(size, root)
 
     var rounded by className(rounded, "is-rounded", root)
 
@@ -188,14 +201,21 @@ class Input(
 
     var disabled by booleanAttribute(false, "disabled", root)
 
-    var readonly by booleanAttribute(readonly, "readonly", root)
+    override var readonly by booleanAttribute(readonly, "readonly", root)
 
-    var static by className(static, "is-static", root)
+    override var static by className(static, "is-static", root)
 
 }
 
 /** [Text Area](https://bulma.io/documentation/form/textarea). */
-class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }) : FieldElement {
+class TextArea(
+    value: String = "", placeholder: String = "", rows: String = "",
+    color: ElementColor = ElementColor.None, size: Size = Size.None,
+    loading: Boolean = false, readonly: Boolean = false, static: Boolean = false, fixedSize: Boolean = false,
+    override var onFocus: (Boolean) -> Unit = { },
+    override var onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> }
+) : TextView {
+
     override val root: HTMLElement = document.create.textArea(classes = "textarea") {
         onInputFunction = {
             val target = it.target
@@ -203,11 +223,20 @@ class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> 
                 onChange(it, target.value)
             }
         }
+        onBlurFunction = {
+            val target = it.target
+            if (it is FocusEvent && target is HTMLTextAreaElement) {
+                onFocus(false)
+            }
+        }
+        onFocusFunction = {
+            onFocus(true)
+        }
     }
 
-    var rows by attribute("", "rows", root)
+    var rows by attribute(rows, "rows", root)
 
-    var value: String = ""
+    override var value: String = value
         set(value) {
             if (value != field) {
                 field = value
@@ -215,15 +244,19 @@ class TextArea(onChange: (event: InputEvent, value: String) -> Unit = { _, _ -> 
             }
         }
 
-    var placeholder by attribute("", "placeholder", root)
+    override var placeholder by attribute(placeholder, "placeholder", root)
 
-    var color by className(ElementColor.None, root)
+    override var color by className(color, root)
 
-    var size by className(Size.None, root)
+    override var size by className(size, root)
 
-    var fixedSize by className(false, "has-fixed-size", root)
+    var fixedSize by className(fixedSize, "has-fixed-size", root)
 
-    var readonly by booleanAttribute(false, "readonly", root)
+    override var readonly by booleanAttribute(readonly, "readonly", root)
+
+    override var static by className(static, "is-static", root)
+
+    var loading by className(loading, "is-loading", root)
 
     var disabled by booleanAttribute(false, "disabled", root)
 }

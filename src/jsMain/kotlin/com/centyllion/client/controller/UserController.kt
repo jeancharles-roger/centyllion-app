@@ -14,7 +14,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            // TODO
+            descriptionController.readOnly = readOnly
         }
     }
 
@@ -27,6 +27,8 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
     val nameValue = Value()
     val emailValue = Value()
 
+    val descriptionController = multilineStringController("", "Description")
+
     val saveResult = Help()
     val saveButton = textButton("Save Changes", ElementColor.Primary) {
         val result = onUpdate(data, newData, this@UserController)
@@ -38,12 +40,21 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         }
     }
 
-    override val container = div(
-        Field(Label("Name"), nameValue, Help()),
-        Field(Label("Email"), emailValue, Help()),
-        Level(listOf(saveButton), listOf(saveResult))
+    override val container = Media(
+        left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
+        center = listOf(
+            Columns(
+                Column(
+                    Field(Label("Name"), nameValue, Help()),
+                    Field(Label("Email"), emailValue, Help()),
+                    size = ColumnSize.S4
+                ),
+                Column(descriptionController, size = ColumnSize.S8),
+                Column(Level(listOf(saveResult), listOf(saveButton)), size = ColumnSize.Full),
+                multiline = true
+            )
+        )
     )
-
 
     init {
         refresh()

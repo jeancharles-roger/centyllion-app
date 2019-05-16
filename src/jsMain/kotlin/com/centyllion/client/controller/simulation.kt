@@ -290,7 +290,7 @@ class SimulatorEditController(
         val newStep = when {
             clicked && drawStep >= 0 -> drawStep + 1
             clicked -> 0
-            drawStep > 0 -> -1
+            drawStep >= 0 -> -1
             else -> null
         }
 

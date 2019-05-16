@@ -29,7 +29,7 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
     }
 
     val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
-        val canvasWidth = (window.innerWidth - 20).coerceAtMost(600)
+        val canvasWidth = (window.innerWidth - 40).coerceAtMost(600)
         width = "$canvasWidth"
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
@@ -51,9 +51,7 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         val yStep = canvasHeight / data.simulation.height
 
         val xSize = xStep * (1.0 + scale)
-        val xDelta = xStep * (scale / 2.0)
         val ySize = xStep * (1.0 + scale)
-        val yDelta = xStep * (scale / 2.0)
 
         simulationContext.save()
         // sets font awesome
@@ -61,16 +59,16 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
 
         var currentX = 0.0
-        var currentY = 0.0
+        var currentY = yStep
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
             if (grain != null) {
                 simulationContext.fillStyle = grain.color
                 if (grain.iconString != null) {
-                    simulationContext.fillText(grain.iconString, currentX - xDelta, currentY - yDelta)
+                    simulationContext.fillText(grain.iconString, currentX, currentY)
                 } else {
-                    simulationContext.fillRect(currentX - xDelta, currentY - yDelta, xSize, ySize)
+                    simulationContext.fillRect(currentX, currentY, xSize, ySize)
                 }
             }
 
@@ -98,11 +96,77 @@ class SimulatorEditController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
+    val roundDrawElement = object : DisplayElement {
+        override fun draw(gc: CanvasRenderingContext2D) {
+            gc.save()
+
+            gc.beginPath()
+
+            val factor = if (selectedTool == EditTools.Spray) 4 else 1
+            val brushSize = ToolSize.valueOf(sizeDropdown.text).size
+            val size = brushSize * factor
+            val radiusX = size * stepX / 2.0
+            val radiusY = size * stepY / 2.0
+            gc.ellipse(toCanvasX(simulationX), toCanvasY(simulationY), radiusX, radiusY, 0.0, 0.0, 6.30 /* 2pi */)
+
+            gc.strokeStyle = "black"
+            gc.lineWidth = 1.0
+
+            when (selectedTool) {
+                EditTools.Eraser -> {
+                    gc.globalAlpha = 0.7
+                    gc.fillStyle = "white"
+                }
+                EditTools.Spray -> {
+                    gc.globalAlpha = 0.3
+                    gc.fillStyle = selectedGrainController.data?.color ?: "grey"
+                }
+                else -> {
+                    gc.globalAlpha = 0.7
+                    gc.fillStyle = selectedGrainController.data?.color ?: "grey"
+                }
+            }
+
+            gc.fill()
+            gc.globalAlpha = 1.0
+            gc.stroke()
+
+            gc.restore()
+        }
+    }
+
+    // sets guide element
+    val lineDrawElement = object : DisplayElement {
+        override fun draw(gc: CanvasRenderingContext2D) {
+            val canvasX = toCanvasX(simulationX)
+            val canvasY = toCanvasY(simulationY)
+            val canvasSourceX = toCanvasX(simulationSourceX)
+            val canvasSourceY = toCanvasY(simulationSourceY)
+
+            gc.save()
+            gc.beginPath()
+            gc.moveTo(canvasSourceX, canvasSourceY)
+            gc.lineTo(canvasX, canvasY)
+            gc.lineWidth = 4.0
+            gc.strokeStyle = selectedGrainController.data?.color ?: "grey"
+            gc.stroke()
+
+            gc.lineWidth = 0.75
+            gc.strokeStyle = if (simulationX == simulationSourceX || simulationX == simulationSourceY) "blue" else "black"
+            gc.strokeText("$simulationSourceX, $simulationSourceY", canvasSourceX, canvasSourceY)
+            gc.strokeText("$simulationX, $simulationY", canvasX, canvasY)
+
+            gc.restore()
+        }
+    }
+
     override var data: Simulator by observable(simulator) { _, old, new ->
         onUpdate(true, new, this)
         selectedGrainController.context = new.model.grains
         if (old.model != new.model) {
             selectedGrainController.data = data.model.grains.firstOrNull()
+            stepX = simulationCanvas.root.width / data.simulation.width.toDouble()
+            stepY = simulationCanvas.root.height / data.simulation.height.toDouble()
         }
         refresh()
     }
@@ -113,11 +177,21 @@ class SimulatorEditController(
     private var toolElement: DisplayElement? = null
 
     var drawStep = -1
-    var canvasSourceX = -1.0
-    var canvasSourceY = -1.0
 
-    var mouseX = -1.0
-    var mouseY = -1.0
+    var simulationSourceX = -1
+    var simulationSourceY = -1
+
+    var simulationX = -1
+    var simulationY = -1
+
+    var stepX = simulationCanvas.root.width / data.simulation.width.toDouble()
+    var stepY = simulationCanvas.root.height / data.simulation.height.toDouble()
+
+    fun toSimulationX(canvasX: Double) = ((canvasX - 1) / stepX).roundToInt()
+    fun toSimulationY(canvasY: Double) = ((canvasY - 1) / stepY).roundToInt()
+
+    fun toCanvasX(simulationX: Int) = simulationX * stepX + stepX/2.0
+    fun toCanvasY(simulationY: Int) = simulationY * stepY + stepY
 
     fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
         val size = ToolSize.valueOf(sizeDropdown.text).size * factor
@@ -165,43 +239,18 @@ class SimulatorEditController(
         }
     }
 
-    fun drawOnSimulation(
-        canvasSourceX: Double, canvasSourceY: Double, canvasX: Double, canvasY: Double,
-        sourceX: Int, sourceY: Int, x: Int, y: Int, step: Int
-    ) {
+    fun drawOnSimulation(step: Int) {
         when (selectedTool) {
             EditTools.Pen -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-                    circle(x, y) { i, j -> data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet) }
+                    circle(simulationX, simulationY) { i, j -> data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet) }
                 }
             }
             EditTools.Line -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-
-                    // sets guide element
-                    toolElement = object : DisplayElement {
-                        override fun draw(gc: CanvasRenderingContext2D) {
-                            gc.save()
-
-                            gc.beginPath()
-                            gc.moveTo(canvasSourceX, canvasSourceY)
-                            gc.lineTo(canvasX, canvasY)
-                            gc.lineWidth = 4.0
-                            gc.strokeStyle = selectedGrainController.data?.color ?: "grey"
-                            gc.stroke()
-
-                            gc.lineWidth = 0.75
-                            gc.strokeStyle = if (x == sourceX || y == sourceY) "blue" else "black"
-                            gc.strokeText("$sourceX, $sourceY", canvasSourceX, canvasSourceY)
-                            gc.strokeText("$x, $y", canvasX, canvasY)
-
-                            gc.restore()
-                        }
-                    }
-
                     if (step == -1) {
                         // draw the line
-                        line(sourceX, sourceY, x, y) { i, j ->
+                        line(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
                             data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }
                     }
@@ -212,7 +261,7 @@ class SimulatorEditController(
                 val random = Random.Default
                 selectedGrainController.data?.id?.let { idToSet ->
                     val sprayDensity = 0.005
-                    circle(x, y, 4) { i, j ->
+                    circle(simulationX, simulationY, 4) { i, j ->
                         if (random.nextDouble() < sprayDensity) {
                             data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }
@@ -220,7 +269,7 @@ class SimulatorEditController(
                 }
             }
             EditTools.Eraser -> {
-                circle(x, y) { i, j ->
+                circle(simulationX, simulationY) { i, j ->
                     data.resetIdAtIndex(data.simulation.toIndex(i, j))
                 }
             }
@@ -245,74 +294,28 @@ class SimulatorEditController(
             else -> null
         }
 
-        val stepX = simulationCanvas.root.width / data.simulation.width.toDouble()
-        val stepY = simulationCanvas.root.height / data.simulation.height.toDouble()
-
         val rectangle = simulationCanvas.root.getBoundingClientRect()
-        mouseX = event.clientX - rectangle.left - 4
-        mouseY = event.clientY - rectangle.top - 4
+        simulationX = toSimulationX(event.clientX - rectangle.left - 4)
+        simulationY = toSimulationY(event.clientY - rectangle.top - 4)
 
         if (newStep != null) {
             if (newStep == 0) {
-                canvasSourceX = mouseX
-                canvasSourceY = mouseY
+                simulationSourceX = simulationX
+                simulationSourceY = simulationY
             }
             drawStep = newStep
 
-            val sourceX = (canvasSourceX / stepX).roundToInt()
-            val sourceY = (canvasSourceY / stepY).roundToInt()
-            val x = ((mouseX - 1) / stepX).roundToInt()
-            val y = ((mouseY ) / stepY).roundToInt()
-            drawOnSimulation(canvasSourceX, canvasSourceY, mouseX, mouseY, sourceX, sourceY, x, y, drawStep)
-        } else {
-            val paintElement = object : DisplayElement {
-                override fun draw(gc: CanvasRenderingContext2D) {
-                    gc.save()
-
-                    gc.beginPath()
-
-                    val factor = if (selectedTool == EditTools.Spray) 4 else 1
-                    val brushSize = ToolSize.valueOf(sizeDropdown.text).size
-                    val size = brushSize * factor
-                    val radiusX = size * stepX / 2.0
-                    val radiusY = size * stepY / 2.0
-                    gc.ellipse(mouseX, mouseY, radiusX, radiusY, (mouseX + mouseY) / 20, 0.0, 6.30 /* 2pi */)
-
-                    gc.strokeStyle = "black"
-                    gc.lineWidth = 1.0
-
-                    when (selectedTool) {
-                        EditTools.Eraser -> {
-                            gc.globalAlpha = 0.7
-                            gc.fillStyle = "white"
-                        }
-                        EditTools.Spray -> {
-                            gc.globalAlpha = 0.3
-                            gc.fillStyle = selectedGrainController.data?.color ?: "grey"
-                        }
-                        else -> {
-                            gc.globalAlpha = 0.7
-                            gc.fillStyle = selectedGrainController.data?.color ?: "grey"
-                        }
-                    }
-
-                    gc.fill()
-                    gc.globalAlpha = 1.0
-                    gc.stroke()
-
-                    gc.restore()
-                }
-            }
-
-
-            toolElement = when {
-                selectedTool == EditTools.Pen && selectedGrainController.data != null -> paintElement
-                selectedTool == EditTools.Spray && selectedGrainController.data != null -> paintElement
-                selectedTool == EditTools.Eraser -> paintElement
-                else -> null
-            }
-            refresh()
+            drawOnSimulation(drawStep)
         }
+
+        toolElement = when {
+            selectedTool == EditTools.Pen && selectedGrainController.data != null -> roundDrawElement
+            selectedTool == EditTools.Spray && selectedGrainController.data != null -> roundDrawElement
+            selectedTool == EditTools.Eraser -> roundDrawElement
+            selectedTool == EditTools.Line && drawStep > 0 -> lineDrawElement
+            else -> null
+        }
+        refresh()
     }
 
     fun selectTool(tool: EditTools) {

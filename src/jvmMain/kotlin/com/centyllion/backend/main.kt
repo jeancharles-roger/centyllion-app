@@ -202,7 +202,9 @@ fun Application.centyllion(
             if (verifier != null) {
                 verifier(verifier)
             } else {
-                verifier(makeJwkProvider(), authBase)
+                verifier(makeJwkProvider(), authBase) {
+                    acceptLeeway(5)
+                }
             }
             realm = authRealm
             validate { if (it.payload.audience?.contains(authClient) == true) JWTPrincipal(it.payload) else null }

@@ -191,7 +191,7 @@ class SimulatorEditController(
     fun toSimulationY(canvasY: Double) = ((canvasY - 1) / stepY).roundToInt()
 
     fun toCanvasX(simulationX: Int) = simulationX * stepX + stepX/2.0
-    fun toCanvasY(simulationY: Int) = simulationY * stepY + stepY
+    fun toCanvasY(simulationY: Int) = simulationY * stepY + stepY/2.0
 
     fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
         val size = ToolSize.valueOf(sizeDropdown.text).size * factor

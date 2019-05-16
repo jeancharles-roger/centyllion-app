@@ -1,10 +1,15 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
+import bulma.Title
+import bulma.div
+import bulma.noContextColumnsController
+import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.page.AdministrationPage
 import com.centyllion.client.page.HomePage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.common.adminRole
+import com.centyllion.model.FeaturedDescription
 import keycloak.KeycloakInstance
 
 data class Page(
@@ -21,9 +26,26 @@ data class Page(
 const val contentSelector = "section.cent-main"
 
 val homePage = Page("Home", "home", true, null, ::HomePage)
+val explorePage = Page("Explore", "explore", false, null, ::explore)
 val showPage = Page("Show", "show", false, null, ::ShowPage)
 val administrationPage = Page("Administration", "administration", true, adminRole, ::AdministrationPage)
 
-val header = listOf(homePage, administrationPage)
+val header = listOf(homePage, explorePage, administrationPage)
 
+fun explore(appContext: AppContext): BulmaElement {
+    val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
+    { parent, data ->
+        val controller = FeaturedController(data)
+        controller.body.root.onclick = {
+            openPage(showPage, appContext, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+        }
+        controller.body.root.style.cursor = "pointer"
+        controller
+    }
+    val page = div(
+        Title("Explore featured models"), featuredController
+    )
 
+    appContext.api.fetchAllFeatured().then { models -> featuredController.data = models }
+    return page
+}

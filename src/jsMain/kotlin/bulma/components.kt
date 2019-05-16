@@ -71,7 +71,9 @@ class CardHeader(text: String = "", icon: Icon? = null) : CardItem {
 
     override var text
         get() = titleNode.innerText
-        set(value) { titleNode.innerText = value }
+        set(value) {
+            titleNode.innerText = value
+        }
 
     var icon by bulma(icon, root)
 
@@ -83,13 +85,13 @@ class CardImage(image: Image) : CardItem {
     var image by bulma(image, root)
 }
 
-class CardContent(vararg body: BulmaElement): CardItem {
+class CardContent(vararg body: BulmaElement) : CardItem {
     override val root = document.create.header("card-content")
 
     var body by bulmaList(body.toList(), root)
 }
 
-interface CardFooterItem: BulmaElement
+interface CardFooterItem : BulmaElement
 
 class CardFooterLinkItem(
     text: String, href: String? = null, onClick: (CardFooterLinkItem) -> Unit = {}
@@ -112,7 +114,7 @@ class CardFooterContentItem(vararg content: BulmaElement) : CardFooterItem {
     var content by bulmaList(content.toList(), root)
 }
 
-class CardFooter(vararg body: CardFooterItem): CardItem {
+class CardFooter(vararg body: CardFooterItem) : CardItem {
     override val root = document.create.header("card-footer")
 
     var body by bulmaList(body.toList(), root)
@@ -130,13 +132,18 @@ class Card(
 
 interface DropdownItem : BulmaElement
 
-class DropdownSimpleItem(text: String, icon: Icon? = null, onSelect: (DropdownSimpleItem) -> Unit = {}) : DropdownItem {
-    override val root = document.create.a(null, "dropdown-item") {
+class DropdownSimpleItem(
+    text: String, icon: Icon? = null, disabled: Boolean = false,
+    onSelect: (DropdownSimpleItem) -> Unit = {}
+) : DropdownItem {
+    override val root: HTMLElement = document.create.a(null, "dropdown-item") {
         span { +text }
-        onClickFunction = { onSelect(this@DropdownSimpleItem) }
+        onClickFunction = { if (!this@DropdownSimpleItem.disabled) onSelect(this@DropdownSimpleItem) }
     }
 
     private val textNode = root.querySelector("span") as HTMLElement
+
+    var disabled by className(disabled, "is-disabled", root)
 
     override var text: String
         get() = textNode.innerText
@@ -291,7 +298,8 @@ class Modal(vararg content: BulmaElement) : BulmaElement {
 class ModalCard(
     text: String,
     body: List<BulmaElement> = listOf(),
-    buttons: List<Button> = listOf()
+    buttons: List<Button> = listOf(),
+    onClose: (ModalCard) -> Unit = {}
 ) : BulmaElement {
     override val root: HTMLElement = document.create.div("modal") {
         div("modal-background") {
@@ -315,6 +323,7 @@ class ModalCard(
     private val footNode = root.querySelector("footer.modal-card-foot") as HTMLElement
 
     var active by className(false, "is-active", root)
+    { _, _, new -> if (!new) onClose(this@ModalCard) }
 
     override var text: String
         get() = titleNode.innerText
@@ -467,7 +476,7 @@ class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
 
 class PanelSimpleBlock(text: String, icon: String, var onClick: (PanelSimpleBlock) -> Unit = {}) : PanelItem {
 
-    override val root: HTMLElement = document.create.a(classes="panel-block") {
+    override val root: HTMLElement = document.create.a(classes = "panel-block") {
         span { +text }
         onClickFunction = { onClick(this@PanelSimpleBlock) }
     }

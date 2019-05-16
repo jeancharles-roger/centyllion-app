@@ -4821,6 +4821,14 @@ button.dropdown-item.is-active {
   background-color: #3273dc;
   color: #fff;
 }
+a.dropdown-item.is-disabled,
+button.dropdown-item.is-disabled {
+  color: #dbdbdb;
+}
+a.dropdown-item.is-disabled:hover,
+button.dropdown-item.is-disabled:hover {
+  background-color: white;
+}
 
 .dropdown-divider {
   background-color: #dbdbdb;

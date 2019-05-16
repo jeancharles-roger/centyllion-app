@@ -5,6 +5,8 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.EditableStringController
 import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
+import com.centyllion.client.homePage
+import com.centyllion.client.openPage
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -139,17 +141,29 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
 
-    val publishModelItem = DropdownSimpleItem("Publish Model", Icon(shareIcon)) { toggleModelPublication() }
-    val publishSimulationItem = DropdownSimpleItem("Publish Simulation", Icon(shareIcon)) { toggleSimulationPublication() }
+    val publishModelItem = DropdownSimpleItem(
+        "Publish Model", Icon(shareIcon, color = TextColor.Success)
+    ) { toggleModelPublication() }
+
+    val publishSimulationItem = DropdownSimpleItem(
+        "Publish Simulation", Icon(shareIcon, color = TextColor.Success)
+    ) { toggleSimulationPublication() }
+
+    val deleteModelItem = DropdownSimpleItem(
+        "Delete Model", Icon(deleteIcon, color = TextColor.Danger)
+    ) { deleteModel() }
+
+    val deleteSimulationItem = DropdownSimpleItem(
+        "Delete Simulation", Icon(deleteIcon, color = TextColor.Danger)
+    ) { deleteSimulation() }
 
     val moreDropdown = Dropdown(
         publishModelItem, publishSimulationItem,
         DropdownDivider(),
-        DropdownSimpleItem("New Simulation", Icon(newIcon)) { newSimulation() },
+        DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() },
         DropdownDivider(),
-        DropdownSimpleItem("Delete Model", Icon(deleteIcon)),
-        DropdownSimpleItem("Delete Simulation", Icon(deleteIcon)),
-        text= "\u2026", right = true, rounded = true
+        deleteModelItem, deleteSimulationItem,
+        text = "\u2026", right = true, rounded = true
     ) { refreshMoreButtons() }
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
@@ -319,6 +333,59 @@ class ShowPage(val context: AppContext) : BulmaElement {
         context.message("New simulation")
     }
 
+    fun deleteModel() {
+        moreDropdown.active = false
+
+        val modal = ModalCard(
+            "Delete model ${model.model.name} ?",
+            listOf(
+                span("You're about to delete the model ${model.model.name} and its simulations."),
+                SubTitle("Are you sure ?")
+            )
+        ) { context.root.removeChild(it.root) }
+
+        modal.buttons = listOf(
+            textButton("Yes") {
+                context.api.deleteGrainModel(model).then {
+                    openPage(homePage, context)
+                    context.message("Model ${model.model.name} deleted")
+                }
+            },
+            textButton("No") { modal.active = false }
+        )
+
+        context.root.appendChild(modal.root)
+        modal.active = true
+    }
+
+    fun deleteSimulation() {
+        moreDropdown.active = false
+
+        val modal = ModalCard(
+            "Delete simulation ${simulation.simulation.name} ?",
+            listOf(
+                span("You're about to delete the simulation ${simulation.simulation.name}."),
+                SubTitle("Are you sure ?")
+            )
+        ) { context.root.removeChild(it.root) }
+
+        modal.buttons = listOf(
+            textButton("Yes") {
+                context.api.deleteSimulation(simulation).then {
+                    context.message("Simulation ${simulation.simulation.name} deleted")
+                    context.api.fetchSimulations(model.id, false)
+                }.then {
+                    setSimulation(it.firstOrNull() ?: emptySimulationDescription)
+                    modal.active = false
+                }
+            },
+            textButton("No") { modal.active = false }
+        )
+
+        context.root.appendChild(modal.root)
+        modal.active = true
+    }
+
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
@@ -343,7 +410,16 @@ class ShowPage(val context: AppContext) : BulmaElement {
     }
 
     fun refreshMoreButtons() {
+        publishModelItem.disabled = model.id.isEmpty()
+        publishModelItem.icon?.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
         publishModelItem.text = "${if (model.info.readAccess) "Un-" else ""}Publish Model"
+
+        publishSimulationItem.disabled = simulation.id.isEmpty()
+        publishSimulationItem.icon?.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
         publishSimulationItem.text = "${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation"
+
+        deleteModelItem.disabled = model.id.isEmpty()
+
+        deleteSimulationItem.disabled = simulation.id.isEmpty()
     }
 }

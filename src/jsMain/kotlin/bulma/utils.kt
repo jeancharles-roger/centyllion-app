@@ -213,7 +213,8 @@ fun <T : BulmaElement> embeddedBulmaList(
 class BooleanClassProperty(
     initialValue: Boolean,
     private val className: String,
-    private val node: HTMLElement
+    private val node: HTMLElement,
+    val onChange: (String, Boolean, Boolean) -> Unit = { _, _, _ -> }
 ) : ReadWriteProperty<Any?, Boolean> {
 
     private var value = initialValue
@@ -225,6 +226,7 @@ class BooleanClassProperty(
         if (oldValue != value) {
             this.value = value
             node.classList.toggle(className, value)
+            onChange(className, oldValue, value)
         }
     }
 
@@ -296,8 +298,10 @@ class ClassProperty<T : HasClassName>(
     }
 }
 
-fun className(initialValue: Boolean, className: String, node: HTMLElement) =
-    BooleanClassProperty(initialValue, className, node)
+fun className(
+    initialValue: Boolean, className: String, node: HTMLElement,
+    onChange: (String, Boolean, Boolean) -> Unit = { _, _, _ -> }
+) = BooleanClassProperty(initialValue, className, node, onChange)
 
 fun <T : HasClassName> className(initialValue: T, node: HTMLElement, prefix: String = "", suffix: String = "") =
     ClassProperty(initialValue, node, prefix, suffix)

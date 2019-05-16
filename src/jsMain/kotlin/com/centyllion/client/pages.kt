@@ -3,10 +3,8 @@ package com.centyllion.client
 import bulma.BulmaElement
 import com.centyllion.client.page.AdministrationPage
 import com.centyllion.client.page.HomePage
-import com.centyllion.client.page.ModelPage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.common.adminRole
-import com.centyllion.common.modelRole
 import keycloak.KeycloakInstance
 
 data class Page(
@@ -22,13 +20,10 @@ data class Page(
 
 const val contentSelector = "section.cent-main"
 
-val pages = listOf(
-    Page("Home", "home", true, null, true, ::HomePage),
-    Page("Model", "model", true, modelRole, true, ::ModelPage),
-    Page("Administration", "administration", true, adminRole, true, ::AdministrationPage),
-    Page("Show", "show", false, null, false, ::ShowPage)
-)
+val homePage = Page("Home", "home", true, null, true, ::HomePage)
+val showPage = Page("Show", "show", false, null, false, ::ShowPage)
+val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
 
-val mainPage = pages[0]
+val pages = listOf(homePage, administrationPage, showPage)
 
-val showPage = pages.find { it.id == "show" }!!
+

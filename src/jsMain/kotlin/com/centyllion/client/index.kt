@@ -65,7 +65,7 @@ fun index() {
 
             console.log("Starting function")
 
-            openPage(findPageInUrl() ?: mainPage, context, register = false)
+            openPage(findPageInUrl() ?: homePage, context, register = false)
         }.catch {
             val context = BrowserContext(navBar, root, keycloak, null, api)
             context.error(it)
@@ -158,7 +158,7 @@ class BrowserContext(
 
     override fun warning(content: String) = event(content, ElementColor.Warning)
 
-    override fun message(content: String) = event(content, ElementColor.None)
+    override fun message(content: String) = event(content, ElementColor.Info)
 
     private fun event(content: String, color: ElementColor) {
         val date = Date().toISOString()

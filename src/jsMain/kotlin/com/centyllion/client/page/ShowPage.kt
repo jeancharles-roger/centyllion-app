@@ -16,6 +16,8 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val saveIcon = "cloud-upload-alt"
     val shareIcon = "share-square"
+    val newIcon = "plus"
+    val deleteIcon = "trash"
 
     val api = context.api
 
@@ -137,15 +139,18 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
 
-    val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { togglePublication() }
+    val publishModelItem = DropdownSimpleItem("Publish Model", Icon(shareIcon)) { toggleModelPublication() }
+    val publishSimulationItem = DropdownSimpleItem("Publish Simulation", Icon(shareIcon)) { toggleSimulationPublication() }
 
     val moreDropdown = Dropdown(
-        DropdownSimpleItem("New Simulation"),
+        publishModelItem, publishSimulationItem,
         DropdownDivider(),
-        DropdownSimpleItem("Delete Simulation"),
-        DropdownSimpleItem("Delete Model"),
-        right = true
-    )
+        DropdownSimpleItem("New Simulation", Icon(newIcon)) { newSimulation() },
+        DropdownDivider(),
+        DropdownSimpleItem("Delete Model", Icon(deleteIcon)),
+        DropdownSimpleItem("Delete Simulation", Icon(deleteIcon)),
+        text= "\u2026", right = true, rounded = true
+    ) { refreshMoreButtons() }
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
@@ -154,7 +159,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val redoControl = Control(redoModelButton)
 
     val tools = Field(
-        undoControl, redoControl, Control(saveButton), Control(publishButton), Control(moreDropdown),
+        undoControl, redoControl, Control(saveButton), Control(moreDropdown),
         grouped = true
     )
 
@@ -180,7 +185,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         val modelId = params.get("model")
 
         // Selects model tab if there no simulation provided
-        if (simulationId == null) editionTab.selectPage(modelPage)
+        if (simulationId == null) editionTab.selectedPage = modelPage
 
         // selects the pair simulation and model to run
         val result = when {
@@ -202,22 +207,26 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
 
         result.then {
-            setModelAndSimulation(it.second, it.first)
+            setSimulation(it.first)
+            setModel(it.second)
         }.catch {
             context.error(it)
         }
     }
 
-    fun setModelAndSimulation(model: GrainModelDescription, simulation: SimulationDescription) {
-        this.originalSimulation = simulation
-        this.simulation = originalSimulation
-        this.simulationHistory = emptyList()
-        this.simulationFuture = emptyList()
-
+    fun setModel(model: GrainModelDescription) {
         this.originalModel = model
         this.model = originalModel
         this.modelHistory = emptyList()
         this.modelFuture = emptyList()
+        refreshButtons()
+    }
+
+    fun setSimulation(simulation: SimulationDescription) {
+        this.originalSimulation = simulation
+        this.simulation = originalSimulation
+        this.simulationHistory = emptyList()
+        this.simulationFuture = emptyList()
         refreshButtons()
     }
 
@@ -286,12 +295,28 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    private val canPublish get() = !model.info.readAccess || !simulation.info.readAccess
-
-    fun togglePublication() {
-        model = model.copy(info = model.info.copy(readAccess = canPublish))
-        simulation = simulation.copy(info = simulation.info.copy(readAccess = canPublish))
+    fun toggleModelPublication() {
+        val readAccess = !model.info.readAccess
+        model = model.copy(info = model.info.copy(readAccess = readAccess))
+        moreDropdown.active = false
+        context.message("${if (!readAccess) "Un-" else ""}Published model")
         save()
+    }
+
+    fun toggleSimulationPublication() {
+        val readAccess = !simulation.info.readAccess
+        simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
+        moreDropdown.active = false
+        context.message("${if (!readAccess) "Un-" else ""}Published simulation")
+        save()
+    }
+
+    fun newSimulation() {
+        save()
+        setSimulation(emptySimulationDescription)
+        moreDropdown.active = false
+        editionTab.selectedPage = simulationPage
+        context.message("New simulation")
     }
 
     fun refreshButtons() {
@@ -315,6 +340,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
         undoSimulationButton.disabled = simulationHistory.isEmpty()
         redoSimulationButton.disabled = simulationFuture.isEmpty()
         saveButton.disabled = model == originalModel && simulation == originalSimulation
-        publishButton.title = if (!canPublish) "Un-Publish" else "Publish"
+    }
+
+    fun refreshMoreButtons() {
+        publishModelItem.text = "${if (model.info.readAccess) "Un-" else ""}Publish Model"
+        publishSimulationItem.text = "${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation"
     }
 }

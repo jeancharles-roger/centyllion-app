@@ -585,17 +585,22 @@ class TabPages(
         }
     }
 
-    val selectedPage get() = pages.firstOrNull { it.title.active }
+    var selectedPage
+        get() = pages.firstOrNull { it.title.active }
+        set(value) = selectPage(value)
 
-    fun selectPage(page: TabPage, notify: Boolean = true) {
+
+    private fun selectPage(page: TabPage?, notify: Boolean = true) {
         pages.forEach {
             it.body.hidden = true
             it.title.active = false
         }
 
-        page.body.hidden = false
-        page.title.active = true
-        if (notify) onTabChange(page)
+        page?.let {
+            it.body.hidden = false
+            it.title.active = true
+            if (notify) onTabChange(it)
+        }
     }
 
 }

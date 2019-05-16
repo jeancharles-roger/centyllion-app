@@ -167,14 +167,22 @@ fun Application.centyllion(
     // TODO create nice error pages
     install(StatusPages) {
         exception<Throwable> { cause ->
-            if (debug) cause.printStackTrace()
+            when {
+                cause is IllegalArgumentException &&
+                    cause.message.toString().contains("Invalid UUID string") -> {
+                        call.respond(HttpStatusCode.NotFound)
+                }
+                else -> {
+                    if (debug) cause.printStackTrace()
 
-            // insert an event when see a problem
-            val principal = call.principal<JWTPrincipal>()
-            val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
-            val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
-            // TODO reponds error
-            call.respond(HttpStatusCode.InternalServerError)
+                    // insert an event when see a problem
+                    val principal = call.principal<JWTPrincipal>()
+                    val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
+                    val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
+                    // TODO reponds error
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
+            }
         }
 
         status(HttpStatusCode.NotFound) {

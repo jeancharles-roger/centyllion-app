@@ -132,9 +132,17 @@ interface DropdownItem : BulmaElement
 
 class DropdownSimpleItem(text: String, icon: Icon? = null, onSelect: (DropdownSimpleItem) -> Unit = {}) : DropdownItem {
     override val root = document.create.a(null, "dropdown-item") {
-        +text
+        span { +text }
         onClickFunction = { onSelect(this@DropdownSimpleItem) }
     }
+
+    private val textNode = root.querySelector("span") as HTMLElement
+
+    override var text: String
+        get() = textNode.innerText
+        set(value) {
+            textNode.innerText = value
+        }
 
     var icon by bulma(icon, root, Position.AfterBegin)
 }

@@ -476,7 +476,7 @@ class PanelSimpleBlock(text: String, icon: String, var onClick: (PanelSimpleBloc
 }
 
 class PanelContentBlock(vararg content: BulmaElement) : PanelItem {
-    override val root: HTMLElement = document.create.div("panel-block")
+    override val root: HTMLElement = document.create.a(classes = "panel-block")
 
     var content by bulmaList(content.toList(), root)
 

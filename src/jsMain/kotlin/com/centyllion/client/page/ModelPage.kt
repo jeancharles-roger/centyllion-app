@@ -130,7 +130,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
             }
         }
 
-    val modelSelect = Dropdown("", rounded = true)
+    val modelSelect = Dropdown(rounded = true)
 
     val newModelButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         models += emptyGrainModelDescription
@@ -161,7 +161,7 @@ class ModelPage(val context: AppContext) : BulmaElement {
         addons = true
     )
 
-    val simulationSelect = Dropdown("", rounded = true)
+    val simulationSelect = Dropdown(rounded = true)
 
     val newSimulationButton = iconButton(Icon(newIcon), color = ElementColor.Primary, rounded = true) {
         simulations += emptySimulationDescription

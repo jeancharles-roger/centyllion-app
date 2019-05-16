@@ -31,7 +31,7 @@ class GrainSelectController(
 
     val icon = Icon(data?.icon ?: "circle")
 
-    val dropdown: Dropdown = Dropdown(grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
+    val dropdown: Dropdown = Dropdown(text = grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
 
     override val container: Field = Field(Control(dropdown))
 

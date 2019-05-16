@@ -34,7 +34,7 @@ class SourceReactiveSelectController(
         root.style.color = indexColor(data)
     }
 
-    val dropdown: Dropdown = Dropdown(indexLabel(data), icon = icon, rounded = true).apply { items = items() }
+    val dropdown: Dropdown = Dropdown(text = indexLabel(data), icon = icon, rounded = true).apply { items = items() }
 
     override val container: Field = Field(Control(dropdown))
 

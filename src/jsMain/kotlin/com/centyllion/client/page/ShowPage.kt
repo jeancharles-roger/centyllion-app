@@ -139,11 +139,22 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val publishButton = Button("Publish", Icon(shareIcon), rounded = true) { togglePublication() }
 
+    val moreDropdown = Dropdown(
+        DropdownSimpleItem("New Simulation"),
+        DropdownDivider(),
+        DropdownSimpleItem("Delete Simulation"),
+        DropdownSimpleItem("Delete Model"),
+        right = true
+    )
+
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
 
+    val undoControl = Control(undoModelButton)
+    val redoControl = Control(redoModelButton)
+
     val tools = Field(
-        Control(undoModelButton), Control(redoModelButton), Control(saveButton), Control(publishButton),
+        undoControl, redoControl, Control(saveButton), Control(publishButton), Control(moreDropdown),
         grouped = true
     )
 
@@ -287,21 +298,15 @@ class ShowPage(val context: AppContext) : BulmaElement {
         when (editionTab.selectedPage) {
             modelPage -> {
                 val readonly = model.id.isNotEmpty() && model.info.userId != context.me?.id
-                tools.body = if (readonly) emptyList() else listOf(
-                    Control(undoModelButton),
-                    Control(redoModelButton),
-                    Control(saveButton),
-                    Control(publishButton)
-                )
+                tools.hidden = readonly
+                undoControl.body = undoModelButton
+                redoControl.body = redoModelButton
             }
             simulationPage -> {
                 val readonly = simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
-                tools.body = if (readonly) emptyList() else listOf(
-                    Control(undoSimulationButton),
-                    Control(redoSimulationButton),
-                    Control(saveButton),
-                    Control(publishButton)
-                )
+                tools.hidden = readonly
+                undoControl.body = undoSimulationButton
+                redoControl.body = redoSimulationButton
             }
         }
 

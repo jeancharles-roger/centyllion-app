@@ -47,7 +47,7 @@ class GrainModelFeaturedController(
         }
     }
 
-    val simulationDropDown = Dropdown("Simulations", rounded = true, icon = Icon("play")) { dropdown ->
+    val simulationDropDown = Dropdown(text = "Simulations", rounded = true, icon = Icon("play")) { dropdown ->
         dropdown.items = listOf(DropdownSimpleItem("Loading", Icon("sync", spin = true)))
         api.fetchSimulations(model.id, true).then { simulations ->
             dropdown.items = simulations.map { simulation ->

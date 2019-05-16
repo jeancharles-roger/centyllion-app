@@ -150,8 +150,10 @@ class DropdownDivider : DropdownItem {
 
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
 class Dropdown(
-    text: String, vararg items: DropdownItem,
-    rounded: Boolean = false, icon: Icon? = null, dropDownIcon: String = "angle-down",
+    vararg items: DropdownItem,
+    text: String = "", icon: Icon? = null,
+    rounded: Boolean = false, hoverable: Boolean = false, right: Boolean = false, up: Boolean = false,
+    dropDownIcon: String = "angle-down",
     var onDropdown: (Dropdown) -> Unit = {}
 ) : ControlElement {
 
@@ -208,6 +210,12 @@ class Dropdown(
     }
 
     var rounded by className(rounded, "is-rounded", buttonNode)
+
+    var hoverable by className(hoverable, "is-hoverable", root)
+
+    var right by className(right, "is-right", root)
+
+    var up by className(up, "is-up", root)
 
     var menuSize: String
         get() = menuNode.style.width

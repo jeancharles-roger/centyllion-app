@@ -326,7 +326,7 @@ class SimulatorEditController(
 
     val selectedGrainController = GrainSelectController(data.model.grains.firstOrNull(), data.model.grains)
 
-    val sizeDropdown = Dropdown(ToolSize.Fine.name, rounded = true).apply {
+    val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->
             DropdownSimpleItem(size.name) {
                 this.text = size.name

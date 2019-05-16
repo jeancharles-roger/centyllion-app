@@ -30,7 +30,7 @@ class ColorSelectController(
         columns = colorNames.keys.map { column(it) }
     }
 
-    override val container = Dropdown("", icon = icon, rounded = true).apply {
+    override val container = Dropdown(icon = icon, rounded = true).apply {
         menuSize = "30rem"
         items = listOf(
             DropdownContentItem(Field(

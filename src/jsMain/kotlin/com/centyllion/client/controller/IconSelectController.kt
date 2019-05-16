@@ -30,7 +30,7 @@ class IconSelectController(
         columns = solidIconNames.keys.map { column(it) }
     }
 
-    override val container = Dropdown(data, icon = icon, rounded = true).apply {
+    override val container = Dropdown(text = data, icon = icon, rounded = true).apply {
         menuSize = "30rem"
         items = listOf(
             DropdownContentItem(Field(

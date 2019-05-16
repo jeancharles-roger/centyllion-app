@@ -56,8 +56,8 @@ fun index() {
             })
 
             // adds menu
-            context.navBar.start = pages
-                .filter { page -> page.header && page.authorized(context.keycloak) }
+            context.navBar.start = header
+                .filter { page -> page.authorized(context.keycloak) }
                 .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
 
             // shows version
@@ -118,7 +118,7 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters
             params.set("page", page.id)
             page
         } else {
-            pages.find { it.id == params.get("page") }
+            header.find { it.id == params.get("page") }
         }
 
         // registers page to history if needed
@@ -134,7 +134,7 @@ fun getLocationParams(name: String) = URLSearchParams(window.location.search).ge
 fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
-    return params.get("page")?.let { id -> pages.find { it.id == id } }
+    return params.get("page")?.let { id -> header.find { it.id == id } }
 }
 
 class BrowserContext(

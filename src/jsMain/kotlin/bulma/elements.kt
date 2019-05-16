@@ -212,7 +212,7 @@ class Tags(tags: List<Tag> = emptyList()) : BulmaElement {
 
     override val root: HTMLElement = document.create.div("tags")
 
-    var tags by bulmaList<Tag>(tags, root)
+    var tags by bulmaList(tags, root)
 }
 
 class Title(text: String, size: TextSize = TextSize.None) : BulmaElement {

@@ -22,11 +22,14 @@ class HomePage(val context: AppContext) : BulmaElement {
             if (new != old) refresh()
         }
 
-        override val container = PanelSimpleBlock(data.label, data.icon)
+        override val container = PanelSimpleBlock(data.label, data.icon).apply {
+            root.classList.toggle("has-text-weight-bold", data is GrainModelDescription)
+        }
 
         override var readOnly = false
 
         override fun refresh() {
+            root.classList.toggle("has-text-weight-bold", data is GrainModelDescription)
             container.text = data.label
             container.icon = data.icon
         }

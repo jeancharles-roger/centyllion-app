@@ -163,7 +163,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() },
         DropdownDivider(),
         deleteModelItem, deleteSimulationItem,
-        text = "\u2026", right = true, rounded = true
+        icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)

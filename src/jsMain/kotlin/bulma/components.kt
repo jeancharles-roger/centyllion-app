@@ -166,7 +166,7 @@ class DropdownDivider : DropdownItem {
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
 class Dropdown(
     vararg items: DropdownItem,
-    text: String = "", icon: Icon? = null,
+    text: String = "", icon: Icon? = null, color: ElementColor = ElementColor.None,
     rounded: Boolean = false, hoverable: Boolean = false, right: Boolean = false, up: Boolean = false,
     dropDownIcon: String = "angle-down",
     var onDropdown: (Dropdown) -> Unit = {}
@@ -219,6 +219,8 @@ class Dropdown(
         }
 
     var icon by bulma(icon, buttonNode, Position.AfterBegin)
+
+    var color by className(color, buttonNode)
 
     var items by bulmaList(items.toList(), contentNode) {
         it.root.apply { if (!classList.contains("dropdown-divider")) classList.add("dropdown-item") }

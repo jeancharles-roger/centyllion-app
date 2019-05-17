@@ -4821,12 +4821,12 @@ button.dropdown-item.is-active {
   background-color: #3273dc;
   color: #fff;
 }
-a.dropdown-item.is-disabled,
-button.dropdown-item.is-disabled {
+a.dropdown-item.is-disable,
+button.dropdown-item.is-disable {
   color: #dbdbdb;
 }
-a.dropdown-item.is-disabled:hover,
-button.dropdown-item.is-disabled:hover {
+a.dropdown-item.is-disable:hover,
+button.dropdown-item.is-disable:hover {
   background-color: white;
 }
 
@@ -4836,6 +4836,57 @@ button.dropdown-item.is-disabled:hover {
   display: block;
   height: 1px;
   margin: 0.5rem 0;
+}
+
+.dropdown-trigger > button.button.is-white {
+  background-color: white;
+  border-color: transparent;
+  color: #0a0a0a;
+}
+.dropdown-trigger > button.button.is-black {
+  background-color: #0a0a0a;
+  border-color: transparent;
+  color: white;
+}
+.dropdown-trigger > button.button.is-light {
+  background-color: #03396c;
+  border-color: transparent;
+  color: #6497b1;
+}
+.dropdown-trigger > button.button.is-dark {
+  background-color: #6497b1;
+  border-color: transparent;
+  color: #03396c;
+}
+.dropdown-trigger > button.button.is-primary {
+  background-color: #011f4b;
+  border-color: transparent;
+  color: #fff;
+}
+.dropdown-trigger > button.button.is-link {
+  background-color: #3273dc;
+  border-color: transparent;
+  color: #fff;
+}
+.dropdown-trigger > button.button.is-info {
+  background-color: #6497b1;
+  border-color: transparent;
+  color: #fff;
+}
+.dropdown-trigger > button.button.is-success {
+  background-color: #3fde77;
+  border-color: transparent;
+  color: rgba(0, 0, 0, 0.7);
+}
+.dropdown-trigger > button.button.is-warning {
+  background-color: #ffdd57;
+  border-color: transparent;
+  color: rgba(0, 0, 0, 0.7);
+}
+.dropdown-trigger > button.button.is-danger {
+  background-color: #ff6181;
+  border-color: transparent;
+  color: #fff;
 }
 
 .level {

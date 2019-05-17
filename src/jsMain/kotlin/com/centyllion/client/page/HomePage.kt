@@ -6,6 +6,7 @@ import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.UserController
 import com.centyllion.client.openPage
 import com.centyllion.client.showPage
+import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
@@ -15,23 +16,23 @@ import kotlin.properties.Delegates.observable
 
 class HomePage(val context: AppContext) : BulmaElement {
 
-    class PanelItemController(source: Any) : NoContextController<Any, PanelSimpleBlock>() {
+    class PanelItemController(source: Description) : NoContextController<Description, PanelSimpleBlock>() {
 
         override var data by observable(source) { _, old, new ->
             if (new != old) refresh()
         }
 
-        override val container = PanelSimpleBlock(elementText(source), elementIcon(source))
+        override val container = PanelSimpleBlock(data.label, data.icon)
 
         override var readOnly = false
 
         override fun refresh() {
-            container.text = elementText(data)
-            container.icon = elementIcon(data)
+            container.text = data.label
+            container.icon = data.icon
         }
     }
 
-    var elements by observable(listOf<Any>()) { _, old, new ->
+    var elements by observable(listOf<Description>()) { _, old, new ->
         if (new != old) {
             updateElements()
         }
@@ -61,7 +62,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     }
 
     val panelController = noContextPanelController(
-        Panel("My models and simulations"), emptyList<Any>(),
+        Panel("My models and simulations"), emptyList<Description>(),
         header = listOf(
             PanelContentBlock(Control(newModelButton)),
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
@@ -141,19 +142,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         val visibleElements = visibleElements()
         panelController.data = elements.filter {
             visibleElements.contains(it::class) &&
-                    (search.isEmpty() || elementText(it).contains(search, true))
+                    (search.isEmpty() || it.label.contains(search, true))
         }
     }
-}
-
-private fun elementText(source: Any) = when (source) {
-    is GrainModelDescription -> source.model.name.let { if (it.isNotEmpty()) it else source.id }
-    is SimulationDescription -> source.simulation.name.let { if (it.isNotEmpty()) it else source.id }
-    else -> source.toString()
-}
-
-private fun elementIcon(source: Any) = when (source) {
-    is GrainModelDescription -> "boxes"
-    is SimulationDescription -> "play"
-    else -> "question"
 }

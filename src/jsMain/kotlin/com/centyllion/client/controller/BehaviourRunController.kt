@@ -24,7 +24,7 @@ class BehaviourRunController(
     override var readOnly = false
 
     val titleLabel = Label(behaviour.name)
-    val descriptionLabel = p().apply { text = behaviour.description }
+    val descriptionLabel = p(behaviour.description)
 
     val header = Level(listOf(titleLabel), grains(), mobile = true)
 

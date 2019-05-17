@@ -18,13 +18,10 @@ fun div(vararg body: BulmaElement, classes: String = "") =
     }
 
 fun span(text: String = "", classes: String = "") =
-    HtmlWrapper(document.create.span(classes) {
-        +text
-    })
+    HtmlWrapper(document.create.span(classes) { +text })
 
-fun p(vararg body: BulmaElement, classes: String = "") = HtmlWrapper(document.create.span(classes)).apply {
-    body.forEach { root.appendChild(it.root) }
-}
+fun p(text: String = "", classes: String = "") =
+    HtmlWrapper(document.create.p(classes) { +text })
 
 fun canvas(classes: String? = null, block: CANVAS.() -> Unit = {}) =
     HtmlWrapper(document.create.canvas(classes, block) as HTMLCanvasElement)
@@ -153,7 +150,7 @@ class TileChild(vararg body: BulmaElement, size: TileSize = TileSize.None, verti
 }
 
 /** Tile with no class ore Parent */
-interface TileInner: BulmaElement
+interface TileInner : BulmaElement
 
 /** Parent [Tile](https://bulma.io/documentation/layout/tiles) element */
 class TileParent(vararg body: TileChild, size: TileSize = TileSize.None, vertical: Boolean = false) : TileInner {

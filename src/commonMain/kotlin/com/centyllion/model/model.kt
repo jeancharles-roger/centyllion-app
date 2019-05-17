@@ -247,8 +247,11 @@ data class Simulation(
 
 }
 
-enum class Access {
-    Read, Copy
+interface Description {
+
+    val label: String
+    val icon: String
+
 }
 
 @Serializable
@@ -265,7 +268,12 @@ data class GrainModelDescription(
     val id: String,
     val info: DescriptionInfo,
     val model: GrainModel
-)
+): Description {
+
+    override val label = model.name.let { if (it.isNotEmpty()) it else id }
+
+    override val icon = "boxes"
+}
 
 @Serializable
 data class SimulationDescription(
@@ -274,7 +282,12 @@ data class SimulationDescription(
     val modelId: String,
     val thumbnailId: String?,
     val simulation: Simulation
-)
+): Description {
+
+    override val label = simulation.name.let { if (it.isNotEmpty()) it else id }
+
+    override val icon = "play"
+}
 
 @Serializable
 data class FeaturedDescription(
@@ -287,7 +300,12 @@ data class FeaturedDescription(
     val name: String,
     val description: String,
     val authorName: String
-)
+): Description {
+
+    override val label = name.let { if (it.isNotEmpty()) it else id }
+
+    override val icon = "star"
+}
 
 fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(
     "", "", null, modelId, simulationId, authorId, "", "", ""

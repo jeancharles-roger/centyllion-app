@@ -20,7 +20,7 @@ class Button(
     color: ElementColor = ElementColor.None,
     rounded: Boolean = false, outlined: Boolean = false,
     inverted: Boolean = false, size: Size = Size.None,
-    val onClick: (Button) -> Unit = {}
+    var onClick: (Button) -> Unit = {}
 ) : ControlElement {
 
     override val root: HTMLElement = document.create.button(classes = "button") {

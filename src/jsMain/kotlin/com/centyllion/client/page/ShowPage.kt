@@ -336,53 +336,44 @@ class ShowPage(val context: AppContext) : BulmaElement {
     fun deleteModel() {
         moreDropdown.active = false
 
-        val modal = ModalCard(
-            "Delete model ${model.model.name} ?",
-            listOf(
-                span("You're about to delete the model ${model.model.name} and its simulations."),
-                SubTitle("Are you sure ?")
-            )
-        ) { context.root.removeChild(it.root) }
-
-        modal.buttons = listOf(
-            textButton("Yes") {
+       val modal = context.modalDialog(
+            "Delete model, Are you sure ?",
+            div(
+                p("You're about to delete the model '${model.label}' and its simulations."),
+                p("This action can't be undone.", "has-text-weight-bold")
+            ),
+            textButton("Yes", ElementColor.Danger) {
                 context.api.deleteGrainModel(model).then {
                     openPage(homePage, context)
-                    context.message("Model ${model.model.name} deleted")
+                    context.message("Model ${model.label} deleted")
                 }
             },
-            textButton("No") { modal.active = false }
+            textButton("No")
         )
 
-        context.root.appendChild(modal.root)
         modal.active = true
     }
 
     fun deleteSimulation() {
         moreDropdown.active = false
 
-        val modal = ModalCard(
-            "Delete simulation ${simulation.simulation.name} ?",
-            listOf(
-                span("You're about to delete the simulation ${simulation.simulation.name}."),
-                SubTitle("Are you sure ?")
-            )
-        ) { context.root.removeChild(it.root) }
-
-        modal.buttons = listOf(
-            textButton("Yes") {
+        val modal = context.modalDialog(
+            "Delete simulation, Are you sure ?",
+            div(
+                p("You're about to delete the simulation '${simulation.label}'."),
+                p("This action can't be undone.", "has-text-weight-bold")
+            ),
+            textButton("Yes", ElementColor.Danger) {
                 context.api.deleteSimulation(simulation).then {
-                    context.message("Simulation ${simulation.simulation.name} deleted")
+                    context.message("Simulation ${simulation.label} deleted")
                     context.api.fetchSimulations(model.id, false)
                 }.then {
                     setSimulation(it.firstOrNull() ?: emptySimulationDescription)
-                    modal.active = false
                 }
             },
-            textButton("No") { modal.active = false }
+            textButton("No")
         )
 
-        context.root.appendChild(modal.root)
         modal.active = true
     }
 

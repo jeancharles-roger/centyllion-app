@@ -1,7 +1,6 @@
 package com.centyllion.client
 
-import bulma.ElementColor
-import bulma.NavBar
+import bulma.*
 import com.centyllion.model.User
 import keycloak.KeycloakInstance
 import org.w3c.dom.HTMLElement
@@ -34,4 +33,19 @@ interface AppContext {
     fun warning(content: String)
 
     fun message(content: String)
+
+    fun modalDialog(title: String, body: BulmaElement, vararg buttons: Button): ModalCard {
+        val modal = ModalCard(title, listOf(body)) { root.removeChild(it.root) }
+        // wraps button actions with the closing of the modal dialog
+        modal.buttons = buttons.map {
+            val action = it.onClick
+            it.onClick = {
+                action(it)
+                modal.active = false
+            }
+            it
+        }
+        root.appendChild(modal.root)
+        return modal
+    }
 }

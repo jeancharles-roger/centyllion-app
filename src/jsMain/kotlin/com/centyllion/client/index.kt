@@ -46,6 +46,9 @@ fun index() {
                 val token = keycloak.tokenParsed.asDynamic()
                 userItem.text = token.name as String? ?: token.preferred_username as String ?: "Not named"
                 userItem.href = keycloak.createAccountUrl()
+
+                val logoutItem = NavBarLinkItem("Logout", keycloak.createLogoutUrl(null))
+                navBar.end += logoutItem
             } else {
                 userItem.text = "Log In"
                 userItem.href = keycloak.createLoginUrl(null)
@@ -57,8 +60,8 @@ fun index() {
             })
 
             // adds menu
-            context.navBar.start = header
-                .filter { page -> page.authorized(context.keycloak) }
+            context.navBar.start = pages
+                .filter { page -> page.header && page.authorized(context.keycloak) }
                 .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
 
             // shows version
@@ -66,7 +69,8 @@ fun index() {
 
             console.log("Starting function")
 
-            openPage(findPageInUrl() ?: homePage, context, register = false)
+            val page = findPageInUrl() ?: if (user != null) homePage else explorePage
+            openPage(page, context, register = false)
         }.catch {
             val context = BrowserContext(navBar, root, keycloak, null, api)
             context.error(it)
@@ -119,7 +123,7 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters
             params.set("page", page.id)
             page
         } else {
-            header.find { it.id == params.get("page") }
+            pages.find { it.id == params.get("page") }
         }
 
         // registers page to history if needed
@@ -135,7 +139,7 @@ fun getLocationParams(name: String) = URLSearchParams(window.location.search).ge
 fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
-    return params.get("page")?.let { id -> header.find { it.id == id } }
+    return params.get("page")?.let { id -> pages.find { it.id == id } }
 }
 
 class BrowserContext(

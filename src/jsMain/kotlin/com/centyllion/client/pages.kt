@@ -13,8 +13,8 @@ import com.centyllion.model.FeaturedDescription
 import keycloak.KeycloakInstance
 
 data class Page(
-    val title: String, val id: String, val needUser: Boolean,
-    val role: String?, val callback: (appContext: AppContext) -> BulmaElement
+    val title: String, val id: String, val needUser: Boolean, val role: String?,
+    val header: Boolean, val callback: (appContext: AppContext) -> BulmaElement
 ) {
     fun authorized(keycloak: KeycloakInstance): Boolean = when {
         !needUser -> true
@@ -25,12 +25,12 @@ data class Page(
 
 const val contentSelector = "section.cent-main"
 
-val homePage = Page("Home", "home", true, null, ::HomePage)
-val explorePage = Page("Explore", "explore", false, null, ::explore)
-val showPage = Page("Show", "show", false, null, ::ShowPage)
-val administrationPage = Page("Administration", "administration", true, adminRole, ::AdministrationPage)
+val homePage = Page("Home", "home", true, null, true, ::HomePage)
+val explorePage = Page("Explore", "explore", false, null, true, ::explore)
+val showPage = Page("Show", "show", false, null, false, ::ShowPage)
+val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
 
-val header = listOf(homePage, explorePage, administrationPage)
+val pages = listOf(homePage, explorePage, showPage, administrationPage)
 
 fun explore(appContext: AppContext): BulmaElement {
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())

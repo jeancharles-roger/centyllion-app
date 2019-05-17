@@ -8,7 +8,7 @@ action "Test JVM" {
   args = "jvmTest"
 }
 
-action "Deploy Slack" {
+action "Test Slack" {
   uses = "Ilshidur/action-slack@1ee0e72f5aea6d97f26d4a67da8f4bc5774b6cc7"
   needs = ["Test JVM"]
   secrets = ["SLACK_WEBHOOK"]
@@ -17,7 +17,7 @@ action "Deploy Slack" {
 
 action "On master branch" {
   uses = "actions/bin/filter@master"
-  needs = ["Test JVM"]
+  needs = ["Test Slack"]
   args = "branch master"
 }
 

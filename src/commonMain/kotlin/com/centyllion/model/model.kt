@@ -248,10 +248,14 @@ data class Simulation(
 }
 
 interface Description {
+    val id: String
 
-    val label: String
+    @Transient
+    val name: String
+    @Transient
     val icon: String
 
+    val label get() = if (name.isNotEmpty()) name else id.drop(id.lastIndexOf("-") + 1)
 }
 
 @Serializable
@@ -265,44 +269,41 @@ data class DescriptionInfo(
 
 @Serializable
 data class GrainModelDescription(
-    val id: String,
+    override val id: String,
     val info: DescriptionInfo,
     val model: GrainModel
-): Description {
+) : Description {
 
-    override val label = model.name.let { if (it.isNotEmpty()) it else id }
+    override val name = model.name
 
     override val icon = "boxes"
 }
 
 @Serializable
 data class SimulationDescription(
-    val id: String,
+    override val id: String,
     val info: DescriptionInfo,
     val modelId: String,
     val thumbnailId: String?,
     val simulation: Simulation
-): Description {
+) : Description {
 
-    override val label = simulation.name.let { if (it.isNotEmpty()) it else id }
-
+    override val name = simulation.name
     override val icon = "play"
 }
 
 @Serializable
 data class FeaturedDescription(
-    val id: String,
+    override val id: String,
     val date: String,
     val thumbnailId: String?,
     val modelId: String,
     val simulationId: String,
     val authorId: String,
-    val name: String,
+    override val name: String,
     val description: String,
     val authorName: String
-): Description {
-
-    override val label = name.let { if (it.isNotEmpty()) it else id }
+) : Description {
 
     override val icon = "star"
 }

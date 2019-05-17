@@ -68,12 +68,8 @@ class TestMeApi {
         // Test that /api/me/model is protected
         testUnauthorized( "/api/me/model")
 
-        // Test that /api/me/model is protected by a role
-        testUnauthorized("/api/me/model", HttpMethod.Get, testUser)
-
         // Test that /api/me/model is protected by the role model
-        testGet("/api/me/model", emptyList(), GrainModelDescription.serializer().list, testUser, modelRole)
-
+        testGet("/api/me/model", emptyList(), GrainModelDescription.serializer().list, testUser)
 
         // Test post on /api/model
         testUnauthorized("/api/me/model", HttpMethod.Post)

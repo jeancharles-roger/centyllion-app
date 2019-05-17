@@ -242,7 +242,7 @@ fun Application.centyllion(
 
                     // get all user's saved models
                     get("model") {
-                        withRequiredPrincipal(setOf(modelRole)) {
+                        withRequiredPrincipal {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val models = data.grainModelsForUser(user)
                             context.respond(models)

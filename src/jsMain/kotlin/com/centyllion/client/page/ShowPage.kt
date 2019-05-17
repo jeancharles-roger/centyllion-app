@@ -212,7 +212,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             // if there is a model id, use it to list all simulation and take the first one
             modelId != null && modelId.isNotEmpty() ->
                 context.api.fetchGrainModel(modelId).then { model ->
-                    context.api.fetchSimulations(model.id, true).then { simulations ->
+                    context.api.fetchSimulations(model.id, false).then { simulations ->
                         (simulations.firstOrNull() ?: emptySimulationDescription) to model
                     }
                 }.then { it }

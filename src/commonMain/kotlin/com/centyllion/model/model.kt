@@ -250,9 +250,7 @@ data class Simulation(
 interface Description {
     val id: String
 
-    @Transient
     val name: String
-    @Transient
     val icon: String
 
     val label get() = if (name.isNotEmpty()) name else id.drop(id.lastIndexOf("-") + 1)
@@ -288,8 +286,8 @@ data class SimulationDescription(
     val simulation: Simulation
 ) : Description {
 
-    override val name = simulation.name
-    override val icon = "play"
+    override val name= simulation.name
+    override val icon= "play"
 }
 
 @Serializable

@@ -5,6 +5,7 @@ import com.centyllion.model.Simulator
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.pointerevents.PointerEvent
 import kotlin.browser.window
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -152,7 +153,8 @@ class SimulatorEditController(
             gc.stroke()
 
             gc.lineWidth = 0.75
-            gc.strokeStyle = if (simulationX == simulationSourceX || simulationX == simulationSourceY) "blue" else "black"
+            gc.strokeStyle =
+                if (simulationX == simulationSourceX || simulationX == simulationSourceY) "blue" else "black"
             gc.strokeText("$simulationSourceX, $simulationSourceY", canvasSourceX, canvasSourceY)
             gc.strokeText("$simulationX, $simulationY", canvasX, canvasY)
 
@@ -190,8 +192,8 @@ class SimulatorEditController(
     fun toSimulationX(canvasX: Double) = ((canvasX - 1) / stepX).roundToInt()
     fun toSimulationY(canvasY: Double) = ((canvasY - 1) / stepY).roundToInt()
 
-    fun toCanvasX(simulationX: Int) = simulationX * stepX + stepX/2.0
-    fun toCanvasY(simulationY: Int) = simulationY * stepY + stepY/2.0
+    fun toCanvasX(simulationX: Int) = simulationX * stepX + stepX / 2.0
+    fun toCanvasY(simulationY: Int) = simulationY * stepY + stepY / 2.0
 
     fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
         val size = ToolSize.valueOf(sizeDropdown.text).size * factor
@@ -243,7 +245,12 @@ class SimulatorEditController(
         when (selectedTool) {
             EditTools.Pen -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-                    circle(simulationX, simulationY) { i, j -> data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet) }
+                    circle(simulationX, simulationY) { i, j ->
+                        data.setIdAtIndex(
+                            data.simulation.toIndex(i, j),
+                            idToSet
+                        )
+                    }
                 }
             }
             EditTools.Line -> {
@@ -286,6 +293,7 @@ class SimulatorEditController(
     }
 
     private fun mouseChange(event: MouseEvent) {
+        console.log(event)
         val clicked = event.buttons.toInt() == 1
         val newStep = when {
             clicked && drawStep >= 0 -> drawStep + 1
@@ -360,6 +368,15 @@ class SimulatorEditController(
 
     init {
         simulationCanvas.root.apply {
+            addEventListener("pointerup", { mouseChange(it as PointerEvent) }, false)
+            addEventListener("pointerdown", { mouseChange(it as PointerEvent) }, false)
+            addEventListener("pointermove", { mouseChange(it as PointerEvent) }, false)
+            addEventListener("pointerenter", { mouseChange(it as PointerEvent) }, false)
+            addEventListener("pointerout", {
+                toolElement = null
+                refresh()
+            }, false)
+
             onmouseup = { mouseChange(it) }
             onmousedown = { mouseChange(it) }
             onmousemove = { mouseChange(it) }

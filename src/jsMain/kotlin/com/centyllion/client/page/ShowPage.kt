@@ -157,12 +157,17 @@ class ShowPage(val context: AppContext) : BulmaElement {
         "Delete Simulation", Icon(deleteIcon, color = TextColor.Danger)
     ) { deleteSimulation() }
 
+    val newSimulationItem = DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
+
+    val loadingItem = DropdownSimpleItem("Loading simulations", Icon("spinner", spin = true))
+
+    val moreDropdownItems = listOf(
+        publishModelItem, publishSimulationItem, DropdownDivider(),
+        deleteModelItem, deleteSimulationItem, DropdownDivider(),
+        newSimulationItem, DropdownDivider()
+    )
+
     val moreDropdown = Dropdown(
-        publishModelItem, publishSimulationItem,
-        DropdownDivider(),
-        DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() },
-        DropdownDivider(),
-        deleteModelItem, deleteSimulationItem,
         icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
 
@@ -412,5 +417,18 @@ class ShowPage(val context: AppContext) : BulmaElement {
         deleteModelItem.disabled = model.id.isEmpty()
 
         deleteSimulationItem.disabled = simulation.id.isEmpty()
+
+        moreDropdown.items = moreDropdownItems + loadingItem
+
+        context.api.fetchSimulations(model.id, false).then {
+            moreDropdown.items = moreDropdownItems + it.map { current ->
+                DropdownSimpleItem(current.label, Icon(current.icon), current == simulation) {
+                    save()
+                    setSimulation(current)
+                    moreDropdown.active = false
+                    editionTab.selectedPage = simulationPage
+                }
+            }
+        }
     }
 }

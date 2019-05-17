@@ -43,7 +43,9 @@ fun index() {
             // updates login link
             val userItem = navBar.end.first() as NavBarLinkItem
             if (keycloak.tokenParsed != null) {
-                userItem.text = keycloak.tokenParsed.asDynamic().name as String
+                console.log(keycloak.tokenParsed)
+                val token = keycloak.tokenParsed.asDynamic()
+                userItem.text = token.name as String? ?: token.preferred_username as String ?: "Not named"
                 userItem.href = keycloak.createAccountUrl()
             } else {
                 userItem.text = "Log In"

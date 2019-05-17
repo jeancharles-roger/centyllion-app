@@ -90,8 +90,8 @@ enum class IconStyle(override val className: String): HasClassName {
 /** [Icon](https://bulma.io/documentation/elements/icon) element. */
 class Icon(
     icon: String, size: Size = Size.None, color: TextColor = TextColor.None,
-    rotate: FaRotate = FaRotate.None, flip: FaFlip = FaFlip.None, spin: Boolean = false,
-    style: IconStyle = IconStyle.Solid
+    rotate: FaRotate = FaRotate.None, flip: FaFlip = FaFlip.None,
+    spin: Boolean = false, pulse: Boolean = false, style: IconStyle = IconStyle.Solid
 ) : ControlElement {
     override val root: HTMLElement = document.create.span("icon") {
         i("${style.className} fa-$icon") {
@@ -123,6 +123,8 @@ class Icon(
     var flip by className(flip, iconNode)
 
     var spin by className(spin, "fa-spin", iconNode)
+
+    var pulse by className(pulse, "fa-pulse", iconNode)
 
 }
 

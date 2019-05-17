@@ -7,6 +7,7 @@ import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.homePage
 import com.centyllion.client.openPage
+import com.centyllion.common.modelRole
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -22,6 +23,8 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val deleteIcon = "trash"
 
     val api = context.api
+
+    val hasModelRole = context.keycloak.hasRealmRole(modelRole)
 
     private var undoModel = false
 
@@ -45,6 +48,9 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
+    val isModelReadOnly
+        get() = !hasModelRole || (model.id.isNotEmpty() && model.info.userId != context.me?.id)
+
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
             if (undoModel) {
@@ -58,7 +64,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 }
             }
 
-            val readonly = model.id.isNotEmpty() && model.info.userId != context.me?.id
+            val readonly = isModelReadOnly
             modelController.readOnly = readonly
             modelController.data = new.model
             modelNameController.readOnly = readonly
@@ -86,6 +92,9 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     var originalSimulation: SimulationDescription = emptySimulationDescription
 
+    val isSimulationReadOnly
+        get() = !hasModelRole || simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
+
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
             if (undoSimulation) {
@@ -99,8 +108,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 }
             }
 
-            val readonly = simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
-            simulationController.readOnly = readonly
+            simulationController.readOnly = isSimulationReadOnly
             simulationController.data = new.simulation
             refreshButtons()
         }
@@ -199,6 +207,14 @@ class ShowPage(val context: AppContext) : BulmaElement {
     override val root: HTMLElement = container.root
 
     init {
+        // starts with all readonly
+        modelNameController.readOnly = true
+        modelDescriptionController.readOnly = true
+        modelController.readOnly = true
+        simulationController.readOnly = true
+        tools.hidden = true
+
+        // retrieves model and simulation to load
         val params = URLSearchParams(window.location.search)
         val simulationId = params.get("simulation")
         val modelId = params.get("model")
@@ -385,13 +401,12 @@ class ShowPage(val context: AppContext) : BulmaElement {
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                val readonly = model.id.isNotEmpty() && model.info.userId != context.me?.id
-                tools.hidden = readonly
+                tools.hidden = isModelReadOnly
                 undoControl.body = undoModelButton
                 redoControl.body = redoModelButton
             }
             simulationPage -> {
-                val readonly = simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
+                val readonly = isSimulationReadOnly
                 tools.hidden = readonly
                 undoControl.body = undoSimulationButton
                 redoControl.body = redoSimulationButton
@@ -418,17 +433,21 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
         deleteSimulationItem.disabled = simulation.id.isEmpty()
 
-        moreDropdown.items = moreDropdownItems + loadingItem
+        if (model.id.isNotEmpty()) {
+            moreDropdown.items = moreDropdownItems + loadingItem
 
-        context.api.fetchSimulations(model.id, false).then {
-            moreDropdown.items = moreDropdownItems + it.map { current ->
-                DropdownSimpleItem(current.label, Icon(current.icon), current == simulation) {
-                    save()
-                    setSimulation(current)
-                    moreDropdown.active = false
-                    editionTab.selectedPage = simulationPage
+            context.api.fetchSimulations(model.id, false).then {
+                moreDropdown.items = moreDropdownItems + it.map { current ->
+                    DropdownSimpleItem(current.label, Icon(current.icon), current == simulation) {
+                        save()
+                        setSimulation(current)
+                        moreDropdown.active = false
+                        editionTab.selectedPage = simulationPage
+                    }
                 }
-            }
+            }.catch { context.error(it) }
+        } else {
+            moreDropdown.items = moreDropdownItems
         }
     }
 }

@@ -109,6 +109,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             }
 
             simulationController.readOnly = isSimulationReadOnly
+            console.log("Simulation readonly ${simulationController.readOnly}")
             simulationController.data = new.simulation
             refreshButtons()
         }
@@ -208,10 +209,11 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     init {
         // starts with all readonly
-        modelNameController.readOnly = true
-        modelDescriptionController.readOnly = true
-        modelController.readOnly = true
-        simulationController.readOnly = true
+        val modelReadonly = isModelReadOnly
+        modelNameController.readOnly = modelReadonly
+        modelDescriptionController.readOnly = modelReadonly
+        modelController.readOnly = modelReadonly
+        simulationController.readOnly = isSimulationReadOnly
         tools.hidden = true
 
         // retrieves model and simulation to load

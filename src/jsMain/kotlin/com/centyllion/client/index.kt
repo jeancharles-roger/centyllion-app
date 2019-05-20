@@ -19,8 +19,8 @@ import kotlin.js.*
 fun index() {
     // creates nav bar and adds it to body
     val navBar = NavBar(
-        brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-2by1.png", "/")),
-        end = listOf(NavBarLinkItem("Not connected")), transparent = true
+        brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),
+        end = listOf(NavBarLinkItem("Not connected")), transparent = true, color = ElementColor.Primary
     )
     document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 

@@ -179,7 +179,7 @@ fun Application.centyllion(
                     val principal = call.principal<JWTPrincipal>()
                     val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
                     val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
-                    // TODO reponds error
+                    // TODO responds error
                     call.respond(HttpStatusCode.InternalServerError)
                 }
             }
@@ -511,7 +511,7 @@ fun Application.centyllion(
     }
 }
 
-/** Checks if [info] authorizes access for [user] to [Access.Read]*/
+/** Checks if [info] authorizes access for [user] */
 fun hasReadAccess(info: DescriptionInfo, user: User?) =
     info.readAccess || (user != null && isOwner(info, user))
 

@@ -393,6 +393,19 @@ class NavBarImageItem(
     var image by attribute(image, "src", imgNode)
 }
 
+class NavBarIconItem(
+    icon: Icon, href: String? = null, width: String? = null, height: String? = null,
+    onClick: (NavBarIconItem) -> Unit = {}
+) : NavBarItem {
+    override val root = document.create.a(href, null, "navbar-item") {
+        onClickFunction = { onClick(this@NavBarIconItem) }
+    }
+
+    var href by attribute(href, "href", root)
+
+    var icon by bulma(icon, root)
+}
+
 class NavBarContentItem(vararg body: BulmaElement) : DropdownItem {
     override val root = document.create.div("navbar-item")
     var body by bulmaList(body.toList(), root)

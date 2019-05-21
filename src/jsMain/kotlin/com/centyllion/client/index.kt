@@ -20,7 +20,11 @@ fun index() {
     // creates nav bar and adds it to body
     val navBar = NavBar(
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),
-        end = listOf(NavBarLinkItem("Not connected")), transparent = true, color = ElementColor.Primary
+        end = listOf(
+            NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),
+            NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")
+        ),
+        transparent = true, color = ElementColor.Primary
     )
     document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
@@ -41,17 +45,17 @@ fun index() {
             val context = BrowserContext(navBar, root, keycloak, user, api)
 
             // updates login link
-            val userItem = navBar.end.first() as NavBarLinkItem
             if (keycloak.tokenParsed != null) {
                 val token = keycloak.tokenParsed.asDynamic()
-                userItem.text = token.name as String? ?: token.preferred_username as String ?: "Not named"
-                userItem.href = keycloak.createAccountUrl()
-
+                val userItem = NavBarLinkItem(
+                    token.name as String? ?: token.preferred_username as String ?: "Not named",
+                    keycloak.createAccountUrl()
+                )
                 val logoutItem = NavBarLinkItem("Logout", keycloak.createLogoutUrl(null))
-                navBar.end += logoutItem
+                navBar.end += listOf(userItem, logoutItem)
             } else {
-                userItem.text = "Log In"
-                userItem.href = keycloak.createLoginUrl(null)
+                val loginItem = NavBarLinkItem("Log In", keycloak.createLoginUrl(null))
+                navBar.end += loginItem
             }
 
             // listens to pop state

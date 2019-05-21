@@ -293,7 +293,6 @@ class SimulatorEditController(
     }
 
     private fun mouseChange(event: MouseEvent) {
-        console.log(event)
         val clicked = event.buttons.toInt() == 1
         val newStep = when {
             clicked && drawStep >= 0 -> drawStep + 1

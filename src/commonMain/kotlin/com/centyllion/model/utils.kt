@@ -33,12 +33,12 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
     while (iSource < size || iOther < other.size) {
         when {
             iSource >= size -> {
-                // source is empty
+                // source is empty, complete it using add
                 result.add(Diff(DiffAction.Added, iOther, other[iOther]))
                 iOther += 1
             }
             iOther >= other.size -> {
-                // other empty
+                // other empty, clear the source with remove
                 result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
                 iSource += 1
             }
@@ -47,8 +47,14 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
                 iSource += 1
                 iOther += 1
             }
+            iSource+1 < size && iOther+1 < other.size && this[iSource+1] == other[iOther+1] -> {
+                // next is equals, just replace this one
+                result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
+                iSource += 1
+                iOther += 1
+            }
             else -> {
-
+                // searches in either source or other for a current object
                 val indexOfOther = other.subList(iOther, other.size).indexOf(this[iSource])
                 val indexOfSource = subList(iSource, size).indexOf(other[iOther])
                 when {

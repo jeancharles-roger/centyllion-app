@@ -9639,13 +9639,13 @@ input[type=range].slider.is-danger .has-output-tooltip + output {
   position: relative;
 }
 .tooltip:hover:not(.is-loading)::after, .tooltip.is-tooltip-active:not(.is-loading)::after {
-  z-index: 99999;
+  z-index: 25;
   position: absolute;
   display: inline-block;
   pointer-events: none;
 }
 .tooltip:hover::before, .tooltip.is-tooltip-active::before {
-  z-index: 99999;
+  z-index: 25;
   position: absolute;
   display: inline-block;
   pointer-events: none;

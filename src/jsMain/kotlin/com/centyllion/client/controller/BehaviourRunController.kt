@@ -24,7 +24,6 @@ class BehaviourRunController(
     override var readOnly = false
 
     val titleLabel = Label(behaviour.name)
-    val descriptionLabel = p(behaviour.description)
 
     val header = Level(listOf(titleLabel), grains(), mobile = true)
 
@@ -39,7 +38,7 @@ class BehaviourRunController(
 
     val speedColumns = Columns(Column(speedValue, size = ColumnSize.S1), Column(speedSlider), mobile = true)
 
-    val body = Media(center = listOf(header, descriptionLabel, speedColumns)).apply {
+    val body = Media(center = listOf(header, speedColumns)).apply {
         root.classList.add("is-outlined")
     }
 
@@ -70,7 +69,6 @@ class BehaviourRunController(
 
     override fun refresh() {
         titleLabel.text = data.name
-        descriptionLabel.text = data.description
         val speed = context.getSpeed(data)
         speedValue.text = format(speed)
         speedSlider.value = toSlider(speed)

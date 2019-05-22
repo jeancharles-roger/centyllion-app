@@ -118,6 +118,7 @@ class SimulationRunController(
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
+        Column(Title("Grains", TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
         Column(
             Columns(
                 Column(
@@ -138,13 +139,9 @@ class SimulationRunController(
                 Column(div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
                 multiline = true
             ),
-            desktopSize = ColumnSize.TwoThirds
+            desktopSize = ColumnSize.S6
         ),
-        Column(
-            Title("Grains", TextSize.S4), grainsController,
-            Title("Behaviours", TextSize.S4), behaviourController,
-            desktopSize = ColumnSize.OneThird
-        ),
+        Column(Title("Behaviours", TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
         multiline = true
     )
 

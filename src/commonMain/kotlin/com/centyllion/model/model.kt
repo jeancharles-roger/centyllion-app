@@ -223,7 +223,6 @@ data class Simulation(
 
     /** Move [index] on given [direction] of [step] cases, whatever the index, it will always remains inside the simulation. */
     fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int {
-        // TODO find a faster way to move index
         var z = index / levelSize
         val yRest = index - z * levelSize
         var y = yRest / width

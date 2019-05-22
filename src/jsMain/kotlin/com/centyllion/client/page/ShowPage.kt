@@ -109,7 +109,6 @@ class ShowPage(val context: AppContext) : BulmaElement {
             }
 
             simulationController.readOnly = isSimulationReadOnly
-            console.log("Simulation readonly ${simulationController.readOnly}")
             simulationController.data = new.simulation
             refreshButtons()
         }
@@ -144,7 +143,6 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredSimulation = simulationFuture.last()
-        simulationFuture = simulationFuture.dropLast(1)
         simulationController.data = restoredSimulation.simulation
     }
 

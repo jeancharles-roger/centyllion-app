@@ -267,6 +267,10 @@ data class Simulation(
     fun positionInside(x: Int, y: Int, z: Int = 0) =
         z in 0 until depth && y in 0 until height && x in 0 until width
 
+    /** Cleans the simulation to remove unexisting grains */
+    fun cleaned(model: GrainModel) =
+        copy(agents = agents.map { if (model.indexedGrains[it] == null) -1 else it })
+
 }
 
 interface Description {

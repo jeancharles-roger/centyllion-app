@@ -24,11 +24,15 @@ class GrainDisplayController(grain: Grain): NoContextController<Grain, Column>()
     val descriptionLabel = span(data.description)
     val countLabel = Label()
 
-    override val container = Column(Media(
+    val body = Media(
         left = listOf(icon),
         center = listOf(titleLabel, descriptionLabel),
         right = listOf(countLabel)
-    ), size = ColumnSize.Full)
+    ).apply {
+        root.classList.add("is-outlined")
+    }
+
+    override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
         icon.root.style.color = data.color

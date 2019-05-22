@@ -154,7 +154,9 @@ class BehaviourEditController(
             reactionController
         ),
         right = listOf(delete)
-    )
+    ).apply {
+        root.classList.add("is-outlined")
+    }
 
     override
     val container = Column(body, size = ColumnSize.Full)

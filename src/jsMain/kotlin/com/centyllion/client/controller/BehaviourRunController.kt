@@ -39,7 +39,9 @@ class BehaviourRunController(
 
     val speedColumns = Columns(Column(speedValue, size = ColumnSize.S1), Column(speedSlider), mobile = true)
 
-    val body = Media(center = listOf(header, descriptionLabel, speedColumns))
+    val body = Media(center = listOf(header, descriptionLabel, speedColumns)).apply {
+        root.classList.add("is-outlined")
+    }
 
     override val container = Column(body, size = ColumnSize.Full)
 

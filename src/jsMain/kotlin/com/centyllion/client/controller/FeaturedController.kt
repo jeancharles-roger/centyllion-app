@@ -27,7 +27,11 @@ class FeaturedController(
     val body = Card(
         CardImage(thumbnail()),
         CardContent(name, author, description)
-    )
+    ).apply {
+        root.classList.add("is-outlined")
+    }
+
+
 
     override val container = Column(body, size = size)
 

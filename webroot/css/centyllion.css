@@ -10,6 +10,24 @@
   margin: 2rem;
 }
 
+.card.is-outlined {
+  border-color: #011f4b;
+  border-style: solid;
+  border-width: 2px;
+}
+
+.media.is-outlined {
+  border-color: #011f4b;
+  border-style: solid;
+  border-width: 2px;
+}
+
+.box.is-outlined {
+  border-color: #011f4b;
+  border-style: solid;
+  border-width: 2px;
+}
+
 canvas.cent-simulation {
   border-radius: 5px;
   border-style: solid;

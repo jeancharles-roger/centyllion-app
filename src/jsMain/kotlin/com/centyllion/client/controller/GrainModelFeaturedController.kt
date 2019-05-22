@@ -59,7 +59,9 @@ class GrainModelFeaturedController(
         }
     }
 
-    val body = Media(center = listOf(name, description, dots, simulationDropDown))
+    val body = Media(center = listOf(name, description, dots, simulationDropDown)).apply {
+        root.classList.add("is-outlined")
+    }
 
     override val container = Column(body, size = size)
 

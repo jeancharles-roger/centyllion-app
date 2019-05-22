@@ -77,7 +77,9 @@ class GrainEditController(
             HorizontalField(Help("Directions"), directionController.container)
         ),
         right = listOf(delete)
-    )
+    ).apply {
+        root.classList.add("is-outlined")
+    }
 
     override val container = Column(body, size = ColumnSize.Full)
 

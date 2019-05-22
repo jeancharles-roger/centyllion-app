@@ -48,9 +48,7 @@ class GrainModelEditController(
                 data = data.copy(grains = newGrains)
             }
             controller.onDelete = { _, _ ->
-                val newGrains = data.grains.toMutableList()
-                newGrains.removeAt(parent.indexOf(controller))
-                data = data.copy(grains = newGrains)
+                data = data.dropGrain(parent.indexOf(controller))
             }
             controller
         }

@@ -169,6 +169,28 @@ data class GrainModel(
 
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
 
+    fun dropGrain(index: Int): GrainModel {
+        val grain = grains[index]
+
+        val newGrains = grains.toMutableList()
+        // removes the grain
+        newGrains.removeAt(index)
+
+        // clears reference to this grain in behaviours
+        val newBehaviours = behaviours.map { behaviour ->
+            behaviour.copy(
+                mainReactiveId = if (grain.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
+                mainProductId = if (grain.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
+                reaction = behaviour.reaction.map { it.copy(
+                    reactiveId = if (grain.id == it.reactiveId) -1 else it.reactiveId,
+                    productId = if (grain.id == it.productId) -1 else it.productId
+                )}
+            )
+        }
+
+        return copy(grains = newGrains, behaviours = newBehaviours)
+    }
+
     @Transient
     val valid
         get() =
@@ -286,8 +308,8 @@ data class SimulationDescription(
     val simulation: Simulation
 ) : Description {
 
-    override val name= simulation.name
-    override val icon= "play"
+    override val name = simulation.name
+    override val icon = "play"
 }
 
 @Serializable

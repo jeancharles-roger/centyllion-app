@@ -85,7 +85,14 @@ class SimulationRunController(
 
     val grainsController =
         noContextColumnsController<Grain, GrainDisplayController>(model.grains)
-        { parent, grain -> GrainDisplayController(grain) }
+        { parent, grain ->
+            val controller = GrainDisplayController(grain)
+            controller.body.root.onclick = {
+                simulationViewController.selectedGrain = controller.data
+                Unit
+            }
+            controller
+        }
 
     val behaviourController =
         columnsController<Behaviour, Simulator, BehaviourRunController>(model.behaviours, simulator)

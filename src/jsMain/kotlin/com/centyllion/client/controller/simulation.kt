@@ -1,6 +1,7 @@
 package com.centyllion.client.controller
 
 import bulma.*
+import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -82,6 +83,9 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
 
         simulationContext.restore()
     }
+
+    open var selectedGrain: Grain? = null
+
 }
 
 class SimulatorEditController(
@@ -332,6 +336,12 @@ class SimulatorEditController(
     }
 
     val selectedGrainController = GrainSelectController(data.model.grains.firstOrNull(), data.model.grains)
+
+    override var selectedGrain: Grain?
+        get() = selectedGrainController.data
+        set(value) {
+            selectedGrainController.data = value
+        }
 
     val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->

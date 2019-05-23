@@ -1,3 +1,4 @@
+
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.request.HttpRequestBuilder
@@ -136,6 +137,7 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
+    val cssDir = "$buildDir/assemble/main/css"
     val webRoot = rootProject.file("webroot")
     val deploy = rootProject.file("deploy")
     val mainFunction = "com.centyllion.client.index()"
@@ -208,6 +210,43 @@ tasks {
         }
     }
 
+    val allCss by register<Copy>("allCss") {
+        group = "build"
+
+        doFirst {
+            delete(cssDir)
+        }
+        from(
+            fileTree("src/css").matching { include("*.css") }
+        )
+        into(cssDir)
+
+        doLast {
+            val files = mutableListOf<String>()
+
+            // Adds md5 sum in file name for cache purposes
+            file(cssDir).listFiles().forEach {
+                val base = it.nameWithoutExtension
+                val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
+                val builder = StringBuilder()
+                for (b in bytes) builder.append(String.format("%02x", b))
+                val sum = builder.toString()
+
+                val extension = it.extension
+                if (extension == "css" && !name.contains(sum)) {
+                    val newFile = "$base.$sum.$extension"
+                    files.add(newFile)
+                    it.renameTo(file("${it.parent}/$newFile"))
+                }
+            }
+
+            // Constructs a css.files
+            val cssFiles = file("$cssDir/css.config.json")
+            val content = files.map { "\"css/centyllion/$it\"" }.joinToString(",")
+            cssFiles.writeText("{ \"files\": [$content] }")
+        }
+    }
+
     val syncJs by register<Sync>("syncJs") {
         dependsOn(allJs)
         group = "build"
@@ -215,16 +254,22 @@ tasks {
         into("$webRoot/js/centyllion")
     }
 
+    val syncCss by register<Sync>("syncCss") {
+        dependsOn(allCss)
+        group = "build"
+        from(cssDir)
+        into("$webRoot/css/centyllion")
+    }
+
     val syncAssets by register<Sync>("syncAssets") {
-        dependsOn(allJs, generateVersion)
+        dependsOn(generateVersion)
         group = "build"
         from("$buildDir/resources/main")
         into("$webRoot/assets/centyllion")
     }
 
     val jsMainClasses by existing
-    jsMainClasses.get().dependsOn(syncJs, syncAssets)
-
+    jsMainClasses.get().dependsOn(syncJs, syncCss, syncAssets)
 
     val assemble by existing
     val jvmJar by existing(Jar::class)

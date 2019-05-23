@@ -8,30 +8,31 @@ import kotlinx.serialization.list
 import org.w3c.xhr.XMLHttpRequest
 import kotlin.js.Promise
 
-class Api(val instance: KeycloakInstance?) {
 
-    val finalState: Short = 4
-    val successStatus: Short = 200
+const val finalState: Short = 4
+const val successStatus: Short = 200
 
-    val json = Json(JsonConfiguration.Companion.Stable)
-
-    private fun fetch(method: String, url: String, bearer: String? = null, content: String? = null): Promise<String> =
-        Promise { resolve, reject ->
-            val request = XMLHttpRequest()
-            request.open(method, url, true)
-            bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
-            request.setRequestHeader("Content-Type", "application/json")
-            request.onreadystatechange = {
-                if (request.readyState == finalState) {
-                    if (request.status == successStatus) {
-                        resolve(request.responseText)
-                    } else {
-                        reject(Throwable("Can't $method '$url': (${request.status}) ${request.statusText}"))
-                    }
+fun fetch(method: String, url: String, bearer: String? = null, content: String? = null): Promise<String> =
+    Promise { resolve, reject ->
+        val request = XMLHttpRequest()
+        request.open(method, url, true)
+        bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
+        request.setRequestHeader("Content-Type", "application/json")
+        request.onreadystatechange = {
+            if (request.readyState == finalState) {
+                if (request.status == successStatus) {
+                    resolve(request.responseText)
+                } else {
+                    reject(Throwable("Can't $method '$url': (${request.status}) ${request.statusText}"))
                 }
             }
-            request.send(content)
         }
+        request.send(content)
+    }
+
+class Api(val instance: KeycloakInstance?) {
+
+    val json = Json(JsonConfiguration.Companion.Stable)
 
     private fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance?, block: (bearer: String?) -> Promise<T>) =
         Promise<T> { resolve, reject ->

@@ -8,6 +8,8 @@ import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
+import kotlinx.html.dom.create
+import kotlinx.html.js.link
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
@@ -15,8 +17,20 @@ import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.*
 
+interface CssFile {
+    val files: Array<String>
+}
+
 @JsName("index")
 fun index() {
+
+    // fetches css config and includes css files
+    fetch("GET", "css/centyllion/css.config.json").then {
+        JSON.parse<CssFile>(it).files.forEach {
+            document.head?.appendChild(document.create.link(it, "stylesheet"))
+        }
+    }
+
     // creates nav bar and adds it to body
     val navBar = NavBar(
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),

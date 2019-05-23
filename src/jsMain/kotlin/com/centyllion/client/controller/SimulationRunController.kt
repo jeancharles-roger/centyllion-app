@@ -131,8 +131,7 @@ class SimulationRunController(
                             Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
                             stepLabel,
                             toggleChartsButton
-                        ),
-                        mobile = true
+                        )
                     ), size = ColumnSize.Full
                 ),
                 simulationView,

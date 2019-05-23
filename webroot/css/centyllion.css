@@ -1,5 +1,4 @@
 .media {
-  border-radius: 6px;
   box-shadow: 0 3px 4px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
   color: #011f4b;
   background-color: #fafafa;
@@ -11,25 +10,28 @@
 }
 
 .card.is-outlined {
+  border-radius: 6px;
   border-color: #011f4b;
   border-style: solid;
   border-width: 2px;
 }
 
 .media.is-outlined {
+  border-radius: 6px;
   border-color: #011f4b;
   border-style: solid;
   border-width: 2px;
 }
 
 .box.is-outlined {
+  border-radius: 6px;
   border-color: #011f4b;
   border-style: solid;
   border-width: 2px;
 }
 
 canvas.cent-simulation {
-  border-radius: 5px;
+  border-radius: 6px;
   border-style: solid;
   border-width: 2px;
 }

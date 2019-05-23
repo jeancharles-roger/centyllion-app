@@ -12,7 +12,6 @@ import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 import org.w3c.dom.HTMLElement
-import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
 class HomePage(val context: AppContext) : BulmaElement {
@@ -117,12 +116,14 @@ class HomePage(val context: AppContext) : BulmaElement {
         context.api.fetchMyGrainModels().then {
             elements = it
 
-            Promise.all(it.map { model ->
-                context.api.fetchSimulations(model.id, false).then { listOf(model) + it }
-            }.toTypedArray()).then { it -> it.flatMap { it } }.then {
-                elements = it
+            it.forEach { model ->
+                context.api.fetchSimulations(model.id, false).then {
+                    val index = elements.indexOf(model)
+                    val mutable = elements.toMutableList()
+                    mutable.addAll(index+1, it)
+                    elements = mutable
+                }
             }
-
         }
 
         // sets callbacks for update

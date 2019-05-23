@@ -115,7 +115,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
 
         context.api.fetchMyGrainModels().then {
-            //elements = it
+            elements = it
 
             Promise.all(it.map { model ->
                 context.api.fetchSimulations(model.id, false).then { listOf(model) + it }

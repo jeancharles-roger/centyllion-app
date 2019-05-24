@@ -252,11 +252,6 @@ fun Application.centyllion(
                     }
                 }
 
-                get("search") {
-                    val query = call.parameters["q"]!!
-                    context.respond(data.search(query))
-                }
-
                 // featured
                 route("featured") {
                     get {
@@ -321,6 +316,11 @@ fun Application.centyllion(
                     get {
                         val models = data.publicGrainModels(0, 50)
                         context.respond(models)
+                    }
+
+                    get("search") {
+                        val query = call.parameters["q"]!!
+                        context.respond(data.searchModel(query))
                     }
 
                     // post a new model
@@ -442,6 +442,11 @@ fun Application.centyllion(
                         context.respond(HttpStatusCode.NotFound)
                     }
 
+                    get("search") {
+                        val query = call.parameters["q"]!!
+                        context.respond(data.searchSimulation(query))
+                    }
+
                     route("{simulation}") {
                         get {
                             val user = call.principal<JWTPrincipal>()?.let {
@@ -499,6 +504,7 @@ fun Application.centyllion(
                             }
                         }
                     }
+
                 }
 
                 // binary assets

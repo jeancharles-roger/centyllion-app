@@ -97,6 +97,11 @@ class Api(val instance: KeycloakInstance?) {
             )
         }
 
+    fun searchModel(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
+        // TODO encode query
+        fetch("GET", "/api/model/search?q=$query", bearer).then { json.parse(GrainModelDescription.serializer().list, it) }
+    }
+
     fun fetchSimulations(modelId: String, public: Boolean) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val params = if (public) "?public" else ""
@@ -130,6 +135,11 @@ class Api(val instance: KeycloakInstance?) {
                 json.stringify(SimulationDescription.serializer(), simulation)
             )
         }
+
+    fun searchSimulation(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
+        // TODO encode query
+        fetch("GET", "/api/simulation/search?q=$query", bearer).then { json.parse(SimulationDescription.serializer().list, it) }
+    }
 
     fun fetchAllFeatured() =
         executeWithRefreshedIdToken(instance) { bearer ->

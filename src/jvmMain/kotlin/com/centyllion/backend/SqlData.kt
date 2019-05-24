@@ -222,8 +222,8 @@ class SqlData(
         }
     }
 
-    override fun search(query: String, offset: Int, limit: Int): List<Description> = transaction {
-        val simulations = DbSimulationDescription.wrapRows(
+    override fun searchSimulation(query: String, offset: Int, limit: Int): List<SimulationDescription> = transaction {
+        DbSimulationDescription.wrapRows(
             DbSimulationDescriptions
                 .innerJoin(DbDescriptionInfos)
                 .select {
@@ -232,8 +232,10 @@ class SqlData(
                 }
                 .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
+    }
 
-        val models = DbModelDescription.wrapRows(
+    override fun searchModel(query: String, offset: Int, limit: Int): List<GrainModelDescription> = transaction {
+        DbModelDescription.wrapRows(
             DbModelDescriptions
                 .innerJoin(DbDescriptionInfos)
                 .select {
@@ -242,8 +244,6 @@ class SqlData(
                 }
                 .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
-
-        simulations + models
     }
 
     override fun getAsset(id: String) = transaction(database) {

@@ -543,6 +543,10 @@ class TabItem(
 
     private val aNode = root.querySelector("a") as HTMLElement
 
+    override var text: String
+        get() = aNode.innerText
+        set(value) { aNode.innerText = value }
+
     var icon by html(icon, aNode, Position.AfterBegin) {
         document.create.span("icon") {
             i("fas fa-$it") {

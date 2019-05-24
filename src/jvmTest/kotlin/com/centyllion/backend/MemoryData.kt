@@ -127,6 +127,15 @@ class MemoryData(
         featured.remove(featuredId)
     }
 
+    override fun search(query: String, offset: Int, limit: Int): List<Description> {
+        val models = grainModels.values
+            .filter { it.model.name.contains(query) || it.model.description.contains(query) }
+        val simulations = simulations.values
+            .filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) }
+        return models + simulations
+    }
+
+
     override fun getAsset(id: String) = assets[id]
 
     override fun createAsset(name: String, data: ByteArray): Asset {

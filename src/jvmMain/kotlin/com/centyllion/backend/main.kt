@@ -42,6 +42,7 @@ import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
+import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.net.URL
 import java.nio.file.Files
@@ -162,6 +163,7 @@ fun Application.centyllion(
 
     install(CallLogging) {
         if (debug) level = Level.TRACE else level = Level.WARN
+        logger = LoggerFactory.getLogger(Application::class.java)
     }
 
     // TODO create nice error pages
@@ -223,8 +225,6 @@ fun Application.centyllion(
         register(ContentType.Application.Json, JsonConverter())
     }
 
-
-
     routing {
         get("/") { context.respondHtml { index() } }
 
@@ -250,6 +250,11 @@ fun Application.centyllion(
                             context.respond(models)
                         }
                     }
+                }
+
+                get("search") {
+                    val query = call.parameters["q"]!!
+                    context.respond(data.search(query))
                 }
 
                 // featured

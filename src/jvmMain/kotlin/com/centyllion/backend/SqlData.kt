@@ -4,12 +4,23 @@ import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.sql.DriverManager
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
+class FullTextSearchOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@@")
+
+infix fun <T : String?> ExpressionWithColumnType<T>.fullTextSearch(t: T): Op<Boolean> {
+    return FullTextSearchOp(this, ToTsQuery(wrap(t)))
+}
+
+class ToTsQuery<T : String?>(val expr: Expression<T>) : Function<T>(VarCharColumnType()) {
+    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery(${expr.toSQL(queryBuilder)})"
+}
 
 class SqlData(
     type: String = "postgresql",
@@ -28,10 +39,24 @@ class SqlData(
 
     init {
         transaction(database) {
-            SchemaUtils.create(
-                DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions,
-                DbFeaturedTable, DbAssets
-            )
+            SchemaUtils.create(DbMetaTable)
+
+            val version = try {
+                DbMeta.all().first().version
+            } catch (e: NoSuchElementException) {
+                // meta doesn't exists, creates tables and insert meta version
+                SchemaUtils.create(
+                    DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions,
+                    DbFeaturedTable, DbAssets, DbMetaTable
+                )
+                DbMeta.new { version = 0 }
+                0
+            }
+
+            // apply migration
+            migrations.dropWhile { it.to <= version }.forEach { it.update(this) }
+
+            DbMeta.all().first().version = migrations.last().to
         }
     }
 
@@ -136,6 +161,7 @@ class SqlData(
                 readAccess = false
                 cloneAccess = false
             }
+
             DbSimulationDescription.new {
                 info = newInfo
                 this.modelId = UUID.fromString(modelId)
@@ -194,6 +220,30 @@ class SqlData(
         transaction(database) {
             DbFeatured.findById(UUID.fromString(featuredId))?.delete()
         }
+    }
+
+    override fun search(query: String, offset: Int, limit: Int): List<Description> = transaction {
+        val simulations = DbSimulationDescription.wrapRows(
+            DbSimulationDescriptions
+                .innerJoin(DbDescriptionInfos)
+                .select {
+                    (DbDescriptionInfos.readAccess eq true) and
+                    (DbSimulationDescriptions.searchable fullTextSearch query)
+                }
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+        ).map { it.toModel() }
+
+        val models = DbModelDescription.wrapRows(
+            DbModelDescriptions
+                .innerJoin(DbDescriptionInfos)
+                .select {
+                    (DbDescriptionInfos.readAccess eq true) and
+                    (DbModelDescriptions.searchable fullTextSearch query)
+                }
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+        ).map { it.toModel() }
+
+        simulations + models
     }
 
     override fun getAsset(id: String) = transaction(database) {

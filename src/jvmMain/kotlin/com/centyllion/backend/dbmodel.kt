@@ -6,9 +6,24 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
+import org.jetbrains.exposed.sql.ColumnType
 import org.joda.time.DateTime
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
+
+class TsVectorColumnType : ColumnType()  {
+    override fun sqlType() = "tsvector"
+}
+
+object DbMetaTable : UUIDTable("meta") {
+    val version = integer("version")
+}
+
+class DbMeta(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DbMeta>(DbMetaTable)
+
+    var version by DbMetaTable.version
+}
 
 object DbUsers : UUIDTable("users") {
     val name = text("name")
@@ -69,6 +84,7 @@ object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val model = text("model")
     val type = text("type")
     val version = integer("version")
+    val searchable = registerColumn<String>("searchable", TsVectorColumnType())
 }
 
 class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -78,6 +94,7 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var model by DbModelDescriptions.model
     var type by DbModelDescriptions.type
     var version by DbModelDescriptions.version
+    val searchable = DbSimulationDescriptions.registerColumn<String>("searchable", TsVectorColumnType())
 
     fun toModel(): GrainModelDescription {
         // TODO handle migrations
@@ -99,6 +116,7 @@ object DbSimulationDescriptions : UUIDTable("simulationDescriptions") {
     val simulation = text("simulation")
     val type = text("type")
     val version = integer("version")
+    val searchable = registerColumn<String>("searchable", TsVectorColumnType())
 }
 
 class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {

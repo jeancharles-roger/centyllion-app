@@ -32,6 +32,8 @@ interface Data {
 
     fun deleteFeatured(user: User, featuredId: String)
 
+    fun search(query: String, offset: Int = 0, limit: Int = 20): List<Description>
+
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)

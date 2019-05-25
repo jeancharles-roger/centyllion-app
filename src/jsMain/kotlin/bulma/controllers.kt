@@ -32,8 +32,7 @@ class MultipleController<
         Data, Context, ParentElement : BulmaElement, ItemElement : BulmaElement,
         Ctrl : Controller<Data, Context, ItemElement>
     >(
-    initialList: List<Data>, initialContext: Context,
-    val header: List<ItemElement>, val footer: List<ItemElement>,
+    initialList: List<Data>, initialContext: Context, header: List<ItemElement>, footer: List<ItemElement>,
     override val container: ParentElement,
     val controllerBuilder: (MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>, Data) -> Ctrl,
     val updateParent: (parent: ParentElement, items: List<ItemElement>) -> Unit
@@ -58,8 +57,13 @@ class MultipleController<
         }
     }
 
-
     var onClick: (Data, Ctrl) -> Unit = { _, _ -> }
+
+    var header: List<ItemElement> by observable(header)
+    { _, _, _ -> updateAllList() }
+
+    var footer: List<ItemElement> by observable(footer)
+    { _, _, _ -> updateAllList() }
 
     private var controllers: List<Ctrl> = listOf()
 
@@ -93,6 +97,10 @@ class MultipleController<
 
 
         controllers = newControllers
+        updateAllList()
+    }
+
+    private fun updateAllList() {
         updateParent(container, header + controllers.map { it.container } + footer)
     }
 

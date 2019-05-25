@@ -4,7 +4,6 @@ import bulma.*
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.UserController
-import com.centyllion.client.openPage
 import com.centyllion.client.showPage
 import com.centyllion.common.modelRole
 import com.centyllion.model.Description
@@ -50,7 +49,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     }
 
     val newModelButton = Button("Model", Icon("plus"), ElementColor.Link, size = Size.Small) {
-        openPage(showPage, context)
+        context.openPage(showPage)
     }
 
     val allTabItem = PanelTabsItem("all") { activateFilter(it) }
@@ -79,7 +78,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     { parent, data ->
         val controller = FeaturedController(data)
         controller.body.root.onclick = {
-            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+            context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
         controller.body.root.style.cursor = "pointer"
         controller
@@ -105,10 +104,10 @@ class HomePage(val context: AppContext) : BulmaElement {
         panelController.onClick = { data, _ ->
             when (data) {
                 is GrainModelDescription -> {
-                    openPage(showPage, context, mapOf("model" to data.id))
+                    context.openPage(showPage, mapOf("model" to data.id))
                 }
                 is SimulationDescription -> {
-                    openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.id))
+                    context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
                 }
             }
         }

@@ -74,13 +74,13 @@ fun index() {
 
             // listens to pop state
             window.addEventListener("popstate", {
-                findPageInUrl()?.let { openPage(it, context, register = false) }
+                findPageInUrl()?.let { context.openPage(it, register = false) }
             })
 
             // adds menu
             context.navBar.start = pages
                 .filter { page -> page.header && page.authorized(context.keycloak) }
-                .map { page -> NavBarLinkItem(page.title, id = page.id) { openPage(page, context) } }
+                .map { page -> NavBarLinkItem(page.title, id = page.id) { context.openPage(page) } }
 
             // shows version
             showVersion(context.api)
@@ -88,7 +88,7 @@ fun index() {
             console.log("Starting function")
 
             val page = findPageInUrl() ?: if (user != null) homePage else explorePage
-            openPage(page, context, register = false)
+            context.openPage(page, register = false)
         }.catch {
             val context = BrowserContext(navBar, root, keycloak, null, api)
             context.error(it)
@@ -97,42 +97,8 @@ fun index() {
         }
 }
 
-/** Open the given [page] */
-fun openPage(
-    page: Page, appContext: AppContext, parameters: Map<String, String> = emptyMap(),
-    clearParameters: Boolean = true, register: Boolean = true
-) {
-    // highlight active page
-    appContext.navBar.start.forEach {
-        if (it.root.id == page.id) {
-            it.root.classList.add("has-text-weight-bold")
-            it.root.classList.add("is-active")
-        } else {
-            it.root.classList.remove("has-text-weight-bold")
-            it.root.classList.remove("is-active")
-        }
-    }
-
-    // updates locations and register to history
-    updateLocation(page, parameters, clearParameters, register)
-
-    // gets root element
-    val root = document.querySelector(contentSelector) as HTMLElement
-    // clears element
-    while (root.hasChildNodes()) {
-        root.removeChild(root.childNodes[0]!!)
-    }
-
-    // tries to load page if authorized
-    if (page.authorized(appContext.keycloak)) {
-        appContext.root.appendChild(page.callback(appContext).root)
-    } else {
-        appContext.error("You are not authorized to access this page")
-    }
-}
-
 /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
-fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
+fun updateLocation(page: Page<*>?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
     window.location.let {
         // sets parameters
         val params = URLSearchParams(if (clearParameters) "" else it.search)
@@ -154,7 +120,7 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters
 
 fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
 
-fun findPageInUrl(): Page? {
+fun findPageInUrl(): Page<*>? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
     return params.get("page")?.let { id -> pages.find { it.id == id } }
@@ -168,9 +134,57 @@ class BrowserContext(
     override val api: Api = Api(keycloak)
 ) : AppContext {
 
+    private var content: BulmaElement? = null
+    private var currentPage: Page<BulmaElement>? = null
+
     private val storedEvents = mutableListOf<ClientEvent>()
 
     override val events: List<ClientEvent> get() = storedEvents
+
+    /** Open the given [page] */
+    override fun openPage(page: Page<*>, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
+
+        val open = content?.let {
+            currentPage?.exitCallback?.invoke(it, this)
+        } ?: Promise.resolve(true)
+
+        open.then {
+            if (it) {
+                currentPage = page.unsafeCast<Page<BulmaElement>>()
+
+                // highlight active page
+                navBar.start.forEach {
+                    if (it.root.id == page.id) {
+                        it.root.classList.add("has-text-weight-bold")
+                        it.root.classList.add("is-active")
+                    } else {
+                        it.root.classList.remove("has-text-weight-bold")
+                        it.root.classList.remove("is-active")
+                    }
+                }
+
+                // updates locations and register to history
+                updateLocation(page, parameters, clearParameters, register)
+
+                // gets root element
+                val root = document.querySelector(contentSelector) as HTMLElement
+
+                // clears element
+                while (root.hasChildNodes()) {
+                    root.removeChild(root.childNodes[0]!!)
+                }
+
+                // tries to load page if authorized
+                if (page.authorized(keycloak)) {
+                    content = page.callback(this).also {
+                        root.appendChild(it.root)
+                    }
+                } else {
+                    error("You are not authorized to access this page")
+                }
+            }
+        }
+    }
 
     override fun error(throwable: Throwable) {
         fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable

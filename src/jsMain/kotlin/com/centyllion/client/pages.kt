@@ -12,10 +12,12 @@ import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 import keycloak.KeycloakInstance
+import kotlin.js.Promise
 
-data class Page(
+data class Page<T: BulmaElement>(
     val title: String, val id: String, val needUser: Boolean, val role: String?,
-    val header: Boolean, val callback: (appContext: AppContext) -> BulmaElement
+    val header: Boolean, val callback: (appContext: AppContext) -> T,
+    val exitCallback: T.(appContext: AppContext) -> Promise<Boolean> = { _ -> Promise.resolve(true) }
 ) {
     fun authorized(keycloak: KeycloakInstance): Boolean = when {
         !needUser -> true
@@ -28,7 +30,7 @@ const val contentSelector = "section.cent-main"
 
 val homePage = Page("Home", "home", true, null, true, ::HomePage)
 val explorePage = Page("Explore", "explore", false, null, true, ::explore)
-val showPage = Page("Show", "show", false, null, false, ::ShowPage)
+val showPage = Page("Show", "show", false, null, false, ::ShowPage, ShowPage::canExit)
 val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
 
 val pages = listOf(homePage, explorePage, showPage, administrationPage)
@@ -43,7 +45,7 @@ fun explore(context: AppContext): BulmaElement {
     { parent, data ->
         val controller = SimulationDisplayController(data)
         controller.body.root.onclick = {
-            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.id))
+            context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
         }
         controller.body.root.style.cursor = "pointer"
         controller
@@ -58,7 +60,7 @@ fun explore(context: AppContext): BulmaElement {
         noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList(), header = listOf(noModelResult))
     { parent, data ->
         val controller = GrainModelDisplayController(data)
-        controller.body.root.onclick = { openPage(showPage, context, mapOf("model" to data.id)) }
+        controller.body.root.onclick = { context.openPage(showPage, mapOf("model" to data.id)) }
         controller.body.root.style.cursor = "pointer"
         controller
     }
@@ -97,7 +99,7 @@ fun explore(context: AppContext): BulmaElement {
     { parent, data ->
         val controller = FeaturedController(data)
         controller.body.root.onclick = {
-            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+            context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
         controller.body.root.style.cursor = "pointer"
         controller

@@ -6,7 +6,6 @@ import com.centyllion.client.controller.EditableStringController
 import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.homePage
-import com.centyllion.client.openPage
 import com.centyllion.common.modelRole
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
@@ -164,7 +163,8 @@ class ShowPage(val context: AppContext) : BulmaElement {
         "Delete Simulation", Icon(deleteIcon, color = TextColor.Danger)
     ) { deleteSimulation() }
 
-    val newSimulationItem = DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
+    val newSimulationItem =
+        DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
 
     val loadingItem = DropdownSimpleItem("Loading simulations", Icon("spinner", spin = true))
 
@@ -357,7 +357,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     fun deleteModel() {
         moreDropdown.active = false
 
-       val modal = context.modalDialog(
+        val modal = context.modalDialog(
             "Delete model, Are you sure ?",
             div(
                 p("You're about to delete the model '${model.label}' and its simulations."),
@@ -365,7 +365,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             ),
             textButton("Yes", ElementColor.Danger) {
                 context.api.deleteGrainModel(model).then {
-                    openPage(homePage, context)
+                    context.openPage(homePage)
                     context.message("Model ${model.label} deleted")
                 }
             },
@@ -448,6 +448,23 @@ class ShowPage(val context: AppContext) : BulmaElement {
             }.catch { context.error(it) }
         } else {
             moreDropdown.items = moreDropdownItems
+        }
+    }
+
+    fun canExit(context: AppContext) = Promise<Boolean> { resolve, _ ->
+        if (model != originalModel || simulation != originalSimulation) {
+            val model = context.modalDialog("Modifications not saved, Do you wan't to save ?",
+                p("You're about to quit the page and some modifications haven't been saved."),
+                textButton("Save", ElementColor.Success) {
+                    save()
+                    resolve(true)
+                },
+                textButton("Don't save", ElementColor.Danger) { resolve(true) },
+                textButton("Stay here") { resolve(false) }
+            )
+            model.active = true
+        } else {
+            resolve(true)
         }
     }
 }

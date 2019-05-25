@@ -33,66 +33,80 @@ val administrationPage = Page("Administration", "administration", true, adminRol
 
 val pages = listOf(homePage, explorePage, showPage, administrationPage)
 
-fun explore(appContext: AppContext): BulmaElement {
+fun explore(context: AppContext): BulmaElement {
 
+    val noSimulationResult = Column(SubTitle("No simulation found"), size = ColumnSize.Full)
+
+    // Searched simulations controller
     val searchedSimulationController =
-        noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
+        noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList(), header = listOf(noSimulationResult))
     { parent, data ->
         val controller = SimulationDisplayController(data)
         controller.body.root.onclick = {
-            openPage(showPage, appContext, mapOf("model" to data.modelId, "simulation" to data.id))
+            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.id))
         }
         controller.body.root.style.cursor = "pointer"
         controller
     }
+    // searched simulations tab title
     val searchSimulationTabItem = TabItem("Simulation", "play")
 
+    val noModelResult = Column(SubTitle("No model found"), size = ColumnSize.Full)
+
+    // Searched models controller
     val searchedModelController =
-        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList())
+        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList(), header = listOf(noModelResult))
     { parent, data ->
         val controller = GrainModelDisplayController(data)
-        controller.body.root.onclick = { openPage(showPage, appContext, mapOf("model" to data.id)) }
+        controller.body.root.onclick = { openPage(showPage, context, mapOf("model" to data.id)) }
         controller.body.root.style.cursor = "pointer"
         controller
     }
+    // searched modes tab title
     val searchModelTabItem = TabItem("Models", "boxes")
 
+    // search input
     val searchInput = Input("", "Search", rounded = true) { _, value ->
         searchSimulationTabItem.text = "Simulation"
         searchModelTabItem.text = "Model"
+        searchedModelController.data = emptyList()
         searchedSimulationController.data = emptyList()
 
-        appContext.api.searchSimulation(value).then {
+        context.api.searchSimulation(value).then {
             searchSimulationTabItem.text = "Simulation (${it.size})"
+            searchedSimulationController.header = if (it.isEmpty()) listOf(noSimulationResult) else emptyList()
             searchedSimulationController.data = it
-        }.catch { appContext.error(it) }
-        appContext.api.searchModel(value).then {
+        }.catch { context.error(it) }
+        context.api.searchModel(value).then {
             searchModelTabItem.text = "Model (${it.size})"
+            searchedModelController.header = if (it.isEmpty()) listOf(noModelResult) else emptyList()
             searchedModelController.data = it
-        }.catch { appContext.error(it) }
+        }.catch { context.error(it) }
     }
 
     val search = Field(Control(searchInput, Icon("search")))
 
+    // tabs for search results
     val tabs = TabPages(
         TabPage(searchSimulationTabItem, searchedSimulationController),
         TabPage(searchModelTabItem, searchedModelController)
     )
 
+    // featured controller
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
     { parent, data ->
         val controller = FeaturedController(data)
         controller.body.root.onclick = {
-            openPage(showPage, appContext, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+            openPage(showPage, context, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
         controller.body.root.style.cursor = "pointer"
         controller
     }
     val page = div(
-        Title("Search"), search, tabs,
+        Title("Search"), Box(search, tabs),
         Title("Explore featured models"), featuredController
     )
 
-    appContext.api.fetchAllFeatured().then { models -> featuredController.data = models }
+    context.api.fetchAllFeatured().then { models -> featuredController.data = models }
     return page
 }

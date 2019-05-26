@@ -73,7 +73,7 @@ class Simulator(
     fun oneStep() {
 
         // applies agents dying process
-        val currentCount = mutableMapOf<Grain, Int>()
+        val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
         // all will contains index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.

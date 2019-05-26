@@ -5,18 +5,22 @@ import com.centyllion.model.Direction
 import kotlin.properties.Delegates
 
 class DirectionSetEditController(
-    directions: Set<Direction> = emptySet(),
+    presentedDirection: Set<Direction>, activeDirections: Set<Direction>,
     var onUpdate: (old: Set<Direction>, new: Set<Direction>, controller: DirectionSetEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Set<Direction>, Field>() {
 
     val icons = mapOf(
-        Direction.Up to "arrow-up",
-        Direction.Down to "arrow-down",
-        Direction.Left to "arrow-left",
-        Direction.Right to "arrow-right"
+        Direction.Up to Icon("arrow-up"),
+        Direction.Down to Icon("arrow-down"),
+        Direction.Left to Icon("arrow-left"),
+        Direction.Right to Icon("arrow-right"),
+        Direction.LeftUp to Icon("arrow-left").apply { root.classList.add("fa-rotate-45") },
+        Direction.LeftDown to Icon("arrow-down").apply { root.classList.add("fa-rotate-45") },
+        Direction.RightUp to Icon("arrow-up").apply { root.classList.add("fa-rotate-45") },
+        Direction.RightDown to Icon("arrow-right").apply { root.classList.add("fa-rotate-45") }
     )
 
-    override var data: Set<Direction> by Delegates.observable(directions) { _, old, new ->
+    override var data: Set<Direction> by Delegates.observable(activeDirections) { _, old, new ->
         if (old != new) {
             onUpdate(old, new, this@DirectionSetEditController)
             refresh()
@@ -25,20 +29,14 @@ class DirectionSetEditController(
 
     override var readOnly: Boolean by Delegates.observable(false) { _, old, new ->
         if (old != new) {
-            up.disabled = new
-            down.disabled = new
-            left.disabled = new
-            right.disabled = new
+           buttonsMap.values.forEach { it.disabled = new }
         }
     }
 
-    val left = buttonForDirection(Direction.Left)
-    val up = buttonForDirection(Direction.Up)
-    val down = buttonForDirection(Direction.Down)
-    val right = buttonForDirection(Direction.Right)
+    val buttonsMap = presentedDirection.map { it to buttonForDirection(it) }.toMap()
 
     fun buttonForDirection(direction: Direction) =
-        iconButton(Icon(icons.getValue(direction)), rounded = true, size = Size.Small, color = colorForDirection(direction)) {
+        iconButton(icons.getValue(direction), rounded = true, size = Size.Small, color = colorForDirection(direction)) {
             toggleDirection(direction)
         }
 
@@ -49,16 +47,12 @@ class DirectionSetEditController(
         data = if (data.contains(direction)) data - direction else data + direction
     }
 
-    override val container = Field(
-        Control(left), Control(up), Control(down), Control(right),
-        addons = true
-    )
+    override val container = Field(addons = true).apply { body = buttonsMap.values.map { Control(it) } }
 
     override fun refresh() {
-        up.color = colorForDirection(Direction.Up)
-        down.color = colorForDirection(Direction.Down)
-        left.color = colorForDirection(Direction.Left)
-        right.color = colorForDirection(Direction.Right)
+        buttonsMap.forEach {
+            it.value.color = colorForDirection(it.key)
+        }
     }
 
 }

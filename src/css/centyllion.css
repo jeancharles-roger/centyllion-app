@@ -45,3 +45,7 @@ canvas.is-danger {
 .delete {
   background-color: #b3cde0;
 }
+
+.fa-rotate-45 {
+  transform: rotate(45deg);
+}

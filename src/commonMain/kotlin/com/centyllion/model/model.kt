@@ -19,10 +19,13 @@ val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 enum class Direction {
-    Left, Right, Up, Down, Front, Back
+    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back
 }
 
 val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
+
+val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
+val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
 
 enum class Operator(val label: String) {
     Equals("="), NotEquals("!="), LessThan("<"), LessThanOrEquals("<="), GreaterThan(">"), GreaterThanOrEquals(">=")
@@ -134,6 +137,10 @@ data class Position(
         Direction.Up -> copy(y = y - step)
         Direction.Down -> copy(y = y + step)
         Direction.Front -> copy(z = z - step)
+        Direction.LeftUp -> copy(x = x + step, y = y - step)
+        Direction.RightUp -> copy(x = x - step, y = y - step)
+        Direction.LeftDown -> copy(x = x + step, y = y + step)
+        Direction.RightDown -> copy(x = x - step, y = y + step)
         Direction.Back -> copy(z = z + step)
     }
 }
@@ -233,6 +240,22 @@ data class Simulation(
             Direction.Right -> x = (x + step) % width
             Direction.Up -> y = (y + height - step) % height
             Direction.Down -> y = (y + step) % height
+            Direction.LeftUp -> {
+                x = (x + width - step) % width
+                y = (y + height - step) % height
+            }
+            Direction.LeftDown -> {
+                x = (x + width - step) % width
+                y = (y + step) % height
+            }
+            Direction.RightUp -> {
+                x = (x + step) % width
+                y = (y + height - step) % height
+            }
+            Direction.RightDown -> {
+                x = (x + step) % width
+                y = (y + step) % height
+            }
             Direction.Front -> z = (z + depth - step) % depth
             Direction.Back -> z = (z + step) % depth
         }

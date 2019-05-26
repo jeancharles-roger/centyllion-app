@@ -2,6 +2,8 @@ package com.centyllion.client.controller
 
 import bulma.*
 import com.centyllion.model.Grain
+import com.centyllion.model.extendedDirections
+import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class GrainEditController(
@@ -17,7 +19,8 @@ class GrainEditController(
             nameController.data = new.name
             descriptionController.data = new.description
             movementProbabilityController.data = "${new.movementProbability}"
-            directionController.data = new.allowedDirection
+            firstDirectionController.data = new.allowedDirection
+            extendedDirectionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
             onUpdate(old, new, this@GrainEditController)
         }
@@ -31,7 +34,8 @@ class GrainEditController(
             nameController.readOnly = new
             descriptionController.readOnly = new
             movementProbabilityController.readOnly = new
-            directionController.readOnly = new
+            firstDirectionController.readOnly = new
+            extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
             body.right = if (new) emptyList() else listOf(delete)
         }
@@ -57,9 +61,15 @@ class GrainEditController(
         this.data = this.data.copy(movementProbability = new)
     }
 
-    val directionController = DirectionSetEditController(data.allowedDirection) { _, new, _ ->
-        this.data = this.data.copy(allowedDirection = new)
-    }
+    val firstDirectionController: DirectionSetEditController =
+        DirectionSetEditController(firstDirections, data.allowedDirection) { _, new, _ ->
+            this.data = this.data.copy(allowedDirection = new)
+        }
+
+    val extendedDirectionController: DirectionSetEditController =
+        DirectionSetEditController(extendedDirections, data.allowedDirection) { _, new, _ ->
+            this.data = this.data.copy(allowedDirection = new)
+        }
 
     val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
         this.data = this.data.copy(halfLife = new)
@@ -74,7 +84,7 @@ class GrainEditController(
             Level(center = listOf(colorController, iconController), mobile = true),
             HorizontalField(Help("Half life"), halfLifeController.container),
             HorizontalField(Help("Speed"), movementProbabilityController.container),
-            HorizontalField(Help("Directions"), directionController.container)
+            Level(center = listOf(firstDirectionController, extendedDirectionController))
         ),
         right = listOf(delete)
     ).apply {
@@ -88,7 +98,8 @@ class GrainEditController(
         nameController.refresh()
         descriptionController.refresh()
         movementProbabilityController.refresh()
-        directionController.refresh()
+        firstDirectionController.refresh()
+        extendedDirectionController.refresh()
         halfLifeController.refresh()
     }
 

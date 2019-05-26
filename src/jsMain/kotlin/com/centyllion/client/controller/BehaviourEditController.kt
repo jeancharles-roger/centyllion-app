@@ -4,6 +4,7 @@ import bulma.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Reaction
+import com.centyllion.model.defaultDirection
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
@@ -81,7 +82,7 @@ class BehaviourEditController(
         this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
     }
 
-    val dummyDirectionController = DirectionSetEditController().apply { invisible = true }
+    val dummyDirectionController = DirectionSetEditController(defaultDirection, emptySet()).apply { invisible = true }
 
     val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains)
     { _, new, _ ->

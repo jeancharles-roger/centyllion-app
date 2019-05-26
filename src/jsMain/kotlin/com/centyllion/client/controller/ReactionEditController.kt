@@ -4,6 +4,7 @@ import bulma.*
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Reaction
+import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
@@ -15,7 +16,7 @@ class ReactionEditController(
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
             reactiveController.data = context.second.indexedGrains[data.reactiveId]
-            directionController.data = data.allowedDirection
+            firstDirectionController.data = data.allowedDirection
             productController.data = context.second.indexedGrains[data.productId]
             sourceReactiveController.data = data.sourceReactive
             onUpdate(old, new, this@ReactionEditController)
@@ -40,7 +41,7 @@ class ReactionEditController(
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             reactiveController.readOnly = new
-            directionController.readOnly = new
+            firstDirectionController.readOnly = new
             productController.readOnly = new
             sourceReactiveController.readOnly = new
             body.right = if (new) emptyList() else listOf(delete)
@@ -52,7 +53,7 @@ class ReactionEditController(
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
 
-    val directionController = DirectionSetEditController(data.allowedDirection)
+    val firstDirectionController = DirectionSetEditController(firstDirections, data.allowedDirection)
     { _, new, _ ->
         this.data = this.data.copy(allowedDirection = new)
     }
@@ -74,7 +75,7 @@ class ReactionEditController(
 
     val body = Level(
         left = listOf(reactiveController),
-        center = listOf(directionController, productController, sourceReactiveController),
+        center = listOf(firstDirectionController, productController, sourceReactiveController),
         right = listOf(delete),
         mobile = true
     )
@@ -86,7 +87,7 @@ class ReactionEditController(
 
     override fun refresh() {
         reactiveController.refresh()
-        directionController.refresh()
+        firstDirectionController.refresh()
         productController.refresh()
     }
 

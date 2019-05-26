@@ -47,7 +47,10 @@ class DirectionSetEditController(
         data = if (data.contains(direction)) data - direction else data + direction
     }
 
-    override val container = Field(addons = true).apply { body = buttonsMap.values.map { Control(it) } }
+    override val container = Field(addons = true).apply {
+        body = buttonsMap.values.map { Control(it) }
+        root.style.transform = "scale(0.8)"
+    }
 
     override fun refresh() {
         buttonsMap.forEach {

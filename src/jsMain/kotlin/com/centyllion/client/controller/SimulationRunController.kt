@@ -249,7 +249,7 @@ class SimulationRunController(
     fun toggleCharts() {
         presentCharts = !presentCharts
         toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
-        refresh()
+        refreshChart()
     }
 
     private fun createSimulationViewController(): SimulatorViewController {

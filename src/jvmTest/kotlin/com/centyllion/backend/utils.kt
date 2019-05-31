@@ -42,7 +42,7 @@ fun <R> withCentyllion(test: TestApplicationEngine.() -> R): R =
     withTestApplication(
         {
             val verifier = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
-            centyllion(false, MemoryData(), verifier)
+            centyllion(false, MemoryData(), MemorySubscriptionManager(), verifier)
         }, test
     )
 

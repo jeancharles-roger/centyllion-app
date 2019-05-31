@@ -6,11 +6,6 @@ import com.auth0.jwt.JWTVerifier
 import com.centyllion.common.adminRole
 import com.centyllion.common.modelRole
 import com.centyllion.model.*
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.int
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -30,32 +25,27 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.withCharset
-import io.ktor.network.tls.certificates.generateCertificate
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
 import io.ktor.routing.*
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.sslConnector
-import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.net.URL
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.security.KeyStore
 import java.util.concurrent.TimeUnit
 
-
 const val authRealm = "Centyllion"
-const val authBase = "https://login.centyllion.com/auth/realms/$authRealm"
+const val masterRealm = "master"
+const val masterLogin = "automation"
+const val masterClient = "admin-cli"
+const val authBase = "https://login.centyllion.com/auth"
+const val realmBase = "$authBase/realms/$authRealm"
 const val authClient = "webclient"
-const val jwkUrl = "$authBase/protocol/openid-connect/certs"
+const val jwkUrl = "$realmBase/protocol/openid-connect/certs"
 
 private fun makeJwkProvider(): JwkProvider = JwkProviderBuilder(URL(jwkUrl))
     .cached(10, 24, TimeUnit.HOURS)
@@ -67,83 +57,14 @@ const val certificatePassword = "changeit"
 val passwordProvider = { certificatePassword.toCharArray() }
 val certificatePath: Path = Paths.get("certificate.jks")
 
-private fun retrieveKeystore(): KeyStore {
-    return if (Files.exists(certificatePath)) Files.newInputStream(certificatePath).use {
-        val keyStore = KeyStore.getInstance("JKS")!!
-        keyStore.load(it, certificatePassword.toCharArray())
-        keyStore
-    } else {
-        // TODO use here a proper certificate, this is only for debug
-        generateCertificate(
-            certificatePath.toFile(),
-            keyAlias = certificateKeyAlias,
-            keyPassword = certificatePassword,
-            jksPassword = certificatePassword
-        )
-    }
-}
-
-class ServerCommand : CliktCommand("Start the server") {
-
-    val ssl by option(help = "Uses a ssl connector").flag(default = false)
-
-    val debug by option(help = "Activate debug parameters").flag(default = false)
-
-    val host by option(help = "Host to listen").default("localhost")
-    val port by option(help = "Port to listen").int().default(0)
-
-    val dbType by option("--db-type", help = "Database type").default("postgresql")
-    val dbHost by option("--db-host", help = "Database host").default("localhost")
-    val dbPort by option("--db-port", help = "Database port").int().default(5432)
-    val dbName by option("--db-name", help = "Database name").default("centyllion")
-    val dbUser by option("--db-user", help = "Database user name").default("centyllion")
-    val dbPassword by option("--db-password", help = "Database user password").default("")
-
-    @KtorExperimentalAPI
-    override fun run() {
-        val effectivePort = if (port <= 0) if (ssl) 8443 else 8080 else port
-        // Reads or generates a certificate for HTTPS
-        val keystore = retrieveKeystore()
-
-        val env = applicationEngineEnvironment {
-            if (ssl) {
-                sslConnector(
-                    keystore,
-                    certificateKeyAlias,
-                    passwordProvider,
-                    passwordProvider
-                ) {
-                    host = this@ServerCommand.host
-                    port = effectivePort
-                }
-            } else {
-                connector {
-                    host = this@ServerCommand.host
-                    port = effectivePort
-                }
-            }
-
-            val data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
-            module { centyllion(debug, data) }
-
-        }
-
-        embeddedServer(Netty, env).start(wait = true)
-    }
-}
-
 fun main(args: Array<String>) {
-    // do some checking first
-    //checkVersionsAndMigrations()
-
     // start server command
     ServerCommand().main(args)
 }
 
 @KtorExperimentalAPI
 fun Application.centyllion(
-    debug: Boolean, data: Data,
-    verifier: JWTVerifier? = null
+    debug: Boolean, data: Data, subscription: SubscriptionManager, verifier: JWTVerifier? = null
 ) {
     install(Compression)
     install(DefaultHeaders)
@@ -212,7 +133,7 @@ fun Application.centyllion(
             if (verifier != null) {
                 verifier(verifier)
             } else {
-                verifier(makeJwkProvider(), authBase) {
+                verifier(makeJwkProvider(), realmBase) {
                     acceptLeeway(5)
                 }
             }
@@ -261,7 +182,7 @@ fun Application.centyllion(
 
                     // post a new featured
                     post {
-                        withRequiredPrincipal(setOf(adminRole)) {
+                        withRequiredPrincipal(adminRole) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val newFeatured = call.receive(FeaturedDescription::class)
                             val model = data.getGrainModel(newFeatured.modelId)
@@ -293,7 +214,7 @@ fun Application.centyllion(
 
                         // delete an existing featured
                         delete {
-                            withRequiredPrincipal(setOf(adminRole)) {
+                            withRequiredPrincipal(adminRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["featured"]!!
                                 val featured = data.getFeatured(id)
@@ -325,7 +246,7 @@ fun Application.centyllion(
 
                     // post a new model
                     post {
-                        withRequiredPrincipal(setOf(modelRole)) {
+                        withRequiredPrincipal(modelRole) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val newModel = call.receive(GrainModel::class)
                             val newDescription = data.createGrainModel(user, newModel)
@@ -353,7 +274,7 @@ fun Application.centyllion(
 
                         // patch an existing model
                         patch {
-                            withRequiredPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(modelRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = call.receive(GrainModelDescription::class)
@@ -372,7 +293,7 @@ fun Application.centyllion(
 
                         // delete an existing model
                         delete {
-                            withRequiredPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(modelRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = data.getGrainModel(id)
@@ -417,7 +338,7 @@ fun Application.centyllion(
 
                             // post a new simulation for model
                             post {
-                                withRequiredPrincipal(setOf(modelRole)) {
+                                withRequiredPrincipal(modelRole) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
                                     val modelId = call.parameters["model"]!!
                                     val model = data.getGrainModel(modelId)
@@ -465,7 +386,7 @@ fun Application.centyllion(
 
                         // patch an existing simulation for user
                         patch {
-                            withRequiredPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(modelRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = call.receive(SimulationDescription::class)
@@ -484,7 +405,7 @@ fun Application.centyllion(
 
                         // delete an existing model for user
                         delete {
-                            withRequiredPrincipal(setOf(modelRole)) {
+                            withRequiredPrincipal(modelRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = data.getSimulation(simulationId)
@@ -531,15 +452,14 @@ fun hasReadAccess(info: DescriptionInfo, user: User?) =
 fun isOwner(info: DescriptionInfo, user: User) = info.userId == user.id
 
 suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
-    requiredRoles: Set<String> = emptySet(),
-    block: suspend (JWTPrincipal) -> Unit
+    requiredRole: String? = null, block: suspend (JWTPrincipal) -> Unit
 ) {
     // test if authenticated and all required roles are present
     val principal = call.principal<JWTPrincipal>()
-    val granted = if (requiredRoles.isEmpty()) true else {
+    val granted = if (requiredRole == null) true else {
         val rolesClaim = principal?.payload?.getClaim("roles")
         val roles: List<String> = rolesClaim?.asList<String>(String::class.java) ?: emptyList()
-        requiredRoles.fold(true) { a, c -> a && roles.contains(c) }
+        roles.contains(requiredRole)
     }
     if (principal != null && granted) {
         block(principal)

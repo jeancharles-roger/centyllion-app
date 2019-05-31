@@ -11,3 +11,5 @@ webroot/css/centyllion
 webroot/version.json
 
 db/**
+
+centyllion.jks

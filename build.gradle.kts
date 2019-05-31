@@ -25,6 +25,8 @@ val ktor_version: String by project
 val kotlinx_html_version: String by project
 val exposed_version: String by project
 val postgresql_version: String by project
+val keycloak_version: String by project
+val stripe_version: String by project
 
 buildscript {
     repositories {
@@ -44,6 +46,7 @@ plugins {
 repositories {
     jcenter()
     maven("https://kotlin.bintray.com/kotlinx")
+    mavenCentral()
 }
 
 group = "com.centyllion"
@@ -87,8 +90,19 @@ kotlin {
 
                     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 
+                    // adds dependences for postgres
                     implementation("org.jetbrains.exposed:exposed:$exposed_version")
                     implementation("org.postgresql:postgresql:$postgresql_version")
+
+                    // adds dependencies to manage keycloak users
+                    implementation("org.jboss.resteasy:resteasy-client:3.6.1.Final")
+                    implementation("org.jboss.resteasy:resteasy-jaxrs:3.6.1.Final")
+                    implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
+                    implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
+                    implementation("org.keycloak:keycloak-admin-client:$keycloak_version")
+                    
+                    // ads dependencies for stripe
+                    implementation("com.stripe:stripe-java:$stripe_version")
                 }
             }
             // JVM-specific tests and their dependencies:
@@ -196,10 +210,10 @@ tasks {
             val configFile = file("${jsDir}/requirejs.config.json")
             configFile.writeText(
                 """requirejs.config({
-                'baseUrl': 'js',
-                paths: {
-                    'chartjs': 'Chart.js-2.7.3/Chart',
-                    $moduleJoined
+                    'baseUrl': 'js',
+                    paths: {
+                        'chartjs': 'Chart.js-2.8.0/Chart',
+                        $moduleJoined
                     }
                 })
 

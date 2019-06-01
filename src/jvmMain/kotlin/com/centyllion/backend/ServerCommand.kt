@@ -80,9 +80,17 @@ class ServerCommand : CliktCommand("Start the server") {
     val password by option(help = "Keystore password", envvar = "KEYSTORE_PASSWORD")
         .prompt("Keystore password", hideInput = true)
 
-    val dbPasswordAlias by option("--db-password-alias", help = "Database password alias for keystore").default("dbPassword")
-    val stripeKeyAlias by option("--stripe-key-alias", help = "Stripe key alias for keystore").default("stripeKey")
-    val keycloakPasswordKeyAlias by option("--keycloak-password-alias", help = "Keycloak key alias for keystore").default("keycloak")
+    val dbPasswordAlias by option(
+        "--db-password-alias", help = "Database password alias for keystore"
+    ).default("dbPassword")
+
+    val stripeKeyAlias by option(
+        "--stripe-key-alias", help = "Stripe key alias for keystore"
+    ).default("stripeKey")
+
+    val keycloakPasswordKeyAlias by option(
+        "--keycloak-password-alias", help = "Keycloak key alias for keystore"
+    ).default("keycloak")
 
 
     fun extractPassword(keystore: KeyStore, alias: String, pwd: CharArray): String {
@@ -105,7 +113,18 @@ class ServerCommand : CliktCommand("Start the server") {
         val actualDbPassword = dbPassword ?: extractPassword(loadedKeystore, dbPasswordAlias, pwd)
         val actualStripeKey = stripeKey ?: extractPassword(loadedKeystore, stripeKeyAlias, pwd)
         val actualKeycloakPassword = keycloakPassword ?: extractPassword(loadedKeystore, keycloakPasswordKeyAlias, pwd)
-        return ServerConfig(host, port, dbType, dbHost, dbPort, dbName, dbUser, actualDbPassword, actualStripeKey, actualKeycloakPassword)
+        return ServerConfig(
+            host,
+            port,
+            dbType,
+            dbHost,
+            dbPort,
+            dbName,
+            dbUser,
+            actualDbPassword,
+            actualStripeKey,
+            actualKeycloakPassword
+        )
     }
 
 

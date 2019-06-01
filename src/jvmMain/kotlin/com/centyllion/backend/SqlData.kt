@@ -1,6 +1,7 @@
 package com.centyllion.backend
 
 import com.centyllion.model.*
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
@@ -8,7 +9,6 @@ import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
-import org.postgresql.ds.PGConnectionPoolDataSource
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
@@ -35,13 +35,13 @@ class SqlData(
 
     val url = "jdbc:$type://$host:$port/$name"
 
-    val connectionPool = PGConnectionPoolDataSource().apply {
-        setURL(url)
-        setUser(user)
+    val dataSource = HikariDataSource().apply {
+        jdbcUrl = url
+        username = user
         setPassword(password)
     }
 
-    val database = Database.connect({ connectionPool.connection })
+    val database = Database.connect(dataSource)
 
     init {
         transaction(database) {

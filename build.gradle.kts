@@ -94,6 +94,7 @@ kotlin {
                     // adds dependences for postgres
                     implementation("org.jetbrains.exposed:exposed:$exposed_version")
                     implementation("org.postgresql:postgresql:$postgresql_version")
+                    implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
 
                     // adds dependencies to manage keycloak users
                     implementation("org.jboss.resteasy:resteasy-client:3.6.1.Final")

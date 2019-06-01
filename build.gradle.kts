@@ -318,15 +318,12 @@ tasks {
                     url.host = "deploy.centyllion.com"
                     url.path("hooks","deploy-beta")
 
-                    val dbPassword = System.getenv("DB_PASSWORD")?: System.getProperty("db.password")
-                    if (dbPassword != null) header("X-DbPassword", dbPassword)
+                    val password = System.getenv("PASSWORD")?: System.getProperty("password")
+                    if (password != null) header("X-Password", password)
 
-                    val key = System.getenv("DEPLOY_KEY").let {
-                        if (it != null) it else  System.getProperty("deploy.key")
-                    }
+                    val key = System.getenv("DEPLOY_KEY") ?: System.getProperty("deploy.key")
                     header("X-Token", key)
-
-
+                    
                     val bytes = distribution.get().archiveFile.get().asFile.readBytes()
                     val payload = """{ "content": "${Base64.encodeBase64String(bytes)}" }"""
                     body = TextContent(payload, ContentType.Application.Json)

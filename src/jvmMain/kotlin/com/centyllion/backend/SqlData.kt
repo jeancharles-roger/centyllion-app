@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
-import java.sql.DriverManager
+import org.postgresql.ds.PGConnectionPoolDataSource
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
@@ -35,7 +35,13 @@ class SqlData(
 
     val url = "jdbc:$type://$host:$port/$name"
 
-    val database = Database.connect({ DriverManager.getConnection(url, user, password) })
+    val connectionPool = PGConnectionPoolDataSource().apply {
+        setURL(url)
+        setUser(user)
+        setPassword(password)
+    }
+
+    val database = Database.connect({ connectionPool.connection })
 
     init {
         transaction(database) {

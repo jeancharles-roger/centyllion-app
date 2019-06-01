@@ -1,6 +1,8 @@
 #!/bin/sh
 
-mkdir logs
+if [ ! -d "logs" ]; then
+    mkdir logs
+fi
 
 PIDFILE=$PWD/server.pid
 LOGFILE=$PWD/logs/server.log
@@ -18,6 +20,9 @@ fi
 echo "Starting server from $PWD"
 
 nohup \
-    java -cp `find libs | xargs | sed "s/ /:/g"` com.centyllion.backend.MainKt --db-host $DB_HOST --db-port $DB_PORT --db-password $DB_PASSWORD --port $PORT $* > $LOGFILE 2>&1 &
+    java -cp `find libs | xargs | sed "s/ /:/g"` com.centyllion.backend.MainKt \
+        --debug --db-host $DB_HOST --db-port $DB_PORT \
+        --keystore ../centyllion.jks --password $PASSWORD \
+        --port $PORT $* > $LOGFILE 2>&1 &
 
 echo $! > $PIDFILE

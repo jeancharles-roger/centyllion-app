@@ -1,3 +1,4 @@
+@file:Suppress("UNUSED_VARIABLE")
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
@@ -78,7 +79,7 @@ kotlin {
 
                     implementation("com.github.ajalt:clikt:$clikt_version")
 
-                    // needed by ktor-auth-jwt (strange since it was included at some time ...
+                    // needed by ktor-auth-jwt (strange since it was included at some time ...)
                     implementation("com.google.guava:guava:27.1-jre")
 
                     implementation("io.ktor:ktor-html-builder:$ktor_version")
@@ -163,8 +164,8 @@ tasks {
             val version =  System.getenv("GITHUB_REF") ?: "localrepository"
             val build = System.getenv("GITHUB_SHA") ?: "dev"
             val date = GMTDate().toHttpDate()
-            val file = file("$webRoot/version.json").writeText(
-                """{ "version": "${version}", "build": "${build}", "date": "${date}" }"""
+            file("$webRoot/version.json").writeText(
+                """{ "version": "$version", "build": "$build", "date": "$date" }"""
             )
         }
     }
@@ -189,7 +190,7 @@ tasks {
             val modules = mutableMapOf<String, String>()
 
             // Adds md5 sum in file name for cache purposes
-            file(jsDir).listFiles().forEach {
+            file(jsDir).listFiles()?.forEach {
                 val base = it.nameWithoutExtension
                 val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
                 val builder = StringBuilder()
@@ -239,7 +240,7 @@ tasks {
             val files = mutableListOf<String>()
 
             // Adds md5 sum in file name for cache purposes
-            file(cssDir).listFiles().forEach {
+            file(cssDir).listFiles()?.forEach {
                 val base = it.nameWithoutExtension
                 val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
                 val builder = StringBuilder()
@@ -323,7 +324,7 @@ tasks {
 
                     val key = System.getenv("DEPLOY_KEY") ?: System.getProperty("deploy.key")
                     header("X-Token", key)
-                    
+
                     val bytes = distribution.get().archiveFile.get().asFile.readBytes()
                     val payload = """{ "content": "${Base64.encodeBase64String(bytes)}" }"""
                     body = TextContent(payload, ContentType.Application.Json)

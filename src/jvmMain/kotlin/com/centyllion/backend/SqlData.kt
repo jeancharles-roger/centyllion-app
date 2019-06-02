@@ -210,7 +210,7 @@ class SqlData(
     }
 
     override fun getAllFeatured(offset: Int, limit: Int): List<FeaturedDescription> = transaction(database) {
-        DbFeatured.all().limit(limit, offset).map { it.toModel() }
+        DbFeatured.all().limit(limit, offset).reversed().map { it.toModel() }
     }
 
     override fun getFeatured(id: String) = transaction(database) {

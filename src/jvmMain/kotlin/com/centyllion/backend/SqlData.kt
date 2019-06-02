@@ -14,7 +14,7 @@ import javax.sql.rowset.serial.SerialBlob
 
 class FullTextSearchOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@@")
 
-infix fun <T : String?> ExpressionWithColumnType<T>.fullTextSearch(t: T): Op<Boolean> {
+infix fun ExpressionWithColumnType<Any>.fullTextSearch(t: String): Op<Boolean> {
     return FullTextSearchOp(this, ToTsQuery(wrap(t)))
 }
 
@@ -157,6 +157,7 @@ class SqlData(
     override fun getSimulation(id: String) = transaction(database) {
         DbSimulationDescription.findById(UUID.fromString(id))?.toModel()
     }
+
 
     override fun createSimulation(user: User, modelId: String, sent: Simulation) =
         transaction(database) {

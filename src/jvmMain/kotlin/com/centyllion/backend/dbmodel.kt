@@ -84,7 +84,7 @@ object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val model = text("model")
     val type = text("type")
     val version = integer("version")
-    val searchable = registerColumn<String>("searchable", TsVectorColumnType())
+    val searchable = registerColumn<Any>("searchable", TsVectorColumnType())
 }
 
 class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -94,7 +94,7 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var model by DbModelDescriptions.model
     var type by DbModelDescriptions.type
     var version by DbModelDescriptions.version
-    val searchable = DbSimulationDescriptions.registerColumn<String>("searchable", TsVectorColumnType())
+    val searchable = DbModelDescriptions.searchable
 
     fun toModel(): GrainModelDescription {
         // TODO handle migrations
@@ -116,7 +116,7 @@ object DbSimulationDescriptions : UUIDTable("simulationDescriptions") {
     val simulation = text("simulation")
     val type = text("type")
     val version = integer("version")
-    val searchable = registerColumn<String>("searchable", TsVectorColumnType())
+    val searchable = registerColumn<Any>("searchable", TsVectorColumnType())
 }
 
 class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -128,6 +128,7 @@ class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var simulation by DbSimulationDescriptions.simulation
     var type by DbSimulationDescriptions.type
     var version by DbSimulationDescriptions.version
+    var searchable by DbSimulationDescriptions.searchable
 
     fun toModel(): SimulationDescription {
         // TODO handle migrations

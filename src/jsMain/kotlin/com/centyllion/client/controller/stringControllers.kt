@@ -8,7 +8,7 @@ import kotlin.properties.Delegates.observable
  */
 class EditableStringController(
     initialData: String = "", placeHolder: String = "", readOnly: Boolean = false,
-    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = readOnly),
+    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = true),
     validateOnEnter: Boolean = true,
     var isValid: (value: String) -> Boolean = { true },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }

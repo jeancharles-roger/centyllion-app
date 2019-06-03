@@ -7,8 +7,8 @@ import kotlin.properties.Delegates.observable
  * Editable string controller.
  */
 class EditableStringController(
-    initialData: String = "", placeHolder: String = "", disabled: Boolean = false,
-    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = true, static = true),
+    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false,
+    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = readOnly),
     validateOnEnter: Boolean = true,
     var isValid: (value: String) -> Boolean = { true },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
@@ -21,7 +21,7 @@ class EditableStringController(
         }
     }
 
-    override var readOnly: Boolean by observable(disabled) { _, old, new ->
+    override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) edit(false)
     }
 
@@ -34,13 +34,16 @@ class EditableStringController(
     val penIcon = Icon("pen")
 
 
-    val inputControl = Control(this.input, expanded = true, rightIcon = if (disabled) null else penIcon)
+    val inputControl = Control(this.input, expanded = true, rightIcon = if (readOnly) null else penIcon)
 
-    fun edit(editable: Boolean) {
-        input.static = !editable
-        input.readonly = !editable
-        container.addons = editable
-        if (editable) {
+    fun edit(start: Boolean) {
+        // don't edit if readonly
+        if (start && readOnly) return
+
+        input.static = !start
+        input.readonly = !start
+        container.addons = start
+        if (start) {
             container.body = listOfNotNull(inputControl, okControl, cancelControl)
             inputControl.rightIcon = null
             input.root.focus()
@@ -54,10 +57,7 @@ class EditableStringController(
 
     init {
         input.apply {
-            root.onclick = {
-                if (!this@EditableStringController.readOnly) edit(true)
-                Unit
-            }
+            root.onclick = { edit(true) }
             root.onkeyup = {
                 if (!readonly) {
                     when (it.key) {

@@ -187,7 +187,7 @@ fun Application.centyllion(
                             val newFeatured = call.receive(FeaturedDescription::class)
                             val model = data.getGrainModel(newFeatured.modelId)
                             val simulation = data.getSimulation(newFeatured.simulationId)
-                            val author = data.getUser(newFeatured.authorId)
+                            val author = data.getUser(newFeatured.authorId, false)
 
                             context.respond(
                                 when {

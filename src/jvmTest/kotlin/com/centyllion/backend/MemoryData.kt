@@ -58,7 +58,9 @@ class MemoryData(
             }
         }
 
-    override fun getUser(id: String): User? = users[id]
+    override fun getUser(id: String, detailed: Boolean): User? = users[id]?.let {
+        if (detailed) it else it.copy(details = null)
+    }
 
     override fun saveUser(user: User) {
         users[user.id] = user

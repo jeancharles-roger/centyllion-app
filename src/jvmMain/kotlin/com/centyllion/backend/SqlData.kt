@@ -45,16 +45,15 @@ class SqlData(
 
     init {
         transaction(database) {
-            SchemaUtils.create(DbMetaTable)
-
+            SchemaUtils.createMissingTablesAndColumns(
+                DbMetaTable, DbUsers, DbFeaturedTable, DbAssets,
+                DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions
+            )
             val version = try {
                 DbMeta.all().first().version
             } catch (e: NoSuchElementException) {
                 // meta doesn't exists, creates tables and insert meta version
-                SchemaUtils.create(
-                    DbUsers, DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions,
-                    DbFeaturedTable, DbAssets, DbMetaTable
-                )
+
                 DbMeta.new { version = 0 }
                 0
             }
@@ -67,6 +66,10 @@ class SqlData(
     }
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
+        // retrieves roles from claim
+        val currentRoles = principal.payload.claims["roles"]?.asList(String::class.java)?.joinToString(",")
+
+        // find or create the user
         val user = transaction(database) {
             DbUser.find { DbUsers.keycloak eq principal.payload.subject }.firstOrNull()
         } ?: principal.payload.claims.let { claims ->
@@ -75,13 +78,20 @@ class SqlData(
                     keycloak = principal.payload.subject
                     name = claims["name"]?.asString() ?: ""
                     email = claims["email"]?.asString() ?: ""
+                    roles = currentRoles ?: ""
                 }
             }
         }
-        return user.toModel()
+        if (user.roles != currentRoles) {
+            // updates roles for user
+            transaction { user.roles = currentRoles ?: "" }
+        }
+        return user.toModel(true)
     }
 
-    override fun getUser(id: String): User? = transaction(database) { DbUser.findById(UUID.fromString(id))?.toModel() }
+    override fun getUser(id: String, detailed: Boolean): User? = transaction(database) {
+        DbUser.findById(UUID.fromString(id))?.toModel(detailed)
+    }
 
     override fun saveUser(user: User) {
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }

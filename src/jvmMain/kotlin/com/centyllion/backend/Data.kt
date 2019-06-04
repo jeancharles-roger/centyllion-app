@@ -5,7 +5,7 @@ import io.ktor.auth.jwt.JWTPrincipal
 
 interface Data {
     fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
-    fun getUser(id: String): User?
+    fun getUser(id: String, detailed: Boolean): User?
     fun saveUser(user: User)
 
     fun publicGrainModels(offset: Int = 0, limit: Int = 20): List<GrainModelDescription>

@@ -7,7 +7,14 @@ data class User(
     val id: String,
     val keycloakId: String,
     val name: String,
-    val email: String
+    val email: String,
+    val details: UserDetails? = null
+)
+
+@Serializable
+data class UserDetails(
+    val stripeId: String?,
+    val roles: List<String>
 )
 
 enum class Action {

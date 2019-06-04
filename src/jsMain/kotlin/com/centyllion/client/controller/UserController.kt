@@ -1,6 +1,7 @@
 package com.centyllion.client.controller
 
 import bulma.*
+import com.centyllion.common.allRoles
 import com.centyllion.model.User
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
@@ -26,7 +27,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
     val nameController = EditableStringController(user?.name ?: "", readOnly = true)
     val emailController = EditableStringController(user?.email ?: "", readOnly = true)
 
-    val subscription = Value("none")
+    val subscription = Value(roles())
 
     val descriptionController = multilineStringController("", "Description")
 
@@ -53,16 +54,12 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         )
     )
 
-    override fun refresh() {
-        if (newData == null) {
-            nameController.text = ""
-            emailController.text = ""
-            saveButton.disabled = true
+    fun roles() = newData?.details?.roles?.mapNotNull { allRoles[it] }?.joinToString(", ") ?: "None"
 
-        } else newData?.let {
-            nameController.text = it.name
-            emailController.text = it.email
-            saveButton.disabled = data == newData
-        }
+    override fun refresh() {
+        nameController.text = newData?.name ?: ""
+        emailController.text = newData?.email ?: ""
+        subscription.text = roles()
+        saveButton.disabled = newData == null || newData == data
     }
 }

@@ -23,9 +23,10 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
     var onUpdate: ((old: User?, new: User?, UserController) -> Promise<Any>?) =
         { _, _, _ -> null }
 
+    val nameController = EditableStringController(user?.name ?: "", readOnly = true)
+    val emailController = EditableStringController(user?.email ?: "", readOnly = true)
 
-    val nameValue = Value()
-    val emailValue = Value()
+    val subscription = Value("none")
 
     val descriptionController = multilineStringController("", "Description")
 
@@ -44,11 +45,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
         center = listOf(
             Columns(
-                Column(
-                    Field(Label("Name"), nameValue, Help()),
-                    Field(Label("Email"), emailValue, Help()),
-                    size = ColumnSize.S4
-                ),
+                Column(nameController, emailController, subscription, size = ColumnSize.S4),
                 Column(descriptionController, size = ColumnSize.S8),
                 Column(Level(listOf(saveResult), listOf(saveButton)), size = ColumnSize.Full),
                 multiline = true
@@ -56,19 +53,15 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         )
     )
 
-    init {
-        refresh()
-    }
-
     override fun refresh() {
         if (newData == null) {
-            nameValue.text = ""
-            emailValue.text = ""
+            nameController.text = ""
+            emailController.text = ""
             saveButton.disabled = true
 
         } else newData?.let {
-            nameValue.text = it.name
-            emailValue.text = it.email
+            nameController.text = it.name
+            emailController.text = it.email
             saveButton.disabled = data == newData
         }
     }

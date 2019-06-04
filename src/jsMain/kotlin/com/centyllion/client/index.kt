@@ -15,7 +15,8 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.*
+import kotlin.js.Date
+import kotlin.js.Promise
 
 interface CssFile {
     val files: Array<String>
@@ -133,6 +134,8 @@ class BrowserContext(
     override val me: User?,
     override val api: Api = Api(keycloak)
 ) : AppContext {
+
+    override val stripeKey = "pk_test_aPFW9HKhSHLmczJtGWW0Avdh00m1Ki47LU"
 
     private var content: BulmaElement? = null
     private var currentPage: Page<BulmaElement>? = null

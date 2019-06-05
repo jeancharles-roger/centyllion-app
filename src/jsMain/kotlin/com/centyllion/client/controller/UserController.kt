@@ -56,7 +56,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
     )
 
     fun roles() = newData?.details?.roles
-        ?.mapNotNull { allRoles[it] }?.map { Tag(it, ElementColor.Primary) } ?: emptyList()
+        ?.mapNotNull { allRoles[it] }?.map { Tag(it, color = ElementColor.Primary, rounded = true) } ?: emptyList()
 
     override fun refresh() {
         nameController.text = newData?.name ?: ""

@@ -5,14 +5,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(
     val id: String,
-    val keycloakId: String,
     val name: String,
-    val email: String,
     val details: UserDetails? = null
 )
 
 @Serializable
 data class UserDetails(
+    val keycloakId: String,
+    val email: String,
     val stripeId: String?,
     val roles: List<String>
 )

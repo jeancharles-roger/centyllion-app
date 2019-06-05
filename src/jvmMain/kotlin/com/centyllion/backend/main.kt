@@ -173,6 +173,14 @@ fun Application.centyllion(
                     }
                 }
 
+                route("user") {
+                    get {
+
+                    }
+
+
+                }
+
                 // featured
                 route("featured") {
                     get {

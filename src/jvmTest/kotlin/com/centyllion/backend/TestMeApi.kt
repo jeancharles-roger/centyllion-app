@@ -57,8 +57,8 @@ class TestMeApi {
 
                 val user = Json.parse(User.serializer(), response.content ?: "")
                 assertEquals(testUser.name, user.name)
-                assertEquals(testUser.email, user.email)
-                assertEquals(testUser.keycloakId, user.keycloakId)
+                assertEquals(testUser.details?.email, user.details?.email)
+                assertEquals(testUser.details?.keycloakId, user.details?.keycloakId)
             }
         }
     }

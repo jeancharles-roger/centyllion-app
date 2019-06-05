@@ -25,7 +25,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         { _, _, _ -> null }
 
     val nameController = EditableStringController(user?.name ?: "", readOnly = true)
-    val emailController = EditableStringController(user?.email ?: "", readOnly = true)
+    val emailController = EditableStringController(user?.details?.email ?: "", readOnly = true)
 
     val subscription = Tags(roles())
 
@@ -60,7 +60,7 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
 
     override fun refresh() {
         nameController.text = newData?.name ?: ""
-        emailController.text = newData?.email ?: ""
+        emailController.text = newData?.details?.email ?: ""
         subscription.tags = roles()
         saveButton.disabled = newData == null || newData == data
     }

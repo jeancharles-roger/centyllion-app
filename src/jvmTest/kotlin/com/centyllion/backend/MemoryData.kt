@@ -14,7 +14,7 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val claims = principal.payload.claims
     val name = claims["name"]?.asString() ?: ""
     val email = claims["email"]?.asString() ?: ""
-    return User(newId(), keycloakId, name, email)
+    return User(newId(), name, UserDetails(keycloakId, email, null, emptyList()))
 }
 
 fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {
@@ -48,7 +48,7 @@ class MemoryData(
 ) : Data {
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
-        users.values.find { it.keycloakId == principal.payload.subject }.let {
+        users.values.find { it.details?.keycloakId == principal.payload.subject }.let {
             if (it == null) {
                 val user = createUser(principal, principal.payload.subject)
                 users[user.id] = user

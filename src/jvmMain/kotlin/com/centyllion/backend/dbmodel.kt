@@ -44,14 +44,16 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var stripe by DbUsers.stripe
 
     fun toModel(detailed: Boolean): User {
-        val details = if (detailed) UserDetails(stripe, roles.split(',')) else null
-        return User(id.toString(), keycloak, name, email, details)
+        val details = if (detailed) UserDetails(keycloak, email, stripe, roles.split(',')) else null
+        return User(id.toString(), name, details)
     }
 
     fun fromModel(source: User) {
-        keycloak = source.keycloakId
         name = source.name
-        email = source.email
+        source.details?.let {
+            stripe = it.stripeId
+            roles = it.roles.joinToString(",")
+        }
     }
 }
 

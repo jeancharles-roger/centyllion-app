@@ -15,6 +15,7 @@ interface Data {
     fun saveGrainModel(user: User, model: GrainModelDescription)
     fun deleteGrainModel(user: User, modelId: String)
 
+    fun publicSimulations(offset: Int = 0, limit: Int = 20): List<SimulationDescription>
     fun getSimulationForModel(modelId: String): List<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription

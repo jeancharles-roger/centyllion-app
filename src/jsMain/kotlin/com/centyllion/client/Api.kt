@@ -102,6 +102,12 @@ class Api(val instance: KeycloakInstance?) {
         fetch("GET", "/api/model/search?q=$query", bearer).then { json.parse(GrainModelDescription.serializer().list, it) }
     }
 
+    fun fetchPublicSimulations() =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/simulation", bearer)
+                .then { json.parse(SimulationDescription.serializer().list, it) }
+        }
+
     fun fetchSimulations(modelId: String, public: Boolean) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val params = if (public) "?public" else ""

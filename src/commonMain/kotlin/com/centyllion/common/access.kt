@@ -4,7 +4,7 @@ const val centyllionHost = "centyllion.com"
 const val centyllionBetaHost = "beta.$centyllionHost"
 
 const val adminRole = "admin"
-// TODO renames to creatorRole
-const val modelRole = "creator"
+const val creatorRole = "creator"
+const val masterRole = "master"
 
-val allRoles = mapOf(adminRole to "Administrator", modelRole to "Creator")
+val allRoles = mapOf(adminRole to "Administrator", creatorRole to "Creator", masterRole to "Master")

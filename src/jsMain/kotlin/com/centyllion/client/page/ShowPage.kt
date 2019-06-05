@@ -6,7 +6,7 @@ import com.centyllion.client.controller.EditableStringController
 import com.centyllion.client.controller.GrainModelEditController
 import com.centyllion.client.controller.SimulationRunController
 import com.centyllion.client.homePage
-import com.centyllion.common.modelRole
+import com.centyllion.common.creatorRole
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -23,7 +23,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val api = context.api
 
-    val hasModelRole = context.keycloak.hasRealmRole(modelRole)
+    val hasModelRole = context.keycloak.hasRealmRole(creatorRole)
 
     private var undoModel = false
 

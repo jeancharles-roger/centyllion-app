@@ -232,10 +232,12 @@ fun Application.centyllion(
                     }
                 }
 
-                // user's model access
+                // user's model access0
                 route("model") {
                     get {
-                        val models = data.publicGrainModels(0, 50)
+                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                        val models = data.publicGrainModels(offset, limit)
                         context.respond(models)
                     }
 
@@ -359,8 +361,10 @@ fun Application.centyllion(
                 // simulations
                 route("simulation") {
                     get {
-                        // TODO what to do here ?
-                        context.respond(HttpStatusCode.NotFound)
+                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                        val simulations = data.publicSimulations(offset, limit)
+                        context.respond(simulations)
                     }
 
                     get("search") {

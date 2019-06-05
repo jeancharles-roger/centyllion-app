@@ -88,9 +88,14 @@ class SqlData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
-        DbModelDescription.wrapRows(DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-            (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-        }.limit(limit, offset)).map { it.toModel() }
+        DbModelDescription.wrapRows(
+            DbModelDescriptions
+                .innerJoin(DbDescriptionInfos).select {
+                    (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+                }
+                .limit(limit, offset)
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+        ).map { it.toModel() }
     }
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = transaction(database) {
@@ -146,6 +151,17 @@ class SqlData(
             it.delete()
             it.info.delete()
         }
+    }
+
+    override fun publicSimulations(offset: Int, limit: Int) = transaction(database) {
+        DbSimulationDescription.wrapRows(
+            DbSimulationDescriptions
+                .innerJoin(DbDescriptionInfos).select {
+                    (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+                }
+                .limit(limit, offset)
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+        ).map { it.toModel() }
     }
 
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = transaction(database) {
@@ -235,7 +251,7 @@ class SqlData(
                 .innerJoin(DbDescriptionInfos)
                 .select {
                     (DbDescriptionInfos.readAccess eq true) and
-                    (DbSimulationDescriptions.searchable fullTextSearch query)
+                            (DbSimulationDescriptions.searchable fullTextSearch query)
                 }
                 .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
@@ -247,7 +263,7 @@ class SqlData(
                 .innerJoin(DbDescriptionInfos)
                 .select {
                     (DbDescriptionInfos.readAccess eq true) and
-                    (DbModelDescriptions.searchable fullTextSearch query)
+                            (DbModelDescriptions.searchable fullTextSearch query)
                 }
                 .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }

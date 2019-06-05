@@ -88,6 +88,9 @@ class MemoryData(
         grainModels.remove(modelId)
     }
 
+    override fun publicSimulations(offset: Int, limit: Int) =
+        simulations.values.toList().drop(offset).dropLast(max(0, simulations.size - limit))
+
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
         it.modelId == modelId
     }

@@ -27,20 +27,21 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
     val nameController = EditableStringController(user?.name ?: "", readOnly = true)
     val emailController = EditableStringController(user?.email ?: "", readOnly = true)
 
-    val subscription = Value(roles())
+    val subscription = Tags(roles())
 
     val descriptionController = multilineStringController("", "Description")
 
     val saveResult = Help()
-    val saveButton = textButton("Save Changes", ElementColor.Primary) {
-        val result = onUpdate(data, newData, this@UserController)
-        result?.then {
-            data = newData
-            saveResult.text = "Saved"
-        }?.catch {
-            saveResult.text = it.toString()
+    val saveButton =
+        textButton("Save Changes", ElementColor.Primary, disabled = newData == null || newData == data) {
+            val result = onUpdate(data, newData, this@UserController)
+            result?.then {
+                data = newData
+                saveResult.text = "Saved"
+            }?.catch {
+                saveResult.text = it.toString()
+            }
         }
-    }
 
     override val container = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
@@ -54,12 +55,13 @@ class UserController(user: User?) : NoContextController<User?, BulmaElement>() {
         )
     )
 
-    fun roles() = newData?.details?.roles?.mapNotNull { allRoles[it] }?.joinToString(", ") ?: "None"
+    fun roles() = newData?.details?.roles
+        ?.mapNotNull { allRoles[it] }?.map { Tag(it, ElementColor.Primary) } ?: emptyList()
 
     override fun refresh() {
         nameController.text = newData?.name ?: ""
         emailController.text = newData?.email ?: ""
-        subscription.text = roles()
+        subscription.tags = roles()
         saveButton.disabled = newData == null || newData == data
     }
 }

@@ -7,4 +7,8 @@ const val adminRole = "admin"
 const val creatorRole = "creator"
 const val masterRole = "master"
 
-val allRoles = mapOf(adminRole to "Administrator", creatorRole to "Creator", masterRole to "Master")
+val allRoles = mapOf(
+    adminRole to "Administrator",
+    creatorRole to "Creator",
+    masterRole to "Master"
+)

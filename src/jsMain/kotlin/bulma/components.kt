@@ -41,7 +41,7 @@ class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null
 /** [Breadcrumb](https://bulma.io/documentation/components/breadcrumb) element */
 class Breadcrumb(
     vararg body: BreadcrumbElement, separator: BreadcrumbSeparator = BreadcrumbSeparator.Default,
-    size: Size = Size.None, centered: Boolean = false, right: Boolean = false
+    size: Size = Size.None, alignment: Alignment = Alignment.Left
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.nav(classes = "breadcrumb") {
@@ -56,7 +56,7 @@ class Breadcrumb(
 
     var size by className(size, root)
 
-    var alignment by className(Alignment.Left, root)
+    var alignment by className(alignment, root)
 }
 
 
@@ -418,10 +418,7 @@ class NavBarImageItem(
     var image by attribute(image, "src", imgNode)
 }
 
-class NavBarIconItem(
-    icon: Icon, href: String? = null, width: String? = null, height: String? = null,
-    onClick: (NavBarIconItem) -> Unit = {}
-) : NavBarItem {
+class NavBarIconItem(icon: Icon, href: String? = null, onClick: (NavBarIconItem) -> Unit = {}) : NavBarItem {
     override val root = document.create.a(href, null, "navbar-item") {
         onClickFunction = { onClick(this@NavBarIconItem) }
     }
@@ -492,8 +489,6 @@ class NavBar(
             burgerNode.classList.toggle("is-active", value)
         }
 }
-
-// TODO [Pagination](https://bulma.io/documentation/components/pagination)
 
 interface PanelItem : BulmaElement
 

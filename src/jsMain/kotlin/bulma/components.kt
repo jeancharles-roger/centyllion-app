@@ -252,7 +252,32 @@ class Dropdown(
     }
 }
 
-// TODO [Menu](http://bulma.io/documentation/components/menu)
+interface MenuItem: BulmaElement
+
+class MenuLabel(text: String): MenuItem {
+    override val root: HTMLElement = document.create.p("menu-label") { +text }
+}
+
+class MenuLink(text: String, href: String? = null): MenuItem {
+    override val root = document.create.a(href) { +text } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) { root.href = value }
+}
+
+class MenuList(vararg items: MenuItem): MenuItem {
+    override val root: HTMLElement = document.create.ul("menu-list")
+    var items by bulmaList(items.toList(), root) {
+        document.create.li().apply { appendChild(it.root)}
+    }
+}
+
+/** [Menu](http://bulma.io/documentation/components/menu) */
+class Menu(vararg items: MenuItem): BulmaElement {
+    override val root: HTMLElement = document.create.aside("menu")
+    var items by bulmaList(items.toList(), root)
+}
 
 /** [Message](http://bulma.io/documentation/components/message) element */
 class Message(

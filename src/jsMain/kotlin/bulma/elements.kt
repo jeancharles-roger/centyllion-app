@@ -134,13 +134,17 @@ enum class ImageSize(override val className: String): HasClassName {
 }
 
 /** [Image](https://bulma.io/documentation/elements/image/) */
-class Image(url: String, size: ImageSize = ImageSize.None, rounded: Boolean = false): BulmaElement {
+class Image(src: String, size: ImageSize = ImageSize.None, rounded: Boolean = false): BulmaElement {
 
     override val root: HTMLElement = document.create.figure("image") {
-        img(null, url)
+        img(null, src)
     }
 
     private val imgNode = root.querySelector("img") as HTMLImageElement
+
+    var src: String
+        get() = imgNode.src
+        set(value) { imgNode.src = value }
 
     var rounded by className(rounded, "is-rounded", imgNode)
 

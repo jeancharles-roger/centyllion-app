@@ -72,11 +72,11 @@ class HomePage(val context: AppContext) : BulmaElement {
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
-    ) { _, data -> PanelItemController(data) }
+    ) { _, data, previous -> previous ?: PanelItemController(data) }
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { parent, data ->
-        val controller = FeaturedController(data)
+    { parent, data, previous ->
+        val controller = previous ?: FeaturedController(data)
         controller.body.root.onclick = {
             context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }

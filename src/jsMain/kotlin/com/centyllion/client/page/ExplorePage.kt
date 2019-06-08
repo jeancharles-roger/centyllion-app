@@ -22,8 +22,8 @@ class ExplorePage(val context: AppContext) : BulmaElement {
             emptyList(),
             header = listOf(noSimulationResult)
         )
-        { parent, data ->
-            val controller = SimulationDisplayController(data)
+        { parent, data, previous ->
+            val controller = previous ?: SimulationDisplayController(data)
             controller.body.root.onclick = {
                 context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
             }
@@ -41,8 +41,8 @@ class ExplorePage(val context: AppContext) : BulmaElement {
             emptyList(),
             header = listOf(noModelResult)
         )
-        { parent, data ->
-            val controller = GrainModelDisplayController(data)
+        { parent, data, previous ->
+            val controller = previous ?: GrainModelDisplayController(data)
             controller.body.root.onclick = { context.openPage(showPage, mapOf("model" to data.id)) }
             controller.body.root.style.cursor = "pointer"
             controller
@@ -79,8 +79,8 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // featured controller
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { _, data ->
-        val controller = FeaturedController(data)
+    { _, data, previous ->
+        val controller = previous ?: FeaturedController(data)
         controller.body.root.onclick = {
             context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
@@ -101,8 +101,11 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     val recentController =
         noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
-        { _, data ->
-            val controller = SimulationDisplayController(data)
+        { _, data, previous ->
+            val controller = previous ?: SimulationDisplayController(data)
+            controller.root.onclick = {
+                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
+            }
             controller.body.root.style.cursor = "pointer"
             controller
         }
@@ -135,11 +138,6 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     override val root = container.root
 
     init {
-
-        recentController.onClick = { simulation, _ ->
-            context.openPage(showPage, mapOf("model" to simulation.modelId, "simulation" to simulation.id))
-        }
-
         context.api.fetchAllFeatured().then { featuredController.data = it.content }
         context.api.fetchPublicSimulations(recentOffset, recentLimit).then { updateRecent(it) }
     }

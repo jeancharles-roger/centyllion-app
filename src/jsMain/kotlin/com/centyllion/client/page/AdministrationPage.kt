@@ -2,7 +2,6 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
-import com.centyllion.client.controller.EventController
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.GrainModelFeaturedController
 import com.centyllion.model.*
@@ -14,8 +13,8 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val featuredController =
         noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-        { _, featured ->
-            val controller = FeaturedController(featured, ColumnSize.Half)
+        { _, featured, previous ->
+            val controller = previous ?: FeaturedController(featured, ColumnSize.Half)
             val footer = CardFooter(CardFooterContentItem(Delete {
                 // forces delete with this toggle
                 toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, featured)
@@ -29,8 +28,8 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
             emptyList(),
             emptyList()
         )
-        { _, model ->
-            val controller = GrainModelFeaturedController(model, featuredController.data, api)
+        { _, model, previous ->
+            val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, api)
             controller.toggleFeature = ::toggleFeatured
             controller
         }
@@ -39,10 +38,6 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
         Column(SubTitle("Featured models"), featuredController, size = ColumnSize.Half),
         Column(SubTitle("Public models"), publicModelsController, size = ColumnSize.Half)
     )
-
-    val eventsController =
-        noContextColumnsController<Event, EventController>(emptyList())
-        { _, event -> EventController(event, ColumnSize.Half) }
 
     val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
 

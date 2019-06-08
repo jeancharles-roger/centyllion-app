@@ -125,8 +125,8 @@ class BehaviourEditController(
     val reactionController =
         columnsController<Reaction, Pair<Behaviour, GrainModel>, ReactionEditController>(
             data.reaction, data to context, reactionHeader
-        ) { parent, reaction ->
-            val controller = ReactionEditController(reaction, data, context)
+        ) { parent, reaction, previous ->
+            val controller = previous ?: ReactionEditController(reaction, data, context)
             controller.onUpdate = { _, new, _ ->
                 val newList = data.reaction.toMutableList()
                 newList[parent.indexOf(controller)] = new

@@ -8,7 +8,9 @@ import com.centyllion.client.controller.SimulationDisplayController
 import com.centyllion.client.showPage
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
 import com.centyllion.model.SimulationDescription
+import kotlin.properties.Delegates
 
 class ExplorePage(val context: AppContext) : BulmaElement {
 
@@ -16,7 +18,10 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched simulations controller
     val searchedSimulationController =
-        noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList(), header = listOf(noSimulationResult))
+        noContextColumnsController<SimulationDescription, SimulationDisplayController>(
+            emptyList(),
+            header = listOf(noSimulationResult)
+        )
         { parent, data ->
             val controller = SimulationDisplayController(data)
             controller.body.root.onclick = {
@@ -32,7 +37,10 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched models controller
     val searchedModelController =
-        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList(), header = listOf(noModelResult))
+        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(
+            emptyList(),
+            header = listOf(noModelResult)
+        )
         { parent, data ->
             val controller = GrainModelDisplayController(data)
             controller.body.root.onclick = { context.openPage(showPage, mapOf("model" to data.id)) }
@@ -85,25 +93,38 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         context.api.fetchAllFeatured().then { featuredController.data = it.content }
     }
 
+    val recentLimit = 8
+
+    var recentOffset by Delegates.observable(0) { _, old, new ->
+        if (old != new) context.api.fetchPublicSimulations(new, recentLimit).then { updateRecent(it) }
+    }
+
     val recentController =
         noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
         { _, data ->
             val controller = SimulationDisplayController(data)
-            controller.body.root.onclick = {
-                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
-            }
             controller.body.root.style.cursor = "pointer"
             controller
         }
 
-    val recentTabItem = TabItem("Recent", "play") {
-        println("Fetch recent simulations")
-        context.api.fetchPublicSimulations().then { recentController.data = it.content }
+    private fun updateRecent(result: ResultPage<SimulationDescription>) {
+        recentController.data = result.content
+        recentPagination.items = (0..result.totalSize / recentLimit).map {page ->
+            val pageOffset = page * recentLimit
+            PaginationLink("$page", current = (pageOffset == result.offset) ) { recentOffset = pageOffset }
+        }
     }
+
+    val next = PaginationAction("Next")
+    val previous = PaginationAction("Previous")
+
+    val recentPagination = Pagination(previous = previous, next = next, rounded = true)
+
+    val recentTabItem = TabItem("Recent", "play")
 
     val exploreTabs = TabPages(
         TabPage(featuredTabItem, featuredController),
-        TabPage(recentTabItem, recentController)
+        TabPage(recentTabItem, div(recentPagination, recentController))
     )
 
     val container = div(
@@ -114,8 +135,13 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     override val root = container.root
 
     init {
+
+        recentController.onClick = { simulation, _ ->
+            context.openPage(showPage, mapOf("model" to simulation.modelId, "simulation" to simulation.id))
+        }
+
         context.api.fetchAllFeatured().then { featuredController.data = it.content }
-        context.api.fetchPublicSimulations().then { recentController.data = it.content }
+        context.api.fetchPublicSimulations(recentOffset, recentLimit).then { updateRecent(it) }
     }
 
 }

@@ -97,16 +97,16 @@ class SqlData(
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }
     }
 
-    override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
-        val query = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-            (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-        }
+    private fun publicGrainModelQuery() = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
+        (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+    }
 
+    override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
         val content = DbModelDescription.wrapRows(
-            query.limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            publicGrainModelQuery().limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, query.count())
+        ResultPage(content, offset, publicGrainModelQuery().count())
     }
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = transaction(database) {
@@ -164,16 +164,16 @@ class SqlData(
         }
     }
 
-    override fun publicSimulations(offset: Int, limit: Int) = transaction(database) {
-        val query = DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select {
-                (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-            }
+    private fun publicSimulationQuery() = DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select {
+        (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+    }
 
+    override fun publicSimulations(offset: Int, limit: Int) = transaction(database) {
         val content = DbSimulationDescription.wrapRows(
-            query.limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            publicSimulationQuery().limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, query.count())
+        ResultPage(content, offset, publicSimulationQuery().count())
     }
 
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = transaction(database) {
@@ -238,9 +238,8 @@ class SqlData(
     }
 
     override fun getAllFeatured(offset: Int, limit: Int) = transaction(database) {
-        val all = DbFeatured.all()
-        val content = all.limit(limit, offset).reversed().map { it.toModel() }
-        ResultPage(content, offset, all.count())
+        val content = DbFeatured.all().limit(limit, offset).reversed().map { it.toModel() }
+        ResultPage(content, offset, DbFeatured.all().count())
     }
 
     override fun getFeatured(id: String) = transaction(database) {
@@ -259,29 +258,31 @@ class SqlData(
         }
     }
 
-    override fun searchSimulation(query: String, offset: Int, limit: Int) = transaction {
-        val query = DbSimulationDescriptions
-            .innerJoin(DbDescriptionInfos)
-            .select {
-                (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearch query)
-            }
+    private fun searchSimulationQuery(query: String) = DbSimulationDescriptions
+        .innerJoin(DbDescriptionInfos)
+        .select {
+            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearch query)
+        }
 
+
+    override fun searchSimulation(query: String, offset: Int, limit: Int) = transaction {
         val content = DbSimulationDescription.wrapRows(
-            query.orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            searchSimulationQuery(query).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, query.count())
+        ResultPage(content, offset, searchSimulationQuery(query).count())
+    }
+
+    private fun searchModelQuery(query: String) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
+        (DbDescriptionInfos.readAccess eq true) and (DbModelDescriptions.searchable fullTextSearch query)
     }
 
     override fun searchModel(query: String, offset: Int, limit: Int) = transaction {
-        val query = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-            (DbDescriptionInfos.readAccess eq true) and (DbModelDescriptions.searchable fullTextSearch query)
-        }
         val content = DbModelDescription.wrapRows(
-            query.orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            searchModelQuery(query).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, query.count())
+        ResultPage(content, offset, searchModelQuery(query).count())
     }
 
     override fun getAsset(id: String) = transaction(database) {

@@ -49,8 +49,8 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val onTabChange: (TabPage) -> Unit = {
         when (it) {
             featuredPage -> {
-                api.fetchAllFeatured().then { featuredController.data = it }.catch { context.error(it) }
-                api.fetchPublicGrainModels().then { publicModelsController.data = it }.catch { context.error(it) }
+                api.fetchAllFeatured().then { featuredController.data = it.content }.catch { context.error(it) }
+                api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { context.error(it) }
             }
         }
     }

@@ -82,7 +82,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
 
     val featuredTabItem = TabItem("Featured", "star") {
-        context.api.fetchAllFeatured().then { featuredController.data = it }
+        context.api.fetchAllFeatured().then { featuredController.data = it.content }
     }
 
     val recentController =
@@ -98,7 +98,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     val recentTabItem = TabItem("Recent", "play") {
         println("Fetch recent simulations")
-        context.api.fetchPublicSimulations().then { recentController.data = it }
+        context.api.fetchPublicSimulations().then { recentController.data = it.content }
     }
 
     val exploreTabs = TabPages(
@@ -114,8 +114,8 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     override val root = container.root
 
     init {
-        context.api.fetchAllFeatured().then { featuredController.data = it }
-        context.api.fetchPublicSimulations().then { recentController.data = it }
+        context.api.fetchAllFeatured().then { featuredController.data = it.content }
+        context.api.fetchPublicSimulations().then { recentController.data = it.content }
     }
 
 }

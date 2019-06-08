@@ -3,6 +3,13 @@ package com.centyllion.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ResultPage<T>(
+    val content: List<T>,
+    val offset: Int,
+    val totalSize: Int
+)
+
+@Serializable
 data class User(
     val id: String,
     val name: String,

@@ -43,8 +43,7 @@ class MemoryData(
     val grainModels: LinkedHashMap<String, GrainModelDescription> = linkedMapOf(),
     val simulations: LinkedHashMap<String, SimulationDescription> = linkedMapOf(),
     val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf(),
-    val assets: LinkedHashMap<String, Asset> = linkedMapOf(),
-    val events: LinkedHashMap<String, Event> = linkedMapOf()
+    val assets: LinkedHashMap<String, Asset> = linkedMapOf()
 ) : Data {
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
@@ -67,7 +66,7 @@ class MemoryData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) =
-        grainModels.values.toList().drop(offset).dropLast(max(0, grainModels.size - limit))
+        grainModels.values.toList().limit(offset, limit)
 
     override fun grainModelsForUser(user: User): List<GrainModelDescription> = grainModels.values.filter {
         it.info.userId == user.id
@@ -91,7 +90,11 @@ class MemoryData(
     }
 
     override fun publicSimulations(offset: Int, limit: Int) =
-        simulations.values.toList().drop(offset).dropLast(max(0, simulations.size - limit))
+        ResultPage(
+            simulations.values.toList().drop(offset).dropLast(max(0, simulations.size - limit)),
+            offset, simulations.size
+        )
+
 
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
         it.modelId == modelId
@@ -113,8 +116,8 @@ class MemoryData(
         simulations.remove(simulationId)
     }
 
-    override fun getAllFeatured(offset: Int, limit: Int): List<FeaturedDescription> =
-        featured.values.toList().drop(offset).dropLast(max(0, featured.size - limit))
+    override fun getAllFeatured(offset: Int, limit: Int) =
+        featured.values.toList().limit(offset, limit)
 
     override fun getFeatured(id: String) = featured[id]
 
@@ -133,10 +136,12 @@ class MemoryData(
     }
 
     override fun searchSimulation(query: String, offset: Int, limit: Int) = simulations.values
-            .filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) }
+        .filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) }
+        .limit(offset, limit)
 
     override fun searchModel(query: String, offset: Int, limit: Int) = grainModels.values
-            .filter { it.model.name.contains(query) || it.model.description.contains(query) }
+        .filter { it.model.name.contains(query) || it.model.description.contains(query) }
+        .limit(offset, limit)
 
     override fun getAsset(id: String) = assets[id]
 
@@ -149,4 +154,7 @@ class MemoryData(
     override fun deleteAsset(id: String) {
         assets.remove(id)
     }
+
+    private fun <T> List<T>.limit(offset: Int, limit: Int) =
+        ResultPage<T>(this.dropLast(max(0, this.size - limit)), offset, this.size)
 }

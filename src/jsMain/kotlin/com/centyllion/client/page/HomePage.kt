@@ -131,7 +131,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
 
         // retrieves featured models
-        context.api.fetchAllFeatured().then { models -> featuredController.data = models }
+        context.api.fetchAllFeatured().then { models -> featuredController.data = models.content }
 
     }
 

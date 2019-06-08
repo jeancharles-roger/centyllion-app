@@ -240,7 +240,7 @@ fun Application.centyllion(
                     }
                 }
 
-                // user's model access0
+                // model access
                 route("model") {
                     get {
                         val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)

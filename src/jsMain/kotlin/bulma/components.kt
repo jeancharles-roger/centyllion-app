@@ -505,7 +505,7 @@ class PaginationLink(
     var onClick: (PaginationLink) -> Unit = {}
 ): PaginationItem {
 
-    override val root = document.create.a(href, classes = "panel-block") {
+    override val root = document.create.a(href, classes = "pagination-link") {
         +text
         onClickFunction = { onClick(this@PaginationLink) }
     } as HTMLAnchorElement
@@ -524,7 +524,7 @@ class PaginationAction(
     var onClick: (PaginationAction) -> Unit = {}
 ): BulmaElement {
 
-    override val root = document.create.a(href, classes = "panel-block") {
+    override val root = document.create.a(href) {
         +text
         if (disabled) attributes["disabled"] = ""
         onClickFunction = { onClick(this@PaginationAction) }
@@ -592,7 +592,9 @@ class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
     var items by bulmaList(items.toList(), root)
 }
 
-class PanelSimpleBlock(text: String, icon: String, href: String? = null, var onClick: (PanelSimpleBlock) -> Unit = {}) : PanelItem {
+class PanelSimpleBlock(
+    text: String, icon: String, href: String? = null, var onClick: (PanelSimpleBlock) -> Unit = {}
+) : PanelItem {
 
     override val root = document.create.a(href, classes = "panel-block") {
         span { +text }

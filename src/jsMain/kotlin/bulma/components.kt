@@ -168,7 +168,7 @@ class Dropdown(
     vararg items: DropdownItem,
     text: String = "", icon: Icon? = null, color: ElementColor = ElementColor.None,
     rounded: Boolean = false, hoverable: Boolean = false, right: Boolean = false, up: Boolean = false,
-    dropDownIcon: String = "angle-down",
+    dropDownIcon: String = "angle-down", menuWidth: String? = null,
     var onDropdown: (Dropdown) -> Unit = {}
 ) : ControlElement {
 
@@ -201,6 +201,9 @@ class Dropdown(
     private val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
     private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
 
+    init {
+        if (menuWidth != null) menuNode.style.width = menuWidth
+    }
 
     var active: Boolean
         get() = root.classList.contains("is-active")
@@ -234,7 +237,7 @@ class Dropdown(
 
     var up by className(up, "is-up", root)
 
-    var menuSize: String
+    var menuWith: String
         get() = menuNode.style.width
         set(value) {
             menuNode.style.width = value

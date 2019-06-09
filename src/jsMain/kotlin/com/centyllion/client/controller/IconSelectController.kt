@@ -26,21 +26,15 @@ class IconSelectController(
 
     val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
 
-    val iconColumns = Columns(multiline = true, mobile = true).apply {
-        columns = solidIconNames.keys.map { column(it) }
-    }
+    val iconColumns = Columns(multiline = true, mobile = true)
 
-    override val container = Dropdown(text = data, icon = icon, rounded = true).apply {
-        menuSize = "30rem"
-        items = listOf(
-            DropdownContentItem(Field(
-                Control(
-                    search,
-                    Icon("search")
-                )
-            )),
-            DropdownContentItem(iconColumns)
-        )
+    override val container = Dropdown(
+        DropdownContentItem(Field(Control(search, Icon("search")))),
+        DropdownContentItem(iconColumns),
+        text = data, icon = icon, rounded = true, menuWidth = "30rem"
+    ) {
+        // only append icons when clicked
+        if (iconColumns.columns.isEmpty()) iconColumns.columns = solidIconNames.keys.map { column(it) }
     }
 
     private fun column(icon: String): Column {
@@ -59,8 +53,6 @@ class IconSelectController(
     override fun refresh() {
         container.text = data
         icon.icon = iconName(data)
-        icon.root.style.color = data
-        iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }
 
 }

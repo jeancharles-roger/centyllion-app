@@ -64,10 +64,10 @@ class Api(val instance: KeycloakInstance?) {
                 .then { json.parse(GrainModelDescription.serializer().list, it) }
         }
 
-    fun fetchPublicGrainModels() =
+    fun fetchPublicGrainModels(offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/model", bearer)
-                .then { json.parse(GrainModelDescription.serializer().list, it) }
+            fetch("GET", "/api/model?offset=$offset&limit=$limit", bearer)
+                .then { json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it) }
         }
 
     fun fetchGrainModel(modelId: String) =
@@ -99,13 +99,15 @@ class Api(val instance: KeycloakInstance?) {
 
     fun searchModel(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
         // TODO encode query
-        fetch("GET", "/api/model/search?q=$query", bearer).then { json.parse(GrainModelDescription.serializer().list, it) }
+        fetch("GET", "/api/model/search?q=$query", bearer).then {
+            json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it)
+        }
     }
 
-    fun fetchPublicSimulations() =
+    fun fetchPublicSimulations(offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/simulation", bearer)
-                .then { json.parse(SimulationDescription.serializer().list, it) }
+            fetch("GET", "/api/simulation?offset=$offset&limit=$limit", bearer)
+                .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
         }
 
     fun fetchSimulations(modelId: String, public: Boolean) =
@@ -144,12 +146,16 @@ class Api(val instance: KeycloakInstance?) {
 
     fun searchSimulation(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
         // TODO encode query
-        fetch("GET", "/api/simulation/search?q=$query", bearer).then { json.parse(SimulationDescription.serializer().list, it) }
+        fetch("GET", "/api/simulation/search?q=$query", bearer).then {
+            json.parse(ResultPage.serializer(SimulationDescription.serializer()), it)
+        }
     }
 
-    fun fetchAllFeatured() =
+    fun fetchAllFeatured(offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/featured", bearer).then { json.parse(FeaturedDescription.serializer().list, it) }
+            fetch("GET", "/api/featured?offset=$offset&limit=$limit", bearer).then {
+                json.parse(ResultPage.serializer(FeaturedDescription.serializer()), it)
+            }
         }
 
     fun saveFeatured(modelId: String, simulationId: String, authorId: String) =

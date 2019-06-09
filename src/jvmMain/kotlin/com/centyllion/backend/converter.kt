@@ -16,6 +16,7 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.readRemaining
 import kotlinx.io.core.readText
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.Json.Companion.stringify
 import java.awt.Color
 import java.awt.Font
 import java.awt.image.BufferedImage
@@ -30,13 +31,32 @@ class JsonConverter : ContentConverter {
     ) = TextContent(convertForSend(value), contentType.withCharset(context.call.suitableCharset()))
 
     private fun convertForSend(value: Any?): String = when (value) {
-        is User -> Json.stringify(User.serializer(), value)
-        is GrainModel -> Json.stringify(GrainModel.serializer(), value)
-        is GrainModelDescription -> Json.stringify(GrainModelDescription.serializer(), value)
-        is Simulation -> Json.stringify(Simulation.serializer(), value)
-        is SimulationDescription -> Json.stringify(SimulationDescription.serializer(), value)
-        is FeaturedDescription -> Json.stringify(FeaturedDescription.serializer(), value)
-        is Event -> Json.stringify(Event.serializer(), value)
+        is User -> stringify(User.serializer(), value)
+        is GrainModel -> stringify(GrainModel.serializer(), value)
+        is GrainModelDescription -> stringify(GrainModelDescription.serializer(), value)
+        is Simulation -> stringify(Simulation.serializer(), value)
+        is SimulationDescription -> stringify(SimulationDescription.serializer(), value)
+        is FeaturedDescription -> stringify(FeaturedDescription.serializer(), value)
+        is ResultPage<*> ->
+            when (value.content.firstOrNull()) {
+                is SimulationDescription -> stringify(
+                    ResultPage.serializer(SimulationDescription.serializer()),
+                    value as ResultPage<SimulationDescription>
+                )
+                is GrainModelDescription -> stringify(
+                    ResultPage.serializer(GrainModelDescription.serializer()),
+                    value as ResultPage<GrainModelDescription>
+                )
+                is FeaturedDescription -> stringify(
+                    ResultPage.serializer(FeaturedDescription.serializer()),
+                    value as ResultPage<FeaturedDescription>
+                )
+                else -> stringify(
+                    ResultPage.serializer(SimulationDescription.serializer()),
+                    value as ResultPage<SimulationDescription>
+                )
+            }
+        is Event -> stringify(Event.serializer(), value)
         is List<*> -> "[${if (value.isNotEmpty()) value.joinToString(",") { convertForSend(it) } else ""}]"
         else -> throw Exception("Can't transform ${value?.javaClass?.simpleName} to Json")
     }

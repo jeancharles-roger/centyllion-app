@@ -17,18 +17,17 @@ class SimulationDisplayController(
     val name = SubTitle(data.simulation.name)
     val description = Label(data.simulation.description)
 
-    fun thumbnail() = Image(
+    val thumbnail = Image(
         if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png",
         ImageSize.Square
     )
 
     val body = Card(
-        CardImage(thumbnail()),
+        CardImage(thumbnail),
         CardContent(name, description)
     ).apply {
         root.classList.add("is-outlined")
     }
-
 
 
     override val container = Column(body, size = size)
@@ -36,5 +35,6 @@ class SimulationDisplayController(
     override fun refresh() {
         name.text = data.name
         description.text = data.simulation.description
+        thumbnail.src = if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png"
     }
 }

@@ -8,7 +8,9 @@ import com.centyllion.client.controller.SimulationDisplayController
 import com.centyllion.client.showPage
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
 import com.centyllion.model.SimulationDescription
+import kotlin.properties.Delegates
 
 class ExplorePage(val context: AppContext) : BulmaElement {
 
@@ -16,15 +18,13 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched simulations controller
     val searchedSimulationController =
-        noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList(), header = listOf(noSimulationResult))
-        { parent, data ->
-            val controller = SimulationDisplayController(data)
-            controller.body.root.onclick = {
-                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
-            }
-            controller.body.root.style.cursor = "pointer"
-            controller
+        noContextColumnsController<SimulationDescription, SimulationDisplayController>(
+            initialList = emptyList(),
+            header = listOf(noSimulationResult)
+        ) { parent, data, previous ->
+            previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" }
         }
+
     // searched simulations tab title
     val searchSimulationTabItem = TabItem("Simulation", "play")
 
@@ -32,13 +32,13 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched models controller
     val searchedModelController =
-        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(emptyList(), header = listOf(noModelResult))
-        { parent, data ->
-            val controller = GrainModelDisplayController(data)
-            controller.body.root.onclick = { context.openPage(showPage, mapOf("model" to data.id)) }
-            controller.body.root.style.cursor = "pointer"
-            controller
+        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(
+            initialList = emptyList(),
+            header = listOf(noModelResult)
+        ) { parent, data, previous ->
+            previous ?: GrainModelDisplayController(data).apply { root.style.cursor = "pointer" }
         }
+
     // searched modes tab title
     val searchModelTabItem = TabItem("Models", "boxes")
 
@@ -50,14 +50,15 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         searchedSimulationController.data = emptyList()
 
         context.api.searchSimulation(value).then {
-            searchSimulationTabItem.text = "Simulation (${it.size})"
-            searchedSimulationController.header = if (it.isEmpty()) listOf(noSimulationResult) else emptyList()
-            searchedSimulationController.data = it
+            searchSimulationTabItem.text = "Simulation (${it.totalSize})"
+            searchedSimulationController.header = if (it.content.isEmpty()) listOf(noSimulationResult) else emptyList()
+            searchedSimulationController.data = it.content
         }.catch { context.error(it) }
+
         context.api.searchModel(value).then {
-            searchModelTabItem.text = "Model (${it.size})"
-            searchedModelController.header = if (it.isEmpty()) listOf(noModelResult) else emptyList()
-            searchedModelController.data = it
+            searchModelTabItem.text = "Model (${it.totalSize})"
+            searchedModelController.header = if (it.content.isEmpty()) listOf(noModelResult) else emptyList()
+            searchedModelController.data = it.content
         }.catch { context.error(it) }
     }
 
@@ -70,40 +71,48 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     )
 
     // featured controller
-    val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { _, data ->
-        val controller = FeaturedController(data)
-        controller.body.root.onclick = {
-            context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+    val featuredController =
+        noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
+        { _, data, previous ->
+            previous ?: FeaturedController(data).apply { root.style.cursor = "pointer" }
         }
-        controller.body.root.style.cursor = "pointer"
-        controller
-    }
 
 
     val featuredTabItem = TabItem("Featured", "star") {
-        context.api.fetchAllFeatured().then { featuredController.data = it }
+        context.api.fetchAllFeatured().then { featuredController.data = it.content }
     }
 
-    val recentController =
-        noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
-        { _, data ->
-            val controller = SimulationDisplayController(data)
-            controller.body.root.onclick = {
-                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
-            }
-            controller.body.root.style.cursor = "pointer"
-            controller
+    val recentLimit = 8
+
+    var recentOffset by Delegates.observable(0) { _, old, new ->
+        if (old != new) context.api.fetchPublicSimulations(new, recentLimit).then { updateRecent(it) }
+    }
+
+    val recentController = noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
+    { _, data, previous -> previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" } }
+
+    private fun updateRecent(result: ResultPage<SimulationDescription>) {
+        recentController.data = result.content
+        recentPagination.items = (0..result.totalSize / recentLimit).map { page ->
+            val pageOffset = page * recentLimit
+            PaginationLink("$page", current = (pageOffset == result.offset)) { recentOffset = pageOffset }
         }
-
-    val recentTabItem = TabItem("Recent", "play") {
-        println("Fetch recent simulations")
-        context.api.fetchPublicSimulations().then { recentController.data = it }
+        previous.disabled = recentOffset == 0
+        next.disabled = recentOffset > result.totalSize - recentLimit
     }
+
+    val next = PaginationAction("Next") {
+
+    }
+    val previous = PaginationAction("Previous")
+
+    val recentPagination = Pagination(previous = previous, next = next, rounded = true)
+
+    val recentTabItem = TabItem("Recent", "play")
 
     val exploreTabs = TabPages(
         TabPage(featuredTabItem, featuredController),
-        TabPage(recentTabItem, recentController)
+        TabPage(recentTabItem, div(recentPagination, recentController))
     )
 
     val container = div(
@@ -114,8 +123,21 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     override val root = container.root
 
     init {
-        context.api.fetchAllFeatured().then { featuredController.data = it }
-        context.api.fetchPublicSimulations().then { recentController.data = it }
+        featuredController.onClick = { featured , _  ->
+            context.openPage(showPage, mapOf("simulation" to featured.simulationId))
+        }
+        searchedSimulationController.onClick = { simulation, _ ->
+            context.openPage(showPage, mapOf("simulation" to simulation.id))
+        }
+        searchedModelController.onClick = { model, _ ->
+            context.openPage(showPage, mapOf("model" to model.id))
+        }
+        recentController.onClick = { simulation, _ ->
+            context.openPage(showPage, mapOf("simulation" to simulation.id))
+        }
+
+        context.api.fetchAllFeatured().then { featuredController.data = it.content }
+        context.api.fetchPublicSimulations(recentOffset, recentLimit).then { updateRecent(it) }
     }
 
 }

@@ -41,7 +41,7 @@ class BreadcrumbElement(text: String = "", href: String = "", icon: Icon? = null
 /** [Breadcrumb](https://bulma.io/documentation/components/breadcrumb) element */
 class Breadcrumb(
     vararg body: BreadcrumbElement, separator: BreadcrumbSeparator = BreadcrumbSeparator.Default,
-    size: Size = Size.None, centered: Boolean = false, right: Boolean = false
+    size: Size = Size.None, alignment: Alignment = Alignment.Left
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.nav(classes = "breadcrumb") {
@@ -56,7 +56,7 @@ class Breadcrumb(
 
     var size by className(size, root)
 
-    var alignment by className(Alignment.Left, root)
+    var alignment by className(alignment, root)
 }
 
 
@@ -168,7 +168,7 @@ class Dropdown(
     vararg items: DropdownItem,
     text: String = "", icon: Icon? = null, color: ElementColor = ElementColor.None,
     rounded: Boolean = false, hoverable: Boolean = false, right: Boolean = false, up: Boolean = false,
-    dropDownIcon: String = "angle-down",
+    dropDownIcon: String = "angle-down", menuWidth: String? = null,
     var onDropdown: (Dropdown) -> Unit = {}
 ) : ControlElement {
 
@@ -201,6 +201,9 @@ class Dropdown(
     private val menuNode = root.querySelector(".dropdown-menu") as HTMLDivElement
     private val contentNode = root.querySelector(".dropdown-content") as HTMLDivElement
 
+    init {
+        if (menuWidth != null) menuNode.style.width = menuWidth
+    }
 
     var active: Boolean
         get() = root.classList.contains("is-active")
@@ -234,7 +237,7 @@ class Dropdown(
 
     var up by className(up, "is-up", root)
 
-    var menuSize: String
+    var menuWith: String
         get() = menuNode.style.width
         set(value) {
             menuNode.style.width = value
@@ -252,7 +255,34 @@ class Dropdown(
     }
 }
 
-// TODO [Menu](http://bulma.io/documentation/components/menu)
+interface MenuItem : BulmaElement
+
+class MenuLabel(text: String) : MenuItem {
+    override val root: HTMLElement = document.create.p("menu-label") { +text }
+}
+
+class MenuLink(text: String, href: String? = null) : MenuItem {
+    override val root = document.create.a(href) { +text } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) {
+            root.href = value
+        }
+}
+
+class MenuList(vararg items: MenuItem) : MenuItem {
+    override val root: HTMLElement = document.create.ul("menu-list")
+    var items by bulmaList(items.toList(), root) {
+        document.create.li().apply { appendChild(it.root) }
+    }
+}
+
+/** [Menu](http://bulma.io/documentation/components/menu) */
+class Menu(vararg items: MenuItem) : BulmaElement {
+    override val root: HTMLElement = document.create.aside("menu")
+    var items by bulmaList(items.toList(), root)
+}
 
 /** [Message](http://bulma.io/documentation/components/message) element */
 class Message(
@@ -393,10 +423,7 @@ class NavBarImageItem(
     var image by attribute(image, "src", imgNode)
 }
 
-class NavBarIconItem(
-    icon: Icon, href: String? = null, width: String? = null, height: String? = null,
-    onClick: (NavBarIconItem) -> Unit = {}
-) : NavBarItem {
+class NavBarIconItem(icon: Icon, href: String? = null, onClick: (NavBarIconItem) -> Unit = {}) : NavBarItem {
     override val root = document.create.a(href, null, "navbar-item") {
         onClickFunction = { onClick(this@NavBarIconItem) }
     }
@@ -468,7 +495,90 @@ class NavBar(
         }
 }
 
-// TODO [Pagination](https://bulma.io/documentation/components/pagination)
+enum class PaginationElementType(override val className: String) : HasClassName {
+    Previous("pagination-previous"), Next("pagination-next")
+}
+
+interface PaginationItem : BulmaElement
+
+class PaginationEllipsis : PaginationItem {
+    override val root = document.create.span("pagination-ellipsis") { +"&hellip;" }
+}
+
+class PaginationLink(
+    text: String, href: String? = null, current: Boolean = false,
+    var onClick: (PaginationLink) -> Unit = {}
+) : PaginationItem {
+
+    override val root = document.create.a(href, classes = "pagination-link") {
+        +text
+        onClickFunction = { onClick(this@PaginationLink) }
+    } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) {
+            root.href = value
+        }
+
+    var current by className(current, "is-current", root)
+}
+
+class PaginationAction(
+    text: String, href: String? = null, disabled: Boolean = false,
+    var onClick: (PaginationAction) -> Unit = {}
+) : BulmaElement {
+
+    override val root = document.create.a(href) {
+        +text
+        if (disabled) attributes["disabled"] = ""
+        onClickFunction = { onClick(this@PaginationAction) }
+    } as HTMLAnchorElement
+
+    var href: String
+        get() = root.href
+        set(value) {
+            root.href = value
+        }
+
+    var disabled: Boolean
+        get() = root.hasAttribute("disabled")
+        set(value) {
+            if (value) root.setAttribute("disabled", "") else root.removeAttribute("disabled")
+        }
+}
+
+
+/** [Pagination](https://bulma.io/documentation/components/pagination) */
+class Pagination(
+    vararg items: PaginationItem, previous: PaginationAction? = null, next: PaginationAction? = null,
+    rounded: Boolean = false, size: Size = Size.None, alignment: Alignment = Alignment.Left
+) : BulmaElement {
+
+    override val root: HTMLElement = document.create.nav("pagination")
+
+    var previous by bulma(previous, root, Position.AfterBegin) {
+        it.root.classList.add("pagination-previous")
+        it.root
+    }
+
+    var next by bulma(next, root, Position.AfterBegin) {
+        it.root.classList.add("pagination-next")
+        it.root
+    }
+
+    var items by embeddedBulmaList(
+        items.toList(), root, Position.BeforeEnd,
+        { item -> document.create.li().apply { appendChild(item.root) } },
+        { document.create.ul("pagination-list") }
+    )
+
+    var alignment by className(alignment, root)
+
+    var size by className(size, root)
+
+    var rounded by className(rounded, "is-rounded", root)
+}
 
 interface PanelItem : BulmaElement
 
@@ -489,14 +599,22 @@ class PanelTabs(vararg items: PanelTabsItem) : PanelItem {
     var items by bulmaList(items.toList(), root)
 }
 
-class PanelSimpleBlock(text: String, icon: String, var onClick: (PanelSimpleBlock) -> Unit = {}) : PanelItem {
+class PanelSimpleBlock(
+    text: String, icon: String, href: String? = null, var onClick: (PanelSimpleBlock) -> Unit = {}
+) : PanelItem {
 
-    override val root: HTMLElement = document.create.a(classes = "panel-block") {
+    override val root = document.create.a(href, classes = "panel-block") {
         span { +text }
         onClickFunction = { onClick(this@PanelSimpleBlock) }
-    }
+    } as HTMLAnchorElement
 
     private val textNode = root.querySelector("span") as HTMLElement
+
+    var href: String
+        get() = root.href
+        set(value) {
+            root.href = value
+        }
 
     override var text: String
         get() = textNode.innerText
@@ -545,7 +663,9 @@ class TabItem(
 
     override var text: String
         get() = aNode.innerText
-        set(value) { aNode.innerText = value }
+        set(value) {
+            aNode.innerText = value
+        }
 
     var icon by html(icon, aNode, Position.AfterBegin) {
         document.create.span("icon") {

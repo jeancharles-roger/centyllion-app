@@ -3,6 +3,7 @@ package com.centyllion.backend
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.centyllion.model.User
+import com.centyllion.model.UserDetails
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -17,7 +18,8 @@ import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val testUser = User("1", "1234", "Test", "test@centyllion.com")
+val testUserDetails = UserDetails("1234", "test@centyllion.com", null, emptyList())
+val testUser = User("1", "Test", testUserDetails)
 
 /** Create a private and public key pair for API tests with credentials */
 private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator ->
@@ -29,10 +31,10 @@ private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator 
 }
 
 /** Creates a JWT token for test API */
-fun createTextJwtToken(user: User, vararg role: String) =
+fun createTextJwtToken(id: String, name: String, email: String, vararg role: String) =
     JWT.create()
-        .withAudience(authClient).withClaim("sub", user.keycloakId)
-        .withClaim("name", user.name).withClaim("email", user.email)
+        .withAudience(authClient).withClaim("sub", id)
+        .withClaim("name", name).withClaim("email", email)
         .withArrayClaim("roles", role)
         .withIssuer(authBase).sign(jwtAlgorithm)!!
 
@@ -52,7 +54,10 @@ fun TestApplicationEngine.request(
 ): TestApplicationCall = handleRequest {
     this.uri = uri
     this.method = method
-    if (user != null) this.addHeader("Authorization", "Bearer ${createTextJwtToken(user, *role)}")
+    user?.details?.let{
+        val token = createTextJwtToken(it.keycloakId, user.name, it.email, *role)
+        this.addHeader("Authorization", "Bearer $token")
+    }
     if (content != null) {
         this.addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         this.setBody(content)

@@ -1,6 +1,6 @@
 package com.centyllion.backend
 
-import com.centyllion.common.modelRole
+import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.User
@@ -57,8 +57,8 @@ class TestMeApi {
 
                 val user = Json.parse(User.serializer(), response.content ?: "")
                 assertEquals(testUser.name, user.name)
-                assertEquals(testUser.email, user.email)
-                assertEquals(testUser.keycloakId, user.keycloakId)
+                assertEquals(testUser.details?.email, user.details?.email)
+                assertEquals(testUser.details?.keycloakId, user.details?.keycloakId)
             }
         }
     }
@@ -74,28 +74,28 @@ class TestMeApi {
         // Test post on /api/model
         testUnauthorized("/api/me/model", HttpMethod.Post)
         testUnauthorized("/api/me/model", HttpMethod.Post, testUser)
-        val model1 = postModel(GrainModel("test1"), testUser, modelRole)
-        val model2 = postModel(GrainModel("test2"), testUser, modelRole)
+        val model1 = postModel(GrainModel("test1"), testUser, creatorRole)
+        val model2 = postModel(GrainModel("test2"), testUser, creatorRole)
 
         // Checks that models were posted
-        testGet("/api/me/model", listOf(model1, model2), GrainModelDescription.serializer().list, testUser, modelRole)
+        testGet("/api/me/model", listOf(model1, model2), GrainModelDescription.serializer().list, testUser, creatorRole)
 
         // Test delete a model
         testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
         testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete, testUser)
-        deleteModel(model1, testUser, modelRole)
+        deleteModel(model1, testUser, creatorRole)
 
         // Checks if delete happened
-        testGet("/api/me/model", listOf(model2), GrainModelDescription.serializer().list, testUser, modelRole)
+        testGet("/api/me/model", listOf(model2), GrainModelDescription.serializer().list, testUser, creatorRole)
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
         testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch)
         testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch, testUser)
-        patchModel(newModel2, testUser, modelRole)
+        patchModel(newModel2, testUser, creatorRole)
 
         // Checks if patch happened
-        testGet("/api/me/model", listOf(newModel2), GrainModelDescription.serializer().list, testUser, modelRole)
+        testGet("/api/me/model", listOf(newModel2), GrainModelDescription.serializer().list, testUser, creatorRole)
 
     }
 

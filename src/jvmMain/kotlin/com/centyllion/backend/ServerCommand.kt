@@ -45,7 +45,7 @@ data class ServerConfig(
 ) {
     fun data() = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
 
-    fun subscription() = KeycloakStripeSubscriptionManager()
+    fun subscription() = KeycloakStripeSubscriptionManager(stripeKey, keycloakPassword)
 }
 
 class ServerCommand : CliktCommand("Start the server") {

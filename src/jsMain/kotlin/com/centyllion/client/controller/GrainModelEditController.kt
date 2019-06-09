@@ -40,8 +40,8 @@ class GrainModelEditController(
     }
 
     val grainsController =
-        noContextColumnsController<Grain, GrainEditController>(data.grains) { parent, grain ->
-            val controller = GrainEditController(grain)
+        noContextColumnsController<Grain, GrainEditController>(data.grains) { parent, grain, previous ->
+            val controller = previous ?: GrainEditController(grain)
             controller.onUpdate = { _, new, _ ->
                 val newGrains = data.grains.toMutableList()
                 newGrains[parent.indexOf(controller)] = new
@@ -55,8 +55,8 @@ class GrainModelEditController(
 
     val behavioursController =
         columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data)
-        { parent, behaviour ->
-            val controller = BehaviourEditController(behaviour, data)
+        { parent, behaviour, previous ->
+            val controller = previous ?: BehaviourEditController(behaviour, data)
             controller.onUpdate = { _, new, _ ->
                 val behaviours = data.behaviours.toMutableList()
                 behaviours[parent.indexOf(controller)] = new

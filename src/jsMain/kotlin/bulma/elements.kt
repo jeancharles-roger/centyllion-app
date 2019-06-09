@@ -16,11 +16,9 @@ class Box(vararg body: BulmaElement) : BulmaElement {
 
 /** [Button](https://bulma.io/documentation/elements/button) element. */
 class Button(
-    title: String? = null, icon: Icon? = null,
-    color: ElementColor = ElementColor.None,
-    rounded: Boolean = false, outlined: Boolean = false,
-    inverted: Boolean = false, size: Size = Size.None,
-    var onClick: (Button) -> Unit = {}
+    title: String? = null, icon: Icon? = null, color: ElementColor = ElementColor.None,
+    rounded: Boolean = false, outlined: Boolean = false, inverted: Boolean = false, size: Size = Size.None,
+    disabled: Boolean = false, var onClick: (Button) -> Unit = {}
 ) : ControlElement {
 
     override val root: HTMLElement = document.create.button(classes = "button") {
@@ -44,23 +42,21 @@ class Button(
 
     var size by className(size, root)
 
-    var disabled by booleanAttribute(false, "disabled", root)
+    var disabled by booleanAttribute(disabled, "disabled", root)
 
 }
 
 fun iconButton(
     icon: Icon? = null, color: ElementColor = ElementColor.None,
-    rounded: Boolean = false, outlined: Boolean = false,
-    inverted: Boolean = false, size: Size = Size.None,
-    onClick: (Button) -> Unit = {}
-) = Button(null, icon, color, rounded, outlined, inverted, size, onClick)
+    rounded: Boolean = false, outlined: Boolean = false, inverted: Boolean = false, size: Size = Size.None,
+    disabled: Boolean = false, onClick: (Button) -> Unit = {}
+) = Button(null, icon, color, rounded, outlined, inverted, size, disabled, onClick)
 
 fun textButton(
-    text: String, color: ElementColor = ElementColor.None,
-    rounded: Boolean = false, outlined: Boolean = false,
-    inverted: Boolean = false, size: Size = Size.None,
-    onClick: (Button) -> Unit = {}
-) = Button(text, null, color, rounded, outlined, inverted, size, onClick)
+    title: String? = null, color: ElementColor = ElementColor.None,
+    rounded: Boolean = false, outlined: Boolean = false, inverted: Boolean = false, size: Size = Size.None,
+    disabled: Boolean = false, onClick: (Button) -> Unit = {}
+) = Button(title, null, color, rounded, outlined, inverted, size, disabled, onClick)
 
 /** [Content](https://bulma.io/documentation/elements/content) element. */
 class Content(block: DIV.() -> Unit = {}) : BulmaElement {
@@ -138,13 +134,17 @@ enum class ImageSize(override val className: String): HasClassName {
 }
 
 /** [Image](https://bulma.io/documentation/elements/image/) */
-class Image(url: String, size: ImageSize = ImageSize.None, rounded: Boolean = false): BulmaElement {
+class Image(src: String, size: ImageSize = ImageSize.None, rounded: Boolean = false): BulmaElement {
 
     override val root: HTMLElement = document.create.figure("image") {
-        img(null, url)
+        img(null, src)
     }
 
     private val imgNode = root.querySelector("img") as HTMLImageElement
+
+    var src: String
+        get() = imgNode.src
+        set(value) { imgNode.src = value }
 
     var rounded by className(rounded, "is-rounded", imgNode)
 

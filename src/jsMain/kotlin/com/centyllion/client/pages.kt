@@ -5,6 +5,7 @@ import com.centyllion.client.page.AdministrationPage
 import com.centyllion.client.page.ExplorePage
 import com.centyllion.client.page.HomePage
 import com.centyllion.client.page.ShowPage
+import com.centyllion.client.controller.SubscriptionPage
 import com.centyllion.common.adminRole
 import keycloak.KeycloakInstance
 import kotlin.js.Promise
@@ -26,7 +27,8 @@ const val contentSelector = "section.cent-main"
 val homePage = Page("Home", "home", true, null, true, ::HomePage)
 val explorePage = Page("Explore", "explore", false, null, true, ::ExplorePage)
 val showPage = Page("Show", "show", false, null, false, ::ShowPage, ShowPage::canExit)
+val subscribePage = Page("Subscribe", "subscribe", true, null, false, ::SubscriptionPage)
 val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
 
-val pages = listOf(homePage, explorePage, showPage, administrationPage)
+val pages = listOf(homePage, explorePage, showPage, subscribePage, administrationPage)
 

@@ -5,7 +5,7 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.UserController
 import com.centyllion.client.showPage
-import com.centyllion.common.modelRole
+import com.centyllion.common.creatorRole
 import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
@@ -68,15 +68,15 @@ class HomePage(val context: AppContext) : BulmaElement {
     val panelController = noContextPanelController(
         Panel("My models and simulations"), emptyList<Description>(),
         header = listOfNotNull(
-            if (context.keycloak.hasRealmRole(modelRole)) PanelContentBlock(Control(newModelButton)) else null,
+            if (context.keycloak.hasRealmRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
-    ) { _, data -> PanelItemController(data) }
+    ) { _, data, previous -> previous ?: PanelItemController(data) }
 
     val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-    { parent, data ->
-        val controller = FeaturedController(data)
+    { parent, data, previous ->
+        val controller = previous ?: FeaturedController(data)
         controller.body.root.onclick = {
             context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
         }
@@ -131,7 +131,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
 
         // retrieves featured models
-        context.api.fetchAllFeatured().then { models -> featuredController.data = models }
+        context.api.fetchAllFeatured().then { models -> featuredController.data = models.content }
 
     }
 

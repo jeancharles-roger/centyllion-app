@@ -25,6 +25,7 @@ fun HTML.centyllionHead(title: String) = head {
     // Javascript
     script(src = "js/bulma-toast-1.5.0/bulma-toast.min.js") {}
     script(src = "js/Keycloak-4.8.0/keycloak.js") {}
+    script(src = "https://js.stripe.com/v3/") {}
     script(src = "js/require.js") { }
     script(src = "js/centyllion/requirejs.config.json") { }
 }

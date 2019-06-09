@@ -4,7 +4,7 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.auth0.jwt.JWTVerifier
 import com.centyllion.common.adminRole
-import com.centyllion.common.modelRole
+import com.centyllion.common.creatorRole
 import com.centyllion.model.*
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -173,6 +173,14 @@ fun Application.centyllion(
                     }
                 }
 
+                route("user") {
+                    get {
+
+                    }
+
+
+                }
+
                 // featured
                 route("featured") {
                     get {
@@ -187,7 +195,7 @@ fun Application.centyllion(
                             val newFeatured = call.receive(FeaturedDescription::class)
                             val model = data.getGrainModel(newFeatured.modelId)
                             val simulation = data.getSimulation(newFeatured.simulationId)
-                            val author = data.getUser(newFeatured.authorId)
+                            val author = data.getUser(newFeatured.authorId, false)
 
                             context.respond(
                                 when {
@@ -232,7 +240,7 @@ fun Application.centyllion(
                     }
                 }
 
-                // user's model access0
+                // model access
                 route("model") {
                     get {
                         val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
@@ -248,7 +256,7 @@ fun Application.centyllion(
 
                     // post a new model
                     post {
-                        withRequiredPrincipal(modelRole) {
+                        withRequiredPrincipal(creatorRole) {
                             val user = data.getOrCreateUserFromPrincipal(it)
                             val newModel = call.receive(GrainModel::class)
                             val newDescription = data.createGrainModel(user, newModel)
@@ -276,7 +284,7 @@ fun Application.centyllion(
 
                         // patch an existing model
                         patch {
-                            withRequiredPrincipal(modelRole) {
+                            withRequiredPrincipal(creatorRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = call.receive(GrainModelDescription::class)
@@ -295,7 +303,7 @@ fun Application.centyllion(
 
                         // delete an existing model
                         delete {
-                            withRequiredPrincipal(modelRole) {
+                            withRequiredPrincipal(creatorRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val id = call.parameters["model"]!!
                                 val model = data.getGrainModel(id)
@@ -340,7 +348,7 @@ fun Application.centyllion(
 
                             // post a new simulation for model
                             post {
-                                withRequiredPrincipal(modelRole) {
+                                withRequiredPrincipal(creatorRole) {
                                     val user = data.getOrCreateUserFromPrincipal(it)
                                     val modelId = call.parameters["model"]!!
                                     val model = data.getGrainModel(modelId)
@@ -390,7 +398,7 @@ fun Application.centyllion(
 
                         // patch an existing simulation for user
                         patch {
-                            withRequiredPrincipal(modelRole) {
+                            withRequiredPrincipal(creatorRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = call.receive(SimulationDescription::class)
@@ -409,7 +417,7 @@ fun Application.centyllion(
 
                         // delete an existing model for user
                         delete {
-                            withRequiredPrincipal(modelRole) {
+                            withRequiredPrincipal(creatorRole) {
                                 val user = data.getOrCreateUserFromPrincipal(it)
                                 val simulationId = call.parameters["simulation"]!!
                                 val simulation = data.getSimulation(simulationId)

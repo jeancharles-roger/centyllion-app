@@ -26,21 +26,15 @@ class ColorSelectController(
 
     val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
 
-    val colorColumns = Columns(multiline = true, mobile = true).apply {
-        columns = colorNames.keys.map { column(it) }
-    }
+    val colorColumns = Columns(multiline = true, mobile = true)
 
-    override val container = Dropdown(icon = icon, rounded = true).apply {
-        menuSize = "30rem"
-        items = listOf(
-            DropdownContentItem(Field(
-                Control(
-                    search,
-                    Icon("search")
-                )
-            )),
-            DropdownContentItem(colorColumns)
-        )
+    override val container = Dropdown(
+        DropdownContentItem(Field(Control(search, Icon("search")))),
+        DropdownContentItem(colorColumns),
+        icon = icon, rounded = true, menuWidth = "30rem"
+    ) {
+        // only append colors when clicked
+        if (colorColumns.columns.isEmpty()) colorColumns.columns = colorNames.keys.map { column(it) }
     }
 
     private fun column(color: String): Column {
@@ -57,7 +51,5 @@ class ColorSelectController(
 
     override fun refresh() {
         icon.root.style.color = data
-        colorColumns.columns = colorNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }
-
 }

@@ -9,16 +9,21 @@ import kotlin.properties.Delegates.observable
 /** Controller interface that bind a Data to a BulmaElement within a Context */
 interface Controller<Data, Context, out Element : BulmaElement> : BulmaElement {
 
+    /** Data for the controller */
     var data: Data
 
+    /** Context for the controller */
     var context: Context
 
+    /** Is the controller read only ? */
     var readOnly: Boolean
 
+    /** Main element for the controller */
     val container: Element
 
     override val root: HTMLElement get() = container.root
 
+    /** Refresh the controller */
     fun refresh()
 }
 
@@ -29,15 +34,24 @@ abstract class NoContextController<Data, out Element : BulmaElement> : Controlle
 
 /** [Controller] that handle a List of [Data]. */
 class MultipleController<
-        Data, Context, ParentElement : BulmaElement, ItemElement : BulmaElement,
+        /** Data type for each controller */
+        Data,
+        /** Context for each controller (on context for all) */
+        Context,
+        /** BulmaElement for the whole list */
+        ParentElement : BulmaElement,
+        /** BulmaElement for each item */
+        ItemElement : BulmaElement,
+        /** Controller for each item */
         Ctrl : Controller<Data, Context, ItemElement>
     >(
     initialList: List<Data>, initialContext: Context, header: List<ItemElement>, footer: List<ItemElement>,
     override val container: ParentElement,
-    val controllerBuilder: (MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>, Data) -> Ctrl,
+    val controllerBuilder: (MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>, Data, Ctrl?) -> Ctrl,
     val updateParent: (parent: ParentElement, items: List<ItemElement>) -> Unit
 ) : Controller<List<Data>, Context, ParentElement> {
 
+    /** List of Data to be handled by the controller */
     override var data: List<Data> by observable(initialList) { _, old, new ->
         if (old != new) {
             refreshControllers(old.diff(new))
@@ -45,6 +59,7 @@ class MultipleController<
         }
     }
 
+    /** Context to pass to all controllers */
     override var context: Context by observable(initialContext) { _, old, new ->
         if (old != new) {
             controllers.forEach { it.context = new }
@@ -78,7 +93,7 @@ class MultipleController<
         diff.forEach {
             when (it.action) {
                 DiffAction.Added -> {
-                    val newController = controllerBuilder(this, it.element)
+                    val newController = controllerBuilder(this, it.element, null)
                     newController.root.onclick = { onClick(newController.data, newController) }
                     newController.readOnly = readOnly
                     newControllers.add(it.index, newController)
@@ -87,7 +102,7 @@ class MultipleController<
                     newControllers.removeAt(it.index)
                 }
                 DiffAction.Replaced -> {
-                    val controller = newControllers[it.index]
+                    val controller = controllerBuilder(this, it.element, newControllers[it.index])
                     controller.data = it.element
                     newControllers[it.index] = controller
                 }
@@ -115,7 +130,7 @@ fun <Data, Context, Ctrl : Controller<Data, Context, Column>> columnsController(
     initialList: List<Data>, initialContext: Context,
     header: List<Column> = emptyList(), footer: List<Column> = emptyList(),
     container: Columns = Columns().apply { multiline = true },
-    controllerBuilder: (MultipleController<Data, Context, Columns, Column, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Context, Columns, Column, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = MultipleController(
     initialList, initialContext, header, footer, container, controllerBuilder
 ) { parent, items -> parent.columns = items }
@@ -124,13 +139,13 @@ fun <Data, Ctrl : Controller<Data, Unit, Column>> noContextColumnsController(
     initialList: List<Data>,
     container: Columns = Columns().apply { multiline = true },
     header: List<Column> = emptyList(), footer: List<Column> = emptyList(),
-    controllerBuilder: (MultipleController<Data, Unit, Columns, Column, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Unit, Columns, Column, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = columnsController(initialList, Unit, header, footer, container, controllerBuilder)
 
 fun <Data, Context, Ctrl : Controller<Data, Context, DropdownItem>> dropdownController(
     container: Dropdown, initialList: List<Data>, initialContext: Context,
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
-    controllerBuilder: (MultipleController<Data, Context, Dropdown, DropdownItem, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Context, Dropdown, DropdownItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = MultipleController(
     initialList, initialContext, header, footer, container, controllerBuilder
 ) { parent, items -> parent.items = items }
@@ -138,13 +153,13 @@ fun <Data, Context, Ctrl : Controller<Data, Context, DropdownItem>> dropdownCont
 fun <Data, Ctrl : Controller<Data, Unit, DropdownItem>> noContextDropdownController(
     container: Dropdown, initialList: List<Data>,
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
-    controllerBuilder: (MultipleController<Data, Unit, Dropdown, DropdownItem, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Unit, Dropdown, DropdownItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = dropdownController(container, initialList, Unit, header, footer, controllerBuilder)
 
 fun <Data, Context, Ctrl : Controller<Data, Context, PanelItem>> panelController(
     container: Panel, initialList: List<Data>, initialContext: Context,
     header: List<PanelItem> = emptyList(), footer: List<PanelItem> = emptyList(),
-    controllerBuilder: (MultipleController<Data, Context, Panel, PanelItem, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Context, Panel, PanelItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = MultipleController(
     initialList, initialContext, header, footer, container, controllerBuilder
 ) { parent, items -> parent.items = items }
@@ -152,5 +167,19 @@ fun <Data, Context, Ctrl : Controller<Data, Context, PanelItem>> panelController
 fun <Data, Ctrl : Controller<Data, Unit, PanelItem>> noContextPanelController(
     container: Panel, initialList: List<Data>,
     header: List<PanelItem> = emptyList(), footer: List<PanelItem> = emptyList(),
-    controllerBuilder: (MultipleController<Data, Unit, Panel, PanelItem, Ctrl>, data: Data) -> Ctrl
+    controllerBuilder: (MultipleController<Data, Unit, Panel, PanelItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = panelController(container, initialList, Unit, header, footer, controllerBuilder)
+
+fun <Data, Context, Ctrl : Controller<Data, Context, MenuItem>> menuController(
+    container: Menu, initialList: List<Data>, initialContext: Context,
+    header: List<MenuItem> = emptyList(), footer: List<MenuItem> = emptyList(),
+    controllerBuilder: (MultipleController<Data, Context, Menu, MenuItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
+) = MultipleController(
+    initialList, initialContext, header, footer, container, controllerBuilder
+) { parent, items -> parent.items = items }
+
+fun <Data, Ctrl : Controller<Data, Unit, MenuItem>> noContextMenuController(
+    container: Menu, initialList: List<Data>,
+    header: List<MenuItem> = emptyList(), footer: List<MenuItem> = emptyList(),
+    controllerBuilder: (MultipleController<Data, Unit, Menu, MenuItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
+) = menuController(container, initialList, Unit, header, footer, controllerBuilder)

@@ -4,6 +4,7 @@ import com.centyllion.model.DiffAction
 import com.centyllion.model.diff
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.get
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -15,14 +16,14 @@ enum class Position(val value: String) {
 
 /** Property that handle the insertion and the change of a [BulmaElement]. */
 class BulmaElementProperty<T>(
-    initialValue: T?,
-    private val parent: HTMLElement,
-    private val prepare: (T) -> HTMLElement?,
-    private val position: Position = Position.BeforeEnd
+    initialValue: T?, val parent: HTMLElement,
+    val prepare: (T) -> HTMLElement?, val position: Position = Position.BeforeEnd
 ) : ReadWriteProperty<Any?, T?> {
 
     private var value = initialValue
-    private var element = value?.let { prepare(it) }
+    private var element = value?.let { prepare(it) }?.also {
+        parent.insertAdjacentElement(position.value, it)
+    }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T? = value
 
@@ -47,18 +48,10 @@ class BulmaElementProperty<T>(
             }
         }
     }
-
-    init {
-        element?.let {
-            parent.insertAdjacentElement(position.value, it)
-        }
-    }
 }
 
 fun <T : BulmaElement> bulma(
-    initialValue: T?,
-    parent: HTMLElement,
-    position: Position = Position.BeforeEnd,
+    initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd,
     prepare: (newValue: T) -> HTMLElement? = { it.root }
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
@@ -69,15 +62,48 @@ fun <T> html(
     prepare: (newValue: T) -> HTMLElement?
 ) = BulmaElementProperty(initialValue, parent, prepare, position)
 
-class BulmaElementListProperty<T : BulmaElement>(
-    initialValue: List<T>, private val parent: HTMLElement,
-    private val before: () -> Element?,
-    private val position: Position = Position.BeforeEnd,
-    private val prepare: (T) -> HTMLElement
-) : ReadWriteProperty<Any?, List<T>> {
+interface ElementListProperty<T> : ReadWriteProperty<Any?, List<T>> {
+    val parent: HTMLElement
+    val position: Position
+    val prepare: (T) -> HTMLElement
 
-    private var value = initialValue
-    private var elements = value.map { prepare(it) }
+    fun applyChanges(oldValue: List<T>, value: List<T>, container: HTMLElement, reference: Element?) {
+        val diff = oldValue.diff(value)
+        diff.forEach {
+            when (it.action) {
+                DiffAction.Added -> when {
+                    container.childElementCount == 0 && reference != null -> container.insertBefore(
+                        prepare(it.element),
+                        reference
+                    )
+                    container.childElementCount == 0 -> container.insertAdjacentElement(
+                        position.value,
+                        prepare(it.element)
+                    )
+                    it.index < container.childElementCount -> container.insertBefore(
+                        prepare(it.element),
+                        container.children.item(it.index)
+                    )
+                    else -> container.insertAdjacentElement(position.value, prepare(it.element))
+                }
+                DiffAction.Removed -> container.childNodes[it.index]?.let { container.removeChild(it) }
+                DiffAction.Replaced -> container.childNodes[it.index]?.let { toReplace ->
+                    container.replaceChild(prepare(it.element), toReplace)
+                }
+            }
+        }
+    }
+}
+
+class BulmaElementListProperty<T : BulmaElement>(
+    initialValue: List<T>,
+    override val parent: HTMLElement,
+    val before: () -> Element?,
+    override val position: Position = Position.BeforeEnd,
+    override val prepare: (T) -> HTMLElement
+) : ElementListProperty<T> {
+
+    var value = initialValue
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = value
 
@@ -85,38 +111,18 @@ class BulmaElementListProperty<T : BulmaElement>(
         val oldValue = this.value
         if (oldValue != value) {
             this.value = value
-            // keep old element reference for now
-            val oldElements = elements
-
-            // construct new ones
-            elements = value.map { prepare(it) }
-
             // before reference
             val reference = before()
-
-            val diff = oldElements.diff(elements)
-            diff.forEach {
-                when (it.action) {
-                    DiffAction.Added -> when {
-                            parent.childElementCount == 0 && reference != null -> parent.insertBefore(it.element, reference)
-                            parent.childElementCount == 0 -> parent.insertAdjacentElement(position.value, it.element)
-                            it.index < parent.childElementCount -> parent.insertBefore(it.element, parent.children.item(it.index))
-                            else -> parent.insertAdjacentElement(position.value, it.element)
-                        }
-                    DiffAction.Removed -> parent.removeChild(it.element)
-                    DiffAction.Replaced -> parent.replaceChild(it.element, oldElements[it.index])
-                }
-            }
+            applyChanges(oldValue, value, parent, reference)
         }
     }
 
     init {
         val reference = before()
-        elements = value.map { prepare(it) }
         if (reference != null) {
-            elements.forEach { parent.insertBefore(it, reference) }
+            value.forEach { parent.insertBefore(prepare(it), reference) }
         } else {
-            elements.forEach { parent.insertAdjacentElement(position.value, it) }
+            value.forEach { parent.insertAdjacentElement(position.value, prepare(it)) }
         }
     }
 }
@@ -129,19 +135,20 @@ fun <T : BulmaElement> bulmaList(
 
 class BulmaElementEmbeddedListProperty<T : BulmaElement>(
     initialValue: List<T>,
-    private val parent: HTMLElement,
-    private val before: HTMLElement?,
-    private val position: Position = Position.BeforeEnd,
-    private val prepare: (T) -> HTMLElement,
+    override val parent: HTMLElement,
+    val before: () -> Element?,
+    override val position: Position = Position.BeforeEnd,
+    override val prepare: (T) -> HTMLElement,
     private val containerBuilder: (List<T>) -> HTMLElement
-) : ReadWriteProperty<Any?, List<T>> {
+) : ElementListProperty<T> {
 
-    private var value = initialValue
-    private var elements = value.map { prepare(it) }
+    var value = initialValue
+
     private var container = if (initialValue.isEmpty()) null else containerBuilder(initialValue).apply {
-        elements.forEach { appendChild(it) }
-        if (before != null) {
-            parent.insertBefore(this, before)
+        value.forEach { appendChild(prepare(it)) }
+        val reference = this@BulmaElementEmbeddedListProperty.before()
+        if (reference != null) {
+            parent.insertBefore(this, reference)
         } else {
             parent.insertAdjacentElement(position.value, this)
         }
@@ -155,13 +162,6 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
             this.value = value
 
             val oldContainer = container
-
-            // keep old element reference for now
-            val oldElements = elements
-
-            // construct new ones
-            elements = value.map { prepare(it) }
-
             when {
                 value.isEmpty() -> {
                     // list is empty, new container is null
@@ -172,30 +172,15 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
                     // previous list was empty, old container was null
                     container = containerBuilder(value).apply {
                         value.forEach { this.appendChild(prepare(it)) }
-                        if (before != null) {
-                            parent.insertBefore(this, before)
+                        val reference = this@BulmaElementEmbeddedListProperty.before()
+                        if (reference != null) {
+                            parent.insertBefore(this, reference)
                         } else {
                             parent.insertAdjacentElement(position.value, this)
                         }
                     }
                 }
-                else -> container?.let { node ->
-
-                    val diff = oldElements.diff(elements)
-                    diff.forEach {
-                        when (it.action) {
-                            //result.add(it.index, it.element)
-                            DiffAction.Added -> when {
-                                node.childElementCount == 0 && before != null -> node.insertBefore(it.element, before)
-                                node.childElementCount == 0 -> node.insertAdjacentElement(position.value, it.element)
-                                it.index < node.childElementCount -> node.insertBefore(it.element, node.children.item(it.index))
-                                else -> node.insertAdjacentElement(Position.BeforeEnd.value, it.element)
-                            }
-                            DiffAction.Removed -> node.removeChild(it.element)
-                            DiffAction.Replaced -> node.replaceChild(it.element, oldElements[it.index])
-                        }
-                    }
-                }
+                else -> container?.let { applyChanges(oldValue, value, it, null) }
             }
         }
     }
@@ -206,7 +191,7 @@ fun <T : BulmaElement> embeddedBulmaList(
     position: Position = Position.BeforeEnd, prepare: (T) -> HTMLElement = { it.root },
     containerBuilder: (List<T>) -> HTMLElement
 ) =
-    BulmaElementEmbeddedListProperty(initialValue, parent, null, position, prepare, containerBuilder)
+    BulmaElementEmbeddedListProperty(initialValue, parent, { null }, position, prepare, containerBuilder)
 
 
 /** Property class delegate that handle a boolean property that set or reset a css class. */

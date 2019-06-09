@@ -29,6 +29,9 @@ object DbUsers : UUIDTable("users") {
     val name = text("name")
     val keycloak = text("keycloak")
     val email = text("email")
+    // Details
+    val roles = text("roles").default("")
+    val stripe = text("stripe").nullable()
 }
 
 class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -37,13 +40,20 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var keycloak by DbUsers.keycloak
     var name by DbUsers.name
     var email by DbUsers.email
+    var roles by DbUsers.roles
+    var stripe by DbUsers.stripe
 
-    fun toModel(): User = User(id.toString(), keycloak, name, email)
+    fun toModel(detailed: Boolean): User {
+        val details = if (detailed) UserDetails(keycloak, email, stripe, roles.split(',')) else null
+        return User(id.toString(), name, details)
+    }
 
     fun fromModel(source: User) {
-        keycloak = source.keycloakId
         name = source.name
-        email = source.email
+        source.details?.let {
+            stripe = it.stripeId
+            roles = it.roles.joinToString(",")
+        }
     }
 }
 

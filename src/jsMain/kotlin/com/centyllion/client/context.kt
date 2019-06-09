@@ -24,6 +24,8 @@ interface AppContext {
 
     val api: Api
 
+    val stripeKey: String
+
     val events: List<ClientEvent>
 
     fun error(throwable: Throwable)

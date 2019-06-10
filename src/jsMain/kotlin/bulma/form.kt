@@ -7,6 +7,7 @@ import org.w3c.dom.*
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.FocusEvent
 import org.w3c.dom.events.InputEvent
+import org.w3c.files.FileList
 import kotlin.browser.document
 
 interface FieldElement : BulmaElement
@@ -370,10 +371,53 @@ class Checkbox(
 
 }
 
-
 // TODO radio groups http://bulma.io/documentation/form/radio/
 
-// TODO file https://bulma.io/documentation/form/file/
+/** (File)[https://bulma.io/documentation/form/file/] element */
+class FileInput(
+    label: String? = null, icon: String? = "upload",
+    fileName: String? = null, boxed: Boolean = false, fullWidth: Boolean = false,
+    color: ElementColor = ElementColor.None, size: Size = Size.None, alignment: Alignment = Alignment.Left,
+    var onChange: (FileInput, FileList?) -> Unit = { _, _ ->}
+): ControlElement {
+    override val root: HTMLElement = document.create.div("file") {
+        label("file-label") {
+            input(InputType.file, classes = "file-input")
+            span("file-cta")
+        }
+        onChangeFunction = {
+            console.log("changed")
+            onChange(this@FileInput, inputNode.files)
+        }
+    }
+
+    private val labelNode = root.querySelector("label.file-label") as HTMLLabelElement
+    private val inputNode = root.querySelector("input.file-input") as HTMLInputElement
+    private val ctaNode = root.querySelector("span.file-cta") as HTMLSpanElement
+
+    var icon by html(icon, ctaNode, Position.AfterBegin) {
+        document.create.span("file-icon") { i("fas fa-$it") }
+    }
+
+    var label by html(label, ctaNode) { document.create.span("file-label") { +it } }
+
+    var fileName by html(fileName, labelNode,
+        onChange = { _, _, value -> root.classList.toggle("has-name", value != null)},
+        prepare = { document.create.span("file-name") { +it }
+    })
+
+    var color by className(color, root)
+
+    var size by className(size, root)
+
+    var alignment by className(alignment, root)
+
+    var boxed by className(boxed, "is-boxed", root)
+
+    var fullWidth by className(fullWidth, "is-fullwidth", root)
+
+    val files get() = inputNode.files
+}
 
 
 /**

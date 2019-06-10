@@ -16,13 +16,14 @@ enum class Position(val value: String) {
 
 /** Property that handle the insertion and the change of a [BulmaElement]. */
 class BulmaElementProperty<T>(
-    initialValue: T?, val parent: HTMLElement,
-    val prepare: (T) -> HTMLElement?, val position: Position = Position.BeforeEnd
+    initialValue: T?, val parent: HTMLElement, val position: Position = Position.BeforeEnd,
+    val onChange: (property: BulmaElementProperty<T>, old: T?, new: T?) -> Unit, val prepare: (T) -> HTMLElement?
 ) : ReadWriteProperty<Any?, T?> {
 
     private var value = initialValue
     private var element = value?.let { prepare(it) }?.also {
         parent.insertAdjacentElement(position.value, it)
+        onChange(this, null, value)
     }
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T? = value
@@ -46,21 +47,26 @@ class BulmaElementProperty<T>(
                     parent.insertAdjacentElement(position.value, newElement)
                 }
             }
+
+            onChange(this, oldValue, value)
         }
     }
+
 }
 
 fun <T : BulmaElement> bulma(
     initialValue: T?, parent: HTMLElement, position: Position = Position.BeforeEnd,
+    onChange: (property: BulmaElementProperty<T>, old: T?, new: T?) -> Unit = { _, _, _ -> },
     prepare: (newValue: T) -> HTMLElement? = { it.root }
-) = BulmaElementProperty(initialValue, parent, prepare, position)
+) = BulmaElementProperty(initialValue, parent, position, onChange, prepare)
 
 fun <T> html(
     initialValue: T?,
     parent: HTMLElement,
     position: Position = Position.BeforeEnd,
+    onChange: (property: BulmaElementProperty<T>, old: T?, new: T?) -> Unit = { _, _, _ -> },
     prepare: (newValue: T) -> HTMLElement?
-) = BulmaElementProperty(initialValue, parent, prepare, position)
+) = BulmaElementProperty(initialValue, parent, position, onChange, prepare)
 
 interface ElementListProperty<T> : ReadWriteProperty<Any?, List<T>> {
     val parent: HTMLElement

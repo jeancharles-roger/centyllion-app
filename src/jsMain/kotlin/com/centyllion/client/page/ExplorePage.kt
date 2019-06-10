@@ -61,7 +61,9 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         }.catch { context.error(it) }
     }
 
-    val search = Field(Control(searchInput, Icon("search")))
+    val clearSearch = iconButton(Icon("times"), rounded = true) { searchInput.value = "" }
+
+    val search = Field(Control(searchInput, Icon("search"), expanded = true), Control(clearSearch), addons = true)
 
     // tabs for search results
     val searchTabs = TabPages(

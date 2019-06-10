@@ -2,6 +2,8 @@ package com.centyllion.client
 
 import stripe.Stripe
 
+external fun encodeURIComponent(parameter: String): String
+
 external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
 
 fun runWithStripe(key: String, block: (Stripe) -> Unit) =

@@ -17,14 +17,11 @@ import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
 import io.ktor.features.*
 import io.ktor.html.respondHtml
-import io.ktor.http.CacheControl
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.http.content.CachingOptions
 import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
-import io.ktor.http.withCharset
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
@@ -255,8 +252,9 @@ fun Application.centyllion(
                     get("search") {
                         val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                         val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val query = call.parameters["q"]!!
-                        context.respond(data.searchModel(query, offset, limit))
+                        val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
+                        val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")
+                        context.respond(data.searchModel(tsquery, offset, limit))
                     }
 
                     // post a new model
@@ -383,8 +381,9 @@ fun Application.centyllion(
                     get("search") {
                         val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                         val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val query = call.parameters["q"]!!
-                        context.respond(data.searchSimulation(query, offset, limit))
+                        val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
+                        val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")
+                        context.respond(data.searchSimulation(tsquery, offset, limit))
                     }
 
                     route("{simulation}") {

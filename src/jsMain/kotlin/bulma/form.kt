@@ -184,7 +184,10 @@ class Input(
     override var value: String
         get() = root.value
         set(value) {
-            root.value = value
+            if (root.value != value) {
+                root.value = value
+                onChange(InputEvent("change"), value)
+            }
         }
 
     override var placeholder by attribute(placeholder, "placeholder", root)

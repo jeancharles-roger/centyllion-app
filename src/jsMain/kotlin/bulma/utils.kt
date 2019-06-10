@@ -14,6 +14,29 @@ enum class Position(val value: String) {
     BeforeEnd("beforeend"), AfterEnd("afterend")
 }
 
+/** Computes differences between values and applies changes to container */
+fun <T> applyChanges(
+    oldValue: List<T>, value: List<T>,
+    container: HTMLElement, reference: Element?, position: Position?,
+    prepare: (T) -> HTMLElement
+) = oldValue.diff(value).forEach {
+    when (it.action) {
+        DiffAction.Added -> prepare(it.element).let { new ->
+            when {
+                container.childElementCount == 0 && reference != null -> container.insertBefore(new, reference)
+                container.childElementCount == 0 -> container.appendChild(new)
+                it.index < container.childElementCount -> container.insertBefore(new, container.children.item(it.index))
+                position != null -> container.insertAdjacentElement(position.value, new)
+                else -> container.appendChild(new)
+            }
+        }
+        DiffAction.Removed -> container.childNodes[it.index]?.let { container.removeChild(it) }
+        DiffAction.Replaced -> container.childNodes[it.index]?.let { toReplace ->
+            container.replaceChild(prepare(it.element), toReplace)
+        }
+    }
+}
+
 /** Property that handle the insertion and the change of a [BulmaElement]. */
 class BulmaElementProperty<T>(
     initialValue: T?, val parent: HTMLElement, val position: Position = Position.BeforeEnd,
@@ -51,7 +74,6 @@ class BulmaElementProperty<T>(
             onChange(this, oldValue, value)
         }
     }
-
 }
 
 fun <T : BulmaElement> bulma(
@@ -68,46 +90,13 @@ fun <T> html(
     prepare: (newValue: T) -> HTMLElement?
 ) = BulmaElementProperty(initialValue, parent, position, onChange, prepare)
 
-interface ElementListProperty<T> : ReadWriteProperty<Any?, List<T>> {
-    val parent: HTMLElement
-    val position: Position
-    val prepare: (T) -> HTMLElement
-
-    fun applyChanges(oldValue: List<T>, value: List<T>, container: HTMLElement, reference: Element?) {
-        val diff = oldValue.diff(value)
-        diff.forEach {
-            when (it.action) {
-                DiffAction.Added -> when {
-                    container.childElementCount == 0 && reference != null -> container.insertBefore(
-                        prepare(it.element),
-                        reference
-                    )
-                    container.childElementCount == 0 -> container.insertAdjacentElement(
-                        position.value,
-                        prepare(it.element)
-                    )
-                    it.index < container.childElementCount -> container.insertBefore(
-                        prepare(it.element),
-                        container.children.item(it.index)
-                    )
-                    else -> container.insertAdjacentElement(position.value, prepare(it.element))
-                }
-                DiffAction.Removed -> container.childNodes[it.index]?.let { container.removeChild(it) }
-                DiffAction.Replaced -> container.childNodes[it.index]?.let { toReplace ->
-                    container.replaceChild(prepare(it.element), toReplace)
-                }
-            }
-        }
-    }
-}
-
 class BulmaElementListProperty<T : BulmaElement>(
     initialValue: List<T>,
-    override val parent: HTMLElement,
+    val parent: HTMLElement,
     val before: () -> Element?,
-    override val position: Position = Position.BeforeEnd,
-    override val prepare: (T) -> HTMLElement
-) : ElementListProperty<T> {
+    val position: Position = Position.BeforeEnd,
+    val prepare: (T) -> HTMLElement
+) : ReadWriteProperty<Any?, List<T>> {
 
     var value = initialValue
 
@@ -119,7 +108,7 @@ class BulmaElementListProperty<T : BulmaElement>(
             this.value = value
             // before reference
             val reference = before()
-            applyChanges(oldValue, value, parent, reference)
+            applyChanges(oldValue, value, parent, reference, position, prepare)
         }
     }
 
@@ -141,12 +130,12 @@ fun <T : BulmaElement> bulmaList(
 
 class BulmaElementEmbeddedListProperty<T : BulmaElement>(
     initialValue: List<T>,
-    override val parent: HTMLElement,
+    val parent: HTMLElement,
     val before: () -> Element?,
-    override val position: Position = Position.BeforeEnd,
-    override val prepare: (T) -> HTMLElement,
+    val position: Position = Position.BeforeEnd,
+    val prepare: (T) -> HTMLElement,
     private val containerBuilder: (List<T>) -> HTMLElement
-) : ElementListProperty<T> {
+) : ReadWriteProperty<Any?, List<T>> {
 
     var value = initialValue
 
@@ -186,7 +175,7 @@ class BulmaElementEmbeddedListProperty<T : BulmaElement>(
                         }
                     }
                 }
-                else -> container?.let { applyChanges(oldValue, value, it, null) }
+                else -> container?.let { applyChanges(oldValue, value, it, null, null, prepare) }
             }
         }
     }

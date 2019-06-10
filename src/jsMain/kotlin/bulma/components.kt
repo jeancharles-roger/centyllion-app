@@ -296,7 +296,7 @@ class Message(
         document.create.div("message-header")
     }
 
-    var body by embeddedBulmaList(body, root, Position.BeforeEnd) {
+    var body by embeddedBulmaList(body, root) {
         document.create.div("message-body")
     }
 

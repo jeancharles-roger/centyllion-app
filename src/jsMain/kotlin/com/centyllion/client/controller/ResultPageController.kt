@@ -43,12 +43,12 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
     override val container: BulmaElement = div(pagination, contentController)
 
     override fun refresh() {
-        pagination.items = (0..data.totalSize / limit).map { page ->
+        pagination.items = (0..(data.totalSize - 1) / limit).map { page ->
             val pageOffset = page * limit
             PaginationLink("$page", current = (pageOffset == data.offset)) { offset = pageOffset }
         }
         previous.disabled = offset == 0
-        next.disabled = offset > data.totalSize - limit
+        next.disabled = offset > (data.totalSize-1) - limit
     }
 
 }

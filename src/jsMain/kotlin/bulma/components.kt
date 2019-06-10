@@ -532,7 +532,7 @@ class PaginationAction(
     override val root = document.create.a(href) {
         +text
         if (disabled) attributes["disabled"] = ""
-        onClickFunction = { onClick(this@PaginationAction) }
+        onClickFunction = { if (!this@PaginationAction.disabled) onClick(this@PaginationAction) }
     } as HTMLAnchorElement
 
     var href: String

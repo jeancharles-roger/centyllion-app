@@ -97,9 +97,9 @@ class Api(val instance: KeycloakInstance?) {
             )
         }
 
-    fun searchModel(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun searchModel(query: String, offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         // TODO encode query
-        fetch("GET", "/api/model/search?q=$query", bearer).then {
+        fetch("GET", "/api/model/search?q=$query&offset=$offset&limit=$limit", bearer).then {
             json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it)
         }
     }
@@ -144,9 +144,9 @@ class Api(val instance: KeycloakInstance?) {
             )
         }
 
-    fun searchSimulation(query: String) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         // TODO encode query
-        fetch("GET", "/api/simulation/search?q=$query", bearer).then {
+        fetch("GET", "/api/simulation/search?q=$query&offset=$offset&limit=$limit", bearer).then {
             json.parse(ResultPage.serializer(SimulationDescription.serializer()), it)
         }
     }

@@ -6,9 +6,9 @@ import com.centyllion.model.emptyResultPage
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
+class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
     controllerBuilder: (MultipleController<Data, Unit, Columns, Column, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl,
-    var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _-> Promise.resolve(emptyResultPage())},
+    var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
     var onClick: (Data, Ctrl) -> Unit = { _, _ -> },
     var error: (Throwable) -> Unit = {}
 ) : NoContextController<ResultPage<Data>, BulmaElement>() {
@@ -22,7 +22,7 @@ class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
 
     override var readOnly: Boolean = true
 
-    var limit: Int by observable( 8) { _, old, new ->
+    var limit: Int by observable(8) { _, old, new ->
         if (old != new) refresh()
     }
 

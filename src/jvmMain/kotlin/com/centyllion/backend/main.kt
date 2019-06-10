@@ -185,7 +185,9 @@ fun Application.centyllion(
                 // featured
                 route("featured") {
                     get {
-                        val allFeatured = data.getAllFeatured()
+                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                        val allFeatured = data.getAllFeatured(offset, limit)
                         context.respond(allFeatured)
                     }
 
@@ -251,8 +253,10 @@ fun Application.centyllion(
                     }
 
                     get("search") {
+                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                         val query = call.parameters["q"]!!
-                        context.respond(data.searchModel(query))
+                        context.respond(data.searchModel(query, offset, limit))
                     }
 
                     // post a new model
@@ -377,8 +381,10 @@ fun Application.centyllion(
                     }
 
                     get("search") {
+                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                         val query = call.parameters["q"]!!
-                        context.respond(data.searchSimulation(query))
+                        context.respond(data.searchSimulation(query, offset, limit))
                     }
 
                     route("{simulation}") {

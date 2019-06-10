@@ -28,9 +28,9 @@ class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
         if (old != new) fetch(new, limit).then { data = it }.catch { error(it) }
     }
 
-    val next = PaginationAction("Next") { }
+    val next = PaginationAction("Next") { offset += limit }
 
-    val previous = PaginationAction("Previous") { }
+    val previous = PaginationAction("Previous") { offset -= limit }
 
     val pagination = Pagination(previous = previous, next = next, rounded = true)
 

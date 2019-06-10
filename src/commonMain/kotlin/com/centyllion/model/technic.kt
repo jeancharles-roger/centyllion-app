@@ -2,6 +2,9 @@ package com.centyllion.model
 
 import kotlinx.serialization.Serializable
 
+
+fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
+
 @Serializable
 data class ResultPage<T>(
     val content: List<T>,

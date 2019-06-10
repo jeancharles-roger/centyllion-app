@@ -4,13 +4,12 @@ import bulma.*
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.GrainModelDisplayController
+import com.centyllion.client.controller.ResultPageController
 import com.centyllion.client.controller.SimulationDisplayController
 import com.centyllion.client.showPage
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.ResultPage
 import com.centyllion.model.SimulationDescription
-import kotlin.properties.Delegates
 
 class ExplorePage(val context: AppContext) : BulmaElement {
 
@@ -82,37 +81,17 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         context.api.fetchAllFeatured().then { featuredController.data = it.content }
     }
 
-    val recentLimit = 8
-
-    var recentOffset by Delegates.observable(0) { _, old, new ->
-        if (old != new) context.api.fetchPublicSimulations(new, recentLimit).then { updateRecent(it) }
-    }
-
-    val recentController = noContextColumnsController<SimulationDescription, SimulationDisplayController>(emptyList())
-    { _, data, previous -> previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" } }
-
-    private fun updateRecent(result: ResultPage<SimulationDescription>) {
-        recentController.data = result.content
-        recentPagination.items = (0..result.totalSize / recentLimit).map { page ->
-            val pageOffset = page * recentLimit
-            PaginationLink("$page", current = (pageOffset == result.offset)) { recentOffset = pageOffset }
-        }
-        previous.disabled = recentOffset == 0
-        next.disabled = recentOffset > result.totalSize - recentLimit
-    }
-
-    val next = PaginationAction("Next") {
-
-    }
-    val previous = PaginationAction("Previous")
-
-    val recentPagination = Pagination(previous = previous, next = next, rounded = true)
+    val recentResult = ResultPageController<SimulationDescription, SimulationDisplayController>(
+        { _, data, previous -> previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" } },
+        { offset, limit ->  context.api.fetchPublicSimulations(offset, limit) },
+        { simulation, _ -> context.openPage(showPage, mapOf("simulation" to simulation.id)) }
+    )
 
     val recentTabItem = TabItem("Recent", "play")
 
     val exploreTabs = TabPages(
         TabPage(featuredTabItem, featuredController),
-        TabPage(recentTabItem, div(recentPagination, recentController))
+        TabPage(recentTabItem, recentResult)
     )
 
     val container = div(
@@ -132,12 +111,9 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         searchedModelController.onClick = { model, _ ->
             context.openPage(showPage, mapOf("model" to model.id))
         }
-        recentController.onClick = { simulation, _ ->
-            context.openPage(showPage, mapOf("simulation" to simulation.id))
-        }
 
         context.api.fetchAllFeatured().then { featuredController.data = it.content }
-        context.api.fetchPublicSimulations(recentOffset, recentLimit).then { updateRecent(it) }
+        context.api.fetchPublicSimulations(0, recentResult.limit).then { recentResult.data = it }
     }
 
 }

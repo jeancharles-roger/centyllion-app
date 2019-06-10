@@ -69,42 +69,29 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         TabPage(searchModelTabItem, searchedModelController)
     )
 
-    // featured controller
-    val featuredController =
-        noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
-        { _, data, previous ->
-            previous ?: FeaturedController(data).apply { root.style.cursor = "pointer" }
-        }
-
-
-    val featuredTabItem = TabItem("Featured", "star") {
-        context.api.fetchAllFeatured().then { featuredController.data = it.content }
-    }
-
     val recentResult = ResultPageController<SimulationDescription, SimulationDisplayController>(
         { _, data, previous -> previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" } },
         { offset, limit ->  context.api.fetchPublicSimulations(offset, limit) },
-        { simulation, _ -> context.openPage(showPage, mapOf("simulation" to simulation.id)) }
+        { simulation, _ -> context.openPage(showPage, mapOf("simulation" to simulation.id)) },
+        { context.error(it)}
     )
 
-    val recentTabItem = TabItem("Recent", "play")
-
-    val exploreTabs = TabPages(
-        TabPage(featuredTabItem, featuredController),
-        TabPage(recentTabItem, recentResult)
+    val featuredResult = ResultPageController<FeaturedDescription, FeaturedController>(
+        { _, data, previous -> previous ?: FeaturedController(data).apply { root.style.cursor = "pointer" } },
+        { offset, limit ->  context.api.fetchAllFeatured(offset, limit) },
+        { featured , _  -> context.openPage(showPage, mapOf("simulation" to featured.simulationId)) },
+        { context.error(it)}
     )
 
     val container = div(
         Title("Search"), Box(search, searchTabs),
-        Title("Explore"), exploreTabs
+        Title("Recent simulations"), Box(recentResult),
+        Title("Featured"), Box(featuredResult)
     )
 
     override val root = container.root
 
     init {
-        featuredController.onClick = { featured , _  ->
-            context.openPage(showPage, mapOf("simulation" to featured.simulationId))
-        }
         searchedSimulationController.onClick = { simulation, _ ->
             context.openPage(showPage, mapOf("simulation" to simulation.id))
         }
@@ -112,7 +99,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
             context.openPage(showPage, mapOf("model" to model.id))
         }
 
-        context.api.fetchAllFeatured().then { featuredController.data = it.content }
+        context.api.fetchAllFeatured(0, featuredResult.limit).then { featuredResult.data = it }
         context.api.fetchPublicSimulations(0, recentResult.limit).then { recentResult.data = it }
     }
 

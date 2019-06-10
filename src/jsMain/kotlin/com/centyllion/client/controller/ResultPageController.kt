@@ -8,9 +8,9 @@ import kotlin.properties.Delegates.observable
 
 class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
     controllerBuilder: (MultipleController<Data, Unit, Columns, Column, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl,
-    fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _-> Promise.resolve(emptyResultPage())},
-    onClick: (Data, Ctrl) -> Unit = { _, _ -> },
-    error: (Throwable) -> Unit = {}
+    var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _-> Promise.resolve(emptyResultPage())},
+    var onClick: (Data, Ctrl) -> Unit = { _, _ -> },
+    var error: (Throwable) -> Unit = {}
 ) : NoContextController<ResultPage<Data>, BulmaElement>() {
 
     override var data: ResultPage<Data> by observable(emptyResultPage()) { _, old, new ->
@@ -22,9 +22,11 @@ class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
 
     override var readOnly: Boolean = true
 
-    var limit: Int = 8
+    var limit: Int by observable( 8) { _, old, new ->
+        if (old != new) refresh()
+    }
 
-    var offset: Int by observable( 0) { _, old, new ->
+    var offset: Int by observable(0) { _, old, new ->
         if (old != new) fetch(new, limit).then { data = it }.catch { error(it) }
     }
 

@@ -38,7 +38,7 @@ class ResultPageController<Data, Ctrl: Controller<Data, Unit, Column>>(
 
     val contentController =
         noContextColumnsController(data.content, controllerBuilder = controllerBuilder)
-            .apply { this.onClick = onClick }
+            .apply { this.onClick = this@ResultPageController.onClick }
 
     override val container: BulmaElement = div(pagination, contentController)
 

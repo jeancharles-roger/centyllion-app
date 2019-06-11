@@ -4,9 +4,9 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.auth0.jwt.JWTVerifier
 import com.centyllion.backend.data.Data
-import com.centyllion.common.adminRole
-import com.centyllion.common.creatorRole
-import com.centyllion.model.*
+import com.centyllion.backend.route.*
+import com.centyllion.model.DescriptionInfo
+import com.centyllion.model.User
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -18,15 +18,18 @@ import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
 import io.ktor.features.*
 import io.ktor.html.respondHtml
-import io.ktor.http.*
+import io.ktor.http.CacheControl
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.CachingOptions
 import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
-import io.ktor.request.receive
+import io.ktor.http.withCharset
 import io.ktor.response.respond
-import io.ktor.response.respondBytes
-import io.ktor.routing.*
+import io.ktor.routing.get
+import io.ktor.routing.route
+import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
 import org.slf4j.LoggerFactory
@@ -152,313 +155,12 @@ fun Application.centyllion(
 
         authenticate(optional = true) {
             route("/api") {
-                // me route for user own data
-                route("me") {
-                    // get the user's profile
-                    get {
-                        withRequiredPrincipal {
-                            context.respond(data.getOrCreateUserFromPrincipal(it))
-                        }
-                    }
-
-                    // get all user's saved models
-                    get("model") {
-                        withRequiredPrincipal {
-                            val user = data.getOrCreateUserFromPrincipal(it)
-                            val models = data.grainModelsForUser(user)
-                            context.respond(models)
-                        }
-                    }
-                }
-
-                // TODO user routes
-                route("user") {
-                    get {
-
-                    }
-
-
-                }
-
-                // featured
-                route("featured") {
-                    get {
-                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val allFeatured = data.getAllFeatured(offset, limit)
-                        context.respond(allFeatured)
-                    }
-
-                    // post a new featured
-                    post {
-                        withRequiredPrincipal(adminRole) {
-                            val user = data.getOrCreateUserFromPrincipal(it)
-                            val newFeatured = call.receive(FeaturedDescription::class)
-                            val model = data.getGrainModel(newFeatured.modelId)
-                            val simulation = data.getSimulation(newFeatured.simulationId)
-                            val author = data.getUser(newFeatured.authorId, false)
-
-                            context.respond(
-                                when {
-                                    model == null || simulation == null || author == null -> HttpStatusCode.NotFound
-                                    model.info.userId != author.id && simulation.info.userId != author.id -> HttpStatusCode.Unauthorized
-                                    else -> data.createFeatured(user, model, simulation, author)
-                                }
-                            )
-                        }
-                    }
-
-                    // access a given featured
-                    route("{featured}") {
-                        get {
-                            val id = call.parameters["featured"]!!
-                            val featured = data.getFeatured(id)
-                            context.respond(
-                                when {
-                                    featured == null -> HttpStatusCode.NotFound
-                                    else -> featured
-                                }
-                            )
-                        }
-
-                        // delete an existing featured
-                        delete {
-                            withRequiredPrincipal(adminRole) {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val id = call.parameters["featured"]!!
-                                val featured = data.getFeatured(id)
-                                context.respond(
-                                    when {
-                                        featured == null -> HttpStatusCode.NotFound
-                                        else -> {
-                                            data.deleteFeatured(user, id)
-                                            HttpStatusCode.OK
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // model access
-                route("model") {
-                    get {
-                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val models = data.publicGrainModels(offset, limit)
-                        context.respond(models)
-                    }
-
-                    get("search") {
-                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
-                        val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")
-                        context.respond(data.searchModel(tsquery, offset, limit))
-                    }
-
-                    // post a new model
-                    post {
-                        withRequiredPrincipal(creatorRole) {
-                            val user = data.getOrCreateUserFromPrincipal(it)
-                            val newModel = call.receive(GrainModel::class)
-                            val newDescription = data.createGrainModel(user, newModel)
-                            context.respond(newDescription)
-                        }
-                    }
-
-                    // access a given model
-                    route("{model}") {
-                        // model get with user
-                        get {
-                            val user = call.principal<JWTPrincipal>()?.let {
-                                data.getOrCreateUserFromPrincipal(it)
-                            }
-                            val id = call.parameters["model"]!!
-                            val model = data.getGrainModel(id)
-                            context.respond(
-                                when {
-                                    model == null -> HttpStatusCode.NotFound
-                                    !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                                    else -> model
-                                }
-                            )
-                        }
-
-                        // patch an existing model
-                        patch {
-                            withRequiredPrincipal(creatorRole) {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val id = call.parameters["model"]!!
-                                val model = call.receive(GrainModelDescription::class)
-                                context.respond(
-                                    when {
-                                        model.id != id -> HttpStatusCode.Forbidden
-                                        !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> {
-                                            data.saveGrainModel(user, model)
-                                            HttpStatusCode.OK
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        // delete an existing model
-                        delete {
-                            withRequiredPrincipal(creatorRole) {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val id = call.parameters["model"]!!
-                                val model = data.getGrainModel(id)
-                                context.respond(
-                                    when {
-                                        model == null -> HttpStatusCode.NotFound
-                                        !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> {
-                                            data.deleteGrainModel(user, id)
-                                            HttpStatusCode.OK
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        route("simulation") {
-                            // model's simulations
-                            get {
-                                val publicOnly = call.request.queryParameters["public"] != null
-                                val user = call.principal<JWTPrincipal>()?.let {
-                                    data.getOrCreateUserFromPrincipal(it)
-                                }
-                                val modelId = call.parameters["model"]!!
-                                val model = data.getGrainModel(modelId)
-                                context.respond(
-                                    when {
-                                        model == null -> HttpStatusCode.NotFound
-                                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> {
-                                            val simulations = data.getSimulationForModel(modelId)
-                                            simulations.filter {
-                                                hasReadAccess(
-                                                    it.info,
-                                                    if (publicOnly) null else user
-                                                )
-                                            }
-                                        }
-                                    }
-                                )
-                            }
-
-                            // post a new simulation for model
-                            post {
-                                withRequiredPrincipal(creatorRole) {
-                                    val user = data.getOrCreateUserFromPrincipal(it)
-                                    val modelId = call.parameters["model"]!!
-                                    val model = data.getGrainModel(modelId)
-                                    val newSimulation = call.receive(Simulation::class)
-                                    context.respond(
-                                        when {
-                                            model == null -> HttpStatusCode.NotFound
-                                            !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
-                                            else -> data.createSimulation(user, modelId, newSimulation)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // simulations
-                route("simulation") {
-                    get {
-                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val simulations = data.publicSimulations(offset, limit)
-                        context.respond(simulations)
-                    }
-
-                    get("search") {
-                        val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                        val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                        val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
-                        val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")
-                        context.respond(data.searchSimulation(tsquery, offset, limit))
-                    }
-
-                    route("{simulation}") {
-                        get {
-                            val user = call.principal<JWTPrincipal>()?.let {
-                                data.getOrCreateUserFromPrincipal(it)
-                            }
-                            val simulationId = call.parameters["simulation"]!!
-                            val simulation = data.getSimulation(simulationId)
-                            context.respond(
-                                when {
-                                    simulation == null -> HttpStatusCode.NotFound
-                                    !hasReadAccess(simulation.info, user) -> HttpStatusCode.Unauthorized
-                                    else -> simulation
-                                }
-                            )
-                        }
-
-                        // patch an existing simulation for user
-                        patch {
-                            withRequiredPrincipal(creatorRole) {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val simulationId = call.parameters["simulation"]!!
-                                val simulation = call.receive(SimulationDescription::class)
-                                context.respond(
-                                    when {
-                                        simulation.id != simulationId -> HttpStatusCode.Forbidden
-                                        !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> {
-                                            data.saveSimulation(user, simulation)
-                                            HttpStatusCode.OK
-                                        }
-                                    }
-                                )
-                            }
-                        }
-
-                        // delete an existing model for user
-                        delete {
-                            withRequiredPrincipal(creatorRole) {
-                                val user = data.getOrCreateUserFromPrincipal(it)
-                                val simulationId = call.parameters["simulation"]!!
-                                val simulation = data.getSimulation(simulationId)
-                                context.respond(
-                                    when {
-                                        simulation == null -> HttpStatusCode.NotFound
-                                        !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
-                                        else -> {
-                                            data.deleteSimulation(user, simulationId)
-                                            if (simulation.thumbnailId != null) {
-                                                data.deleteAsset(simulation.thumbnailId)
-                                            }
-                                            HttpStatusCode.OK
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                }
-
-                // binary assets
-                route("asset") {
-                    get("{asset}") {
-                        val id = call.parameters["asset"]!!
-                        val asset = data.getAsset(id)
-                        if (asset != null) {
-                            context.respondBytes(asset.data, ContentType.Image.PNG)
-                        } else {
-                            context.respond(HttpStatusCode.NotFound)
-                        }
-                    }
-                }
+                me(data)
+                user(data)
+                featured(data)
+                model(data)
+                simulation(data)
+                asset(data)
             }
         }
     }

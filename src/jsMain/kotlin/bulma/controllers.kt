@@ -44,7 +44,7 @@ class MultipleController<
         ItemElement : BulmaElement,
         /** Controller for each item */
         Ctrl : Controller<Data, Context, ItemElement>
-    >(
+        >(
     initialList: List<Data>, initialContext: Context, header: List<ItemElement>, footer: List<ItemElement>,
     override val container: ParentElement,
     val controllerBuilder: (MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>, Data, Ctrl?) -> Ctrl,
@@ -183,3 +183,34 @@ fun <Data, Ctrl : Controller<Data, Unit, MenuItem>> noContextMenuController(
     header: List<MenuItem> = emptyList(), footer: List<MenuItem> = emptyList(),
     controllerBuilder: (MultipleController<Data, Unit, Menu, MenuItem, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl
 ) = menuController(container, initialList, Unit, header, footer, controllerBuilder)
+
+class WrappedController<Data, Context, Source : BulmaElement, Target : BulmaElement>(
+    val source: Controller<Data, Context, Source>, target: Target
+) : Controller<Data, Context, Target> {
+    override var data: Data
+        get() = source.data
+        set(value) {
+            source.data = value
+        }
+
+    override var context: Context
+        get() = source.context
+        set(value) {
+            source.context = value
+        }
+
+    override var readOnly: Boolean
+        get() = source.readOnly
+        set(value) {
+            source.readOnly = value
+        }
+
+    override val container: Target = target
+
+    override fun refresh() = source.refresh()
+}
+
+/** Wraps a controller inside a Bulma element */
+fun <Data, Context, Source : BulmaElement, Target : BulmaElement>
+        Controller<Data, Context, Source>.wrap(transform: (Source) -> Target) =
+            WrappedController(this, transform(this.container))

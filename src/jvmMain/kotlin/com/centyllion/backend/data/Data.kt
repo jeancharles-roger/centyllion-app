@@ -4,6 +4,7 @@ import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 
 interface Data {
+    fun getAllUsers(detailed: Boolean, offset: Int = 0, limit: Int = 20): ResultPage<User>
     fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
     fun getUser(id: String, detailed: Boolean): User?
     fun saveUser(user: User)

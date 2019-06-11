@@ -71,6 +71,11 @@ class SqlData(
         }
     }
 
+    override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
+        val content = DbUser.all().limit(limit, offset).reversed().map { it.toModel(detailed) }
+        ResultPage(content, offset, DbUser.all().count())
+    }
+
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         // retrieves roles from claim
         val currentRoles = principal.payload.claims["roles"]?.asList(String::class.java)?.joinToString(",")

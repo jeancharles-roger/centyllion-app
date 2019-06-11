@@ -47,6 +47,9 @@ class MemoryData(
     val assets: LinkedHashMap<String, Asset> = linkedMapOf()
 ) : Data {
 
+    override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
+        users.values.toList().map { if (detailed) it else it.copy(details = null)}.limit(offset, limit)
+
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
         users.values.find { it.details?.keycloakId == principal.payload.subject }.let {
             if (it == null) {

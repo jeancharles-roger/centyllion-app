@@ -93,8 +93,8 @@ fun Application.centyllion(
         exception<Throwable> { cause ->
             when {
                 cause is IllegalArgumentException &&
-                    cause.message.toString().contains("Invalid UUID string") -> {
-                        call.respond(HttpStatusCode.NotFound)
+                        cause.message.toString().contains("Invalid UUID string") -> {
+                    call.respond(HttpStatusCode.NotFound)
                 }
                 else -> {
                     if (debug) cause.printStackTrace()
@@ -172,19 +172,17 @@ fun hasReadAccess(info: DescriptionInfo, user: User?) =
 
 fun isOwner(info: DescriptionInfo, user: User) = info.userId == user.id
 
-suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
-    requiredRole: String? = null, block: suspend (JWTPrincipal) -> Unit
-) {
-    // test if authenticated and all required roles are present
-    val principal = call.principal<JWTPrincipal>()
-    val granted = if (requiredRole == null) true else {
+fun PipelineContext<Unit, ApplicationCall>.checkRoles(requiredRole: String? = null) =
+    if (requiredRole == null) true else {
+        val principal = call.principal<JWTPrincipal>()
         val rolesClaim = principal?.payload?.getClaim("roles")
         val roles: List<String> = rolesClaim?.asList<String>(String::class.java) ?: emptyList()
         roles.contains(requiredRole)
     }
-    if (principal != null && granted) {
-        block(principal)
-    } else {
-        context.respond(HttpStatusCode.Unauthorized)
-    }
+
+suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
+    requiredRole: String? = null, block: suspend (JWTPrincipal) -> Unit
+) = call.principal<JWTPrincipal>().let {
+    // test if authenticated and all required roles are present
+    if (it != null && checkRoles(requiredRole)) block(it) else context.respond(HttpStatusCode.Unauthorized)
 }

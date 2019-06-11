@@ -51,6 +51,10 @@ class JsonConverter : ContentConverter {
                     ResultPage.serializer(FeaturedDescription.serializer()),
                     value as ResultPage<FeaturedDescription>
                 )
+                is User -> stringify(
+                    ResultPage.serializer(User.serializer()),
+                    value as ResultPage<User>
+                )
                 else -> stringify(
                     ResultPage.serializer(SimulationDescription.serializer()),
                     value as ResultPage<SimulationDescription>

@@ -47,15 +47,27 @@ class Api(val instance: KeycloakInstance?) {
     fun fetchVersion() =
         fetch("GET", "/version.json").then { json.parse(Version.serializer(), it) }
 
-
-    fun fetchUser(): Promise<User?> =
+    fun fetchMe(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/me", bearer).then { json.parse(User.serializer(), it) }.catch { null }
         }
 
-    fun saveUser(user: User) =
+    fun saveMe(user: User) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("PATCH", "/api/me", bearer, json.stringify(User.serializer(), user))
+        }
+
+    fun fetchAllUser(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/user?detailed=$detailed&offset=$offset&limit=$limit", bearer).then {
+                json.parse(ResultPage.serializer(User.serializer()), it)
+            }
+        }
+
+    fun fetchUser(id: String, detailed: Boolean = false): Promise<User?> =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/user/$id?detailed=$detailed", bearer)
+                .then { json.parse(User.serializer(), it) }.catch { null }
         }
 
     fun fetchMyGrainModels() =

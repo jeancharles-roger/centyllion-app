@@ -6,10 +6,7 @@ import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.UserController
 import com.centyllion.client.showPage
 import com.centyllion.common.creatorRole
-import com.centyllion.model.Description
-import com.centyllion.model.FeaturedDescription
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.SimulationDescription
+import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
@@ -42,7 +39,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val userController = UserController(context.me)
+    val userController = UserController(context.me ?: emptyUser)
 
     val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
         updateElements()
@@ -123,11 +120,6 @@ class HomePage(val context: AppContext) : BulmaElement {
                     elements = mutable
                 }
             }
-        }
-
-        // sets callbacks for update
-        userController.onUpdate = { _, new, _ ->
-            if (new != null) context.api.saveUser(new) else null
         }
 
         // retrieves featured models

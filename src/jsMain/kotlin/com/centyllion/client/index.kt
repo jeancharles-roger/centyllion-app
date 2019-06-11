@@ -15,8 +15,7 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.Date
-import kotlin.js.Promise
+import kotlin.js.*
 
 interface CssFile {
     val files: Array<String>
@@ -54,7 +53,7 @@ fun index() {
         checkLoginIframe = false, promiseType = "native", onLoad = "check-sso", timeSkew = 10
     )
     keycloak.init(options)
-        .then { _ -> api.fetchUser() }
+        .then { _ -> api.fetchMe() }
         .then { user ->
             // creates context
             val context = BrowserContext(navBar, root, keycloak, user, api)

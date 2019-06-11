@@ -4,6 +4,8 @@ import bulma.*
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.FeaturedController
 import com.centyllion.client.controller.GrainModelFeaturedController
+import com.centyllion.client.controller.ResultPageController
+import com.centyllion.client.controller.UserController
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
@@ -41,16 +43,30 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
 
+    val userController = ResultPageController(
+        {_, data, previous ->
+            previous ?: UserController(data).wrap { Column(it, size = ColumnSize.S4) }
+        },
+        { offset, limit -> api.fetchAllUser(true, offset, limit) }
+    )
+
+    val userPage = TabPage(TabItem("Users", "user"), userController)
+
     val onTabChange: (TabPage) -> Unit = {
         when (it) {
             featuredPage -> {
                 api.fetchAllFeatured().then { featuredController.data = it.content }.catch { context.error(it) }
                 api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { context.error(it) }
             }
+            userPage -> api.fetchAllUser(true, 0, userController.limit)
+                .then { userController.data = it }.catch { context.error(it) }
         }
     }
 
-    val container: BulmaElement = TabPages(featuredPage, tabs = Tabs(boxed = true), onTabChange = onTabChange)
+    val container: BulmaElement = TabPages(
+        featuredPage, userPage,
+        tabs = Tabs(boxed = true), onTabChange = onTabChange
+    )
 
     override val root: HTMLElement = container.root
 

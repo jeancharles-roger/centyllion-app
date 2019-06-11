@@ -1,5 +1,6 @@
-package com.centyllion.backend
+package com.centyllion.backend.data
 
+import com.centyllion.backend.createThumbnail
 import com.centyllion.model.*
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
@@ -46,8 +47,13 @@ class SqlData(
     init {
         transaction(database) {
             SchemaUtils.createMissingTablesAndColumns(
-                DbMetaTable, DbUsers, DbFeaturedTable, DbAssets,
-                DbDescriptionInfos, DbModelDescriptions, DbSimulationDescriptions
+                DbMetaTable,
+                DbUsers,
+                DbFeaturedTable,
+                DbAssets,
+                DbDescriptionInfos,
+                DbModelDescriptions,
+                DbSimulationDescriptions
             )
             val version = try {
                 DbMeta.all().first().version
@@ -215,7 +221,9 @@ class SqlData(
                 simulation.thumbnailId?.let { deleteAsset(it) }
                 // creates new asset
                 val asset = getGrainModel(simulation.modelId)?.let {
-                    createAsset("${simulation.simulation.name}.png", createThumbnail(it.model, simulation.simulation))
+                    createAsset("${simulation.simulation.name}.png",
+                        createThumbnail(it.model, simulation.simulation)
+                    )
                 }
                 simulation.copy(thumbnailId = asset?.id)
             }

@@ -1,4 +1,4 @@
-package com.centyllion.backend
+package com.centyllion.backend.data
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
@@ -29,7 +29,15 @@ class Migration(
 
 val migrations = listOf(
     Migration(0, 1) {
-        createIndex("simulationDescription_textIndex", DbSimulationDescriptions, DbSimulationDescriptions.simulation)
-        createIndex("modelDescription_textIndex", DbModelDescriptions, DbModelDescriptions.model)
+        createIndex(
+            "simulationDescription_textIndex",
+            DbSimulationDescriptions,
+            DbSimulationDescriptions.simulation
+        )
+        createIndex(
+            "modelDescription_textIndex",
+            DbModelDescriptions,
+            DbModelDescriptions.model
+        )
     }
 )

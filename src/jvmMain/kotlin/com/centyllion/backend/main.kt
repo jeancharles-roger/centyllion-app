@@ -3,6 +3,7 @@ package com.centyllion.backend
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.auth0.jwt.JWTVerifier
+import com.centyllion.backend.data.Data
 import com.centyllion.common.adminRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.*

@@ -1,5 +1,6 @@
 package com.centyllion.backend
 
+import com.centyllion.backend.data.SqlData
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.options.default

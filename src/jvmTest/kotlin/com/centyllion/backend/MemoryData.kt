@@ -1,5 +1,6 @@
 package com.centyllion.backend
 
+import com.centyllion.backend.data.Data
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 import java.text.SimpleDateFormat

@@ -1,4 +1,4 @@
-package com.centyllion.backend
+package com.centyllion.backend.data
 
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal

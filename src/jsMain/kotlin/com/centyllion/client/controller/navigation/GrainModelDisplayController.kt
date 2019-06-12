@@ -23,8 +23,6 @@ class GrainModelDisplayController(
         root.classList.add("is-outlined")
     }
 
-
-
     override val container = Column(body, size = size)
 
     override fun refresh() {

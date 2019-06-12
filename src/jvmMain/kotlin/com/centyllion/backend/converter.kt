@@ -60,7 +60,6 @@ class JsonConverter : ContentConverter {
                     value as ResultPage<SimulationDescription>
                 )
             }
-        is Event -> stringify(Event.serializer(), value)
         is List<*> -> "[${if (value.isNotEmpty()) value.joinToString(",") { convertForSend(it) } else ""}]"
         else -> throw Exception("Can't transform ${value?.javaClass?.simpleName} to Json")
     }

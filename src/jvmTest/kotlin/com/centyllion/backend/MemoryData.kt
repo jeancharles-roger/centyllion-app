@@ -32,12 +32,6 @@ fun createFeaturedDescription(
     author.name
 )
 
-fun createEvent(action: Action, user: User?, targetId: String, argument: String): Event {
-    val date = rfc1123Format.format(Date())
-    return Event(newId(), date, user?.id ?: "", action, targetId, argument)
-}
-
-
 /** Memory implementation for Data. Only used for tests, not optimal at all */
 class MemoryData(
     val users: LinkedHashMap<String, User> = linkedMapOf(),

@@ -49,7 +49,7 @@ class BehaviourRunController(
     fun toProbability(value: String) = log10(value.toDouble())
 
     fun format(value: Double) = value.toString().let {
-        it.substring(0, min(it.lastIndexOf(".") + 3, it.length))
+        it.substring(0, min(it.lastIndexOf("") + 3, it.length))
     }
 
     fun grainIcon(id: Int) = context.model.indexedGrains[id].let {

@@ -212,5 +212,5 @@ class WrappedController<Data, Context, Source : BulmaElement, Target : BulmaElem
 
 /** Wraps a controller inside a Bulma element */
 fun <Data, Context, Source : BulmaElement, Target : BulmaElement>
-        Controller<Data, Context, Source>.wrap(transform: (Source) -> Target) =
-            WrappedController(this, transform(this.container))
+        Controller<Data, Context, Source>.wrap(transform: (Controller<Data,Context,Source>) -> Target) =
+            WrappedController(this, transform(this))

@@ -1,6 +1,9 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.model
 
 import bulma.*
+import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.editableDoubleController
+import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.model.Grain
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections

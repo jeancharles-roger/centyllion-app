@@ -1,4 +1,4 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.admin
 
 import bulma.*
 import com.centyllion.client.Api

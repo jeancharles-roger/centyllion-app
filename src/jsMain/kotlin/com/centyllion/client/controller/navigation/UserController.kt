@@ -1,6 +1,7 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.navigation
 
 import bulma.*
+import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.allRoles
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable

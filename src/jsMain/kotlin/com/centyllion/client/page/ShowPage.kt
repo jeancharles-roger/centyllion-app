@@ -2,9 +2,9 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
-import com.centyllion.client.controller.EditableStringController
-import com.centyllion.client.controller.GrainModelEditController
-import com.centyllion.client.controller.SimulationRunController
+import com.centyllion.client.controller.model.GrainModelEditController
+import com.centyllion.client.controller.model.SimulationRunController
+import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.homePage
 import com.centyllion.common.creatorRole
 import com.centyllion.model.*

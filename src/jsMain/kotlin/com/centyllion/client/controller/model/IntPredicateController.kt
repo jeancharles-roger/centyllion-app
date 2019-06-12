@@ -1,6 +1,7 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.model
 
 import bulma.*
+import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import org.w3c.dom.events.Event

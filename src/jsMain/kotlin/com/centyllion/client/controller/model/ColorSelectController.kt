@@ -1,4 +1,4 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.model
 
 import bulma.*
 import com.centyllion.model.colorNames

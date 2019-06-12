@@ -1,6 +1,8 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.model
 
 import bulma.*
+import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.*
 import kotlin.properties.Delegates.observable
 

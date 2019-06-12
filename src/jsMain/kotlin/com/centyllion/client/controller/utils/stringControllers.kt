@@ -1,4 +1,4 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.utils
 
 import bulma.*
 import kotlin.properties.Delegates.observable

@@ -1,10 +1,11 @@
-package com.centyllion.client.controller
+package com.centyllion.client.page
 
 import bulma.BulmaElement
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.navigation.PaymentCardElement
 
 class SubscriptionPage(context: AppContext) : BulmaElement {
 

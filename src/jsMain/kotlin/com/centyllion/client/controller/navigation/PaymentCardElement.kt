@@ -1,4 +1,4 @@
-package com.centyllion.client.controller
+package com.centyllion.client.controller.navigation
 
 import bulma.BulmaElement
 import bulma.ElementColor

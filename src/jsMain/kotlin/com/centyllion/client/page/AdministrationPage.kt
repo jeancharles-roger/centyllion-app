@@ -2,10 +2,10 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
-import com.centyllion.client.controller.FeaturedController
-import com.centyllion.client.controller.GrainModelFeaturedController
-import com.centyllion.client.controller.ResultPageController
-import com.centyllion.client.controller.UserController
+import com.centyllion.client.controller.admin.GrainModelFeaturedController
+import com.centyllion.client.controller.navigation.FeaturedController
+import com.centyllion.client.controller.navigation.ResultPageController
+import com.centyllion.client.controller.navigation.UserController
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 

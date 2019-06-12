@@ -7,7 +7,6 @@ import com.centyllion.client.controller.navigation.GrainModelDisplayController
 import com.centyllion.client.controller.navigation.ResultPageController
 import com.centyllion.client.controller.navigation.SimulationDisplayController
 import com.centyllion.client.showPage
-import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 
@@ -78,8 +77,13 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         { context.error(it)}
     )
 
-    val featuredResult = ResultPageController<FeaturedDescription, FeaturedController>(
-        { _, data, previous -> previous ?: FeaturedController(data).apply { root.style.cursor = "pointer" } },
+    val featuredResult = ResultPageController(
+        { _, data, previous ->
+            previous ?: FeaturedController(data).wrap {
+                it.root.style.cursor = "pointer"
+                Column(it.container, size = ColumnSize.OneQuarter)
+            }
+        },
         { offset, limit ->  context.api.fetchAllFeatured(offset, limit) },
         { featured , _  -> context.openPage(showPage, mapOf("simulation" to featured.simulationId)) },
         { context.error(it)}

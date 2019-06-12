@@ -71,14 +71,15 @@ class HomePage(val context: AppContext) : BulmaElement {
         )
     ) { _, data, previous -> previous ?: PanelItemController(data) }
 
-    val featuredController = noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
+    val featuredController = noContextColumnsController(emptyList<FeaturedDescription>())
     { parent, data, previous ->
-        val controller = previous ?: FeaturedController(data)
-        controller.body.root.onclick = {
-            context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+        previous ?: FeaturedController(data).wrap { ctrl ->
+            ctrl.container.root.onclick = {
+                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+            }
+            ctrl.root.style.cursor = "pointer"
+            Column(ctrl.container, size = ColumnSize.OneThird)
         }
-        controller.body.root.style.cursor = "pointer"
-        controller
     }
 
     val container = TileAncestor(

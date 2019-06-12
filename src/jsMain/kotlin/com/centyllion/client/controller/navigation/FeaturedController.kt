@@ -4,9 +4,7 @@ import bulma.*
 import com.centyllion.model.FeaturedDescription
 import kotlin.properties.Delegates.observable
 
-class FeaturedController(
-    featured: FeaturedDescription, size: ColumnSize = ColumnSize.OneQuarter
-) : NoContextController<FeaturedDescription, Column>() {
+class FeaturedController(featured: FeaturedDescription) : NoContextController<FeaturedDescription, Card>() {
 
     override var data by observable(featured) { _, old, new ->
         if (old != new)  refresh()
@@ -19,25 +17,22 @@ class FeaturedController(
 
     val author = Label(data.authorName)
 
-    fun thumbnail() = Image(
+    val thumbnail = Image(
         if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png",
         ImageSize.Square
     )
 
-    val body = Card(
-        CardImage(thumbnail()),
+    override val container = Card(
+        CardImage(thumbnail),
         CardContent(name, author, description)
     ).apply {
         root.classList.add("is-outlined")
     }
 
-
-
-    override val container = Column(body, size = size)
-
     override fun refresh() {
         name.text = data.name
         description.text = data.description
         author.text = data.authorName
+        thumbnail.src = if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png"
     }
 }

@@ -14,15 +14,15 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val api = context.api
 
     val featuredController =
-        noContextColumnsController<FeaturedDescription, FeaturedController>(emptyList())
+        noContextColumnsController(emptyList<FeaturedDescription>())
         { _, featured, previous ->
-            val controller = previous ?: FeaturedController(featured, ColumnSize.Half)
-            val footer = CardFooter(CardFooterContentItem(Delete {
-                // forces delete with this toggle
-                toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, featured)
-            }))
-            controller.body.content += footer
-            controller
+            previous ?: FeaturedController(featured).wrap { ctrl ->
+                ctrl.container.content += CardFooter(CardFooterContentItem(Delete {
+                    // forces delete with this toggle
+                    toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, ctrl.data)
+                }))
+                Column(ctrl.container, size = ColumnSize.Half)
+            }
         }
 
     val publicModelsController =
@@ -45,7 +45,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val userController = ResultPageController(
         {_, data, previous ->
-            previous ?: UserController(data).wrap { Column(it, size = ColumnSize.S4) }
+            previous ?: UserController(data).wrap { Column(it.container, size = ColumnSize.S4) }
         },
         { offset, limit -> api.fetchAllUser(true, offset, limit) }
     )

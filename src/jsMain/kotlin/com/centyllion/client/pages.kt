@@ -1,11 +1,7 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
-import com.centyllion.client.page.AdministrationPage
-import com.centyllion.client.page.ExplorePage
-import com.centyllion.client.page.HomePage
-import com.centyllion.client.page.ShowPage
-import com.centyllion.client.controller.SubscriptionPage
+import com.centyllion.client.page.*
 import com.centyllion.common.adminRole
 import keycloak.KeycloakInstance
 import kotlin.js.Promise

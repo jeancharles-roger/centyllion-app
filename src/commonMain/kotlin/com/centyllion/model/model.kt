@@ -14,7 +14,7 @@ fun version(serializer: KSerializer<*>) = versions[serializer] ?: 0
 val emptyModel = GrainModel("")
 val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
-val emptySimulation = Simulation("")
+val emptySimulation = createSimulation("")
 val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
@@ -188,10 +188,12 @@ data class GrainModel(
             behaviour.copy(
                 mainReactiveId = if (grain.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
                 mainProductId = if (grain.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
-                reaction = behaviour.reaction.map { it.copy(
-                    reactiveId = if (grain.id == it.reactiveId) -1 else it.reactiveId,
-                    productId = if (grain.id == it.productId) -1 else it.productId
-                )}
+                reaction = behaviour.reaction.map {
+                    it.copy(
+                        reactiveId = if (grain.id == it.reactiveId) -1 else it.reactiveId,
+                        productId = if (grain.id == it.productId) -1 else it.productId
+                    )
+                }
             )
         }
 
@@ -209,14 +211,19 @@ data class GrainModel(
 
 fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }
 
+fun createSimulation(
+    name: String = "",
+    description: String = "",
+    width: Int = 100,
+    height: Int = 100,
+    depth: Int = 1,
+    agents: List<Int> = emptyList(width * height * depth)
+) = Simulation(name, description, width, height, depth, agents)
+
 @Serializable
 data class Simulation(
-    val name: String = "",
-    val description: String = "",
-    val width: Int = 100,
-    val height: Int = 100,
-    val depth: Int = 1,
-    val agents: List<Int> = emptyList(width * height * depth)
+    val name: String, val description: String,
+    val width: Int, val height: Int, val depth: Int, val agents: List<Int>
 ) {
     @Transient
     val levelSize = width * height

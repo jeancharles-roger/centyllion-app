@@ -39,9 +39,8 @@ buildscript {
 }
 
 plugins {
-    java
-    kotlin("multiplatform") version "1.3.21"
-    id("kotlinx-serialization") version "1.3.21"
+    kotlin("multiplatform") version "1.3.31"
+    id("kotlinx-serialization") version "1.3.31"
 }
 
 repositories {
@@ -181,10 +180,12 @@ tasks {
         from(
             fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") }
         )
+        /*
         configurations["jsMainImplementation"].all {
             from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
             true
         }
+         */
         into(jsDir)
 
         doLast {

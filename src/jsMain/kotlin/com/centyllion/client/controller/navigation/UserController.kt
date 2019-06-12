@@ -6,14 +6,14 @@ import com.centyllion.common.allRoles
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
-class UserController(user: User) : NoContextController<User, BulmaElement>() {
+class UserController(user: User) : NoContextController<User, Media>() {
 
     override var data: User by observable(user) { _, _, _ ->
         newData = data
         refresh()
     }
 
-    override var readOnly: Boolean by observable(false) { _, old, new -> }
+    override var readOnly: Boolean by observable(false) { _, _, _ -> }
 
     var newData: User = data
 

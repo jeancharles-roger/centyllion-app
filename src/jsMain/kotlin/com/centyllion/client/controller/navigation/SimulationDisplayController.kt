@@ -4,9 +4,8 @@ import bulma.*
 import com.centyllion.model.SimulationDescription
 import kotlin.properties.Delegates.observable
 
-class SimulationDisplayController(
-    simulationDescription: SimulationDescription, size: ColumnSize = ColumnSize.OneQuarter
-) : NoContextController<SimulationDescription, Column>() {
+class SimulationDisplayController(simulationDescription: SimulationDescription) :
+    NoContextController<SimulationDescription, Card>() {
 
     override var data by observable(simulationDescription) { _, old, new ->
         if (old != new)  refresh()
@@ -22,15 +21,12 @@ class SimulationDisplayController(
         ImageSize.Square
     )
 
-    val body = Card(
+    override val container = Card(
         CardImage(thumbnail),
         CardContent(name, description)
     ).apply {
         root.classList.add("is-outlined")
     }
-
-
-    override val container = Column(body, size = size)
 
     override fun refresh() {
         name.text = data.name

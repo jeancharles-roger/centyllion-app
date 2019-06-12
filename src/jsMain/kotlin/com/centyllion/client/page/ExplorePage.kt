@@ -16,11 +16,14 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched simulations controller
     val searchedSimulationController =
-        noContextColumnsController<SimulationDescription, SimulationDisplayController>(
-            initialList = emptyList(),
+        noContextColumnsController(
+            initialList = emptyList<SimulationDescription>(),
             header = listOf(noSimulationResult)
-        ) { parent, data, previous ->
-            previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" }
+        ) { _, data, previous ->
+            previous ?: SimulationDisplayController(data).wrap {
+                it.root.style.cursor = "pointer"
+                Column(it.container, size = ColumnSize.OneQuarter)
+            }
         }
 
     // searched simulations tab title
@@ -30,11 +33,14 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     // Searched models controller
     val searchedModelController =
-        noContextColumnsController<GrainModelDescription, GrainModelDisplayController>(
-            initialList = emptyList(),
+        noContextColumnsController(
+            initialList = emptyList<GrainModelDescription>(),
             header = listOf(noModelResult)
-        ) { parent, data, previous ->
-            previous ?: GrainModelDisplayController(data).apply { root.style.cursor = "pointer" }
+        ) { _, data, previous ->
+            previous ?: GrainModelDisplayController(data).wrap {
+                it.root.style.cursor = "pointer"
+                Column(it.container, size = ColumnSize.OneQuarter)
+            }
         }
 
     // searched modes tab title
@@ -70,8 +76,13 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         TabPage(searchModelTabItem, searchedModelController)
     )
 
-    val recentResult = ResultPageController<SimulationDescription, SimulationDisplayController>(
-        { _, data, previous -> previous ?: SimulationDisplayController(data).apply { root.style.cursor = "pointer" } },
+    val recentResult = ResultPageController(
+        { _, data, previous ->
+            previous ?: SimulationDisplayController(data).wrap {
+                it.root.style.cursor = "pointer"
+                Column(it.container, size = ColumnSize.OneQuarter)
+            }
+        },
         { offset, limit ->  context.api.fetchPublicSimulations(offset, limit) },
         { simulation, _ -> context.openPage(showPage, mapOf("simulation" to simulation.id)) },
         { context.error(it)}

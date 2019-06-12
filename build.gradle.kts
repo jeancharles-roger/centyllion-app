@@ -180,12 +180,12 @@ tasks {
         from(
             fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") }
         )
-        /*
-        configurations["jsMainImplementation"].all {
+
+        configurations["jsMainImplementationDependenciesMetadata"].all {
             from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
             true
         }
-         */
+
         into(jsDir)
 
         doLast {
@@ -285,8 +285,8 @@ tasks {
         into("$webRoot/assets/centyllion")
     }
 
-    val jsMainClasses by existing
-    jsMainClasses.get().dependsOn(syncJs, syncCss, syncAssets)
+    val jsJar by existing
+    jsJar.get().dependsOn(syncJs, syncCss, syncAssets)
 
     val assemble by existing
     val jvmJar by existing(Jar::class)

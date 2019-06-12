@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 val testUserDetails = UserDetails("1234", "test@centyllion.com", null, emptyList())
-val testUser = User("1", "Test", testUserDetails)
+val testUser = User("1", "Test", "tester", testUserDetails)
 
 /** Create a private and public key pair for API tests with credentials */
 private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator ->

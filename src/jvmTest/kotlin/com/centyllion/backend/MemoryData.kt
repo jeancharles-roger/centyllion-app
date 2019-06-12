@@ -14,8 +14,9 @@ val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z", Locale.US)
 fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val claims = principal.payload.claims
     val name = claims["name"]?.asString() ?: ""
+    val username = claims["preferred_username"]?.asString() ?: ""
     val email = claims["email"]?.asString() ?: ""
-    return User(newId(), name, UserDetails(keycloakId, email, null, emptyList()))
+    return User(newId(), name, username, UserDetails(keycloakId, email, null, emptyList()))
 }
 
 fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {

@@ -18,13 +18,14 @@ class UserController(user: User) : NoContextController<User, Media>() {
     var newData: User = data
 
     val nameController = EditableStringController(user.name, readOnly = true)
+    val usernameController = EditableStringController(user.username, readOnly = true)
     val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
 
     val subscription = Tags(roles())
 
     override val container = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
-        center = listOf(nameController, emailController, subscription)
+        center = listOf(nameController, usernameController, emailController, subscription)
     )
 
     fun roles() = newData.details?.roles
@@ -34,6 +35,7 @@ class UserController(user: User) : NoContextController<User, Media>() {
 
     override fun refresh() {
         nameController.text = newData.name
+        usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
         subscription.tags = roles()
     }

@@ -15,6 +15,7 @@ import io.ktor.util.pipeline.PipelineContext
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.readRemaining
 import kotlinx.io.core.readText
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Companion.stringify
 import java.awt.Color
@@ -24,7 +25,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import javax.imageio.ImageIO
 
-@KtorExperimentalAPI
+@KtorExperimentalAPI @UseExperimental(UnstableDefault::class)
 class JsonConverter : ContentConverter {
     override suspend fun convertForSend(
         context: PipelineContext<Any, ApplicationCall>, contentType: ContentType, value: Any

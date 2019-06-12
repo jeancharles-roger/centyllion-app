@@ -27,6 +27,7 @@ class DbMeta(id: EntityID<UUID>) : UUIDEntity(id) {
 
 object DbUsers : UUIDTable("users") {
     val name = text("name")
+    val username = text("username").default("")
     val keycloak = text("keycloak")
     val email = text("email")
     // Details
@@ -39,18 +40,21 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
 
     var keycloak by DbUsers.keycloak
     var name by DbUsers.name
+    var username by DbUsers.username
     var email by DbUsers.email
     var roles by DbUsers.roles
     var stripe by DbUsers.stripe
 
     fun toModel(detailed: Boolean): User {
         val details = if (detailed) UserDetails(keycloak, email, stripe, roles.split(',')) else null
-        return User(id.toString(), name, details)
+        return User(id.toString(), name, username, details)
     }
 
     fun fromModel(source: User) {
         name = source.name
+        username = source.username
         source.details?.let {
+            email = it.email
             stripe = it.stripeId
             roles = it.roles.joinToString(",")
         }

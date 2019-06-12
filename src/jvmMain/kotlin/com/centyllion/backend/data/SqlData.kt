@@ -79,6 +79,7 @@ class SqlData(
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         // retrieves roles from claim
         val currentRoles = principal.payload.claims["roles"]?.asList(String::class.java)?.joinToString(",")
+        val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
 
         // find or create the user
         val user = transaction(database) {
@@ -88,14 +89,18 @@ class SqlData(
                 DbUser.new {
                     keycloak = principal.payload.subject
                     name = claims["name"]?.asString() ?: ""
+                    username = currentUsername
                     email = claims["email"]?.asString() ?: ""
                     roles = currentRoles ?: ""
                 }
             }
         }
-        if (user.roles != currentRoles) {
+        if (user.roles != currentRoles || user.username != currentUsername) {
             // updates roles for user
-            transaction { user.roles = currentRoles ?: "" }
+            transaction {
+                user.username = currentUsername
+                user.roles = currentRoles ?: ""
+            }
         }
         return user.toModel(true)
     }

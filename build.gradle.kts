@@ -338,7 +338,6 @@ tasks {
                 if (result.contains("failed", true)) {
                     throw GradleException("Deploy failed due to: $result")
                 }
-
             }
         }
 

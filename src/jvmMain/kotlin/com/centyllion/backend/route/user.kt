@@ -43,21 +43,19 @@ fun Route.user(data: Data) {
 
             route("subscription") {
                 get {
-                    withRequiredPrincipal {
-                        val actor = data.getOrCreateUserFromPrincipal(it)
+                    withRequiredPrincipal(adminRole) {
                         val all = call.parameters["all"]?.toBoolean() ?: false
                         val userId = call.parameters["user"]!!
                         val user = data.getUser(userId, false)
                         context.respond(when {
                             user == null -> HttpStatusCode.NotFound
-                            actor.id != user.id && !checkRoles(adminRole) -> HttpStatusCode.Unauthorized
                             else -> data.subscriptionsForUser(user, all)
                         })
                     }
                 }
 
                 get("{id}") {
-                    withRequiredPrincipal {
+                    withRequiredPrincipal(adminRole) {
                         val actor = data.getOrCreateUserFromPrincipal(it)
                         val userId = call.parameters["user"]!!
                         val id = call.parameters["id"]!!
@@ -65,7 +63,6 @@ fun Route.user(data: Data) {
                         context.respond(
                             when {
                                 subscription == null || userId != subscription.userId -> HttpStatusCode.NotFound
-                                subscription.userId != actor.id && !checkRoles(adminRole) -> HttpStatusCode.Unauthorized
                                 else -> subscription
                             }
                         )

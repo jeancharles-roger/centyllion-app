@@ -2,6 +2,7 @@ package com.centyllion.backend.route
 
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
+import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -23,6 +24,14 @@ fun Route.me(data: Data) {
                 val user = data.getOrCreateUserFromPrincipal(it)
                 val models = data.grainModelsForUser(user)
                 context.respond(models)
+            }
+        }
+
+        get("subscription") {
+            withRequiredPrincipal {
+                val all = call.parameters["all"]?.toBoolean() ?: false
+                val user = data.getOrCreateUserFromPrincipal(it)
+                context.respond(data.subscriptionsForUser(user, all))
             }
         }
     }

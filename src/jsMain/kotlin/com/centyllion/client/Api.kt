@@ -57,6 +57,13 @@ class Api(val instance: KeycloakInstance?) {
             fetch("PATCH", "/api/me", bearer, json.stringify(User.serializer(), user))
         }
 
+    fun fetchSubscriptionsForMe(all: Boolean = false): Promise<List<Subscription>> =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/me/subscription?all=$all", bearer)
+                .then { json.parse(Subscription.serializer().list, it) }
+        }
+
+
     fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user?detailed=$detailed&offset=$offset&limit=$limit", bearer).then {

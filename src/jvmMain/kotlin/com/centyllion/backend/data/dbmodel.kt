@@ -191,6 +191,67 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
     }
 }
 
+object DbSubscriptions : UUIDTable("subscriptions") {
+    val userId = uuid("userId")
+
+    val sandbox = bool("sandbox")
+    val autoRenew = bool("autoRenew").default(true)
+    val cancelled = bool("cancelled").default(false)
+
+    val startedOn = datetime("startedOn")
+    val payedOn = datetime("payedOn").nullable()
+    val expiresOn = datetime("expiresOn")
+    val cancelledOn = datetime("cancelledOn").nullable()
+
+    val subscription = text("subscription")
+    val duration = integer("duration")
+    val amount = double("amount")
+    val paymentMethod = text("paymentMethod")
+}
+
+class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<DbSubscription>(DbSubscriptions)
+
+    var userId by DbSubscriptions.userId
+
+    var sandbox by DbSubscriptions.sandbox
+    var autoRenew by DbSubscriptions.autoRenew
+    var cancelled by DbSubscriptions.cancelled
+
+    var startedOn by DbSubscriptions.startedOn
+    var payedOn by DbSubscriptions.payedOn
+    var expiresOn by DbSubscriptions.expiresOn
+    var cancelledOn by DbSubscriptions.cancelledOn
+
+    var subscription by DbSubscriptions.subscription
+    var duration by DbSubscriptions.duration
+    var amount by DbSubscriptions.amount
+    var paymentMethod by DbSubscriptions.paymentMethod
+
+    fun toModel() = Subscription(
+        id.toString(), userId.toString(), sandbox, autoRenew, cancelled,
+        startedOn.millis, payedOn?.millis, expiresOn.millis, cancelledOn?.millis,
+        subscription, duration, amount, paymentMethod
+    )
+
+    fun fromModel(source: Subscription) {
+        userId = UUID.fromString(source.userId)
+        sandbox = source.sandbox
+        autoRenew = source.autoRenew
+        cancelled = source.cancelled
+        startedOn = DateTime(source.startedOn)
+        payedOn = source.payedOn?.let { DateTime(it) }
+        expiresOn = DateTime(source.expiresOn)
+        cancelledOn = source.cancelledOn?.let { DateTime(it) }
+
+        subscription = source.subscription
+        duration = source.duration
+        amount = source.amount
+        paymentMethod = source.paymentMethod
+    }
+
+}
+
 object DbAssets : UUIDTable("assets") {
     val name = text("name")
     val content = blob("content")

@@ -3,9 +3,9 @@ package com.centyllion.client.page
 import bulma.*
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.admin.GrainModelFeaturedController
+import com.centyllion.client.controller.admin.UserAdministrationController
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.ResultPageController
-import com.centyllion.client.controller.navigation.UserController
 import com.centyllion.model.*
 import org.w3c.dom.HTMLElement
 
@@ -45,9 +45,9 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val userController = ResultPageController(
         {_, data, previous ->
-            previous ?: UserController(data).wrap { Column(it.container, size = ColumnSize.S4) }
+            previous ?: UserAdministrationController(data, context.api).wrap { Column(it.container, size = ColumnSize.S4) }
         },
-        { offset, limit -> api.fetchAllUser(true, offset, limit) }
+        { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )
 
     val userPage = TabPage(TabItem("Users", "user"), userController)
@@ -58,7 +58,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
                 api.fetchAllFeatured().then { featuredController.data = it.content }.catch { context.error(it) }
                 api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { context.error(it) }
             }
-            userPage -> api.fetchAllUser(true, 0, userController.limit)
+            userPage -> api.fetchAllUsers(true, 0, userController.limit)
                 .then { userController.data = it }.catch { context.error(it) }
         }
     }

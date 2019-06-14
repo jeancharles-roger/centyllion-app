@@ -29,6 +29,30 @@ data class UserDetails(
     val roles: List<String>
 )
 
+@Serializable
+data class Subscription(
+    val id: String,
+
+    val userId: String,
+    val sandbox: Boolean,
+    val autoRenew: Boolean,
+    val cancelled: Boolean,
+
+    val startedOn: Long,
+    val payedOn: Long?,
+    val expiresOn: Long,
+    val cancelledOn: Long?,
+
+    val subscription: String,
+    val duration: Int,
+    val amount: Double,
+    val paymentMethod: String
+) {
+
+    fun active(now: Long) = !cancelled && now >= startedOn && now <= expiresOn
+
+}
+
 class Asset(
     val id: String,
     val name: String,

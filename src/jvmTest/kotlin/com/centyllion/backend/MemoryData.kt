@@ -3,6 +3,8 @@ package com.centyllion.backend
 import com.centyllion.backend.data.Data
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
+import org.joda.time.DateTime
+import org.joda.time.DateTimeUtils
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
@@ -23,6 +25,16 @@ fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.fo
     GrainModelDescription(newId(), DescriptionInfo(user.id, it, it, false, false), sent)
 }
 
+fun createSubscription(
+    user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+) = DateTime().let {
+    Subscription(
+        newId(), user.id, sandbox, false, false,
+        it.millis, null, it.plusDays(duration).millis, null,
+        subscription, duration, amount, paymentMethod
+    )
+}
+
 fun createFeaturedDescription(
     asset: Asset, model: GrainModelDescription, simulation: SimulationDescription, author: User
 ) = FeaturedDescription(
@@ -39,11 +51,12 @@ class MemoryData(
     val grainModels: LinkedHashMap<String, GrainModelDescription> = linkedMapOf(),
     val simulations: LinkedHashMap<String, SimulationDescription> = linkedMapOf(),
     val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf(),
+    val subscriptions: LinkedHashMap<String, Subscription> = linkedMapOf(),
     val assets: LinkedHashMap<String, Asset> = linkedMapOf()
 ) : Data {
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
-        users.values.toList().map { if (detailed) it else it.copy(details = null)}.limit(offset, limit)
+        users.values.toList().map { if (detailed) it else it.copy(details = null) }.limit(offset, limit)
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
         users.values.find { it.details?.keycloakId == principal.payload.subject }.let {
@@ -141,6 +154,30 @@ class MemoryData(
     override fun searchModel(query: String, offset: Int, limit: Int) = grainModels.values
         .filter { it.model.name.contains(query) || it.model.description.contains(query) }
         .limit(offset, limit)
+
+    override fun subscriptionsForUser(user: User, all: Boolean) = DateTimeUtils.currentTimeMillis().let { now ->
+        subscriptions.values.filter {
+            it.userId == user.id && (all || it.active(now) )
+        }
+    }
+
+    override fun getSubscription(id: String): Subscription? = subscriptions[id]
+
+    override fun createSubscription(
+        user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+    ): Subscription {
+        val new = createSubscription(user, sandbox, duration, subscription, amount, paymentMethod)
+        subscriptions[new.id] = new
+        return new
+    }
+
+    override fun saveSubscription(user: User, subscription: Subscription) {
+        subscriptions[subscription.id] = subscription
+    }
+
+    override fun deleteSubscription(user: User, subscriptionId: String) {
+        subscriptions.remove(subscriptionId)
+    }
 
     override fun getAsset(id: String) = assets[id]
 

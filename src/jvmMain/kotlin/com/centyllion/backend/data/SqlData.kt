@@ -10,6 +10,7 @@ import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import org.joda.time.DateTimeUtils
 import java.util.*
 import javax.sql.rowset.serial.SerialBlob
 
@@ -53,13 +54,13 @@ class SqlData(
                 DbAssets,
                 DbDescriptionInfos,
                 DbModelDescriptions,
-                DbSimulationDescriptions
+                DbSimulationDescriptions,
+                DbSubscriptions
             )
             val version = try {
                 DbMeta.all().first().version
             } catch (e: NoSuchElementException) {
                 // meta doesn't exists, creates tables and insert meta version
-
                 DbMeta.new { version = 0 }
                 0
             }
@@ -301,6 +302,47 @@ class SqlData(
         ).map { it.toModel() }
 
         ResultPage(content, offset, searchModelQuery(query).count())
+    }
+
+    override fun subscriptionsForUser(user: User, all: Boolean) = transaction(database) {
+        val now = DateTimeUtils.currentTimeMillis()
+        DbSubscription
+            .find { DbSubscriptions.userId eq UUID.fromString(user.id) }
+            .map { it.toModel() }
+            // TODO makes this filter in the where close of the SQL query
+            .filter { all || it.active(now) }
+    }
+
+    override fun getSubscription(id: String): Subscription?  = transaction(database) {
+        DbSubscription.findById(UUID.fromString(id))?.toModel()
+    }
+
+    override fun createSubscription(
+        user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+    ): Subscription = transaction(database) {
+        DbSubscription.new {
+            this.userId = UUID.fromString(user.id)
+            this.sandbox = sandbox
+            this.startedOn = DateTime.now()
+            this.expiresOn = this.startedOn.plusDays(duration+1)
+            this.subscription = subscription
+            this.duration = duration
+            this.amount = amount
+            this.paymentMethod = paymentMethod
+        }.toModel()
+    }
+
+    override fun saveSubscription(user: User, subscription: Subscription) {
+        transaction(database) {
+            val found = DbSubscription.findById(UUID.fromString(subscription.id))
+            found?.fromModel(subscription)
+        }
+    }
+
+    override fun deleteSubscription(user: User, subscriptionId: String) {
+        transaction(database) {
+            DbSubscription.findById(UUID.fromString(subscriptionId))?.delete()
+        }
     }
 
     override fun getAsset(id: String) = transaction(database) {

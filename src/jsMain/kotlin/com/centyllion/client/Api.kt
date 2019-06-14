@@ -57,7 +57,7 @@ class Api(val instance: KeycloakInstance?) {
             fetch("PATCH", "/api/me", bearer, json.stringify(User.serializer(), user))
         }
 
-    fun fetchAllUser(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
+    fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user?detailed=$detailed&offset=$offset&limit=$limit", bearer).then {
                 json.parse(ResultPage.serializer(User.serializer()), it)
@@ -182,4 +182,19 @@ class Api(val instance: KeycloakInstance?) {
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("DELETE", "/api/featured/${featured.id}", bearer)
         }
+
+
+    fun fetchSubscriptionsForUser(userId: String, all: Boolean = false): Promise<List<Subscription>> =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/user/$userId/subscription?all=$all", bearer)
+                .then { json.parse(Subscription.serializer().list, it) }
+        }
+
+    // TODO adds parameters
+    fun createSubscriptionForUser(userId: String) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("POST", "/api/user/$userId/subscription", bearer,"")
+                .then { json.parse(Subscription.serializer(), it) }
+        }
+
 }

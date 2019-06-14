@@ -38,6 +38,16 @@ interface Data {
 
     fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
 
+    fun subscriptionsForUser(user: User, all: Boolean): List<Subscription>
+    fun getSubscription(id: String): Subscription?
+    fun createSubscription(
+        user: User, sandbox: Boolean, duration: Int,
+        subscription: String, amount: Double, paymentMethod: String
+    ): Subscription
+    fun saveSubscription(user: User, subscription: Subscription)
+    fun deleteSubscription(user: User, subscriptionId: String)
+
+
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)

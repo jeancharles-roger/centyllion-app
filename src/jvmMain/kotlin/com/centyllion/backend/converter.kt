@@ -38,6 +38,7 @@ class JsonConverter : ContentConverter {
         is Simulation -> stringify(Simulation.serializer(), value)
         is SimulationDescription -> stringify(SimulationDescription.serializer(), value)
         is FeaturedDescription -> stringify(FeaturedDescription.serializer(), value)
+        is Subscription -> stringify(Subscription.serializer(), value)
         is ResultPage<*> ->
             when (value.content.firstOrNull()) {
                 is SimulationDescription -> stringify(
@@ -78,6 +79,7 @@ class JsonConverter : ContentConverter {
             Simulation::class -> Json.parse(Simulation.serializer(), text)
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
             FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
+            Subscription::class -> Json.parse(Subscription.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

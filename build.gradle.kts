@@ -181,9 +181,8 @@ tasks {
             fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") }
         )
 
-        configurations["jsMainImplementationDependenciesMetadata"].all {
+        configurations["jsMainImplementationDependenciesMetadata"].forEach {
             from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
-            true
         }
 
         into(jsDir)

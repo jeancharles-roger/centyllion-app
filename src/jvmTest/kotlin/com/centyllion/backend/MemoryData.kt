@@ -1,6 +1,7 @@
 package com.centyllion.backend
 
 import com.centyllion.backend.data.Data
+import com.centyllion.common.SubscriptionType
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 import org.joda.time.DateTime
@@ -18,7 +19,7 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val name = claims["name"]?.asString() ?: ""
     val username = claims["preferred_username"]?.asString() ?: ""
     val email = claims["email"]?.asString() ?: ""
-    return User(newId(), name, username, UserDetails(keycloakId, email, null, emptyList()))
+    return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Free))
 }
 
 fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {
@@ -26,7 +27,7 @@ fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.fo
 }
 
 fun createSubscription(
-    user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+    user: User, sandbox: Boolean, duration: Int, subscription: SubscriptionType, amount: Double, paymentMethod: String
 ) = DateTime().let {
     Subscription(
         newId(), user.id, sandbox, false, false,
@@ -164,9 +165,9 @@ class MemoryData(
     override fun getSubscription(id: String): Subscription? = subscriptions[id]
 
     override fun createSubscription(
-        user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+        user: User, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription {
-        val new = createSubscription(user, sandbox, duration, subscription, amount, paymentMethod)
+        val new = createSubscription(user, sandbox, duration, type, amount, paymentMethod)
         subscriptions[new.id] = new
         return new
     }

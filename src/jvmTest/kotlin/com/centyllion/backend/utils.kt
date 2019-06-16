@@ -2,6 +2,7 @@ package com.centyllion.backend
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.centyllion.common.SubscriptionType
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import io.ktor.http.ContentType
@@ -18,7 +19,7 @@ import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val testUserDetails = UserDetails("1234", "test@centyllion.com", null, emptyList())
+val testUserDetails = UserDetails("1234", "test@centyllion.com", null, SubscriptionType.Free)
 val testUser = User("1", "Test", "tester", testUserDetails)
 
 /** Create a private and public key pair for API tests with credentials */
@@ -44,7 +45,7 @@ fun <R> withCentyllion(test: TestApplicationEngine.() -> R): R =
     withTestApplication(
         {
             val verifier = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
-            centyllion(false, MemoryData(), MemorySubscriptionManager(), verifier)
+            centyllion(false, MemoryData(), MemoryPaymentManager(), verifier)
         }, test
     )
 

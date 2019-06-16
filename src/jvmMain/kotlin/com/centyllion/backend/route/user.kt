@@ -3,6 +3,7 @@ package com.centyllion.backend.route
 import com.centyllion.backend.checkRoles
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.common.SubscriptionType
 import com.centyllion.common.adminRole
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
@@ -47,16 +48,17 @@ fun Route.user(data: Data) {
                         val all = call.parameters["all"]?.toBoolean() ?: false
                         val userId = call.parameters["user"]!!
                         val user = data.getUser(userId, false)
-                        context.respond(when {
-                            user == null -> HttpStatusCode.NotFound
-                            else -> data.subscriptionsForUser(user, all)
-                        })
+                        context.respond(
+                            when (user) {
+                                null -> HttpStatusCode.NotFound
+                                else -> data.subscriptionsForUser(user, all)
+                            }
+                        )
                     }
                 }
 
                 get("{id}") {
                     withRequiredPrincipal(adminRole) {
-                        val actor = data.getOrCreateUserFromPrincipal(it)
                         val userId = call.parameters["user"]!!
                         val id = call.parameters["id"]!!
                         val subscription = data.getSubscription(id)
@@ -69,16 +71,17 @@ fun Route.user(data: Data) {
                     }
                 }
 
-                // post a new model
+                // post a new subscription
                 post {
                     withRequiredPrincipal(adminRole) {
-                        val actor = data.getOrCreateUserFromPrincipal(it)
                         val userId = call.parameters["user"]!!
                         val user = data.getUser(userId, false)
-                        context.respond(when {
-                            user == null -> HttpStatusCode.NotFound
-                            else -> data.createSubscription(user, true, 1, "creator", 0.0, "test")
-                       })
+                        context.respond(
+                            when (user) {
+                                null -> HttpStatusCode.NotFound
+                                else -> data.createSubscription(user, true, 1, SubscriptionType.Admin, 0.0, "test")
+                            }
+                        )
                     }
                 }
             }

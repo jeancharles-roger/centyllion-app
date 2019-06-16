@@ -1,6 +1,9 @@
 package com.centyllion.backend.data
 
+import com.centyllion.backend.AuthorizationManager
 import com.centyllion.backend.createThumbnail
+import com.centyllion.common.SubscriptionType
+import com.centyllion.common.topGroup
 import com.centyllion.model.*
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
@@ -25,6 +28,7 @@ class ToTsQuery<T : String?>(val expr: Expression<T>) : Function<T>(VarCharColum
 }
 
 class SqlData(
+    val authorizationManager: AuthorizationManager,
     type: String = "postgresql",
     host: String = "localhost",
     port: Int = 5432,
@@ -79,7 +83,9 @@ class SqlData(
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         // retrieves roles from claim
-        val currentRoles = principal.payload.claims["roles"]?.asList(String::class.java)?.joinToString(",")
+         val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
+            ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Free
+
         val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
 
         // find or create the user
@@ -92,22 +98,41 @@ class SqlData(
                     name = claims["name"]?.asString() ?: ""
                     username = currentUsername
                     email = claims["email"]?.asString() ?: ""
-                    roles = currentRoles ?: ""
+                    subscription = currentGroup.name
                 }
             }
         }
-        if (user.roles != currentRoles || user.username != currentUsername) {
+        /*
+        if (user.subscription != currentGroup.name || user.username != currentUsername) {
             // updates roles for user
             transaction {
                 user.username = currentUsername
-                user.roles = currentRoles ?: ""
+                user.subscription = currentGroup.name
             }
         }
+         */
+
+        transaction { updateUserSubscription(user) }
+
         return user.toModel(true)
     }
 
     override fun getUser(id: String, detailed: Boolean): User? = transaction(database) {
-        DbUser.findById(UUID.fromString(id))?.toModel(detailed)
+        val user = DbUser.findById(UUID.fromString(id))
+        if (user != null) updateUserSubscription(user)
+        user?.toModel(detailed)
+    }
+
+    /** Must be called inside a transition */
+    private fun updateUserSubscription(user: DbUser) {
+        val date = user.subscriptionUpdatedOn
+        // updates at most one time a day
+        if (date == null || date.plusDays(1).isAfterNow) {
+            val subscriptions = subscriptionsForUser(user.id.value, false)
+            val type = subscriptions.map { it.subscription }.topGroup()
+            user.subscription = type.name
+            user.subscriptionUpdatedOn = DateTime.now()
+        }
     }
 
     override fun saveUser(user: User) {
@@ -232,7 +257,8 @@ class SqlData(
                 simulation.thumbnailId?.let { deleteAsset(it) }
                 // creates new asset
                 val asset = getGrainModel(simulation.modelId)?.let {
-                    createAsset("${simulation.simulation.name}.png",
+                    createAsset(
+                        "${simulation.simulation.name}.png",
                         createThumbnail(it.model, simulation.simulation)
                     )
                 }
@@ -304,27 +330,30 @@ class SqlData(
         ResultPage(content, offset, searchModelQuery(query).count())
     }
 
-    override fun subscriptionsForUser(user: User, all: Boolean) = transaction(database) {
+    override fun subscriptionsForUser(user: User, all: Boolean) =
+        subscriptionsForUser(UUID.fromString(user.id), all)
+
+    private fun subscriptionsForUser(userId: UUID, all: Boolean) = transaction(database) {
         val now = DateTimeUtils.currentTimeMillis()
         DbSubscription
-            .find { DbSubscriptions.userId eq UUID.fromString(user.id) }
+            .find { DbSubscriptions.userId eq userId }
             .map { it.toModel() }
             // TODO makes this filter in the where close of the SQL query
             .filter { all || it.active(now) }
     }
 
-    override fun getSubscription(id: String): Subscription?  = transaction(database) {
+    override fun getSubscription(id: String): Subscription? = transaction(database) {
         DbSubscription.findById(UUID.fromString(id))?.toModel()
     }
 
     override fun createSubscription(
-        user: User, sandbox: Boolean, duration: Int, subscription: String, amount: Double, paymentMethod: String
+        user: User, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription = transaction(database) {
         DbSubscription.new {
             this.userId = UUID.fromString(user.id)
             this.sandbox = sandbox
             this.startedOn = DateTime.now()
-            this.expiresOn = this.startedOn.plusDays(duration+1)
+            this.expiresOn = this.startedOn.plusDays(duration + 1)
             this.subscription = subscription
             this.duration = duration
             this.amount = amount

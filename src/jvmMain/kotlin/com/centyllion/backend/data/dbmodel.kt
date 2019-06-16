@@ -1,5 +1,6 @@
 package com.centyllion.backend.data
 
+import com.centyllion.common.SubscriptionType
 import com.centyllion.model.*
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.EntityID
@@ -29,9 +30,11 @@ object DbUsers : UUIDTable("users") {
     val name = text("name")
     val username = text("username").default("")
     val keycloak = text("keycloak")
-    val email = text("email")
+    val subscriptionUpdatedOn = datetime("subscriptionUpdatedOn").nullable()
+
     // Details
-    val roles = text("roles").default("")
+    val email = text("email")
+    val subscription = text("subscription").default("Free")
     val stripe = text("stripe").nullable()
 }
 
@@ -41,12 +44,14 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var keycloak by DbUsers.keycloak
     var name by DbUsers.name
     var username by DbUsers.username
+    var subscriptionUpdatedOn by DbUsers.subscriptionUpdatedOn
     var email by DbUsers.email
-    var roles by DbUsers.roles
+    var subscription by DbUsers.subscription
     var stripe by DbUsers.stripe
 
     fun toModel(detailed: Boolean): User {
-        val details = if (detailed) UserDetails(keycloak, email, stripe, roles.split(',')) else null
+        val subscriptionType = SubscriptionType.valueOf(subscription)
+        val details = if (detailed) UserDetails(keycloak, email, stripe, subscriptionType) else null
         return User(id.toString(), name, username, details)
     }
 
@@ -56,7 +61,7 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
         source.details?.let {
             email = it.email
             stripe = it.stripeId
-            roles = it.roles.joinToString(",")
+            subscription = it.subscription.name
         }
     }
 }
@@ -231,7 +236,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
     fun toModel() = Subscription(
         id.toString(), userId.toString(), sandbox, autoRenew, cancelled,
         startedOn.millis, payedOn?.millis, expiresOn.millis, cancelledOn?.millis,
-        subscription, duration, amount, paymentMethod
+        SubscriptionType.parse(subscription), duration, amount, paymentMethod
     )
 
     fun fromModel(source: Subscription) {
@@ -244,7 +249,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
         expiresOn = DateTime(source.expiresOn)
         cancelledOn = source.cancelledOn?.let { DateTime(it) }
 
-        subscription = source.subscription
+        subscription = source.subscription.name
         duration = source.duration
         amount = source.amount
         paymentMethod = source.paymentMethod

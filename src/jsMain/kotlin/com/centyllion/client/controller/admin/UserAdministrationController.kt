@@ -3,7 +3,7 @@ package com.centyllion.client.controller.admin
 import bulma.*
 import com.centyllion.client.Api
 import com.centyllion.client.controller.utils.EditableStringController
-import com.centyllion.common.allRoles
+import com.centyllion.common.SubscriptionType
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
@@ -22,7 +22,10 @@ class UserAdministrationController(user: User, api: Api) : NoContextController<U
     val usernameController = EditableStringController(user.username, readOnly = true)
     val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
 
-    val subscription = Tags(roles())
+    val group = Tag(
+        (newData.details?.subscription ?: SubscriptionType.Free).name,
+        color = ElementColor.Primary, rounded = true, size = Size.Medium
+    )
 
     val button = textButton("+") { button ->
         api.createSubscriptionForUser(user.id).then {
@@ -34,19 +37,15 @@ class UserAdministrationController(user: User, api: Api) : NoContextController<U
 
     override val container = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
-        center = listOf(nameController, usernameController, emailController, subscription),
+        center = listOf(nameController, usernameController, emailController, group),
         right = listOf(button)
     )
 
-    fun roles() = newData.details?.roles
-        ?.mapNotNull { allRoles[it] }
-        ?.map { Tag(it, color = ElementColor.Primary, rounded = true, size = Size.Medium) }
-        ?: emptyList()
 
     override fun refresh() {
         nameController.text = newData.name
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
-        subscription.tags = roles()
+        group.text = (newData.details?.subscription ?: SubscriptionType.Free).name
     }
 }

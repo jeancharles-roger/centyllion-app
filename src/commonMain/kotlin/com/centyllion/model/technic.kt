@@ -1,5 +1,6 @@
 package com.centyllion.model
 
+import com.centyllion.common.SubscriptionType
 import kotlinx.serialization.Serializable
 
 val emptyUser = User("", "", "", null)
@@ -26,7 +27,7 @@ data class UserDetails(
     val keycloakId: String,
     val email: String,
     val stripeId: String?,
-    val roles: List<String>
+    val subscription: SubscriptionType
 )
 
 @Serializable
@@ -43,7 +44,7 @@ data class Subscription(
     val expiresOn: Long,
     val cancelledOn: Long?,
 
-    val subscription: String,
+    val subscription: SubscriptionType,
     val duration: Int,
     val amount: Double,
     val paymentMethod: String

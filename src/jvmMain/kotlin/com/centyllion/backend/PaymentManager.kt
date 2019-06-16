@@ -5,13 +5,9 @@ import com.stripe.model.checkout.Session
 import com.stripe.param.checkout.SessionCreateParams
 import com.stripe.param.checkout.SessionCreateParams.SubscriptionData
 
+interface PaymentManager
 
-
-interface SubscriptionManager
-
-class KeycloakStripeSubscriptionManager(
-    val stripeKey: String, val keycloakPassword: String
-) : SubscriptionManager {
+class StripePaymentManager(val stripeKey: String) : PaymentManager {
 
     val successUrl = "/api/subscription/success"
     val cancelUrl = "/api/subscription/cancel"

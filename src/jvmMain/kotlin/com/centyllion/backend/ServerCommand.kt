@@ -1,5 +1,6 @@
 package com.centyllion.backend
 
+import com.centyllion.backend.data.Data
 import com.centyllion.backend.data.SqlData
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.UsageError
@@ -44,9 +45,12 @@ data class ServerConfig(
     val dbName: String, val dbUser: String, val dbPassword: String,
     val stripeKey: String, val keycloakPassword: String
 ) {
-    fun data() = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
+    fun role(): AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
 
-    fun subscription() = KeycloakStripeSubscriptionManager(stripeKey, keycloakPassword)
+    fun subscription(): PaymentManager = StripePaymentManager(stripeKey)
+
+    fun data(): Data = SqlData(role(), dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
+
 }
 
 class ServerCommand : CliktCommand("Start the server") {

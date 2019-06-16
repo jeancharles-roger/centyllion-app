@@ -1,5 +1,6 @@
 package com.centyllion.backend.data
 
+import com.centyllion.common.SubscriptionType
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
 
@@ -42,7 +43,7 @@ interface Data {
     fun getSubscription(id: String): Subscription?
     fun createSubscription(
         user: User, sandbox: Boolean, duration: Int,
-        subscription: String, amount: Double, paymentMethod: String
+        type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription
     fun saveSubscription(user: User, subscription: Subscription)
     fun deleteSubscription(user: User, subscriptionId: String)

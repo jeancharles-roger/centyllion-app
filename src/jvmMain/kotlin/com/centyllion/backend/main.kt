@@ -40,9 +40,6 @@ import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 const val authRealm = "Centyllion"
-const val masterRealm = "master"
-const val masterLogin = "automation"
-const val masterClient = "admin-cli"
 const val authBase = "https://login.centyllion.com/auth"
 const val realmBase = "$authBase/realms/$authRealm"
 const val authClient = "webclient"
@@ -65,7 +62,7 @@ fun main(args: Array<String>) {
 
 @KtorExperimentalAPI
 fun Application.centyllion(
-    debug: Boolean, data: Data, subscription: SubscriptionManager, verifier: JWTVerifier? = null
+    debug: Boolean, data: Data, payment: PaymentManager, verifier: JWTVerifier? = null
 ) {
     install(Compression)
     install(DefaultHeaders)

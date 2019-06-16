@@ -22,7 +22,7 @@ fun Route.me(data: Data) {
         get("model") {
             withRequiredPrincipal {
                 val user = data.getOrCreateUserFromPrincipal(it)
-                val models = data.grainModelsForUser(user)
+                val models = data.grainModelsForUser(user.id)
                 context.respond(models)
             }
         }
@@ -31,7 +31,7 @@ fun Route.me(data: Data) {
             withRequiredPrincipal {
                 val all = call.parameters["all"]?.toBoolean() ?: false
                 val user = data.getOrCreateUserFromPrincipal(it)
-                context.respond(data.subscriptionsForUser(user, all))
+                context.respond(data.subscriptionsForUser(user.id, all))
             }
         }
     }

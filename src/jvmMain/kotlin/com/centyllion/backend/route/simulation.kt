@@ -59,7 +59,7 @@ fun Route.simulation(data: Data) {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
-                                data.saveSimulation(user, simulation)
+                                data.saveSimulation(simulation)
                                 HttpStatusCode.OK
                             }
                         }
@@ -78,7 +78,7 @@ fun Route.simulation(data: Data) {
                             simulation == null -> HttpStatusCode.NotFound
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
-                                data.deleteSimulation(user, simulationId)
+                                data.deleteSimulation(simulationId)
                                 if (simulation.thumbnailId != null) {
                                     data.deleteAsset(simulation.thumbnailId)
                                 }

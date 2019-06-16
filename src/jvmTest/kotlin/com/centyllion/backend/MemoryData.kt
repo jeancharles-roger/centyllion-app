@@ -4,7 +4,6 @@ import com.centyllion.backend.data.Data
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.*
 import io.ktor.auth.jwt.JWTPrincipal
-import org.joda.time.DateTime
 import org.joda.time.DateTimeUtils
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,18 +21,8 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Free))
 }
 
-fun createGrainModelDescription(user: User, sent: GrainModel) = rfc1123Format.format(Date()).let {
-    GrainModelDescription(newId(), DescriptionInfo(user.id, it, it, false, false), sent)
-}
-
-fun createSubscription(
-    user: User, sandbox: Boolean, duration: Int, subscription: SubscriptionType, amount: Double, paymentMethod: String
-) = DateTime().let {
-    Subscription(
-        newId(), user.id, sandbox, false, false,
-        it.millis, null, it.plusDays(duration).millis, null,
-        subscription, duration, amount, paymentMethod
-    )
+fun createGrainModelDescription(userId: String, sent: GrainModel) = rfc1123Format.format(Date()).let {
+    GrainModelDescription(newId(), DescriptionInfo(userId, it, it, false, false), sent)
 }
 
 fun createFeaturedDescription(
@@ -81,24 +70,24 @@ class MemoryData(
     override fun publicGrainModels(offset: Int, limit: Int) =
         grainModels.values.toList().limit(offset, limit)
 
-    override fun grainModelsForUser(user: User): List<GrainModelDescription> = grainModels.values.filter {
-        it.info.userId == user.id
+    override fun grainModelsForUser(userId: String): List<GrainModelDescription> = grainModels.values.filter {
+        it.info.userId == userId
     }
 
     override fun getGrainModel(id: String) = grainModels[id]
 
-    override fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription {
-        val model = createGrainModelDescription(user, sent)
+    override fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription {
+        val model = createGrainModelDescription(userId, sent)
         grainModels[model.id] = model
         return model
     }
 
-    override fun saveGrainModel(user: User, model: GrainModelDescription) {
+    override fun saveGrainModel(model: GrainModelDescription) {
         grainModels[model.id] = model
     }
 
-    override fun deleteGrainModel(user: User, modelId: String) {
-        getSimulationForModel(modelId).forEach { deleteSimulation(user, it.id) }
+    override fun deleteGrainModel(modelId: String) {
+        getSimulationForModel(modelId).forEach { deleteSimulation(it.id) }
         grainModels.remove(modelId)
     }
 
@@ -115,17 +104,17 @@ class MemoryData(
 
     override fun getSimulation(id: String) = simulations[id]
 
-    override fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription {
-        val result = createSimulation(user, modelId, sent)
+    override fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription {
+        val result = createSimulation(userId, modelId, sent)
         simulations[result.id] = result
         return result
     }
 
-    override fun saveSimulation(user: User, simulation: SimulationDescription) {
+    override fun saveSimulation(simulation: SimulationDescription) {
         simulations[simulation.id] = simulation
     }
 
-    override fun deleteSimulation(user: User, simulationId: String) {
+    override fun deleteSimulation(simulationId: String) {
         simulations.remove(simulationId)
     }
 
@@ -134,16 +123,28 @@ class MemoryData(
 
     override fun getFeatured(id: String) = featured[id]
 
-    override fun createFeatured(
-        user: User, model: GrainModelDescription, simulation: SimulationDescription, author: User
-    ): FeaturedDescription {
-        val asset = createAsset("simulation.png", createThumbnail(model.model, simulation.simulation))
-        val new = createFeaturedDescription(asset, model, simulation, author)
+    override fun createFeatured(simulationId: String): FeaturedDescription {
+        val simulation = getSimulation(simulationId)
+        val model = getGrainModel(simulation?.modelId ?: "")
+        val new = if (simulation != null && model != null)
+            FeaturedDescription(
+                newId(), simulation.info.lastModifiedOn, simulation.thumbnailId,
+                model.id, simulation.id, simulation.info.userId,
+                listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
+                listOf(
+                    simulation.simulation.description,
+                    model.model.description
+                ).filter { it.isNotEmpty() }.joinToString("\n"),
+                ""
+            )
+        else
+            FeaturedDescription(newId(), "", null, "", simulationId, "", "", "", "")
+
         featured[new.id] = new
         return new
     }
 
-    override fun deleteFeatured(user: User, featuredId: String) {
+    override fun deleteFeatured(featuredId: String) {
         // delete the featured
         featured.remove(featuredId)
     }
@@ -156,27 +157,32 @@ class MemoryData(
         .filter { it.model.name.contains(query) || it.model.description.contains(query) }
         .limit(offset, limit)
 
-    override fun subscriptionsForUser(user: User, all: Boolean) = DateTimeUtils.currentTimeMillis().let { now ->
+    override fun subscriptionsForUser(userId: String, all: Boolean) = DateTimeUtils.currentTimeMillis().let { now ->
         subscriptions.values.filter {
-            it.userId == user.id && (all || it.active(now) )
+            it.userId == userId && (all || it.active(now))
         }
     }
 
     override fun getSubscription(id: String): Subscription? = subscriptions[id]
 
     override fun createSubscription(
-        user: User, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
+        userId: String, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription {
-        val new = createSubscription(user, sandbox, duration, type, amount, paymentMethod)
+        val now = System.currentTimeMillis()
+        val new = Subscription(
+            newId(), userId, sandbox, false, false,
+            now, null, now + duration * (24*60*60*1_000), null,
+            type, duration, amount, paymentMethod
+        )
         subscriptions[new.id] = new
         return new
     }
 
-    override fun saveSubscription(user: User, subscription: Subscription) {
+    override fun saveSubscription(subscription: Subscription) {
         subscriptions[subscription.id] = subscription
     }
 
-    override fun deleteSubscription(user: User, subscriptionId: String) {
+    override fun deleteSubscription(subscriptionId: String) {
         subscriptions.remove(subscriptionId)
     }
 

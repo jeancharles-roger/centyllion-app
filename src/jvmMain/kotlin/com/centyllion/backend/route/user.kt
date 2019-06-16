@@ -51,7 +51,7 @@ fun Route.user(data: Data) {
                         context.respond(
                             when (user) {
                                 null -> HttpStatusCode.NotFound
-                                else -> data.subscriptionsForUser(user, all)
+                                else -> data.subscriptionsForUser(userId, all)
                             }
                         )
                     }
@@ -79,7 +79,7 @@ fun Route.user(data: Data) {
                         context.respond(
                             when (user) {
                                 null -> HttpStatusCode.NotFound
-                                else -> data.createSubscription(user, true, 1, SubscriptionType.Admin, 0.0, "test")
+                                else -> data.createSubscription(user.id, true, 1, SubscriptionType.Admin, 0.0, "test")
                             }
                         )
                     }

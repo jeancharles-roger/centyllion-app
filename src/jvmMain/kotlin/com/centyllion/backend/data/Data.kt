@@ -11,42 +11,34 @@ interface Data {
     fun saveUser(user: User)
 
     fun publicGrainModels(offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
-    fun grainModelsForUser(user: User): List<GrainModelDescription>
+    fun searchModel(query: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
+    fun grainModelsForUser(userId: String): List<GrainModelDescription>
     fun getGrainModel(id: String): GrainModelDescription?
-    fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription
-    fun saveGrainModel(user: User, model: GrainModelDescription)
-    fun deleteGrainModel(user: User, modelId: String)
+    fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription
+    fun saveGrainModel(model: GrainModelDescription)
+    fun deleteGrainModel(modelId: String)
 
     fun publicSimulations(offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
+    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulationForModel(modelId: String): List<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
-    fun createSimulation(user: User, modelId: String, sent: Simulation): SimulationDescription
-    fun saveSimulation(user: User, simulation: SimulationDescription)
-    fun deleteSimulation(user: User, simulationId: String)
+    fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription
+    fun saveSimulation(simulation: SimulationDescription)
+    fun deleteSimulation(simulationId: String)
 
     fun getAllFeatured(offset: Int = 0, limit: Int = 20): ResultPage<FeaturedDescription>
     fun getFeatured(id: String): FeaturedDescription?
-    fun createFeatured(
-        user: User,
-        model: GrainModelDescription,
-        simulation: SimulationDescription,
-        author: User
-    ): FeaturedDescription
+    fun createFeatured(simulationId: String): FeaturedDescription
+    fun deleteFeatured(featuredId: String)
 
-    fun deleteFeatured(user: User, featuredId: String)
-
-    fun searchModel(query: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
-
-    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
-
-    fun subscriptionsForUser(user: User, all: Boolean): List<Subscription>
+    fun subscriptionsForUser(userId: String, all: Boolean): List<Subscription>
     fun getSubscription(id: String): Subscription?
     fun createSubscription(
-        user: User, sandbox: Boolean, duration: Int,
+        userId: String, sandbox: Boolean, duration: Int,
         type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription
-    fun saveSubscription(user: User, subscription: Subscription)
-    fun deleteSubscription(user: User, subscriptionId: String)
+    fun saveSubscription(subscription: Subscription)
+    fun deleteSubscription(subscriptionId: String)
 
 
     fun getAsset(id: String): Asset?

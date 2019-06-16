@@ -22,7 +22,6 @@ fun Route.featured(data: Data) {
         // post a new featured
         post {
             withRequiredPrincipal(adminRole) {
-                val user = data.getOrCreateUserFromPrincipal(it)
                 val newFeatured = call.receive(FeaturedDescription::class)
                 val model = data.getGrainModel(newFeatured.modelId)
                 val simulation = data.getSimulation(newFeatured.simulationId)
@@ -32,7 +31,7 @@ fun Route.featured(data: Data) {
                     when {
                         model == null || simulation == null || author == null -> HttpStatusCode.NotFound
                         model.info.userId != author.id && simulation.info.userId != author.id -> HttpStatusCode.Unauthorized
-                        else -> data.createFeatured(user, model, simulation, author)
+                        else -> data.createFeatured(newFeatured.simulationId)
                     }
                 )
             }
@@ -61,7 +60,7 @@ fun Route.featured(data: Data) {
                         when {
                             featured == null -> HttpStatusCode.NotFound
                             else -> {
-                                data.deleteFeatured(user, id)
+                                data.deleteFeatured(id)
                                 HttpStatusCode.OK
                             }
                         }

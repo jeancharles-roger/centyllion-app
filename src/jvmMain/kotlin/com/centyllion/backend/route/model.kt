@@ -39,7 +39,7 @@ fun Route.model(data: Data) {
             withRequiredPrincipal(creatorRole) {
                 val user = data.getOrCreateUserFromPrincipal(it)
                 val newModel = call.receive(GrainModel::class)
-                val newDescription = data.createGrainModel(user, newModel)
+                val newDescription = data.createGrainModel(user.id, newModel)
                 context.respond(newDescription)
             }
         }
@@ -73,7 +73,7 @@ fun Route.model(data: Data) {
                             model.id != id -> HttpStatusCode.Forbidden
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
-                                data.saveGrainModel(user, model)
+                                data.saveGrainModel(model)
                                 HttpStatusCode.OK
                             }
                         }
@@ -92,7 +92,7 @@ fun Route.model(data: Data) {
                             model == null -> HttpStatusCode.NotFound
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
-                                data.deleteGrainModel(user, id)
+                                data.deleteGrainModel(id)
                                 HttpStatusCode.OK
                             }
                         }
@@ -137,7 +137,7 @@ fun Route.model(data: Data) {
                             when {
                                 model == null -> HttpStatusCode.NotFound
                                 !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
-                                else -> data.createSimulation(user, modelId, newSimulation)
+                                else -> data.createSimulation(user.id, modelId, newSimulation)
                             }
                         )
                     }

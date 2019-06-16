@@ -151,8 +151,8 @@ class SqlData(
         ResultPage(content, offset, publicGrainModelQuery().count())
     }
 
-    override fun grainModelsForUser(user: User): List<GrainModelDescription> = transaction(database) {
-        val userUUID = UUID.fromString(user.id)
+    override fun grainModelsForUser(userId: String): List<GrainModelDescription> = transaction(database) {
+        val userUUID = UUID.fromString(userId)
         DbModelDescription.wrapRows(
             DbModelDescriptions
                 .innerJoin(DbDescriptionInfos)
@@ -165,9 +165,9 @@ class SqlData(
         DbModelDescription.findById(UUID.fromString(id))?.toModel()
     }
 
-    override fun createGrainModel(user: User, sent: GrainModel): GrainModelDescription = transaction(database) {
+    override fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription = transaction(database) {
         val newInfo = DbDescriptionInfo.new {
-            userId = UUID.fromString(user.id)
+            this.userId = UUID.fromString(userId)
             createdOn = DateTime.now()
             lastModifiedOn = DateTime.now()
             readAccess = false
@@ -181,7 +181,7 @@ class SqlData(
         }.toModel()
     }
 
-    override fun saveGrainModel(user: User, model: GrainModelDescription) {
+    override fun saveGrainModel(model: GrainModelDescription) {
         transaction(database) {
             val found = DbModelDescription.findById(UUID.fromString(model.id))
             found?.fromModel(model)
@@ -189,7 +189,7 @@ class SqlData(
         }
     }
 
-    override fun deleteGrainModel(user: User, modelId: String) {
+    override fun deleteGrainModel(modelId: String) {
         transaction(database) {
             DbSimulationDescription
                 .find { DbSimulationDescriptions.modelId eq UUID.fromString(modelId) }
@@ -229,10 +229,10 @@ class SqlData(
     }
 
 
-    override fun createSimulation(user: User, modelId: String, sent: Simulation) =
+    override fun createSimulation(userId: String, modelId: String, sent: Simulation) =
         transaction(database) {
             val newInfo = DbDescriptionInfo.new {
-                userId = UUID.fromString(user.id)
+                this.userId = UUID.fromString(userId)
                 createdOn = DateTime.now()
                 lastModifiedOn = DateTime.now()
                 readAccess = false
@@ -248,7 +248,7 @@ class SqlData(
             }.toModel()
         }
 
-    override fun saveSimulation(user: User, simulation: SimulationDescription) {
+    override fun saveSimulation(simulation: SimulationDescription) {
         // TODO thumbnails should be sent from client
         transaction(database) {
             val found = DbSimulationDescription.findById(UUID.fromString(simulation.id))
@@ -270,7 +270,7 @@ class SqlData(
         }
     }
 
-    override fun deleteSimulation(user: User, simulationId: String) {
+    override fun deleteSimulation(simulationId: String) {
         transaction(database) { deleteSimulation(DbSimulationDescription.findById(UUID.fromString(simulationId))) }
     }
 
@@ -291,13 +291,11 @@ class SqlData(
         DbFeatured.findById(UUID.fromString(id))?.toModel()
     }
 
-    override fun createFeatured(
-        user: User, model: GrainModelDescription, simulation: SimulationDescription, author: User
-    ) = transaction(database) {
-        DbFeatured.new { featuredId = UUID.fromString(simulation.id) }.toModel()
+    override fun createFeatured(simulationId: String) = transaction(database) {
+        DbFeatured.new { featuredId = UUID.fromString(simulationId) }.toModel()
     }
 
-    override fun deleteFeatured(user: User, featuredId: String) {
+    override fun deleteFeatured(featuredId: String) {
         transaction(database) {
             DbFeatured.findById(UUID.fromString(featuredId))?.delete()
         }
@@ -330,8 +328,8 @@ class SqlData(
         ResultPage(content, offset, searchModelQuery(query).count())
     }
 
-    override fun subscriptionsForUser(user: User, all: Boolean) =
-        subscriptionsForUser(UUID.fromString(user.id), all)
+    override fun subscriptionsForUser(userId: String, all: Boolean) =
+        subscriptionsForUser(UUID.fromString(userId), all)
 
     private fun subscriptionsForUser(userId: UUID, all: Boolean) = transaction(database) {
         val now = DateTimeUtils.currentTimeMillis()
@@ -347,10 +345,10 @@ class SqlData(
     }
 
     override fun createSubscription(
-        user: User, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
+        userId: String, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
     ): Subscription = transaction(database) {
         DbSubscription.new {
-            this.userId = UUID.fromString(user.id)
+            this.userId = UUID.fromString(userId)
             this.sandbox = sandbox
             this.startedOn = DateTime.now()
             this.expiresOn = this.startedOn.plusDays(duration + 1)
@@ -361,14 +359,14 @@ class SqlData(
         }.toModel()
     }
 
-    override fun saveSubscription(user: User, subscription: Subscription) {
+    override fun saveSubscription(subscription: Subscription) {
         transaction(database) {
             val found = DbSubscription.findById(UUID.fromString(subscription.id))
             found?.fromModel(subscription)
         }
     }
 
-    override fun deleteSubscription(user: User, subscriptionId: String) {
+    override fun deleteSubscription(subscriptionId: String) {
         transaction(database) {
             DbSubscription.findById(UUID.fromString(subscriptionId))?.delete()
         }

@@ -102,7 +102,7 @@ class SqlData(
                 }
             }
         }
-        /*
+        /* This shouldn't be needed anymore
         if (user.subscription != currentGroup.name || user.username != currentUsername) {
             // updates roles for user
             transaction {

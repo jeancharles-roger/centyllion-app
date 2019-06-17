@@ -126,8 +126,9 @@ class SqlData(
     /** Must be called inside a transition */
     private fun updateUserSubscription(user: DbUser) {
         val date = user.subscriptionUpdatedOn
+
         // updates at most one time a day
-        if (date == null || date.plusDays(1).isAfterNow) {
+        if (date == null || date.plusDays(1).isBeforeNow) {
             val subscriptions = subscriptionsForUser(user.id.value, false)
             val type = subscriptions.map { it.subscription }.topGroup()
             user.subscription = type.name

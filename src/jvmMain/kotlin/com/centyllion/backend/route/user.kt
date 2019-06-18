@@ -82,12 +82,13 @@ fun Route.user(data: Data, authorizationManager: AuthorizationManager) {
                         val parameters = call.receive(SubscriptionParameters::class)
                         context.respond(
                             when {
-                                user == null -> HttpStatusCode.NotFound
+                                user?.details == null -> HttpStatusCode.NotFound
                                 parameters.subscription == SubscriptionType.Free -> HttpStatusCode.BadRequest
                                 else -> {
                                     // updates user subscription
-                                    val type = parameters.subscription.max(user.details?.subscription)
-                                    data.saveUser(user.copy(details = user.details?.copy( subscription = type)))
+                                    val type = parameters.subscription.max(user.details.subscription)
+                                    authorizationManager.joinGroup(user.details.keycloakId, type.groupId)
+                                    data.saveUser(user.copy(details = user.details.copy( subscription = type)))
                                     data.createSubscription(user.id, false, parameters)
                                 }
                             }

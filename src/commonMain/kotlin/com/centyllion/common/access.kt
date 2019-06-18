@@ -20,6 +20,8 @@ enum class SubscriptionType(val groupPath: String) {
             else -> Free
         }
     }
+
+    fun max(other: SubscriptionType?) = if (other == null || other.ordinal <= ordinal) this else other
 }
 
 fun List<SubscriptionType>?.topGroup() =

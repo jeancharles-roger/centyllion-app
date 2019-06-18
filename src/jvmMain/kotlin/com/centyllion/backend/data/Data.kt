@@ -1,7 +1,15 @@
 package com.centyllion.backend.data
 
-import com.centyllion.common.SubscriptionType
-import com.centyllion.model.*
+import com.centyllion.model.Asset
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.User
 import io.ktor.auth.jwt.JWTPrincipal
 
 interface Data {
@@ -33,10 +41,7 @@ interface Data {
 
     fun subscriptionsForUser(userId: String, all: Boolean): List<Subscription>
     fun getSubscription(id: String): Subscription?
-    fun createSubscription(
-        userId: String, sandbox: Boolean, duration: Int,
-        type: SubscriptionType, amount: Double, paymentMethod: String
-    ): Subscription
+    fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription
     fun saveSubscription(subscription: Subscription)
     fun deleteSubscription(subscriptionId: String)
 

@@ -1,12 +1,30 @@
 package com.centyllion.client.page
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.CardFooter
+import bulma.CardFooterContentItem
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Delete
+import bulma.SubTitle
+import bulma.TabItem
+import bulma.TabPage
+import bulma.TabPages
+import bulma.Tabs
+import bulma.columnsController
+import bulma.noContextColumnsController
+import bulma.wrap
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.admin.GrainModelFeaturedController
 import com.centyllion.client.controller.admin.UserAdministrationController
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.ResultPageController
-import com.centyllion.model.*
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.emptyGrainModelDescription
+import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 
 class AdministrationPage(val context: AppContext) : BulmaElement {
@@ -45,7 +63,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val userController = ResultPageController(
         {_, data, previous ->
-            previous ?: UserAdministrationController(data, context.api).wrap { Column(it.container, size = ColumnSize.S4) }
+            previous ?: UserAdministrationController(data, context).wrap { Column(it.container, size = ColumnSize.S6) }
         },
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )

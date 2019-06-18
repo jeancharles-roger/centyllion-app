@@ -4,17 +4,36 @@ import com.centyllion.backend.AuthorizationManager
 import com.centyllion.backend.createThumbnail
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.topGroup
-import com.centyllion.model.*
+import com.centyllion.model.Asset
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.User
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ComparisonOp
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.QueryBuilder
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
+import org.jetbrains.exposed.sql.VarCharColumnType
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.joda.time.DateTimeUtils
-import java.util.*
+import java.util.NoSuchElementException
+import java.util.UUID
 import javax.sql.rowset.serial.SerialBlob
 
 class FullTextSearchOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@@")
@@ -229,7 +248,6 @@ class SqlData(
         DbSimulationDescription.findById(UUID.fromString(id))?.toModel()
     }
 
-
     override fun createSimulation(userId: String, modelId: String, sent: Simulation) =
         transaction(database) {
             val newInfo = DbDescriptionInfo.new {
@@ -345,18 +363,17 @@ class SqlData(
         DbSubscription.findById(UUID.fromString(id))?.toModel()
     }
 
-    override fun createSubscription(
-        userId: String, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
-    ): Subscription = transaction(database) {
+    override fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription = transaction(database) {
         DbSubscription.new {
             this.userId = UUID.fromString(userId)
             this.sandbox = sandbox
-            this.startedOn = DateTime.now()
-            this.expiresOn = this.startedOn.plusDays(duration + 1)
-            this.subscription = type.name
-            this.duration = duration
-            this.amount = amount
-            this.paymentMethod = paymentMethod
+            autoRenew = parameters.autoRenew
+            startedOn = DateTime.now()
+            expiresOn = parameters.duration.let { if (it > 0) startedOn.plusDays(it + 1) else null }
+            subscription = parameters.subscription.name
+            duration = parameters.duration
+            amount = parameters.amount
+            paymentMethod = parameters.paymentMethod
         }.toModel()
     }
 

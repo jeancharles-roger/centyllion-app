@@ -2,11 +2,25 @@ package com.centyllion.backend
 
 import com.centyllion.backend.data.Data
 import com.centyllion.common.SubscriptionType
-import com.centyllion.model.*
+import com.centyllion.model.Asset
+import com.centyllion.model.DescriptionInfo
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.User
+import com.centyllion.model.UserDetails
 import io.ktor.auth.jwt.JWTPrincipal
 import org.joda.time.DateTimeUtils
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.LinkedHashMap
+import java.util.Locale
+import java.util.UUID
 import kotlin.math.max
 
 fun newId() = UUID.randomUUID().toString()
@@ -165,14 +179,13 @@ class MemoryData(
 
     override fun getSubscription(id: String): Subscription? = subscriptions[id]
 
-    override fun createSubscription(
-        userId: String, sandbox: Boolean, duration: Int, type: SubscriptionType, amount: Double, paymentMethod: String
-    ): Subscription {
+    override fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription {
         val now = System.currentTimeMillis()
+        val expiresOn = if (parameters.duration > 0) now + parameters.duration * (24 * 60 * 60 * 1_000) else null
         val new = Subscription(
-            newId(), userId, sandbox, false, false,
-            now, null, now + duration * (24*60*60*1_000), null,
-            type, duration, amount, paymentMethod
+            newId(), userId, sandbox, parameters.autoRenew, false,
+            now, null, expiresOn, null,
+            parameters.subscription, parameters.duration, parameters.amount, parameters.paymentMethod
         )
         subscriptions[new.id] = new
         return new

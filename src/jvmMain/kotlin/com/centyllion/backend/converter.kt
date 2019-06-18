@@ -1,6 +1,15 @@
 package com.centyllion.backend
 
-import com.centyllion.model.*
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.User
+import com.centyllion.model.colorNames
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.features.ContentConverter
@@ -78,8 +87,7 @@ class JsonConverter : ContentConverter {
             GrainModelDescription::class -> Json.parse(GrainModelDescription.serializer(), text)
             Simulation::class -> Json.parse(Simulation.serializer(), text)
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
-            FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
-            Subscription::class -> Json.parse(Subscription.serializer(), text)
+            SubscriptionParameters::class -> Json.parse(SubscriptionParameters.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

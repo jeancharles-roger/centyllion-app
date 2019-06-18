@@ -31,6 +31,15 @@ data class UserDetails(
 )
 
 @Serializable
+data class SubscriptionParameters(
+    val autoRenew: Boolean,
+    val subscription: SubscriptionType,
+    val duration: Int,
+    val amount: Double,
+    val paymentMethod: String
+)
+
+@Serializable
 data class Subscription(
     val id: String,
 

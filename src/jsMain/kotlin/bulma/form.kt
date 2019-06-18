@@ -1,9 +1,31 @@
 package bulma
 
-import kotlinx.html.*
+import kotlinx.html.InputType
+import kotlinx.html.div
 import kotlinx.html.dom.create
-import kotlinx.html.js.*
-import org.w3c.dom.*
+import kotlinx.html.i
+import kotlinx.html.input
+import kotlinx.html.js.div
+import kotlinx.html.js.input
+import kotlinx.html.js.label
+import kotlinx.html.js.onBlurFunction
+import kotlinx.html.js.onChangeFunction
+import kotlinx.html.js.onFocusFunction
+import kotlinx.html.js.onInputFunction
+import kotlinx.html.js.option
+import kotlinx.html.js.p
+import kotlinx.html.js.span
+import kotlinx.html.js.textArea
+import kotlinx.html.label
+import kotlinx.html.select
+import kotlinx.html.span
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.HTMLLabelElement
+import org.w3c.dom.HTMLOptionElement
+import org.w3c.dom.HTMLSelectElement
+import org.w3c.dom.HTMLSpanElement
+import org.w3c.dom.HTMLTextAreaElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.FocusEvent
 import org.w3c.dom.events.InputEvent
@@ -303,10 +325,13 @@ class Select(
     }
 
     private val selectNode = root.querySelector("select") as HTMLSelectElement
+    init { selectNode.selectedIndex = selectedIndex }
 
     var selectedIndex
         get() = selectNode.selectedIndex
         set(value) { selectNode.selectedIndex = value }
+
+    val selectedOption get() = options[selectedIndex]
 
     var options by bulmaList(options, selectNode)
 
@@ -330,9 +355,6 @@ class Select(
     private var rootMultiple by className(multiple, "is-multiple", root)
     private var selectMultiple by booleanAttribute(multiple, "multiple", selectNode)
 
-    init {
-        selectNode.selectedIndex = selectedIndex
-    }
 }
 
 /** [Checkbox](https://bulma.io/documentation/form/checkbox) */

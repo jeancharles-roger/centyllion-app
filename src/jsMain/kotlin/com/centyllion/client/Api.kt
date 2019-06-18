@@ -1,6 +1,15 @@
 package com.centyllion.client
 
-import com.centyllion.model.*
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ResultPage
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.User
+import com.centyllion.model.emptyFeatured
 import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -197,10 +206,10 @@ class Api(val instance: KeycloakInstance?) {
                 .then { json.parse(Subscription.serializer().list, it) }
         }
 
-    // TODO adds parameters
-    fun createSubscriptionForUser(userId: String) =
+    fun createSubscriptionForUser(userId: String, parameters: SubscriptionParameters) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/user/$userId/subscription", bearer,"")
+            val content = json.stringify(SubscriptionParameters.serializer(), parameters)
+            fetch("POST", "/api/user/$userId/subscription", bearer, content)
                 .then { json.parse(Subscription.serializer(), it) }
         }
 

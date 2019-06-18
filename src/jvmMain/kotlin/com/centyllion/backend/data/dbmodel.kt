@@ -1,7 +1,16 @@
 package com.centyllion.backend.data
 
 import com.centyllion.common.SubscriptionType
-import com.centyllion.model.*
+import com.centyllion.model.Asset
+import com.centyllion.model.DescriptionInfo
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModel
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Simulation
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Subscription
+import com.centyllion.model.User
+import com.centyllion.model.UserDetails
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -9,7 +18,7 @@ import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
 import org.jetbrains.exposed.sql.ColumnType
 import org.joda.time.DateTime
-import java.util.*
+import java.util.UUID
 import javax.sql.rowset.serial.SerialBlob
 
 class TsVectorColumnType : ColumnType()  {
@@ -61,7 +70,10 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
         source.details?.let {
             email = it.email
             stripe = it.stripeId
-            subscription = it.subscription.name
+            if (subscription != it.subscription.name) {
+                subscription = it.subscription.name
+                subscriptionUpdatedOn = DateTime.now()
+            }
         }
     }
 }

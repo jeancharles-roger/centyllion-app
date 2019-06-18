@@ -5,8 +5,10 @@ import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.adminRole
+import com.centyllion.model.SubscriptionParameters
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -75,11 +77,18 @@ fun Route.user(data: Data) {
                 post {
                     withRequiredPrincipal(adminRole) {
                         val userId = call.parameters["user"]!!
-                        val user = data.getUser(userId, false)
+                        val user = data.getUser(userId, true)
+                        val parameters = call.receive(SubscriptionParameters::class)
                         context.respond(
-                            when (user) {
-                                null -> HttpStatusCode.NotFound
-                                else -> data.createSubscription(user.id, true, 1, SubscriptionType.Creator, 0.0, "test")
+                            when {
+                                user == null -> HttpStatusCode.NotFound
+                                parameters.subscription == SubscriptionType.Free -> HttpStatusCode.BadRequest
+                                else -> {
+                                    // updates user subscription
+                                    val type = parameters.subscription.max(user.details?.subscription)
+                                    data.saveUser(user.copy(details = user.details?.copy( subscription = type)))
+                                    data.createSubscription(user.id, false, parameters)
+                                }
                             }
                         )
                     }

@@ -1,5 +1,6 @@
 package com.centyllion.backend
 
+import com.auth0.jwt.JWTVerifier
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.data.SqlData
 import com.github.ajalt.clikt.core.CliktCommand
@@ -17,7 +18,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.serialization.Serializable
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.security.KeyStore
@@ -38,18 +38,31 @@ private fun certificateKeystore(): KeyStore {
     }
 }
 
-@Serializable
-data class ServerConfig(
+interface ServerConfig {
+
+    val debug: Boolean
+    val verifier: JWTVerifier?
+
+    val authorization: AuthorizationManager
+    val payment: PaymentManager
+    val data: Data
+}
+
+data class CliServerConfig(
+    override val debug: Boolean,
     val host: String, val port: Int,
     val dbType: String, val dbHost: String, val dbPort: Int,
     val dbName: String, val dbUser: String, val dbPassword: String,
     val stripeKey: String, val keycloakPassword: String
-) {
-    fun role(): AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
+): ServerConfig {
 
-    fun subscription(): PaymentManager = StripePaymentManager(stripeKey)
+    override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
 
-    fun data(): Data = SqlData(role(), dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
+    override val payment: PaymentManager = StripePaymentManager(stripeKey)
+
+    override val data: Data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
+
+    override val verifier: JWTVerifier? = null
 
 }
 
@@ -118,7 +131,8 @@ class ServerCommand : CliktCommand("Start the server") {
         val actualDbPassword = dbPassword ?: extractPassword(loadedKeystore, dbPasswordAlias, pwd)
         val actualStripeKey = stripeKey ?: extractPassword(loadedKeystore, stripeKeyAlias, pwd)
         val actualKeycloakPassword = keycloakPassword ?: extractPassword(loadedKeystore, keycloakPasswordKeyAlias, pwd)
-        return ServerConfig(
+        return CliServerConfig(
+            debug,
             host,
             port,
             dbType,
@@ -155,8 +169,7 @@ class ServerCommand : CliktCommand("Start the server") {
                 }
             }
 
-            val config = config()
-            module { centyllion(debug, config.data(), config.subscription()) }
+            module { centyllion(config()) }
 
         }
 

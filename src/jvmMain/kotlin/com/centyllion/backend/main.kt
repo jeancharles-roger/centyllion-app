@@ -2,9 +2,12 @@ package com.centyllion.backend
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.auth0.jwt.JWTVerifier
-import com.centyllion.backend.data.Data
-import com.centyllion.backend.route.*
+import com.centyllion.backend.route.asset
+import com.centyllion.backend.route.featured
+import com.centyllion.backend.route.me
+import com.centyllion.backend.route.model
+import com.centyllion.backend.route.simulation
+import com.centyllion.backend.route.user
 import com.centyllion.model.DescriptionInfo
 import com.centyllion.model.User
 import io.ktor.application.Application
@@ -16,7 +19,13 @@ import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
-import io.ktor.features.*
+import io.ktor.features.AutoHeadResponse
+import io.ktor.features.CachingHeaders
+import io.ktor.features.CallLogging
+import io.ktor.features.Compression
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
 import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
@@ -62,9 +71,7 @@ fun main(args: Array<String>) {
 }
 
 @KtorExperimentalAPI
-fun Application.centyllion(
-    debug: Boolean, data: Data, payment: PaymentManager, verifier: JWTVerifier? = null
-) {
+fun Application.centyllion(config: ServerConfig) {
     val mainLogger = LoggerFactory.getLogger(Application::class.java)
     mainLogger.info("Starting centyllion app")
 
@@ -85,7 +92,7 @@ fun Application.centyllion(
     }
 
     install(CallLogging) {
-        if (debug) level = Level.TRACE else level = Level.WARN
+        if (config.debug) level = Level.TRACE else level = Level.WARN
         logger = mainLogger
     }
 
@@ -98,11 +105,11 @@ fun Application.centyllion(
                     call.respond(HttpStatusCode.NotFound)
                 }
                 else -> {
-                    if (debug) cause.printStackTrace()
+                    if (config.debug) cause.printStackTrace()
 
                     // insert an event when see a problem
                     val principal = call.principal<JWTPrincipal>()
-                    val user = principal?.let { data.getOrCreateUserFromPrincipal(it) }
+                    val user = principal?.let { config.data.getOrCreateUserFromPrincipal(it) }
                     val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
                     // TODO responds error
                     call.respond(HttpStatusCode.InternalServerError)
@@ -132,12 +139,11 @@ fun Application.centyllion(
 
     install(Authentication) {
         jwt {
-            if (verifier != null) {
-                verifier(verifier)
-            } else {
-                verifier(makeJwkProvider(), realmBase) {
+            when (val verifier = config.verifier) {
+                null -> verifier(makeJwkProvider(), realmBase) {
                     acceptLeeway(5)
                 }
+                else -> verifier(verifier)
             }
             realm = authRealm
             validate { if (it.payload.audience?.contains(authClient) == true) JWTPrincipal(it.payload) else null }
@@ -156,12 +162,12 @@ fun Application.centyllion(
 
         authenticate(optional = true) {
             route("/api") {
-                me(data)
-                user(data)
-                featured(data)
-                model(data)
-                simulation(data)
-                asset(data)
+                me(config.data)
+                user(config.data, config.authorization)
+                featured(config.data)
+                model(config.data)
+                simulation(config.data)
+                asset(config.data)
             }
         }
     }

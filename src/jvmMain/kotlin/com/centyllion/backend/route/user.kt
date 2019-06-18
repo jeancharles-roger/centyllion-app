@@ -1,5 +1,6 @@
 package com.centyllion.backend.route
 
+import com.centyllion.backend.AuthorizationManager
 import com.centyllion.backend.checkRoles
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
@@ -15,7 +16,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 
-fun Route.user(data: Data) {
+fun Route.user(data: Data, authorizationManager: AuthorizationManager) {
     route("user") {
         get {
             val detailed = call.parameters["detailed"]?.toBoolean() ?: false

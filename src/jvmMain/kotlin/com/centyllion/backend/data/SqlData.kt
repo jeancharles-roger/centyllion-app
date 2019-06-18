@@ -1,6 +1,5 @@
 package com.centyllion.backend.data
 
-import com.centyllion.backend.AuthorizationManager
 import com.centyllion.backend.createThumbnail
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.topGroup
@@ -47,7 +46,6 @@ class ToTsQuery<T : String?>(val expr: Expression<T>) : Function<T>(VarCharColum
 }
 
 class SqlData(
-    val authorizationManager: AuthorizationManager,
     type: String = "postgresql",
     host: String = "localhost",
     port: Int = 5432,

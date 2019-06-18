@@ -1,7 +1,9 @@
 package com.centyllion.backend
 
 import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.centyllion.backend.data.Data
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
@@ -9,7 +11,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.*
+import io.ktor.server.testing.TestApplicationCall
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.TestApplicationRequest
+import io.ktor.server.testing.setBody
+import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -39,15 +45,19 @@ fun createTextJwtToken(id: String, name: String, email: String, vararg role: Str
         .withArrayClaim("roles", role)
         .withIssuer(authBase).sign(jwtAlgorithm)!!
 
+class TestConfig: ServerConfig {
+    override val debug: Boolean = false
+
+    override val verifier: JWTVerifier? = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
+    override val authorization: AuthorizationManager = TestAuthorizationManager()
+    override val payment: PaymentManager = TestPaymentManager()
+    override val data: Data = MemoryData()
+}
+
 /** Execute tests with the Centyllion API testing rig */
 @KtorExperimentalAPI
 fun <R> withCentyllion(test: TestApplicationEngine.() -> R): R =
-    withTestApplication(
-        {
-            val verifier = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
-            centyllion(false, MemoryData(), MemoryPaymentManager(), verifier)
-        }, test
-    )
+    withTestApplication({ centyllion(TestConfig()) }, test)
 
 fun TestApplicationEngine.request(
     method: HttpMethod, uri: String, content: String?, user: User?, vararg role: String,

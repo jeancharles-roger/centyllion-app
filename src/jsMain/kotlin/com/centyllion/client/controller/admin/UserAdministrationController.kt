@@ -55,7 +55,7 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
 
         val createButton = textButton("Create", ElementColor.Success) { _ ->
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
-            val parameters = SubscriptionParameters(autoRenew.checked, type, 1, duration.value.toDouble(),"manual")
+            val parameters = SubscriptionParameters(autoRenew.checked, type, duration.value.toInt(), 0.0,"manual")
             context.api.createSubscriptionForUser(user.id, parameters).then {
                 group.text = parameters.subscription.max(user.details?.subscription).name
                 context.message("Subscription ${parameters.subscription} created")

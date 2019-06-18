@@ -10,9 +10,9 @@ const val masterLogin = "automation"
 const val masterClient = "admin-cli"
 
 interface AuthorizationManager {
-
     fun getGroup(id: String): SubscriptionType
-
+    fun joinGroup(id: String, groupId: String)
+    fun leaveGroup(id: String, groupId: String)
 }
 
 class KeycloakAuthorizationManager(
@@ -36,14 +36,14 @@ class KeycloakAuthorizationManager(
         user?.groups()?.map { SubscriptionType.parse(it.name) }.topGroup()
     }
 
-    fun joinGroup(id: String, groupId: String) = useClient { client ->
+    override fun joinGroup(id: String, groupId: String) = useClient { client ->
         val centyllionRealm = client.realm(authRealm)
         val user = centyllionRealm.users().get(id)
         user?.joinGroup(groupId)
         Unit
     }
 
-    fun leaveGroup(id: String, groupId: String) = useClient { client ->
+    override fun leaveGroup(id: String, groupId: String) = useClient { client ->
         val centyllionRealm = client.realm(authRealm)
         val user = centyllionRealm.users().get(id)
         user?.leaveGroup(groupId)

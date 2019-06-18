@@ -353,7 +353,7 @@ class SqlData(
             this.sandbox = sandbox
             this.startedOn = DateTime.now()
             this.expiresOn = this.startedOn.plusDays(duration + 1)
-            this.subscription = subscription
+            this.subscription = type.name
             this.duration = duration
             this.amount = amount
             this.paymentMethod = paymentMethod

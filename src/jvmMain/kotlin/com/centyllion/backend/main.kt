@@ -56,6 +56,7 @@ val passwordProvider = { certificatePassword.toCharArray() }
 val certificatePath: Path = Paths.get("certificate.jks")
 
 fun main(args: Array<String>) {
+    val log = LoggerFactory.getLogger(Application::class.java)
     // start server command
     ServerCommand().main(args)
 }
@@ -64,6 +65,9 @@ fun main(args: Array<String>) {
 fun Application.centyllion(
     debug: Boolean, data: Data, payment: PaymentManager, verifier: JWTVerifier? = null
 ) {
+    val mainLogger = LoggerFactory.getLogger(Application::class.java)
+    mainLogger.info("Starting centyllion app")
+
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)
@@ -82,7 +86,7 @@ fun Application.centyllion(
 
     install(CallLogging) {
         if (debug) level = Level.TRACE else level = Level.WARN
-        logger = LoggerFactory.getLogger(Application::class.java)
+        logger = mainLogger
     }
 
     // TODO create nice error pages

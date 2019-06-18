@@ -205,7 +205,7 @@ object DbSubscriptions : UUIDTable("subscriptions") {
 
     val startedOn = datetime("startedOn")
     val payedOn = datetime("payedOn").nullable()
-    val expiresOn = datetime("expiresOn")
+    val expiresOn = datetime("expiresOn").nullable()
     val cancelledOn = datetime("cancelledOn").nullable()
 
     val subscription = text("subscription")
@@ -235,7 +235,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
 
     fun toModel() = Subscription(
         id.toString(), userId.toString(), sandbox, autoRenew, cancelled,
-        startedOn.millis, payedOn?.millis, expiresOn.millis, cancelledOn?.millis,
+        startedOn.millis, payedOn?.millis, expiresOn?.millis, cancelledOn?.millis,
         SubscriptionType.parse(subscription), duration, amount, paymentMethod
     )
 

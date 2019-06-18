@@ -41,7 +41,7 @@ data class Subscription(
 
     val startedOn: Long,
     val payedOn: Long?,
-    val expiresOn: Long,
+    val expiresOn: Long?,
     val cancelledOn: Long?,
 
     val subscription: SubscriptionType,
@@ -50,7 +50,7 @@ data class Subscription(
     val paymentMethod: String
 ) {
 
-    fun active(now: Long) = !cancelled && now >= startedOn && now <= expiresOn
+    fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)
 
 }
 

@@ -39,6 +39,10 @@ data class SubscriptionParameters(
     val paymentMethod: String
 )
 
+enum class SubscriptionState {
+    New, WaitingForPayment, PaymentRefused, Engaged, Disengaged
+}
+
 @Serializable
 data class Subscription(
     val id: String,
@@ -56,7 +60,9 @@ data class Subscription(
     val subscription: SubscriptionType,
     val duration: Int,
     val amount: Double,
-    val paymentMethod: String
+    val paymentMethod: String,
+
+    val state: SubscriptionState = SubscriptionState.New
 ) {
 
     fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)

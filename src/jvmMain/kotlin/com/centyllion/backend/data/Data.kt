@@ -45,7 +45,6 @@ interface Data {
     fun saveSubscription(subscription: Subscription)
     fun deleteSubscription(subscriptionId: String)
 
-
     fun getAsset(id: String): Asset?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)

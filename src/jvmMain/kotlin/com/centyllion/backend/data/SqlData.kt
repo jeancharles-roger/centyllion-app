@@ -11,6 +11,7 @@ import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Subscription
 import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
@@ -372,6 +373,7 @@ class SqlData(
             duration = parameters.duration
             amount = parameters.amount
             paymentMethod = parameters.paymentMethod
+            state = SubscriptionState.New.name
         }.toModel()
     }
 

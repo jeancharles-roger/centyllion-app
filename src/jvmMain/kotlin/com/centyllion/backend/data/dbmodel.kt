@@ -9,6 +9,7 @@ import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Subscription
+import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import kotlinx.serialization.json.Json
@@ -224,6 +225,8 @@ object DbSubscriptions : UUIDTable("subscriptions") {
     val duration = integer("duration")
     val amount = double("amount")
     val paymentMethod = text("paymentMethod")
+
+    val state = text("state")
 }
 
 class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -245,10 +248,13 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
     var amount by DbSubscriptions.amount
     var paymentMethod by DbSubscriptions.paymentMethod
 
+    var state by DbSubscriptions.state
+
     fun toModel() = Subscription(
         id.toString(), userId.toString(), sandbox, autoRenew, cancelled,
         startedOn.millis, payedOn?.millis, expiresOn?.millis, cancelledOn?.millis,
-        SubscriptionType.parse(subscription), duration, amount, paymentMethod
+        SubscriptionType.parse(subscription), duration, amount, paymentMethod,
+        SubscriptionState.valueOf(state)
     )
 
     fun fromModel(source: Subscription) {

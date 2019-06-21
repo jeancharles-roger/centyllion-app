@@ -200,9 +200,9 @@ class Api(val instance: KeycloakInstance?) {
         }
 
 
-    fun fetchSubscriptionsForUser(userId: String, all: Boolean = false): Promise<List<Subscription>> =
+    fun fetchSubscriptionsForUser(userId: String): Promise<List<Subscription>> =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/user/$userId/subscription?all=$all", bearer)
+            fetch("GET", "/api/user/$userId/subscription", bearer)
                 .then { json.parse(Subscription.serializer().list, it) }
         }
 

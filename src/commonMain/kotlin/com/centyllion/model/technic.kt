@@ -27,7 +27,8 @@ data class UserDetails(
     val keycloakId: String,
     val email: String,
     val stripeId: String?,
-    val subscription: SubscriptionType
+    val subscription: SubscriptionType,
+    val subscriptionUpdatedOn: Long?
 )
 
 @Serializable
@@ -40,7 +41,7 @@ data class SubscriptionParameters(
 )
 
 enum class SubscriptionState {
-    New, WaitingForPayment, PaymentRefused, Engaged, Disengaged
+    Waiting, Refused, Engaged, Disengaged
 }
 
 @Serializable
@@ -62,10 +63,12 @@ data class Subscription(
     val amount: Double,
     val paymentMethod: String,
 
-    val state: SubscriptionState = SubscriptionState.New
+    val state: SubscriptionState = SubscriptionState.Waiting
 ) {
 
     fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)
+
+    fun parameters() = SubscriptionParameters(autoRenew, subscription, duration, amount, paymentMethod)
 
 }
 

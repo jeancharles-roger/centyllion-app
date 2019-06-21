@@ -1,6 +1,12 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.*
+import bulma.ElementColor
+import bulma.Image
+import bulma.ImageSize
+import bulma.Media
+import bulma.NoContextController
+import bulma.Size
+import bulma.Tag
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.User
@@ -22,7 +28,7 @@ class UserController(user: User) : NoContextController<User, Media>() {
     val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
 
     val group = Tag(
-        (newData.details?.subscription ?: SubscriptionType.Free).name,
+        (newData.details?.subscription ?: SubscriptionType.Apprentice).name,
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
@@ -35,6 +41,6 @@ class UserController(user: User) : NoContextController<User, Media>() {
         nameController.text = newData.name
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
-        group.text = (newData.details?.subscription ?: SubscriptionType.Free).name
+        group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
     }
 }

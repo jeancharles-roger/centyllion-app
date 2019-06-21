@@ -21,6 +21,7 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.SubscriptionParameters
+import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
@@ -40,14 +41,14 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
     val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
 
     val group = Tag(
-        (newData.details?.subscription ?: SubscriptionType.Free).name,
+        (newData.details?.subscription ?: SubscriptionType.Apprentice).name,
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
     val createSubscription = Button("Subscription", Icon("plus"), ElementColor.Info, true) { _ ->
 
         val autoRenew = Checkbox("auto renew")
-        val options = SubscriptionType.values().filter { it != SubscriptionType.Free }.map { Option(it.name) }
+        val options = SubscriptionType.values().filter { it != SubscriptionType.Apprentice }.map { Option(it.name) }
         val subscription = Select(options, rounded = true)
         val durationLabel = Help("31 days")
         val duration = Slider("31", "0", "365", "1", ElementColor.Link)
@@ -57,7 +58,8 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
             val parameters = SubscriptionParameters(autoRenew.checked, type, duration.value.toInt(), 0.0,"manual")
             context.api.createSubscriptionForUser(user.id, parameters).then {
-                group.text = parameters.subscription.max(user.details?.subscription).name
+                group.text = it.subscription.name
+                group.color = if (it.state == SubscriptionState.Waiting) ElementColor.Warning else ElementColor.Success
                 context.message("Subscription ${parameters.subscription} created")
             }.catch { context.error(it) }
         }
@@ -82,6 +84,6 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
         nameController.text = newData.name
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
-        group.text = (newData.details?.subscription ?: SubscriptionType.Free).name
+        group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
     }
 }

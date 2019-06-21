@@ -39,7 +39,7 @@ interface Data {
     fun createFeatured(simulationId: String): FeaturedDescription
     fun deleteFeatured(featuredId: String)
 
-    fun subscriptionsForUser(userId: String, all: Boolean): List<Subscription>
+    fun subscriptionsForUser(userId: String): List<Subscription>
     fun getSubscription(id: String): Subscription?
     fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription
     fun saveSubscription(subscription: Subscription)

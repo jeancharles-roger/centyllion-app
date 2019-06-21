@@ -15,7 +15,6 @@ import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import io.ktor.auth.jwt.JWTPrincipal
-import org.joda.time.DateTimeUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.LinkedHashMap
@@ -32,7 +31,7 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val name = claims["name"]?.asString() ?: ""
     val username = claims["preferred_username"]?.asString() ?: ""
     val email = claims["email"]?.asString() ?: ""
-    return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Free))
+    return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Apprentice, null))
 }
 
 fun createGrainModelDescription(userId: String, sent: GrainModel) = rfc1123Format.format(Date()).let {
@@ -171,15 +170,16 @@ class MemoryData(
         .filter { it.model.name.contains(query) || it.model.description.contains(query) }
         .limit(offset, limit)
 
-    override fun subscriptionsForUser(userId: String, all: Boolean) = DateTimeUtils.currentTimeMillis().let { now ->
-        subscriptions.values.filter {
-            it.userId == userId && (all || it.active(now))
-        }
-    }
+    override fun subscriptionsForUser(userId: String) =
+        subscriptions.values.filter { it.userId == userId }
 
     override fun getSubscription(id: String): Subscription? = subscriptions[id]
 
-    override fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription {
+    override fun createSubscription(
+        userId: String,
+        sandbox: Boolean,
+        parameters: SubscriptionParameters
+    ): Subscription {
         val now = System.currentTimeMillis()
         val expiresOn = if (parameters.duration > 0) now + parameters.duration * (24 * 60 * 60 * 1_000) else null
         val new = Subscription(

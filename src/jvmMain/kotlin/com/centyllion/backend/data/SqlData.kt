@@ -102,7 +102,7 @@ class SqlData(
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         // retrieves roles from claim
          val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
-            ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Free
+            ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Apprentice
 
         val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
 
@@ -130,28 +130,12 @@ class SqlData(
         }
          */
 
-        transaction { updateUserSubscription(user) }
-
         return user.toModel(true)
     }
 
     override fun getUser(id: String, detailed: Boolean): User? = transaction(database) {
         val user = DbUser.findById(UUID.fromString(id))
-        if (user != null) updateUserSubscription(user)
         user?.toModel(detailed)
-    }
-
-    /** Must be called inside a transition */
-    private fun updateUserSubscription(user: DbUser) {
-        val date = user.subscriptionUpdatedOn
-
-        // updates at most one time a day
-        if (date == null || date.plusDays(1).isBeforeNow) {
-            val subscriptions = subscriptionsForUser(user.id.value, false)
-            val type = subscriptions.map { it.subscription }.topGroup()
-            user.subscription = type.name
-            user.subscriptionUpdatedOn = DateTime.now()
-        }
     }
 
     override fun saveUser(user: User) {
@@ -346,16 +330,14 @@ class SqlData(
         ResultPage(content, offset, searchModelQuery(query).count())
     }
 
-    override fun subscriptionsForUser(userId: String, all: Boolean) =
-        subscriptionsForUser(UUID.fromString(userId), all)
+    override fun subscriptionsForUser(userId: String) =
+        subscriptionsForUser(UUID.fromString(userId))
 
-    private fun subscriptionsForUser(userId: UUID, all: Boolean) = transaction(database) {
+    private fun subscriptionsForUser(userId: UUID) = transaction(database) {
         val now = DateTimeUtils.currentTimeMillis()
         DbSubscription
             .find { DbSubscriptions.userId eq userId }
             .map { it.toModel() }
-            // TODO makes this filter in the where close of the SQL query
-            .filter { all || it.active(now) }
     }
 
     override fun getSubscription(id: String): Subscription? = transaction(database) {
@@ -373,7 +355,7 @@ class SqlData(
             duration = parameters.duration
             amount = parameters.amount
             paymentMethod = parameters.paymentMethod
-            state = SubscriptionState.New.name
+            state = SubscriptionState.Waiting.name
         }.toModel()
     }
 

@@ -1,5 +1,6 @@
 package com.centyllion.backend.route
 
+import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.isOwner
@@ -13,9 +14,13 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.decodeURLQueryComponent
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.Route
+import io.ktor.routing.delete
+import io.ktor.routing.get
+import io.ktor.routing.patch
+import io.ktor.routing.route
 
-fun Route.simulation(data: Data) {
+fun Route.simulation(subscription: SubscriptionManager, data: Data) {
     route("simulation") {
         get {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
@@ -35,7 +40,7 @@ fun Route.simulation(data: Data) {
         route("{simulation}") {
             get {
                 val user = call.principal<JWTPrincipal>()?.let {
-                    data.getOrCreateUserFromPrincipal(it)
+                    subscription.getOrCreateUserFromPrincipal(it)
                 }
                 val simulationId = call.parameters["simulation"]!!
                 val simulation = data.getSimulation(simulationId)
@@ -51,7 +56,7 @@ fun Route.simulation(data: Data) {
             // patch an existing simulation for user
             patch {
                 withRequiredPrincipal(creatorRole) {
-                    val user = data.getOrCreateUserFromPrincipal(it)
+                    val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val simulation = call.receive(SimulationDescription::class)
                     context.respond(
@@ -70,7 +75,7 @@ fun Route.simulation(data: Data) {
             // delete an existing model for user
             delete {
                 withRequiredPrincipal(creatorRole) {
-                    val user = data.getOrCreateUserFromPrincipal(it)
+                    val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val simulation = data.getSimulation(simulationId)
                     context.respond(

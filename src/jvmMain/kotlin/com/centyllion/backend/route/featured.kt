@@ -1,5 +1,6 @@
 package com.centyllion.backend.route
 
+import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
@@ -8,9 +9,13 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.Route
+import io.ktor.routing.delete
+import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.route
 
-fun Route.featured(data: Data) {
+fun Route.featured(subscription: SubscriptionManager, data: Data) {
     route("featured") {
         get {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
@@ -25,7 +30,7 @@ fun Route.featured(data: Data) {
                 val newFeatured = call.receive(FeaturedDescription::class)
                 val model = data.getGrainModel(newFeatured.modelId)
                 val simulation = data.getSimulation(newFeatured.simulationId)
-                val author = data.getUser(newFeatured.authorId, false)
+                val author = subscription.getUser(newFeatured.authorId, false)
 
                 context.respond(
                     when {
@@ -53,7 +58,7 @@ fun Route.featured(data: Data) {
             // delete an existing featured
             delete {
                 withRequiredPrincipal(adminRole) {
-                    val user = data.getOrCreateUserFromPrincipal(it)
+                    val user = subscription.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["featured"]!!
                     val featured = data.getFeatured(id)
                     context.respond(

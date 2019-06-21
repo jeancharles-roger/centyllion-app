@@ -1,5 +1,6 @@
 package com.centyllion.backend.route
 
+import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.isOwner
@@ -15,9 +16,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.decodeURLQueryComponent
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.Route
+import io.ktor.routing.delete
+import io.ktor.routing.get
+import io.ktor.routing.patch
+import io.ktor.routing.post
+import io.ktor.routing.route
 
-fun Route.model(data: Data) {
+fun Route.model(subscription: SubscriptionManager, data: Data) {
     route("model") {
         get {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
@@ -37,7 +43,7 @@ fun Route.model(data: Data) {
         // post a new model
         post {
             withRequiredPrincipal(creatorRole) {
-                val user = data.getOrCreateUserFromPrincipal(it)
+                val user = subscription.getOrCreateUserFromPrincipal(it)
                 val newModel = call.receive(GrainModel::class)
                 val newDescription = data.createGrainModel(user.id, newModel)
                 context.respond(newDescription)
@@ -49,7 +55,7 @@ fun Route.model(data: Data) {
             // model get with user
             get {
                 val user = call.principal<JWTPrincipal>()?.let {
-                    data.getOrCreateUserFromPrincipal(it)
+                    subscription.getOrCreateUserFromPrincipal(it)
                 }
                 val id = call.parameters["model"]!!
                 val model = data.getGrainModel(id)
@@ -65,7 +71,7 @@ fun Route.model(data: Data) {
             // patch an existing model
             patch {
                 withRequiredPrincipal(creatorRole) {
-                    val user = data.getOrCreateUserFromPrincipal(it)
+                    val user = subscription.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["model"]!!
                     val model = call.receive(GrainModelDescription::class)
                     context.respond(
@@ -84,7 +90,7 @@ fun Route.model(data: Data) {
             // delete an existing model
             delete {
                 withRequiredPrincipal(creatorRole) {
-                    val user = data.getOrCreateUserFromPrincipal(it)
+                    val user = subscription.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["model"]!!
                     val model = data.getGrainModel(id)
                     context.respond(
@@ -105,7 +111,7 @@ fun Route.model(data: Data) {
                 get {
                     val publicOnly = call.request.queryParameters["public"] != null
                     val user = call.principal<JWTPrincipal>()?.let {
-                        data.getOrCreateUserFromPrincipal(it)
+                        subscription.getOrCreateUserFromPrincipal(it)
                     }
                     val modelId = call.parameters["model"]!!
                     val model = data.getGrainModel(modelId)
@@ -129,7 +135,7 @@ fun Route.model(data: Data) {
                 // post a new simulation for model
                 post {
                     withRequiredPrincipal(creatorRole) {
-                        val user = data.getOrCreateUserFromPrincipal(it)
+                        val user = subscription.getOrCreateUserFromPrincipal(it)
                         val modelId = call.parameters["model"]!!
                         val model = data.getGrainModel(modelId)
                         val newSimulation = call.receive(Simulation::class)

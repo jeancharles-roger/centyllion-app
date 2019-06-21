@@ -60,9 +60,9 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var stripe by DbUsers.stripe
 
     fun toModel(detailed: Boolean): User {
-        val subscriptionType = SubscriptionType.valueOf(subscription)
-        val details = if (detailed) UserDetails(keycloak, email, stripe, subscriptionType) else null
-        return User(id.toString(), name, username, details)
+        val subscriptionType = SubscriptionType.parse(subscription)
+        val details = UserDetails(keycloak, email, stripe, subscriptionType, subscriptionUpdatedOn?.millis)
+        return User(id.toString(), name, username, if (detailed) details else null)
     }
 
     fun fromModel(source: User) {
@@ -271,6 +271,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
         duration = source.duration
         amount = source.amount
         paymentMethod = source.paymentMethod
+        state = source.state.name
     }
 
 }

@@ -25,7 +25,7 @@ import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val testUserDetails = UserDetails("1234", "test@centyllion.com", null, SubscriptionType.Free)
+val testUserDetails = UserDetails("1234", "test@centyllion.com", null, SubscriptionType.Apprentice, null)
 val testUser = User("1", "Test", "tester", testUserDetails)
 
 /** Create a private and public key pair for API tests with credentials */

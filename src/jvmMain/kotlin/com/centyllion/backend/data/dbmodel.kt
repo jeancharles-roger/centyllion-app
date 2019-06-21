@@ -222,7 +222,7 @@ object DbSubscriptions : UUIDTable("subscriptions") {
     val cancelledOn = datetime("cancelledOn").nullable()
 
     val subscription = text("subscription")
-    val duration = integer("duration")
+    val duration = long("duration")
     val amount = double("amount")
     val paymentMethod = text("paymentMethod")
 

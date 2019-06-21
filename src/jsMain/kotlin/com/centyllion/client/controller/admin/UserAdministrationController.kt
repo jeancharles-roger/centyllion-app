@@ -56,7 +56,8 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
 
         val createButton = textButton("Create", ElementColor.Success) { _ ->
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
-            val parameters = SubscriptionParameters(autoRenew.checked, type, duration.value.toInt(), 0.0,"manual")
+            val durationMillis = duration.value.toLong() * (24 * 60 * 60 * 1_000)
+            val parameters = SubscriptionParameters(autoRenew.checked, type, durationMillis, 0.0,"manual")
             context.api.createSubscriptionForUser(user.id, parameters).then {
                 group.text = it.subscription.name
                 group.color = if (it.state == SubscriptionState.Waiting) ElementColor.Warning else ElementColor.Success

@@ -181,7 +181,7 @@ class MemoryData(
         parameters: SubscriptionParameters
     ): Subscription {
         val now = System.currentTimeMillis()
-        val expiresOn = if (parameters.duration > 0) now + parameters.duration * (24 * 60 * 60 * 1_000) else null
+        val expiresOn = if (parameters.duration > 0) now + parameters.duration else null
         val new = Subscription(
             newId(), userId, sandbox, parameters.autoRenew, false,
             now, null, expiresOn, null,

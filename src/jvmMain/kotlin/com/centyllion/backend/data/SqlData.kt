@@ -350,7 +350,7 @@ class SqlData(
             this.sandbox = sandbox
             autoRenew = parameters.autoRenew
             startedOn = DateTime.now()
-            expiresOn = parameters.duration.let { if (it > 0) startedOn.plusDays(it + 1) else null }
+            expiresOn = parameters.duration.let { if (it > 0) startedOn.plus(it) else null }
             subscription = parameters.subscription.name
             duration = parameters.duration
             amount = parameters.amount

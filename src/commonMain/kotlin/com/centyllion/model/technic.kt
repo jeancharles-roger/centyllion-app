@@ -35,7 +35,7 @@ data class UserDetails(
 data class SubscriptionParameters(
     val autoRenew: Boolean,
     val subscription: SubscriptionType,
-    val duration: Int,
+    val duration: Long,
     val amount: Double,
     val paymentMethod: String
 )
@@ -59,7 +59,7 @@ data class Subscription(
     val cancelledOn: Long?,
 
     val subscription: SubscriptionType,
-    val duration: Int,
+    val duration: Long,
     val amount: Double,
     val paymentMethod: String,
 

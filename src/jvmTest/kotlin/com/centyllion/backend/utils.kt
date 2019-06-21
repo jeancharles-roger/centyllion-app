@@ -31,6 +31,9 @@ val apprenticeUser = User("1", "Apprentice", "app", apprenticeUserDetails)
 val creatorUserDetails = UserDetails("1235", "test@centyllion.com", null, SubscriptionType.Creator, null)
 val creatorUser = User("2", "Creator", "cre", creatorUserDetails)
 
+val adminUserDetails = UserDetails("1236", "test@centyllion.com", null, SubscriptionType.Admin, null)
+val adminUser = User("4", "Admin", "adm", adminUserDetails)
+
 /** Create a private and public key pair for API tests with credentials */
 private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator ->
     generator.initialize(512)
@@ -107,6 +110,15 @@ fun <T> TestApplicationEngine.testGet(uri: String, expected: T, serializer: KSer
 fun <T> TestApplicationEngine.get(uri: String, serializer: KSerializer<T>, user: User? = null): T {
     val request = handleGet(uri, user)
     return checkResult(request, serializer, null)
+}
+
+fun <T, R> TestApplicationEngine.testPost(
+    uri: String, value: T, inputSerializer: KSerializer<T>,
+    outputKSerializer: KSerializer<R>, user: User? = null
+): R {
+    val content = Json.stringify(inputSerializer, value)
+    val request = handlePost(uri, content, user)
+    return checkResult(request, outputKSerializer, null)
 }
 
 private fun <T> checkResult(request: TestApplicationCall, serializer: KSerializer<T>, expected: T?): T {

@@ -39,10 +39,10 @@ class SubscriptionManager(val config: ServerConfig) {
         // updates user subscription
         val type = subscription.subscription
         if (accepted) {
-            config.authorization.joinGroup(details.keycloakId, type.groupId)
+            config.authorization.joinGroup(details.keycloakId, type)
             config.data.saveUser(user.copy(details = details.copy(subscription = type)))
         } else {
-            config.authorization.leaveGroup(details.keycloakId, type.groupId)
+            config.authorization.leaveGroup(details.keycloakId, type)
             config.data.saveUser(user.copy(details = details.copy(subscription = SubscriptionType.Apprentice)))
         }
 
@@ -57,7 +57,7 @@ class SubscriptionManager(val config: ServerConfig) {
     fun expire(user: User, details: UserDetails, subscription: Subscription): Triple<User, UserDetails, Subscription> {
         // updates user subscription
         val type = subscription.subscription
-        config.authorization.leaveGroup(details.keycloakId, type.groupId)
+        config.authorization.leaveGroup(details.keycloakId, type)
         val newDetails = details.copy(subscription = SubscriptionType.Apprentice)
         val newUser = user.copy(details = newDetails)
         config.data.saveUser(newUser)

@@ -49,8 +49,8 @@ class TestConfig: ServerConfig {
     override val debug: Boolean = false
 
     override val verifier: JWTVerifier? = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
-    override val authorization: AuthorizationManager = TestAuthorizationManager()
-    override val payment: PaymentManager = TestPaymentManager()
+    override val authorization: AuthorizationManager = MemoryAuthorizationManager()
+    override val payment: PaymentManager = MemoryPaymentManager()
     override val data: Data = MemoryData()
 }
 

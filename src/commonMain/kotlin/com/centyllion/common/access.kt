@@ -2,15 +2,15 @@ package com.centyllion.common
 
 const val centyllionHost = "centyllion.com"
 
-const val adminRole = "admin"
 const val creatorRole = "creator"
 const val masterRole = "master"
+const val adminRole = "admin"
 
-enum class SubscriptionType(val groupPath: String, val groupId: String) {
-    Apprentice("/Apprentice", "632088b8-ef86-4cb9-8ad4-6c65a88c1e5b"),
-    Creator("/Creator", "822926b1-3a8e-4b8a-9531-d9492d400b09"),
-    Master("/Master", "5fecdefa-4998-4afc-835a-d796ddde5591"),
-    Admin("/Admin", "be7ab8c7-1dd1-4569-ba6c-36c6449db7a3");
+enum class SubscriptionType(val role: String?, val groupId: String) {
+    Apprentice(null, "632088b8-ef86-4cb9-8ad4-6c65a88c1e5b"),
+    Creator(creatorRole, "822926b1-3a8e-4b8a-9531-d9492d400b09"),
+    Master(masterRole, "5fecdefa-4998-4afc-835a-d796ddde5591"),
+    Admin(adminRole, "be7ab8c7-1dd1-4569-ba6c-36c6449db7a3");
 
     companion object {
         fun parse(value: String) = when {

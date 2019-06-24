@@ -264,7 +264,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
         cancelled = source.cancelled
         startedOn = DateTime(source.startedOn)
         payedOn = source.payedOn?.let { DateTime(it) }
-        expiresOn = DateTime(source.expiresOn)
+        expiresOn = source.expiresOn?.let { DateTime(it) }
         cancelledOn = source.cancelledOn?.let { DateTime(it) }
 
         subscription = source.subscription.name

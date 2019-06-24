@@ -39,7 +39,6 @@ class Simulator(
     val model: GrainModel,
     val simulation: Simulation
 ) {
-
     val random = Random.Default
 
     val initialAgents: IntArray = IntArray(simulation.agents.size) { simulation.agents[it] }
@@ -47,6 +46,16 @@ class Simulator(
     val ages: IntArray = IntArray(initialAgents.size) { if (initialAgents[it] >= 0) 0 else -1 }
 
     val currentAgents get() = if (step == 0) initialAgents else agents
+
+    val fields get() = if (currentFields) fields1 else fields2
+    val nextFields get() = if (!currentFields) fields1 else fields2
+
+    private var currentFields: Boolean = true
+    private val fields1: Map<Int, FloatArray> = model.fields
+        .map { it.id to FloatArray(simulation.agents.size) { 0.0f } }.toMap()
+
+    private val fields2: Map<Int, FloatArray> = model.fields
+        .map { it.id to FloatArray(simulation.agents.size) { 0.0f } }.toMap()
 
     val grainCountHistory = grainsCounts().let { counts ->
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
@@ -75,6 +84,10 @@ class Simulator(
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
+        // defines values for fields to avoid dynamic call each time
+        val fields = fields
+        val nextFields = nextFields
+
         // all will contains index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
@@ -82,14 +95,11 @@ class Simulator(
         for (i in 0 until simulation.dataSize) {
             val grain = grainAtIndex(i)
             if (grain != null) {
-
                 // does the grain dies ?
                 if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
                     transform(i, i, null)
                 } else {
-
-                    // ages grain
                     currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
                     ageGrain(i)
 
@@ -133,6 +143,24 @@ class Simulator(
                     }
                 }
             }
+
+            // applies field diffusion
+            model.fields.forEach { field ->
+                val count = field.allowedDirection.size
+                val previous = fields[field.id]
+                val current = nextFields[field.id]
+                if (current != null && previous != null) {
+                    current[i] =
+                        // previous value cut down
+                        previous[i] * (1.0f - field.speed) +
+                        // adding or removing from current agent if any
+                        (grain?.fields?.get(field.id) ?: 0f) +
+                        // diffusion from agent around
+                        field.allowedDirection.map {
+                            previous[simulation.moveIndex(i, it)] * (1.0f - field.speed)
+                        }.sum()
+                }
+            }
         }
 
         // filters behaviors that aren't concurrent
@@ -145,6 +173,9 @@ class Simulator(
         currentCount.forEach {
             grainCountHistory[it.key]?.add(it.value)
         }
+
+        // swap fields
+        currentFields = !currentFields
 
         // count a step
         step += 1

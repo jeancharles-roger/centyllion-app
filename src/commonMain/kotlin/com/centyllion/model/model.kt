@@ -47,6 +47,15 @@ data class Predicate<C : Comparable<C>>(
 }
 
 @Serializable
+data class Field(
+    val id: Int = 0,
+    val name: String = "",
+    val color: String = "skyblue",
+    val speed: Float = 0.8f,
+    val allowedDirection: Set<Direction> = defaultDirection
+)
+
+@Serializable
 data class Grain(
     val id: Int = 0,
     val name: String = "",
@@ -56,7 +65,8 @@ data class Grain(
     val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
-    val allowedDirection: Set<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = defaultDirection,
+    val fields: Map<Int, Float> = emptyMap()
 ) {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
@@ -150,7 +160,8 @@ data class GrainModel(
     val name: String = "",
     val description: String = "",
     val grains: List<Grain> = emptyList(),
-    val behaviours: List<Behaviour> = emptyList()
+    val behaviours: List<Behaviour> = emptyList(),
+    val fields: List<Field> = emptyList()
 ) {
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()

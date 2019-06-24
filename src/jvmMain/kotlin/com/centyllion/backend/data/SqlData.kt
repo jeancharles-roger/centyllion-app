@@ -120,7 +120,7 @@ class SqlData(
                 }
             }
         }
-        /* This shouldn't be needed anymore
+        /* This shouldn't be needed anymore */
         if (user.subscription != currentGroup.name || user.username != currentUsername) {
             // updates roles for user
             transaction {
@@ -128,7 +128,6 @@ class SqlData(
                 user.subscription = currentGroup.name
             }
         }
-         */
 
         return user.toModel(true)
     }

@@ -13,7 +13,7 @@ val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Dire
 val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
 
-val emptyModel = GrainModel("", fields = listOf(Field(0, "yep")), grains = listOf(Grain(allowedDirection = defaultDirection, fields = mapOf(0 to 0.4f))))
+val emptyModel = GrainModel("")
 val emptyDescription = DescriptionInfo()
 val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
 val emptySimulation = createSimulation("")

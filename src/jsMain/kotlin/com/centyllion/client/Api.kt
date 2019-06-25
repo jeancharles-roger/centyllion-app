@@ -49,7 +49,7 @@ class Api(val instance: KeycloakInstance?) {
                 instance == null || !instance.authenticated -> Promise.resolve<String?>(null)
                 else -> instance.updateToken(5).then { instance.idToken }
             }
-            result.then { bearer -> block(bearer).then(resolve).catch(reject) }
+            result.then { bearer -> block(bearer).then(resolve).catch(reject) }.catch(reject)
         }
 
 

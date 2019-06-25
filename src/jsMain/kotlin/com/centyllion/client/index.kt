@@ -1,6 +1,13 @@
 package com.centyllion.client
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.ElementColor
+import bulma.Icon
+import bulma.NavBar
+import bulma.NavBarIconItem
+import bulma.NavBarImageItem
+import bulma.NavBarLinkItem
+import bulma.Position
 import bulmatoast.ToastAnimation
 import bulmatoast.ToastOptions
 import bulmatoast.bulmaToast
@@ -15,7 +22,8 @@ import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.*
+import kotlin.js.Date
+import kotlin.js.Promise
 
 interface CssFile {
     val files: Array<String>
@@ -190,7 +198,10 @@ class BrowserContext(
 
     override fun error(throwable: Throwable) {
         fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
-        error(findCause(throwable).message.toString())
+        findCause(throwable).let {
+            error(it.message.toString())
+            console.error(it)
+        }
     }
 
     override fun error(content: String) = event(content, ElementColor.Danger)

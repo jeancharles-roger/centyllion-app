@@ -14,6 +14,7 @@ import bulma.Media
 import bulma.Size
 import bulma.columnsController
 import bulma.iconButton
+import bulma.wrap
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Behaviour
@@ -142,21 +143,22 @@ class BehaviourEditController(
     )
 
     val reactionController =
-        columnsController<Reaction, Pair<Behaviour, GrainModel>, ReactionEditController>(
+        columnsController(
             data.reaction, data to context, reactionHeader
         ) { parent, reaction, previous ->
-            val controller = previous ?: ReactionEditController(reaction, data, context)
-            controller.onUpdate = { _, new, _ ->
-                val newList = data.reaction.toMutableList()
-                newList[parent.indexOf(controller)] = new
-                data = data.copy(reaction = newList)
+            previous ?: ReactionEditController(reaction, data, context).wrap { controller ->
+                controller.onUpdate = { _, new, _ ->
+                    val newList = data.reaction.toMutableList()
+                    newList[parent.indexOf(controller)] = new
+                    data = data.copy(reaction = newList)
+                }
+                controller.onDelete = { _, _ ->
+                    val newList = data.reaction.toMutableList()
+                    newList.removeAt(parent.indexOf(controller))
+                    data = data.copy(reaction = newList)
+                }
+                Column(controller.container, size = ColumnSize.Full)
             }
-            controller.onDelete = { _, _ ->
-                val newList = data.reaction.toMutableList()
-                newList.removeAt(parent.indexOf(controller))
-                data = data.copy(reaction = newList)
-            }
-            controller
         }
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }

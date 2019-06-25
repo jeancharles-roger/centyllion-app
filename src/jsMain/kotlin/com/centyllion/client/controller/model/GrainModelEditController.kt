@@ -60,12 +60,12 @@ class GrainModelEditController(
     val fieldsController =
         noContextColumnsController(data.fields) { parent, field, previous ->
             previous ?: FieldEditController(field).wrap { controller ->
-                controller.onUpdate = { old, new, _ ->
+                controller.onUpdate = { _, new, _ ->
                     val fields = data.fields.toMutableList()
                     fields[parent.indexOf(controller)] = new
                     data = data.copy(fields = fields)
                 }
-                controller.onDelete = { field, _ ->
+                controller.onDelete = { _, _ ->
                     data = data.dropField(parent.indexOf(controller))
                 }
                 Column(controller.container, size = ColumnSize.OneQuarter)
@@ -95,7 +95,7 @@ class GrainModelEditController(
                     behaviours[parent.indexOf(controller)] = new
                     data = data.copy(behaviours = behaviours)
                 }
-                controller.onDelete = { old, _ ->
+                controller.onDelete = { _, _ ->
                     val behaviours = data.behaviours.toMutableList()
                     behaviours.removeAt(parent.indexOf(controller))
                     data = data.copy(behaviours = behaviours)

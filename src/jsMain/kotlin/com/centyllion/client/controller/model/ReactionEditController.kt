@@ -1,14 +1,23 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
-import com.centyllion.model.*
+import bulma.Controller
+import bulma.ElementColor
+import bulma.Icon
+import bulma.Level
+import bulma.Size
+import bulma.iconButton
+import com.centyllion.model.Behaviour
+import com.centyllion.model.GrainModel
+import com.centyllion.model.Reaction
+import com.centyllion.model.extendedDirections
+import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
     reaction: Reaction, behaviour: Behaviour, model: GrainModel,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
-) : Controller<Reaction, Pair<Behaviour, GrainModel>, Column> {
+) : Controller<Reaction, Pair<Behaviour, GrainModel>, Level> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
@@ -43,7 +52,7 @@ class ReactionEditController(
             extendedDirectionController.readOnly = new
             productController.readOnly = new
             sourceReactiveController.readOnly = new
-            body.right = if (new) emptyList() else listOf(delete)
+            container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -77,16 +86,11 @@ class ReactionEditController(
         onDelete(this.data, this@ReactionEditController)
     }
 
-    val body = Level(
+    override val container  = Level(
         left = listOf(reactiveController),
         center = listOf(firstDirectionController, extendedDirectionController, productController, sourceReactiveController),
         right = listOf(delete),
         mobile = true
-    )
-
-    override val container = Column(
-        body,
-        size = ColumnSize.Full
     )
 
     override fun refresh() {

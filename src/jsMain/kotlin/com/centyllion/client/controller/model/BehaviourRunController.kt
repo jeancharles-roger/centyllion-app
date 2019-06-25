@@ -1,6 +1,18 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Controller
+import bulma.Help
+import bulma.Icon
+import bulma.Label
+import bulma.Level
+import bulma.Media
+import bulma.Slider
+import bulma.TextColor
+import bulma.div
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Simulator
 import kotlin.math.log10
@@ -11,7 +23,7 @@ import kotlin.properties.Delegates.observable
 class BehaviourRunController(
     behaviour: Behaviour, simulator: Simulator,
     var onSpeedChange: (Behaviour, Double) -> Unit = { _, _ -> }
-) : Controller<Behaviour, Simulator, Column> {
+) : Controller<Behaviour, Simulator, Media> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
         if (old != new) refresh()
@@ -38,11 +50,9 @@ class BehaviourRunController(
 
     val speedColumns = Columns(Column(speedValue, size = ColumnSize.S1), Column(speedSlider), mobile = true)
 
-    val body = Media(center = listOf(header, speedColumns)).apply {
+    override val container = Media(center = listOf(header, speedColumns)).apply {
         root.classList.add("is-outlined")
     }
-
-    override val container = Column(body, size = ColumnSize.Full)
 
     fun toSlider(p: Double) = (10.0.pow(p)).toString()
 

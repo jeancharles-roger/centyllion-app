@@ -20,6 +20,7 @@ import bulma.columnsController
 import bulma.div
 import bulma.iconButton
 import bulma.noContextColumnsController
+import bulma.wrap
 import chartjs.Chart
 import chartjs.ChartUpdateConfig
 import chartjs.LineChartConfig
@@ -29,7 +30,6 @@ import chartjs.LineDataSet
 import chartjs.LinearAxisOptions
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
-import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
@@ -119,18 +119,19 @@ class SimulationRunController(
         { parent, grain, previous ->
             val controller = previous ?: GrainDisplayController(grain)
             controller.body.root.onclick = {
-                simulationViewController.selectedGrain = controller.data
-                Unit
-            }
+                    simulationViewController.selectedGrain = controller.data
+                    Unit
+                }
             controller
         }
 
     val behaviourController =
-        columnsController<Behaviour, Simulator, BehaviourRunController>(model.behaviours, simulator)
-        { ctrl, behaviour, previous ->
-            val controller = previous ?:BehaviourRunController(behaviour, simulator)
-            controller.onSpeedChange = { behaviour, speed -> simulator.setSpeed(behaviour, speed) }
-            controller
+        columnsController(model.behaviours, simulator)
+        { _, behaviour, previous ->
+            previous ?: BehaviourRunController(behaviour, simulator).wrap { controller ->
+                controller.onSpeedChange = { behaviour, speed -> simulator.setSpeed(behaviour, speed) }
+                Column(controller, size = ColumnSize.Full)
+            }
         }
 
     val selectedGrainController = GrainSelectController(null, model.grains)

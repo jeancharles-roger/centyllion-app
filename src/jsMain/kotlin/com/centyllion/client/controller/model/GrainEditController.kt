@@ -1,6 +1,11 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Delete
+import bulma.Help
+import bulma.HorizontalField
+import bulma.Level
+import bulma.Media
+import bulma.NoContextController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -13,7 +18,7 @@ class GrainEditController(
     initialData: Grain,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
-) : NoContextController<Grain, Column>() {
+) : NoContextController<Grain, Media>() {
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -40,7 +45,7 @@ class GrainEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
-            body.right = if (new) emptyList() else listOf(delete)
+            container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -80,7 +85,7 @@ class GrainEditController(
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
-    val body = Media(
+    override val container = Media(
         center = listOf(
             nameController,
             descriptionController,
@@ -93,8 +98,6 @@ class GrainEditController(
     ).apply {
         root.classList.add("is-outlined")
     }
-
-    override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
         colorController.refresh()

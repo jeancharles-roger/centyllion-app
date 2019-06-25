@@ -1,16 +1,33 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Controller
+import bulma.Delete
+import bulma.ElementColor
+import bulma.Help
+import bulma.HorizontalField
+import bulma.Icon
+import bulma.Level
+import bulma.Media
+import bulma.Size
+import bulma.columnsController
+import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
-import com.centyllion.model.*
+import com.centyllion.model.Behaviour
+import com.centyllion.model.GrainModel
+import com.centyllion.model.Reaction
+import com.centyllion.model.extendedDirections
+import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
     initialData: Behaviour, model: GrainModel,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ -> }
-) : Controller<Behaviour, GrainModel, Column> {
+) : Controller<Behaviour, GrainModel, Media> {
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -52,7 +69,7 @@ class BehaviourEditController(
             mainProductController.readOnly = new
             sourceReactiveController.readOnly = new
             reactionController.readOnly = new
-            body.right = if (new) emptyList() else listOf(delete)
+            container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -144,7 +161,7 @@ class BehaviourEditController(
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
-    val body = Media(
+    override val container = Media(
         center = listOf(
             Columns(
                 // first line
@@ -161,9 +178,6 @@ class BehaviourEditController(
     ).apply {
         root.classList.add("is-outlined")
     }
-
-    override
-    val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 4

@@ -12,9 +12,8 @@ import bulma.Title
 import bulma.columnsController
 import bulma.iconButton
 import bulma.noContextColumnsController
+import bulma.wrap
 import com.centyllion.model.Behaviour
-import com.centyllion.model.Field
-import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
@@ -59,48 +58,50 @@ class GrainModelEditController(
     }
 
     val fieldsController =
-        noContextColumnsController<Field, FieldEditController>(data.fields) { parent, field, previous ->
-            val controller = previous ?: FieldEditController(field)
-            controller.onUpdate = { _, new, _ ->
-                val fields = data.fields.toMutableList()
-                fields[parent.indexOf(controller)] = new
-                data = data.copy(fields = fields)
+        noContextColumnsController(data.fields) { parent, field, previous ->
+            previous ?: FieldEditController(field).wrap { controller ->
+                controller.onUpdate = { old, new, _ ->
+                    val fields = data.fields.toMutableList()
+                    fields[parent.indexOf(controller)] = new
+                    data = data.copy(fields = fields)
+                }
+                controller.onDelete = { field, _ ->
+                    data = data.dropField(parent.indexOf(controller))
+                }
+                Column(controller.container, size = ColumnSize.OneQuarter)
             }
-            controller.onDelete = { _, _ ->
-                data = data.dropField(parent.indexOf(controller))
-            }
-            controller
         }
 
     val grainsController =
-        noContextColumnsController<Grain, GrainEditController>(data.grains) { parent, grain, previous ->
-            val controller = previous ?: GrainEditController(grain)
-            controller.onUpdate = { _, new, _ ->
-                val newGrains = data.grains.toMutableList()
-                newGrains[parent.indexOf(controller)] = new
-                data = data.copy(grains = newGrains)
+        noContextColumnsController(data.grains) { parent, grain, previous ->
+            previous ?: GrainEditController(grain).wrap { controller ->
+                controller.onUpdate = { _, new, _ ->
+                    val newGrains = data.grains.toMutableList()
+                    newGrains[parent.indexOf(controller)] = new
+                    data = data.copy(grains = newGrains)
+                }
+                controller.onDelete = { _, _ ->
+                    data = data.dropGrain(parent.indexOf(controller))
+                }
+                Column(controller, size = ColumnSize.Full)
             }
-            controller.onDelete = { _, _ ->
-                data = data.dropGrain(parent.indexOf(controller))
-            }
-            controller
         }
 
     val behavioursController =
-        columnsController<Behaviour, GrainModel, BehaviourEditController>(data.behaviours, data)
-        { parent, behaviour, previous ->
-            val controller = previous ?: BehaviourEditController(behaviour, data)
-            controller.onUpdate = { _, new, _ ->
-                val behaviours = data.behaviours.toMutableList()
-                behaviours[parent.indexOf(controller)] = new
-                data = data.copy(behaviours = behaviours)
+        columnsController(data.behaviours, data) { parent, behaviour, previous ->
+            previous ?: BehaviourEditController(behaviour, data).wrap { controller ->
+                controller.onUpdate = { _, new, _ ->
+                    val behaviours = data.behaviours.toMutableList()
+                    behaviours[parent.indexOf(controller)] = new
+                    data = data.copy(behaviours = behaviours)
+                }
+                controller.onDelete = { old, _ ->
+                    val behaviours = data.behaviours.toMutableList()
+                    behaviours.removeAt(parent.indexOf(controller))
+                    data = data.copy(behaviours = behaviours)
+                }
+                Column(controller.container, size = ColumnSize.Full)
             }
-            controller.onDelete = { _, _ ->
-                val behaviours = data.behaviours.toMutableList()
-                behaviours.removeAt(parent.indexOf(controller))
-                data = data.copy(behaviours = behaviours)
-            }
-            controller
         }
 
     override val container = Columns(

@@ -1,7 +1,5 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
 import bulma.Delete
 import bulma.Help
 import bulma.HorizontalField
@@ -20,7 +18,7 @@ class FieldEditController(
     initialData: Field,
     var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Field, controller: FieldEditController) -> Unit = { _, _ -> }
-) : NoContextController<Field, Column>() {
+) : NoContextController<Field, Media>() {
 
     override var data: Field by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -45,7 +43,7 @@ class FieldEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
-            body.right = if (new) emptyList() else listOf(delete)
+            container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -81,7 +79,7 @@ class FieldEditController(
 
     val delete = Delete { onDelete(data, this@FieldEditController) }
 
-    val body = Media(
+    override val container = Media(
         center = listOf(
             nameController,
             descriptionController,
@@ -94,8 +92,6 @@ class FieldEditController(
     ).apply {
         root.classList.add("is-outlined")
     }
-
-    override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
         colorController.refresh()

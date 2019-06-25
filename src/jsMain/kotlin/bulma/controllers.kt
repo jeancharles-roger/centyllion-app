@@ -109,8 +109,6 @@ class MultipleController<
             }
         }
 
-
-
         controllers = newControllers
         updateAllList()
     }
@@ -123,7 +121,9 @@ class MultipleController<
         controllers.forEach { it.refresh() }
     }
 
-    fun indexOf(controller: Ctrl) = controllers.indexOf(controller)
+    fun indexOf(controller: Controller<Data, Context, *>) = controllers.indexOfFirst {
+        it == controller || (it is WrappedController<*, *, *, *> && it.source == it)
+    }
 }
 
 fun <Data, Context, Ctrl : Controller<Data, Context, Column>> columnsController(
@@ -211,6 +211,6 @@ class WrappedController<Data, Context, Source : BulmaElement, Target : BulmaElem
 }
 
 /** Wraps a controller inside a Bulma element */
-fun <Data, Context, Source : BulmaElement, Target : BulmaElement>
-        Controller<Data, Context, Source>.wrap(transform: (Controller<Data,Context,Source>) -> Target) =
+fun <Data, Context, Source : BulmaElement, Ctrl: Controller<Data,Context,Source>, Target : BulmaElement>
+        Ctrl.wrap(transform: ((Ctrl) -> Target)) =
             WrappedController(this, transform(this))

@@ -43,6 +43,7 @@ data class Predicate<C : Comparable<C>>(
 data class Field(
     val id: Int = 0,
     val name: String = "",
+    val description: String = "",
     val color: String = "SkyBlue",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
@@ -163,24 +164,11 @@ data class GrainModel(
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
-    fun availableGrainName(prefix: String = "grain"): String = grains.map { it.name }.toSet().let {
-        if (!it.contains(prefix)) return prefix
-        for (i in 1..grains.size) {
-            "$prefix $i".let { name -> if (!it.contains(name)) return name }
-        }
-        return "$prefix ${grains.size + 1}"
-    }
+    fun availableGrainName(prefix: String = "grain"): String = availableName(grains.map(Grain::name), prefix)
 
-    fun availableGrainId(): Int = grains.map { it.id }.toSet().let {
-        for (i in 0 until grains.size) {
-            if (!it.contains(i)) return i
-        }
-        return grains.size
-    }
+    fun availableGrainId(): Int = availableId(grains.map(Grain::id))
 
-    fun availableGrainColor(): String = (colorNames.keys - grains.map { it.color }).let {
-        if (it.isEmpty()) "red" else it.random()
-    }
+    fun availableGrainColor() = availableColor(grains.map(Grain::color))
 
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
 
@@ -206,6 +194,43 @@ data class GrainModel(
         }
 
         return copy(grains = newGrains, behaviours = newBehaviours)
+    }
+
+    fun availableFieldId(): Int = availableId(fields.map(Field::id))
+
+    fun availableFieldName(prefix: String = "field"): String = availableName(fields.map(Field::name), prefix)
+
+    fun availableFieldColor() = availableColor(fields.map(Field::color))
+
+    fun newField() = Field(availableFieldId(), availableFieldName(), availableFieldColor())
+
+    fun dropField(index: Int): GrainModel {
+        val field = fields[index]
+
+        val fields = fields.toMutableList()
+        // removes the field
+        fields.removeAt(index)
+
+        // clears reference to this field in grains
+        val newGrains = grains.map { grain ->
+            grain.copy(fields = grain.fields.filter { it.key != field.id })
+        }
+
+        // TODO clears reference to this field in behaviours
+        val newBehaviours = behaviours.map { behaviour ->
+            behaviour.copy(
+                mainReactiveId = if (field.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
+                mainProductId = if (field.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
+                reaction = behaviour.reaction.map {
+                    it.copy(
+                        reactiveId = if (field.id == it.reactiveId) -1 else it.reactiveId,
+                        productId = if (field.id == it.productId) -1 else it.productId
+                    )
+                }
+            )
+        }
+
+        return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
 
     @Transient

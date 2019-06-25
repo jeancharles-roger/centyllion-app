@@ -47,7 +47,7 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
                 iSource += 1
                 iOther += 1
             }
-            iSource+1 < size && iOther+1 < other.size && this[iSource+1] == other[iOther+1] -> {
+            iSource + 1 < size && iOther + 1 < other.size && this[iSource + 1] == other[iOther + 1] -> {
                 // next is equals, just replace this one
                 result.add(Diff(DiffAction.Replaced, iOther, other[iOther]))
                 iSource += 1
@@ -99,3 +99,24 @@ internal fun <T> List<T>.applyDiff(diff: List<Diff<T>>): List<T> {
     }
     return result
 }
+
+/** Creates a new id excluding [existing] */
+fun availableId(existing: Collection<Int>) = existing.toSet().let {
+    for (i in 0 until existing.size) {
+        if (!it.contains(i)) return i
+    }
+    existing.size
+}
+
+/** Creates a new name excluding [existing] */
+fun availableName(existing: Collection<String>, prefix: String): String = existing.toSet().let {
+    if (!it.contains(prefix)) return prefix
+    for (i in 1..existing.size) {
+        "$prefix $i".let { name -> if (!it.contains(name)) return name }
+    }
+    return "$prefix ${existing.size + 1}"
+}
+
+/** Find a color excluding already [used] */
+fun availableColor(used: Collection<String>) =
+    (colorNames.keys - used).let { if (it.isEmpty()) "red" else it.random() }

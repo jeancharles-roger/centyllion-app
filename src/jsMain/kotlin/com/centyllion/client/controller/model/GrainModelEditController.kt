@@ -1,7 +1,19 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.ElementColor
+import bulma.Icon
+import bulma.Level
+import bulma.NoContextController
+import bulma.TextSize
+import bulma.Title
+import bulma.columnsController
+import bulma.iconButton
+import bulma.noContextColumnsController
 import com.centyllion.model.Behaviour
+import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
@@ -14,6 +26,7 @@ class GrainModelEditController(
 
     override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
+            fieldsController.data = data.fields
             grainsController.data = data.grains
             behavioursController.data = data.behaviours
             behavioursController.context = data
@@ -24,11 +37,17 @@ class GrainModelEditController(
 
     override var readOnly by observable(false) { _, old, new ->
         if (old != new) {
+            addFieldButton.invisible = new
             addGrainButton.invisible = new
             addBehaviourButton.invisible = new
+            fieldsController.readOnly = new
             grainsController.readOnly = new
             behavioursController.readOnly = new
         }
+    }
+
+    val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+        this.data = data.copy(fields = data.fields + data.newField())
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
@@ -38,6 +57,20 @@ class GrainModelEditController(
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         this.data = data.copy(behaviours = data.behaviours + Behaviour())
     }
+
+    val fieldsController =
+        noContextColumnsController<Field, FieldEditController>(data.fields) { parent, field, previous ->
+            val controller = previous ?: FieldEditController(field)
+            controller.onUpdate = { _, new, _ ->
+                val fields = data.fields.toMutableList()
+                fields[parent.indexOf(controller)] = new
+                data = data.copy(fields = fields)
+            }
+            controller.onDelete = { _, _ ->
+                data = data.dropField(parent.indexOf(controller))
+            }
+            controller
+        }
 
     val grainsController =
         noContextColumnsController<Grain, GrainEditController>(data.grains) { parent, grain, previous ->
@@ -71,6 +104,8 @@ class GrainModelEditController(
         }
 
     override val container = Columns(
+        Column(fieldsController, size = ColumnSize.S11),
+        Column(addFieldButton, size = ColumnSize.S1),
         Column(
             Level(
                 left = listOf(Title("Grains", TextSize.S4)),

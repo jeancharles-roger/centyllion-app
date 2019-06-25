@@ -1,6 +1,15 @@
 package com.centyllion.client.controller.utils
 
-import bulma.*
+import bulma.Button
+import bulma.Control
+import bulma.ElementColor
+import bulma.Field
+import bulma.Icon
+import bulma.Input
+import bulma.NoContextController
+import bulma.TextArea
+import bulma.TextView
+import bulma.iconButton
 import kotlin.properties.Delegates.observable
 
 /**
@@ -91,6 +100,15 @@ class EditableStringController(
         edit(false)
     }
 }
+
+fun editableFloatController(
+    initialData: Float = 0f, placeHolder: String = "",
+    onUpdate: (old: Float, new: Float, controller: EditableStringController) -> Unit = { _, _, _ -> }
+) = EditableStringController(
+    initialData.toString(), placeHolder, false,
+    isValid = { it.toFloatOrNull() != null },
+    onUpdate = { old, new, controller -> onUpdate(old.toFloat(), new.toFloat(), controller) }
+)
 
 fun editableDoubleController(
     initialData: Double = 0.0, placeHolder: String = "",

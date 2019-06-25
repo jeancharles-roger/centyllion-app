@@ -1,22 +1,8 @@
 package com.centyllion.model
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
-
-val versions = mapOf(
-    GrainModelDescription.serializer() to 2
-)
-
-fun version(serializer: KSerializer<*>) = versions[serializer] ?: 0
-
-val emptyModel = GrainModel("")
-val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
-val emptySimulation = createSimulation("")
-val emptySimulationDescription =
-    SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 enum class Direction {
     Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back
@@ -26,6 +12,13 @@ val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Dire
 
 val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
+
+val emptyModel = GrainModel("", fields = listOf(Field(0, "yep")), grains = listOf(Grain(allowedDirection = defaultDirection, fields = mapOf(0 to 0.4f))))
+val emptyDescription = DescriptionInfo()
+val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
+val emptySimulation = createSimulation("")
+val emptySimulationDescription =
+    SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 enum class Operator(val label: String) {
     Equals("="), NotEquals("!="), LessThan("<"), LessThanOrEquals("<="), GreaterThan(">"), GreaterThanOrEquals(">=")
@@ -50,10 +43,14 @@ data class Predicate<C : Comparable<C>>(
 data class Field(
     val id: Int = 0,
     val name: String = "",
-    val color: String = "skyblue",
+    val color: String = "SkyBlue",
     val speed: Float = 0.8f,
+    val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = defaultDirection
-)
+) {
+    @Transient
+    val deathProbability = if (halfLife > 0) 1f - 2f.pow(-1f / halfLife) else 0f
+}
 
 @Serializable
 data class Grain(
@@ -80,7 +77,7 @@ data class Grain(
     val canMove = movementProbability > 0.0 && allowedDirection.isNotEmpty()
 
     @Transient
-    val deathProbability = if (halfLife > 0.0) 1.0 - 2.0.pow(-1.0 / halfLife) else 0.0
+    val deathProbability = if (halfLife > 0) 1.0 - 2.0.pow(-1.0 / halfLife) else 0.0
 
     @Transient
     val iconString = solidIconNames[icon]

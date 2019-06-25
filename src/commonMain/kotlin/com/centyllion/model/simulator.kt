@@ -2,6 +2,8 @@ package com.centyllion.model
 
 import kotlin.random.Random
 
+const val fieldMax = 100f
+
 data class Agent(val index: Int, val id: Int, val age: Int)
 
 data class ApplicableBehavior(
@@ -81,6 +83,8 @@ class Simulator(
 
     fun oneStep() {
 
+        print(model.fields)
+
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
@@ -147,18 +151,19 @@ class Simulator(
             // applies field diffusion
             model.fields.forEach { field ->
                 val count = field.allowedDirection.size
-                val previous = fields[field.id]
-                val current = nextFields[field.id]
-                if (current != null && previous != null) {
-                    current[i] =
-                        // previous value cut down
-                        previous[i] * (1.0f - field.speed) +
+                val current = fields[field.id]
+                val next = nextFields[field.id]
+                if (next != null && current != null) {
+                    val level =
+                        // current value cut down
+                        current[i] * (1.0f - field.speed) +
                         // adding or removing from current agent if any
-                        (grain?.fields?.get(field.id) ?: 0f) +
+                        (grain?.fields?.get(field.id) ?: 0f) * fieldMax +
                         // diffusion from agent around
                         field.allowedDirection.map {
-                            previous[simulation.moveIndex(i, it)] * (1.0f - field.speed)
-                        }.sum()
+                            current[simulation.moveIndex(i, it)] * field.speed
+                        }.sum() / count
+                    next[i] = (level * (1f - field.deathProbability)).coerceIn(0f, fieldMax)
                 }
             }
         }
@@ -185,6 +190,7 @@ class Simulator(
         initialAgents.copyInto(agents)
         for (i in 0 until ages.size) {
             ages[i] = if (agents[i] != -1) 0 else -1
+            fields.forEach { it.value[i] = 0f }
         }
 
         step = 0
@@ -214,7 +220,6 @@ class Simulator(
     }
 
     fun transform(sourceIndex: Int, targetIndex: Int, newId: Int?, newAge: Int = -1) {
-        val age = ages[sourceIndex]
         agents[sourceIndex] = -1
         ages[sourceIndex] = -1
         agents[targetIndex] = newId ?: -1

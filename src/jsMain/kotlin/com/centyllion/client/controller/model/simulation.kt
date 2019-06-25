@@ -1,18 +1,32 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.Control
+import bulma.Dropdown
+import bulma.DropdownSimpleItem
+import bulma.ElementColor
+import bulma.Field
+import bulma.HtmlWrapper
+import bulma.Icon
+import bulma.Level
+import bulma.NoContextController
+import bulma.canvas
+import bulma.div
+import bulma.iconButton
 import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
+import com.centyllion.model.colorNames
+import com.centyllion.model.fieldMax
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.pointerevents.PointerEvent
 import kotlin.browser.window
 import kotlin.math.absoluteValue
+import kotlin.math.log10
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
-
 
 interface DisplayElement {
     fun draw(gc: CanvasRenderingContext2D)
@@ -65,6 +79,22 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
+            val fields = data.fields
+            data.model.fields.forEach { field ->
+                fields[field.id]?.let { values ->
+                    val level = values[i]
+                    if (level > 1e-3f) {
+                        val color = colorNames[field.color] ?: Triple(255, 50, 50)
+                        val alpha = 1f / ( - log10(level / fieldMax)) / 1.6f
+                        simulationContext.save()
+                        simulationContext.fillStyle = "rgba(${color.first}, ${color.second}, ${color.third}, $alpha)"
+                        simulationContext.fillRect(currentX, currentY, xSize, ySize)
+                        simulationContext.restore()
+                    }
+                }
+            }
+
+            simulationContext.save()
             if (grain != null) {
                 simulationContext.fillStyle = grain.color
                 if (grain.iconString != null) {
@@ -73,6 +103,7 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
                     simulationContext.fillRect(currentX, currentY, xSize, ySize)
                 }
             }
+            simulationContext.restore()
 
             currentX += xStep
             if (currentX >= canvasWidth) {

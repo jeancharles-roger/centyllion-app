@@ -327,9 +327,8 @@ data class GrainModelDescription(
     val model: GrainModel
 ) : Description {
 
-    override val name = model.name
-
-    override val icon = "boxes"
+    @Transient override val name = model.name
+    @Transient override val icon = "boxes"
 }
 
 @Serializable
@@ -341,8 +340,8 @@ data class SimulationDescription(
     val simulation: Simulation
 ) : Description {
 
-    override val name = simulation.name
-    override val icon = "play"
+    @Transient override val name = simulation.name
+    @Transient override val icon = "play"
 }
 
 @Serializable
@@ -358,7 +357,7 @@ data class FeaturedDescription(
     val authorName: String
 ) : Description {
 
-    override val icon = "star"
+    @Transient override val icon = "star"
 }
 
 fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(

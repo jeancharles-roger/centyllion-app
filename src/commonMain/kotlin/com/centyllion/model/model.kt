@@ -43,8 +43,8 @@ data class Predicate<C : Comparable<C>>(
 data class Field(
     val id: Int = 0,
     val name: String = "",
-    val description: String = "",
     val color: String = "SkyBlue",
+    val description: String = "",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = defaultDirection
@@ -170,11 +170,11 @@ data class GrainModel(
 
     fun availableGrainId(): Int = availableId(grains.map(Grain::id))
 
-    fun availableGrainColor() = availableColor(grains.map(Grain::color))
+    fun availableColor() = availableColor(grains.map(Grain::color) + fields.map(Field::color))
 
     fun grainIndex(grain: Grain) = grains.indexOfFirst { it === grain }
 
-    fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
+    fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableColor())
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
         val newGrains = grains.toMutableList()
@@ -210,9 +210,7 @@ data class GrainModel(
 
     fun availableFieldName(prefix: String = "field"): String = availableName(fields.map(Field::name), prefix)
 
-    fun availableFieldColor() = availableColor(fields.map(Field::color))
-
-    fun newField() = Field(availableFieldId(), availableFieldName(), availableFieldColor())
+    fun newField() = Field(availableFieldId(), availableFieldName(), availableColor())
 
     fun fieldIndex(field: Field) = fields.indexOfFirst { it === field }
 

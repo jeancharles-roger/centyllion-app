@@ -2,10 +2,12 @@ package com.centyllion.client.controller.model
 
 import bulma.Delete
 import bulma.Help
-import bulma.HorizontalField
 import bulma.Level
 import bulma.Media
 import bulma.NoContextController
+import bulma.TileAncestor
+import bulma.TileChild
+import bulma.TileParent
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -89,9 +91,19 @@ class GrainEditController(
         center = listOf(
             nameController,
             descriptionController,
-            Level(center = listOf(colorController, iconController), mobile = true),
-            HorizontalField(Help("Half life"), halfLifeController.container),
-            HorizontalField(Help("Speed"), movementProbabilityController.container),
+            Level(center = listOf(colorController, iconController)),
+            TileAncestor(
+                TileParent(
+                    TileChild(Help("Half life")),
+                    TileChild(halfLifeController),
+                    vertical = true
+                ),
+                TileParent(
+                    TileChild(Help("Speed")),
+                    TileChild(movementProbabilityController),
+                    vertical = true
+                )
+            ),
             Level(center = listOf(firstDirectionController, extendedDirectionController))
         ),
         right = listOf(delete)

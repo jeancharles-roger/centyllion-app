@@ -49,6 +49,13 @@ data class Field(
     val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
+    /** Label for grain */
+    fun label(long: Boolean = false) = when {
+        long && description.isNotEmpty() -> description
+        name.isNotEmpty() -> name
+        else -> "$id"
+    }
+
     @Transient
     val deathProbability = if (halfLife > 0) 1f - 2f.pow(-1f / halfLife) else 0f
 }
@@ -82,10 +89,6 @@ data class Grain(
 
     @Transient
     val iconString = solidIconNames[icon]
-
-    @Transient
-    val valid
-        get() = id > 0 && name.isNotBlank()
 
     fun moveBehaviour() =
         if (canMove) Behaviour(

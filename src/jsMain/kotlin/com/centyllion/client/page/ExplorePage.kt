@@ -1,6 +1,22 @@
 package com.centyllion.client.page
 
-import bulma.*
+import bulma.Box
+import bulma.BulmaElement
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Control
+import bulma.Field
+import bulma.Icon
+import bulma.Input
+import bulma.SubTitle
+import bulma.TabItem
+import bulma.TabPage
+import bulma.TabPages
+import bulma.Title
+import bulma.div
+import bulma.iconButton
+import bulma.noContextColumnsController
+import bulma.wrap
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.GrainModelDisplayController
@@ -19,7 +35,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         noContextColumnsController(
             initialList = emptyList<SimulationDescription>(),
             header = listOf(noSimulationResult)
-        ) { _, data, previous ->
+        ) { data, previous ->
             previous ?: SimulationDisplayController(data).wrap {
                 it.root.style.cursor = "pointer"
                 Column(it.container, size = ColumnSize.OneQuarter)
@@ -36,7 +52,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         noContextColumnsController(
             initialList = emptyList<GrainModelDescription>(),
             header = listOf(noModelResult)
-        ) { _, data, previous ->
+        ) { data, previous ->
             previous ?: GrainModelDisplayController(data).wrap {
                 it.root.style.cursor = "pointer"
                 Column(it.container, size = ColumnSize.OneQuarter)
@@ -77,7 +93,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     )
 
     val recentResult = ResultPageController(
-        { _, data, previous ->
+        { data, previous ->
             previous ?: SimulationDisplayController(data).wrap {
                 it.root.style.cursor = "pointer"
                 Column(it.container, size = ColumnSize.OneQuarter)
@@ -89,7 +105,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
     )
 
     val featuredResult = ResultPageController(
-        { _, data, previous ->
+        { data, previous ->
             previous ?: FeaturedController(data).wrap {
                 it.root.style.cursor = "pointer"
                 Column(it.container, size = ColumnSize.OneQuarter)

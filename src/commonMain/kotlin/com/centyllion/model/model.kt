@@ -117,6 +117,8 @@ data class Behaviour(
     val reaction: List<Reaction> = emptyList()
 ) {
 
+    fun reactionIndex(reaction: Reaction) = this.reaction.indexOfFirst { it === reaction }
+
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
     fun applicable(grain: Grain, age: Int, neighbours: List<Pair<Direction, Agent>>): Boolean =
         mainReactiveId == grain.id && agePredicate.check(age) &&
@@ -170,7 +172,15 @@ data class GrainModel(
 
     fun availableGrainColor() = availableColor(grains.map(Grain::color))
 
+    fun grainIndex(grain: Grain) = grains.indexOfFirst { it === grain }
+
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableGrainColor())
+
+    fun updateGrain(old: Grain, new: Grain): GrainModel {
+        val newGrains = grains.toMutableList()
+        newGrains[grainIndex(old)] = new
+        return copy(grains = newGrains)
+    }
 
     fun dropGrain(index: Int): GrainModel {
         val grain = grains[index]
@@ -204,8 +214,17 @@ data class GrainModel(
 
     fun newField() = Field(availableFieldId(), availableFieldName(), availableFieldColor())
 
-    fun dropField(index: Int): GrainModel {
-        val field = fields[index]
+    fun fieldIndex(field: Field) = fields.indexOfFirst { it === field }
+
+    fun updateField(old: Field, new: Field): GrainModel {
+        val newFields = fields.toMutableList()
+        newFields[fieldIndex(old)] = new
+        return copy(fields = newFields)
+    }
+
+    fun dropField(field: Field): GrainModel {
+        val index = fieldIndex(field)
+        if (index < 0) return this
 
         val fields = fields.toMutableList()
         // removes the field
@@ -233,12 +252,7 @@ data class GrainModel(
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
 
-    @Transient
-    val valid
-        get() =
-            name.isNotBlank() &&
-                    grains.fold(true) { a, g -> a && g.valid } &&
-                    behaviours.fold(true) { a, g -> a && g.validForModel(this) }
+    fun behaviourIndex(behaviour: Behaviour) = behaviours.indexOfFirst { it === behaviour }
 
 }
 

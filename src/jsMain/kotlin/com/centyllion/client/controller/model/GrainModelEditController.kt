@@ -57,47 +57,42 @@ class GrainModelEditController(
         this.data = data.copy(behaviours = data.behaviours + Behaviour())
     }
 
-    val fieldsController =
-        noContextColumnsController(data.fields) { parent, field, previous ->
+    val fieldsController = noContextColumnsController(data.fields) { field, previous ->
             previous ?: FieldEditController(field).wrap { controller ->
-                controller.onUpdate = { _, new, _ ->
-                    val fields = data.fields.toMutableList()
-                    fields[parent.indexOf(controller)] = new
-                    data = data.copy(fields = fields)
+                controller.onUpdate = { old, new, _ ->
+                    data = data.updateField(old, new)
                 }
                 controller.onDelete = { _, _ ->
-                    data = data.dropField(parent.indexOf(controller))
+                    data = data.dropField(controller.data)
                 }
                 Column(controller.container, size = ColumnSize.OneQuarter)
             }
         }
 
     val grainsController =
-        noContextColumnsController(data.grains) { parent, grain, previous ->
+        noContextColumnsController(data.grains) { grain, previous ->
             previous ?: GrainEditController(grain).wrap { controller ->
-                controller.onUpdate = { _, new, _ ->
-                    val newGrains = data.grains.toMutableList()
-                    newGrains[parent.indexOf(controller)] = new
-                    data = data.copy(grains = newGrains)
+                controller.onUpdate = { old, new, _ ->
+                    data = data.updateGrain(old, new)
                 }
-                controller.onDelete = { _, _ ->
-                    data = data.dropGrain(parent.indexOf(controller))
+                controller.onDelete = { delete, _ ->
+                    data = data.dropGrain(data.grainIndex(delete))
                 }
                 Column(controller, size = ColumnSize.Full)
             }
         }
 
     val behavioursController =
-        columnsController(data.behaviours, data) { parent, behaviour, previous ->
+        columnsController(data.behaviours, data) { behaviour, previous ->
             previous ?: BehaviourEditController(behaviour, data).wrap { controller ->
-                controller.onUpdate = { _, new, _ ->
+                controller.onUpdate = { old, new, _ ->
                     val behaviours = data.behaviours.toMutableList()
-                    behaviours[parent.indexOf(controller)] = new
+                    behaviours[data.behaviourIndex(old)] = new
                     data = data.copy(behaviours = behaviours)
                 }
-                controller.onDelete = { _, _ ->
+                controller.onDelete = { delete, _ ->
                     val behaviours = data.behaviours.toMutableList()
-                    behaviours.removeAt(parent.indexOf(controller))
+                    behaviours.removeAt(data.behaviourIndex(delete))
                     data = data.copy(behaviours = behaviours)
                 }
                 Column(controller.container, size = ColumnSize.Full)

@@ -1,12 +1,39 @@
 package com.centyllion.client.page
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.Button
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Control
+import bulma.ElementColor
+import bulma.Icon
+import bulma.Input
+import bulma.NoContextController
+import bulma.Panel
+import bulma.PanelContentBlock
+import bulma.PanelSimpleBlock
+import bulma.PanelTabs
+import bulma.PanelTabsItem
+import bulma.Size
+import bulma.TileAncestor
+import bulma.TileChild
+import bulma.TileParent
+import bulma.TileSize
+import bulma.Title
+import bulma.div
+import bulma.noContextColumnsController
+import bulma.noContextPanelController
+import bulma.wrap
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.UserController
 import com.centyllion.client.showPage
 import com.centyllion.common.creatorRole
-import com.centyllion.model.*
+import com.centyllion.model.Description
+import com.centyllion.model.FeaturedDescription
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.SimulationDescription
+import com.centyllion.model.emptyUser
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
@@ -69,10 +96,10 @@ class HomePage(val context: AppContext) : BulmaElement {
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
-    ) { _, data, previous -> previous ?: PanelItemController(data) }
+    ) { data, previous -> previous ?: PanelItemController(data) }
 
     val featuredController = noContextColumnsController(emptyList<FeaturedDescription>())
-    { parent, data, previous ->
+    { data, previous ->
         previous ?: FeaturedController(data).wrap { ctrl ->
             ctrl.container.root.onclick = {
                 context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))

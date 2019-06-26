@@ -145,16 +145,16 @@ class BehaviourEditController(
     val reactionController =
         columnsController(
             data.reaction, data to context, reactionHeader
-        ) { parent, reaction, previous ->
+        ) { reaction, previous ->
             previous ?: ReactionEditController(reaction, data, context).wrap { controller ->
-                controller.onUpdate = { _, new, _ ->
+                controller.onUpdate = { old, new, _ ->
                     val newList = data.reaction.toMutableList()
-                    newList[parent.indexOf(controller)] = new
+                    newList[data.reactionIndex(old)] = new
                     data = data.copy(reaction = newList)
                 }
-                controller.onDelete = { _, _ ->
+                controller.onDelete = { delete, _ ->
                     val newList = data.reaction.toMutableList()
-                    newList.removeAt(parent.indexOf(controller))
+                    newList.removeAt(data.reactionIndex(delete))
                     data = data.copy(reaction = newList)
                 }
                 Column(controller.container, size = ColumnSize.Full)

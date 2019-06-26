@@ -1,13 +1,21 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.Column
+import bulma.Controller
+import bulma.NoContextController
+import bulma.Pagination
+import bulma.PaginationAction
+import bulma.PaginationLink
+import bulma.div
+import bulma.noContextColumnsController
 import com.centyllion.model.ResultPage
 import com.centyllion.model.emptyResultPage
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
 class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
-    controllerBuilder: (MultipleController<Data, Unit, Columns, Column, Ctrl>, data: Data, previous: Ctrl?) -> Ctrl,
+    controllerBuilder: (data: Data, previous: Ctrl?) -> Ctrl,
     var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
     var onClick: (Data, Ctrl) -> Unit = { _, _ -> },
     var error: (Throwable) -> Unit = {}

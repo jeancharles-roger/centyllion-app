@@ -33,7 +33,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val featuredController =
         noContextColumnsController(emptyList<FeaturedDescription>())
-        { _, featured, previous ->
+        { featured, previous ->
             previous ?: FeaturedController(featured).wrap { ctrl ->
                 ctrl.container.content += CardFooter(CardFooterContentItem(Delete {
                     // forces delete with this toggle
@@ -48,7 +48,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
             emptyList(),
             emptyList()
         )
-        { _, model, previous ->
+        { model, previous ->
             val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, api)
             controller.toggleFeature = ::toggleFeatured
             controller
@@ -62,7 +62,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
 
     val userController = ResultPageController(
-        {_, data, previous ->
+        { data, previous ->
             previous ?: UserAdministrationController(data, context).wrap { Column(it.container, size = ColumnSize.S6) }
         },
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }

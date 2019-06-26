@@ -24,7 +24,7 @@ data class Diff<T>(val action: DiffAction, val index: Int, val element: T)
  * It returns a list of [Diff] that describes the changes. The result is
  * sequential and the [Diff]s must be applied in order to be valid.
  */
-internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
+internal fun <T> List<T>.diff(other: List<T>, equality: (T, T) -> Boolean = { a, b -> a == b }): List<Diff<T>> {
     var iSource = 0
     var iOther = 0
 
@@ -42,7 +42,7 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
                 result.add(Diff(DiffAction.Removed, iOther, this[iSource]))
                 iSource += 1
             }
-            this[iSource] == other[iOther] -> {
+            equality(this[iSource], other[iOther]) -> {
                 // nothing changed, next
                 iSource += 1
                 iOther += 1
@@ -55,8 +55,8 @@ internal fun <T> List<T>.diff(other: List<T>): List<Diff<T>> {
             }
             else -> {
                 // searches in either source or other for a current object
-                val indexOfOther = other.subList(iOther, other.size).indexOf(this[iSource])
-                val indexOfSource = subList(iSource, size).indexOf(other[iOther])
+                val indexOfOther = other.subList(iOther, other.size).indexOfFirst { equality(it, this[iSource]) }
+                val indexOfSource = subList(iSource, size).indexOfFirst { equality(it, other[iOther]) }
                 when {
                     indexOfOther in 0..3 -> {
                         repeat(indexOfOther) {

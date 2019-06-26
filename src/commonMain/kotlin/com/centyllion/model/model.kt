@@ -90,6 +90,12 @@ data class Grain(
     @Transient
     val iconString = solidIconNames[icon]
 
+    fun updateField(id: Int, value: Float): Grain {
+        val newFields = fields.toMutableMap()
+        newFields[id] = value
+        return copy(fields = newFields)
+    }
+
     fun moveBehaviour() =
         if (canMove) Behaviour(
             "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,

@@ -1,26 +1,32 @@
 package com.centyllion.client.controller.model
 
+import bulma.Controller
 import bulma.Delete
+import bulma.ElementColor
 import bulma.Help
+import bulma.Icon
 import bulma.Level
 import bulma.Media
-import bulma.NoContextController
+import bulma.Size
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
+import bulma.columnsController
+import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.model.Grain
+import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class GrainEditController(
-    initialData: Grain,
+    initialData: Grain, model: GrainModel,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
-) : NoContextController<Grain, Media>() {
+) : Controller<Grain, GrainModel, Media> {
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -32,9 +38,18 @@ class GrainEditController(
             firstDirectionController.data = new.allowedDirection
             extendedDirectionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
+            fieldsController.data = new.fields.toList()
             onUpdate(old, new, this@GrainEditController)
         }
         refresh()
+    }
+
+    override var context: GrainModel by observable(model) { _, old, new ->
+        if (old != new) {
+            // TODO
+            fieldsController.context = new.fields
+            refresh()
+        }
     }
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
@@ -47,6 +62,7 @@ class GrainEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
+            fieldsController.readOnly = new
             container.right = if (new) emptyList() else listOf(delete)
         }
     }
@@ -67,8 +83,12 @@ class GrainEditController(
         data = data.copy(description = new)
     }
 
+    val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
+        data = data.copy(halfLife = new)
+    }
+
     val movementProbabilityController = editableDoubleController(data.movementProbability, "speed") { _, new, _ ->
-        this.data = this.data.copy(movementProbability = new)
+        data = data.copy(movementProbability = new)
     }
 
     val firstDirectionController: DirectionSetEditController =
@@ -81,9 +101,21 @@ class GrainEditController(
             this.data = this.data.copy(allowedDirection = new)
         }
 
-    val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
-        this.data = this.data.copy(halfLife = new)
+    val addFieldButton = iconButton(
+        Icon("plus", Size.Small), rounded = true, color = ElementColor.Info,
+        size = Size.Small, disabled = data.fields.size >= context.fields.size
+    ) {
+        this.data = data.copy(fields = data.fields + (context.fields.first().id to 50f) )
     }
+
+    val fieldsController =
+        columnsController(data.fields.toList(), context.fields) { pair, previous ->
+            previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
+                if (old != new) {
+                    this.data = data.updateField(new.first, new.second)
+                }
+            }
+        }
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
@@ -104,7 +136,20 @@ class GrainEditController(
                     vertical = true
                 )
             ),
-            Level(center = listOf(firstDirectionController, extendedDirectionController))
+            Level(center = listOf(firstDirectionController, extendedDirectionController)),
+            TileAncestor(
+                TileParent(
+                    TileChild(
+                        Level(
+                            left = listOf(Help("Fields")),
+                            right = listOf(addFieldButton)
+                        )
+                    ),
+                    TileChild(fieldsController),
+                    vertical = true
+                )
+            )
+
         ),
         right = listOf(delete)
     ).apply {
@@ -115,10 +160,12 @@ class GrainEditController(
         colorController.refresh()
         nameController.refresh()
         descriptionController.refresh()
+        halfLifeController.refresh()
         movementProbabilityController.refresh()
         firstDirectionController.refresh()
         extendedDirectionController.refresh()
-        halfLifeController.refresh()
+
+        addFieldButton.disabled = data.fields.size >= context.fields.size
     }
 
 }

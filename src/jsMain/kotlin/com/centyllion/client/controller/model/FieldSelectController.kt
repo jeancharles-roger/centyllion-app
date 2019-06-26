@@ -10,9 +10,9 @@ import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
 class FieldSelectController(
-    field: Field, fields: List<Field>,
+    field: Field?, fields: List<Field>,
     var onUpdate: (old: Field?, new: Field?, controller: FieldSelectController) -> Unit = { _, _, _ -> }
-) : Controller<Field, List<Field>, BField> {
+) : Controller<Field?, List<Field>, BField> {
 
     override var data by observable(field) { _, old, new ->
         if (old != new) {
@@ -34,9 +34,9 @@ class FieldSelectController(
         }
     }
 
-    val icon = Icon("square")
+    val icon = Icon(if (data != null) "square" else "times-circle")
 
-    val dropdown: Dropdown = Dropdown(text = field.label(), icon = icon, rounded = true).apply { items = items() }
+    val dropdown: Dropdown = Dropdown(text = field?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
 
     override val container = BField(Control(dropdown))
 
@@ -52,8 +52,9 @@ class FieldSelectController(
     private fun items() = context.map { item(it) }
 
     override fun refresh() {
-        dropdown.text = data.label()
-        icon.root.style.color = data.color
+        dropdown.text = data?.label() ?: "none"
+        icon.icon = if (data != null) "square" else "times-circle"
+        icon.root.style.color = data?.color ?: "black"
     }
 
 }

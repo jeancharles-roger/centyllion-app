@@ -27,6 +27,7 @@ class GrainModelEditController(
         if (old != new) {
             fieldsController.data = data.fields
             grainsController.data = data.grains
+            grainsController.context = data
             behavioursController.data = data.behaviours
             behavioursController.context = data
             onUpdate(old, new, this@GrainModelEditController)
@@ -70,8 +71,8 @@ class GrainModelEditController(
         }
 
     val grainsController =
-        noContextColumnsController(data.grains) { grain, previous ->
-            previous ?: GrainEditController(grain).wrap { controller ->
+        columnsController(data.grains, data) { grain, previous ->
+            previous ?: GrainEditController(grain, data).wrap { controller ->
                 controller.onUpdate = { old, new, _ ->
                     data = data.updateGrain(old, new)
                 }

@@ -66,7 +66,7 @@ class GrainModelEditController(
                 controller.onDelete = { _, _ ->
                     data = data.dropField(controller.data)
                 }
-                Column(controller.container, size = ColumnSize.OneQuarter)
+                Column(controller.container, size = ColumnSize.OneThird)
             }
         }
 

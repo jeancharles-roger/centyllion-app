@@ -1,6 +1,17 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Control
+import bulma.Dropdown
+import bulma.DropdownContentItem
+import bulma.DropdownSimpleItem
+import bulma.Field
+import bulma.Icon
+import bulma.Input
+import bulma.NoContextController
+import bulma.TextColor
 import com.centyllion.model.solidIconNames
 import kotlin.properties.Delegates.observable
 
@@ -53,6 +64,8 @@ class IconSelectController(
     override fun refresh() {
         container.text = data
         icon.icon = iconName(data)
+        icon.root.style.color = data
+        iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value, true) }.map { column(it) }
     }
 
 }

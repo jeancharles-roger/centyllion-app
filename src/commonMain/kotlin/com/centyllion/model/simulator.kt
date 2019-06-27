@@ -1,12 +1,13 @@
 package com.centyllion.model
 
+import kotlin.math.log10
 import kotlin.random.Random
 
-const val fieldMax = 100f
+const val minField = 1e-45f
 
-data class Agent(val index: Int, val id: Int, val age: Int)
+class Agent(val index: Int, val id: Int, val age: Int, val deltaFields: FloatArray)
 
-data class ApplicableBehavior(
+class ApplicableBehavior(
     /** Index in the data where to apply the behavior */
     val index: Int, val age: Int,
     /** The behaviour to apply */
@@ -49,15 +50,17 @@ class Simulator(
 
     val currentAgents get() = if (step == 0) initialAgents else agents
 
+    val fieldMaxId = model.fields.map { it.id }.max() ?: 0
+
     val fields get() = if (currentFields) fields1 else fields2
     val nextFields get() = if (!currentFields) fields1 else fields2
 
     private var currentFields: Boolean = true
     private val fields1: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { 0.0f } }.toMap()
+        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
 
     private val fields2: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { 0.0f } }.toMap()
+        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
 
     val grainCountHistory = grainsCounts().let { counts ->
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
@@ -82,9 +85,6 @@ class Simulator(
     }
 
     fun oneStep() {
-
-        print(model.fields)
-
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
@@ -136,8 +136,31 @@ class Simulator(
                             // combines possibilities
                             val allCombinations = possibleReactions.allCombinations()
 
-                            // chooses one randomly
-                            val usedNeighbours = allCombinations[random.nextInt(allCombinations.size)].map { it.second }
+                            // computes weight of each combination by adding the influence of all neighbours for a combination
+                            /* TODO
+                                the influence could already be computed by the neighbours() function inside of Agent
+                                to avoid computation more than needed
+                             */
+                            val influence = allCombinations.map { combination ->
+                                combination.map { (_, agent) ->
+                                    behaviour.fieldInfluences.map { agent.deltaFields[it.key] * it.value }.sum()
+                                }.sum()
+                            }
+
+                            val translatedInfluence =
+                                influence.min()?.let { min -> influence.map { it - min + 1f } } ?: influence
+
+                            // chooses one randomly influenced by the fields
+                            val totalInfluence = translatedInfluence.mapIndexed { index, value ->
+                                translatedInfluence.subList(0, index).sum() + value
+                            }
+
+                            val chosenCombination = random.nextDouble(translatedInfluence.sum().toDouble()).let { p ->
+                                totalInfluence.indexOfFirst { p < it }
+                            }
+
+                            //random.nextInt(allCombinations.size)
+                            val usedNeighbours = allCombinations[chosenCombination].map { it.second }
 
                             // registers behaviour for for concurrency
                             val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)
@@ -157,13 +180,13 @@ class Simulator(
                     val level =
                         // current value cut down
                         current[i] * (1.0f - field.speed) +
-                        // adding or removing from current agent if any
-                        (grain?.fields?.get(field.id) ?: 0f) * fieldMax +
-                        // diffusion from agent around
-                        field.allowedDirection.map {
-                            current[simulation.moveIndex(i, it)] * field.speed
-                        }.sum() / count
-                    next[i] = (level * (1f - field.deathProbability)).coerceIn(0f, fieldMax)
+                                // adding or removing from current agent if any
+                                (grain?.fields?.get(field.id) ?: 0f) +
+                                // diffusion from agent around
+                                field.allowedDirection.map {
+                                    current[simulation.moveIndex(i, it)] * field.speed
+                                }.sum() / count
+                    next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
                 }
             }
         }
@@ -190,7 +213,7 @@ class Simulator(
         initialAgents.copyInto(agents)
         for (i in 0 until ages.size) {
             ages[i] = if (agents[i] != -1) 0 else -1
-            fields.forEach { it.value[i] = 0f }
+            fields.forEach { it.value[i] = minField }
         }
 
         step = 0
@@ -240,8 +263,16 @@ class Simulator(
     }
 
     /** Returns all neighbours agents in all directions */
-    fun neighbours(index: Int): List<Pair<Direction, Agent>> =
-        Direction.values().map { it to simulation.moveIndex(index, it).let { Agent(it, currentAgents[it], ages[it]) } }
+    fun neighbours(index: Int): List<Pair<Direction, Agent>> {
+        return Direction.values().map { direction ->
+            direction to simulation.moveIndex(index, direction).let { id ->
+                val fieldValues = FloatArray(fieldMaxId + 1) {
+                    fields[it]?.let { field -> log10(field[id]) - log10(field[index]) } ?: 0f
+                }
+                Agent(id, currentAgents[id], ages[id], fieldValues)
+            }
+        }
+    }
 
     fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()

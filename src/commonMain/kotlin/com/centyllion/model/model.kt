@@ -99,7 +99,8 @@ data class Grain(
     fun moveBehaviour() =
         if (canMove) Behaviour(
             "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,
-            reaction = listOf(Reaction(productId = id, sourceReactive = 0, allowedDirection = allowedDirection))
+            reaction = listOf(Reaction(productId = id, sourceReactive = 0, allowedDirection = allowedDirection)),
+            fieldInfluences = mapOf(id to 1f)
         )
         else null
 
@@ -123,6 +124,7 @@ data class Behaviour(
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
+    val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ) {
 
@@ -242,18 +244,8 @@ data class GrainModel(
             grain.copy(fields = grain.fields.filter { it.key != field.id })
         }
 
-        // TODO clears reference to this field in behaviours
         val newBehaviours = behaviours.map { behaviour ->
-            behaviour.copy(
-                mainReactiveId = if (field.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
-                mainProductId = if (field.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
-                reaction = behaviour.reaction.map {
-                    it.copy(
-                        reactiveId = if (field.id == it.reactiveId) -1 else it.reactiveId,
-                        productId = if (field.id == it.productId) -1 else it.productId
-                    )
-                }
-            )
+            behaviour.copy(fieldInfluences = behaviour.fieldInfluences.filter { it.key != field.id })
         }
 
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
@@ -381,8 +373,10 @@ data class GrainModelDescription(
     val model: GrainModel
 ) : Description {
 
-    @Transient override val name = model.name
-    @Transient override val icon = "boxes"
+    @Transient
+    override val name = model.name
+    @Transient
+    override val icon = "boxes"
 }
 
 @Serializable
@@ -394,8 +388,10 @@ data class SimulationDescription(
     val simulation: Simulation
 ) : Description {
 
-    @Transient override val name = simulation.name
-    @Transient override val icon = "play"
+    @Transient
+    override val name = simulation.name
+    @Transient
+    override val icon = "play"
 }
 
 @Serializable
@@ -411,7 +407,8 @@ data class FeaturedDescription(
     val authorName: String
 ) : Description {
 
-    @Transient override val icon = "star"
+    @Transient
+    override val icon = "star"
 }
 
 fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(

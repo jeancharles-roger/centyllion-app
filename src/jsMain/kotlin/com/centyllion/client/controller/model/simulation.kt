@@ -16,7 +16,6 @@ import bulma.iconButton
 import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
-import com.centyllion.model.fieldMax
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
@@ -85,7 +84,7 @@ open class SimulatorViewController(simulator: Simulator) : NoContextController<S
                     val level = values[i]
                     if (level > 1e-3f) {
                         val color = colorNames[field.color] ?: Triple(255, 50, 50)
-                        val alpha = 1f / ( - log10(level / fieldMax)) / 1.6f
+                        val alpha = 1f / ( - log10(level )) / 1.6f
                         simulationContext.save()
                         simulationContext.fillStyle = "rgba(${color.first}, ${color.second}, ${color.third}, $alpha)"
                         simulationContext.fillRect(currentX, currentY, xSize, ySize)

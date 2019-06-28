@@ -12,7 +12,7 @@ import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
 
 class FieldChangeController(
-    value: Pair<Int, Float>, fields: List<Field>,
+    value: Pair<Int, Float>, fields: List<Field>, min: Float = -1f, max: Float = 1f,
     var onUpdate: (old: Pair<Int, Float>, new: Pair<Int, Float>, controller: FieldChangeController) -> Unit = { _, _, _ -> }
 ) : Controller<Pair<Int, Float>, List<Field>, Column> {
 
@@ -47,7 +47,7 @@ class FieldChangeController(
     }
 
     val valueSlider = Slider(
-        data.second.toString(), "-1", "1", "0.01", sliderColor
+        data.second.toString(), "${min}", "${max}", "0.01", sliderColor
     ) { _, value -> data = data.first to value.toFloat() }
 
     override val container = Column(

@@ -39,6 +39,7 @@ class GrainEditController(
             halfLifeController.data = "${new.halfLife}"
             fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
+            fieldPermeableController.data = context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }
             onUpdate(old, new, this@GrainEditController)
         }
         refresh()
@@ -48,8 +49,10 @@ class GrainEditController(
         if (old != new) {
             fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
+            fieldPermeableController.data = context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }
             fieldProductionsController.context = new.fields
             fieldInfluencesController.context = new.fields
+            fieldPermeableController.context = new.fields
             refresh()
         }
     }
@@ -121,6 +124,15 @@ class GrainEditController(
             }
         }
 
+    val fieldPermeableController =
+        columnsController(context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }, context.fields) { pair, previous ->
+            previous ?: FieldChangeController(pair, context.fields, 0f, 1f) { old, new, _ ->
+                if (old != new) {
+                    this.data = data.updateFieldPermeable(new.first, new.second)
+                }
+            }
+        }
+
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
     override val container = Media(
@@ -148,7 +160,9 @@ class GrainEditController(
             Help("Productions"),
             fieldProductionsController,
             Help("Influences"),
-            fieldInfluencesController
+            fieldInfluencesController,
+            Help("Permeable"),
+            fieldPermeableController
         ),
         right = listOf(delete)
     ).apply {
@@ -165,6 +179,7 @@ class GrainEditController(
         extendedDirectionController.refresh()
         fieldProductionsController.refresh()
         fieldInfluencesController.refresh()
+        fieldPermeableController.refresh()
     }
 
 }

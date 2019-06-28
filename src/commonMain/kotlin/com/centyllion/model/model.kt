@@ -72,7 +72,8 @@ data class Grain(
     val movementProbability: Double = 1.0,
     val allowedDirection: Set<Direction> = defaultDirection,
     val fieldProductions: Map<Int, Float> = emptyMap(),
-    val fieldInfluences: Map<Int, Float> = emptyMap()
+    val fieldInfluences: Map<Int, Float> = emptyMap(),
+    val fieldPermeable: Map<Int, Float> = emptyMap()
 ) {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
@@ -101,6 +102,12 @@ data class Grain(
         val newFields = fieldInfluences.toMutableMap()
         newFields[id] = value
         return copy(fieldInfluences = newFields)
+    }
+
+    fun updateFieldPermeable(id: Int, value: Float): Grain {
+        val newFields = fieldPermeable.toMutableMap()
+        newFields[id] = value
+        return copy(fieldPermeable = newFields)
     }
 
     fun moveBehaviour() =

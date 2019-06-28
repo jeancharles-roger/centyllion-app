@@ -181,7 +181,7 @@ class Simulator(
                         // current value cut down
                         current[i] * (1.0f - field.speed) +
                                 // adding or removing from current agent if any
-                                (grain?.fields?.get(field.id) ?: 0f) +
+                                (grain?.fieldProductions?.get(field.id) ?: 0f) +
                                 // diffusion from agent around
                                 field.allowedDirection.map {
                                     current[simulation.moveIndex(i, it)] * field.speed

@@ -3,7 +3,11 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Controller
-import com.centyllion.client.controller.utils.editableFloatController
+import bulma.ElementColor
+import bulma.Icon
+import bulma.Level
+import bulma.Slider
+import bulma.span
 import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
 
@@ -14,45 +18,47 @@ class FieldChangeController(
 
     override var data: Pair<Int, Float> by observable(value) { _, old, new ->
         if (old != new) {
-            fieldController.data = context.find { it.id == data.first }
-            valueController.data = "${data.second}"
             onUpdate(old, new, this@FieldChangeController)
             refresh()
         }
     }
 
+    val field get() = context.find { it.id == data.first }
+
     override var context: List<Field> by observable(fields) { _, old, new ->
         if (old != new) {
-            fieldController.context = new
             refresh()
         }
     }
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            fieldController.readOnly = new
-            valueController.readOnly = new
+            // TODO valueSlider.disabled
         }
     }
 
-    val fieldController = FieldSelectController(context.find { it.id == data.first }, context) { old, new, _ ->
-        if (old != new && new != null) {
-            data = new.id to data.second
-        }
+    val fieldIcon = Icon("square-full").apply { root.style.color = field?.color ?: "white" }
+    val fieldLabel = span(field?.label() ?: "???")
+
+    val sliderColor get() = when {
+        data.second == 0f -> ElementColor.None
+        data.second < 0f -> ElementColor.Warning
+        else -> ElementColor.Info
     }
 
-    val valueController = editableFloatController(data.second) { old, new, _ ->
-        if (old != new) {
-            data = data.first to new
-        }
-    }
+    val valueSlider = Slider(
+        data.second.toString(), "-1", "1", "0.01", sliderColor
+    ) { _, value -> data = data.first to value.toFloat() }
 
-    override val container = Column(fieldController, valueController, size = ColumnSize.Full)
-
+    override val container = Column(
+        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueSlider)), size = ColumnSize.Full
+    )
 
     override fun refresh() {
-        fieldController.refresh()
-        valueController.refresh()
+        fieldIcon.root.style.color = field?.color ?: "white"
+        fieldLabel.text = field?.label() ?: "???"
+        valueSlider.value = data.second.toString()
+        valueSlider.color = sliderColor
     }
 
 }

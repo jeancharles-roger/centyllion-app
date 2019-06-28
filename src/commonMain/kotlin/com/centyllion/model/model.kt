@@ -71,7 +71,8 @@ data class Grain(
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
     val allowedDirection: Set<Direction> = defaultDirection,
-    val fields: Map<Int, Float> = emptyMap()
+    val fieldProductions: Map<Int, Float> = emptyMap(),
+    val fieldInfluences: Map<Int, Float> = emptyMap()
 ) {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
@@ -90,17 +91,23 @@ data class Grain(
     @Transient
     val iconString = solidIconNames[icon]
 
-    fun updateField(id: Int, value: Float): Grain {
-        val newFields = fields.toMutableMap()
+    fun updateFieldProduction(id: Int, value: Float): Grain {
+        val newFields = fieldProductions.toMutableMap()
         newFields[id] = value
-        return copy(fields = newFields)
+        return copy(fieldProductions = newFields)
+    }
+
+    fun updateFieldInfluence(id: Int, value: Float): Grain {
+        val newFields = fieldInfluences.toMutableMap()
+        newFields[id] = value
+        return copy(fieldInfluences = newFields)
     }
 
     fun moveBehaviour() =
         if (canMove) Behaviour(
             "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,
             reaction = listOf(Reaction(productId = id, sourceReactive = 0, allowedDirection = allowedDirection)),
-            fieldInfluences = mapOf(id to 1f)
+            fieldInfluences = fieldInfluences
         )
         else null
 
@@ -188,8 +195,11 @@ data class GrainModel(
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableColor())
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
+        val grainIndex = grainIndex(old)
+        if (grainIndex < 0) return this
+
         val newGrains = grains.toMutableList()
-        newGrains[grainIndex(old)] = new
+        newGrains[grainIndex] = new
         return copy(grains = newGrains)
     }
 
@@ -241,7 +251,10 @@ data class GrainModel(
 
         // clears reference to this field in grains
         val newGrains = grains.map { grain ->
-            grain.copy(fields = grain.fields.filter { it.key != field.id })
+            grain.copy(
+                fieldProductions = grain.fieldProductions.filter { it.key != field.id },
+                fieldInfluences = grain.fieldInfluences.filter { it.key != field.id }
+            )
         }
 
         val newBehaviours = behaviours.map { behaviour ->

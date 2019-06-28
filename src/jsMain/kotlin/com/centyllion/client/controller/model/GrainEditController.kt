@@ -5,17 +5,13 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Controller
 import bulma.Delete
-import bulma.ElementColor
 import bulma.Help
-import bulma.Icon
 import bulma.Level
 import bulma.Media
-import bulma.Size
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
 import bulma.columnsController
-import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -41,7 +37,8 @@ class GrainEditController(
             firstDirectionController.data = new.allowedDirection
             extendedDirectionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
-            fieldsController.data = new.fields.toList()
+            fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
+            fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             onUpdate(old, new, this@GrainEditController)
         }
         refresh()
@@ -49,8 +46,10 @@ class GrainEditController(
 
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            // TODO
-            fieldsController.context = new.fields
+            fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
+            fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
+            fieldProductionsController.context = new.fields
+            fieldInfluencesController.context = new.fields
             refresh()
         }
     }
@@ -65,7 +64,7 @@ class GrainEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
-            fieldsController.readOnly = new
+            fieldProductionsController.readOnly = new
             container.right = if (new) emptyList() else listOf(delete)
         }
     }
@@ -104,18 +103,20 @@ class GrainEditController(
             this.data = this.data.copy(allowedDirection = new)
         }
 
-    val addFieldButton = iconButton(
-        Icon("plus", Size.Small), rounded = true, color = ElementColor.Info,
-        size = Size.Small, disabled = data.fields.size >= context.fields.size
-    ) {
-        this.data = data.copy(fields = data.fields + (context.fields.first().id to 50f) )
-    }
-
-    val fieldsController =
-        columnsController(data.fields.toList(), context.fields) { pair, previous ->
+    val fieldProductionsController =
+        columnsController(context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }, context.fields) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
-                    this.data = data.updateField(new.first, new.second)
+                    this.data = data.updateFieldProduction(new.first, new.second)
+                }
+            }
+        }
+
+    val fieldInfluencesController =
+        columnsController(context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }, context.fields) { pair, previous ->
+            previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
+                if (old != new) {
+                    this.data = data.updateFieldInfluence(new.first, new.second)
                 }
             }
         }
@@ -144,19 +145,10 @@ class GrainEditController(
                 )
             ),
             Level(center = listOf(firstDirectionController, extendedDirectionController)),
-            TileAncestor(
-                TileParent(
-                    TileChild(
-                        Level(
-                            left = listOf(Help("Fields")),
-                            right = listOf(addFieldButton)
-                        )
-                    ),
-                    TileChild(fieldsController),
-                    vertical = true
-                )
-            )
-
+            Help("Productions"),
+            fieldProductionsController,
+            Help("Influences"),
+            fieldInfluencesController
         ),
         right = listOf(delete)
     ).apply {
@@ -171,8 +163,8 @@ class GrainEditController(
         movementProbabilityController.refresh()
         firstDirectionController.refresh()
         extendedDirectionController.refresh()
-
-        addFieldButton.disabled = data.fields.size >= context.fields.size
+        fieldProductionsController.refresh()
+        fieldInfluencesController.refresh()
     }
 
 }

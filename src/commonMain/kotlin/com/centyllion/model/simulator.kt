@@ -1,9 +1,10 @@
 package com.centyllion.model
 
 import kotlin.math.log10
+import kotlin.math.pow
 import kotlin.random.Random
 
-const val minField = 1e-45f
+const val minField = 1e-15f
 
 class Agent(val index: Int, val id: Int, val age: Int, val deltaFields: FloatArray)
 
@@ -147,8 +148,10 @@ class Simulator(
                                 }.sum()
                             }
 
-                            val translatedInfluence =
-                                influence.min()?.let { min -> influence.map { it - min + 1f } } ?: influence
+                            // translates influence to positive float and to the power of 2 for a stronger effect
+                            val translatedInfluence = influence.min()?.let { min ->
+                                influence.map { (it - min + 1f).pow(2) }
+                            } ?: influence
 
                             // chooses one randomly influenced by the fields
                             val totalInfluence = translatedInfluence.mapIndexed { index, value ->

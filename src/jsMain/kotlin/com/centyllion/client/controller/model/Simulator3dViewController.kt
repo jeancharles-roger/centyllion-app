@@ -27,19 +27,20 @@ open class Simulator3dViewController(simulator: Simulator) : SimulatorViewContro
         refresh()
     }
 
+
     override var readOnly: Boolean by Delegates.observable(false) { _, old, new ->
         if (old != new) {
             // TODO
         }
     }
 
+    fun materials() = data.model.grains.map {
+        it.id to MeshPhongMaterial().apply { color.set(it.color.toLowerCase()) }
+    }.toMap()
+
     override fun oneStep(applied: List<ApplicableBehavior>) {
 
-        // TODO materials should be a field
-        // material map
-        val materials = data.model.grains.map {
-            it.id to MeshPhongMaterial().apply { color.set(it.color.toLowerCase()) }
-        }.toMap()
+        val materials = materials()
 
         applied.forEach { one ->
             agentMesh[one.index]?.let {
@@ -130,9 +131,7 @@ open class Simulator3dViewController(simulator: Simulator) : SimulatorViewContro
         agentMesh.clear()
 
         // material map
-        val materials = data.model.grains.map {
-            it to MeshPhongMaterial().apply { color.set(it.color.toLowerCase()) }
-        }.toMap()
+        val materials = materials()
 
         var currentX = - data.simulation.width/2
         var currentY = - data.simulation.height/2
@@ -140,7 +139,7 @@ open class Simulator3dViewController(simulator: Simulator) : SimulatorViewContro
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
             if (grain != null) {
-                val cube = Mesh(grainGeometry, materials[grain]!!)
+                val cube = Mesh(grainGeometry, materials[grain.id]!!)
                 cube.position.set(currentX, 0, currentY)
 
                 scene.add(cube)

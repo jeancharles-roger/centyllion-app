@@ -88,6 +88,8 @@ class SimulationRunController(
 
     private var presentCharts = false
 
+    private var view3d = true
+
     val nameController = EditableStringController(data.name, "Simulation Name")
     { _, new, _ ->
         data = data.copy(name = new)
@@ -104,6 +106,7 @@ class SimulationRunController(
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
+    val view3dButton = iconButton(Icon("cubes"), ElementColor.Info, rounded = true) { toggle3d() }
 
     val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
         fps = value.toDouble()
@@ -162,7 +165,8 @@ class SimulationRunController(
                             ),
                             Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
                             stepLabel,
-                            toggleChartsButton
+                            toggleChartsButton,
+                            view3dButton
                         )
                     ), size = ColumnSize.Full
                 ),
@@ -284,15 +288,19 @@ class SimulationRunController(
         refreshChart()
     }
 
-    private fun createSimulationViewController(): SimulatorViewController {
-        return Simulator3dViewController(simulator)
-        /*
-        return if (readOnly) Simulator2dViewController(simulator) else
-            SimulatorEditController(simulator) { ended, new, _ ->
-                updatedSimulatorFromView(ended, new)
-            }
-         */
+    fun toggle3d() {
+        view3d = !view3d
+        view3dButton.color = if (view3d) ElementColor.Info else ElementColor.Dark
+        simulationViewController = createSimulationViewController()
     }
+
+    private fun createSimulationViewController(): SimulatorViewController = when {
+        view3d -> Simulator3dViewController(simulator)
+        readOnly -> Simulator2dViewController(simulator)
+        else -> SimulatorEditController(simulator) { ended, new, _ ->
+            updatedSimulatorFromView(ended, new)
+        }
+    }.apply { refresh() }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
         simulator.resetCount()

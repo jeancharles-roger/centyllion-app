@@ -256,9 +256,9 @@ class SimulationRunController(
     }
 
     private fun executeStep(updateChart: Boolean) {
-        simulator.oneStep()
+        val applied = simulator.oneStep()
 
-        refreshCanvas()
+        simulationViewController.oneStep(applied)
         refreshCounts()
 
         // appends data to charts
@@ -285,10 +285,13 @@ class SimulationRunController(
     }
 
     private fun createSimulationViewController(): SimulatorViewController {
-        return if (readOnly) SimulatorViewController(simulator) else
+        return Simulator3dViewController(simulator)
+        /*
+        return if (readOnly) Simulator2dViewController(simulator) else
             SimulatorEditController(simulator) { ended, new, _ ->
                 updatedSimulatorFromView(ended, new)
             }
+         */
     }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
@@ -308,10 +311,6 @@ class SimulationRunController(
         stopButton.disabled = !running
     }
 
-    fun refreshCanvas() {
-        simulationViewController.refresh()
-    }
-
     fun refreshCounts() {
         // refreshes step count
         stepLabel.text = "${simulator.step}"
@@ -323,7 +322,7 @@ class SimulationRunController(
 
     override fun refresh() {
         refreshButtons()
-        refreshCanvas()
+        simulationViewController.refresh()
         refreshCounts()
         refreshChart()
     }

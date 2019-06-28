@@ -22,7 +22,7 @@ import kotlin.random.Random
 class SimulatorEditController(
     simulator: Simulator,
     var onUpdate: (ended: Boolean, new: Simulator, SimulatorEditController) -> Unit = { _, _, _ -> }
-) : SimulatorViewController(simulator) {
+) : Simulator2dViewController(simulator) {
 
     interface DisplayElement {
         fun draw(gc: CanvasRenderingContext2D)

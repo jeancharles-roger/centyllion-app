@@ -85,7 +85,8 @@ class Simulator(
         speeds[behaviour] = speed
     }
 
-    fun oneStep() {
+    /** Executes one step and returns the applied behaviour */
+    fun oneStep(): List<ApplicableBehavior> {
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
@@ -213,6 +214,8 @@ class Simulator(
 
         // count a step
         step += 1
+
+        return toExecute
     }
 
     fun reset() {

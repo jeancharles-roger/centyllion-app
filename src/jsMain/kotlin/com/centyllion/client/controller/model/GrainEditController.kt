@@ -12,6 +12,7 @@ import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
 import bulma.columnsController
+import bulma.div
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -135,6 +136,15 @@ class GrainEditController(
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
+    val fieldsConfiguration = div(
+        Help("Productions"),
+        fieldProductionsController,
+        Help("Influences"),
+        fieldInfluencesController,
+        Help("Permeable"),
+        fieldPermeableController
+    )
+
     override val container = Media(
         center = listOf(
             Columns(
@@ -157,12 +167,7 @@ class GrainEditController(
                 )
             ),
             Level(center = listOf(firstDirectionController, extendedDirectionController)),
-            Help("Productions"),
-            fieldProductionsController,
-            Help("Influences"),
-            fieldInfluencesController,
-            Help("Permeable"),
-            fieldPermeableController
+            fieldsConfiguration
         ),
         right = listOf(delete)
     ).apply {
@@ -180,6 +185,8 @@ class GrainEditController(
         fieldProductionsController.refresh()
         fieldInfluencesController.refresh()
         fieldPermeableController.refresh()
+
+        fieldsConfiguration.hidden = context.fields.isEmpty()
     }
 
 }

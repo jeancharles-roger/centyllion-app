@@ -10,6 +10,7 @@ import bulma.DropdownSimpleItem
 import bulma.Field
 import bulma.Icon
 import bulma.Input
+import bulma.Label
 import bulma.NoContextController
 import bulma.TextColor
 import com.centyllion.model.solidIconNames
@@ -35,14 +36,16 @@ class IconSelectController(
 
     val icon = Icon(iconName(data))
 
+    val name = Label(data)
+
     val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
 
     val iconColumns = Columns(multiline = true, mobile = true)
 
     override val container = Dropdown(
-        DropdownContentItem(Field(Control(search, Icon("search")))),
+        DropdownContentItem(Field(Control(search, Icon("search")), name, grouped = true)),
         DropdownContentItem(iconColumns),
-        text = data, icon = icon, rounded = true, menuWidth = "30rem"
+        text = "", icon = icon, rounded = true, menuWidth = "30rem"
     ) {
         // only append icons when clicked
         if (iconColumns.columns.isEmpty()) iconColumns.columns = solidIconNames.keys.map { column(it) }
@@ -62,7 +65,7 @@ class IconSelectController(
     fun iconName(icon: String) = if (icon.startsWith("fa-")) icon.substring(4) else icon
 
     override fun refresh() {
-        container.text = data
+        name.text = data
         icon.icon = iconName(data)
         icon.root.style.color = data
         iconColumns.columns = solidIconNames.keys.filter { it.contains(search.value, true) }.map { column(it) }

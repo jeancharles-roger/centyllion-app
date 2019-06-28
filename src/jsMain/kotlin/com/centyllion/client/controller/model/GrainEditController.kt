@@ -1,5 +1,8 @@
 package com.centyllion.client.controller.model
 
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
 import bulma.Controller
 import bulma.Delete
 import bulma.ElementColor
@@ -121,9 +124,13 @@ class GrainEditController(
 
     override val container = Media(
         center = listOf(
-            nameController,
+            Columns(
+                Column(colorController, size = ColumnSize.S3),
+                Column(iconController, size = ColumnSize.S3),
+                Column(nameController, size = ColumnSize.S6),
+                mobile = true
+            ),
             descriptionController,
-            Level(center = listOf(colorController, iconController)),
             TileAncestor(
                 TileParent(
                     TileChild(Help("Half life")),

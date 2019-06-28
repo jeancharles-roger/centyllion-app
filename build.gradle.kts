@@ -46,6 +46,7 @@ plugins {
 repositories {
     jcenter()
     maven("https://kotlin.bintray.com/kotlinx")
+    maven("https://jitpack.io")
     mavenCentral()
 }
 
@@ -129,6 +130,8 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
                     implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
+
+                    implementation("com.github.markaren:three.kt:v0.88-ALPHA-7")
                 }
             }
             compilations["test"].defaultSourceSet {

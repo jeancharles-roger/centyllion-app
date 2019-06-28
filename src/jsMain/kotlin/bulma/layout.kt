@@ -1,13 +1,24 @@
 package bulma
 
-import kotlinx.html.*
+import kotlinx.html.CANVAS
+import kotlinx.html.DIV
+import kotlinx.html.article
+import kotlinx.html.canvas
+import kotlinx.html.div
 import kotlinx.html.dom.create
+import kotlinx.html.figure
+import kotlinx.html.footer
+import kotlinx.html.p
+import kotlinx.html.section
+import kotlinx.html.span
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 
 class HtmlWrapper<Html : HTMLElement>(override val root: Html) : BulmaElement
+
+fun wrap(element: HTMLElement) = HtmlWrapper(element)
 
 fun wrap(classes: String? = null, block: DIV.() -> Unit = {}) =
     HtmlWrapper(document.create.div(classes, block) as HTMLDivElement)

@@ -1,6 +1,23 @@
 package com.centyllion.backend
 
-import kotlinx.html.*
+import kotlinx.html.BODY
+import kotlinx.html.HTML
+import kotlinx.html.HtmlTagMarker
+import kotlinx.html.a
+import kotlinx.html.body
+import kotlinx.html.div
+import kotlinx.html.footer
+import kotlinx.html.head
+import kotlinx.html.id
+import kotlinx.html.img
+import kotlinx.html.link
+import kotlinx.html.meta
+import kotlinx.html.p
+import kotlinx.html.script
+import kotlinx.html.section
+import kotlinx.html.span
+import kotlinx.html.strong
+import kotlinx.html.title
 
 @HtmlTagMarker
 fun HTML.centyllionHead(title: String) = head {
@@ -25,9 +42,11 @@ fun HTML.centyllionHead(title: String) = head {
     // Javascript
     script(src = "js/bulma-toast-1.5.0/bulma-toast.min.js") {}
     script(src = "js/Keycloak-4.8.0/keycloak.js") {}
+    script(src = "js/threejs-r106/three.min.js") {}
     script(src = "https://js.stripe.com/v3/") {}
-    script(src = "js/require.js") { }
-    script(src = "js/centyllion/requirejs.config.json") { }
+
+    script(src = "js/require.js") {}
+    script(src = "js/centyllion/requirejs.config.json") {}
 }
 
 @HtmlTagMarker

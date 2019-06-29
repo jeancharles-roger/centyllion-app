@@ -58,6 +58,7 @@ class Simulator(
     val nextFields get() = if (!currentFields) fields1 else fields2
 
     private var currentFields: Boolean = true
+
     private val fields1: Map<Int, FloatArray> = model.fields
         .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
 
@@ -140,10 +141,6 @@ class Simulator(
                             val allCombinations = possibleReactions.allCombinations()
 
                             // computes weight of each combination by adding the influence of all neighbours for a combination
-                            /* TODO
-                                the influence could already be computed by the neighbours() function inside of Agent
-                                to avoid computation more than needed
-                             */
                             val influence = allCombinations.map { combination ->
                                 combination.map { (_, agent) ->
                                     behaviour.fieldInfluences.map { agent.deltaFields[it.key] * it.value }.sum()
@@ -152,7 +149,7 @@ class Simulator(
 
                             // translates influence to positive float and to the power of 4 for a stronger effect
                             val translatedInfluence = influence.min()?.let { min ->
-                                influence.map { (it - min + 1f).pow(4) }
+                                influence.map { (it - min + 1f).pow(6) }
                             } ?: influence
 
                             // chooses one randomly influenced by the fields
@@ -164,7 +161,6 @@ class Simulator(
                                 totalInfluence.indexOfFirst { p < it }
                             }
 
-                            //random.nextInt(allCombinations.size)
                             val usedNeighbours = allCombinations[chosenCombination].map { it.second }
 
                             // registers behaviour for for concurrency

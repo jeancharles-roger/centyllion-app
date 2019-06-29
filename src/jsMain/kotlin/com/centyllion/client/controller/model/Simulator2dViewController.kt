@@ -71,7 +71,7 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
                     val level = values[i]
                     if (level > minFieldLevel) {
                         val color = colorNames[field.color] ?: Triple(255, 50, 50)
-                        val alpha = 1f / ( -log10(level)) / 1.6f
+                        val alpha = if (level >= 1f) 1f else  1f / ( -log10(level)) / 1.6f
                         simulationContext.save()
                         simulationContext.fillStyle = "rgba(${color.first}, ${color.second}, ${color.third}, $alpha)"
                         simulationContext.fillRect(currentX, currentY, xSize, ySize)

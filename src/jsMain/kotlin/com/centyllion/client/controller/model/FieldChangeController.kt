@@ -2,14 +2,17 @@ package com.centyllion.client.controller.model
 
 import bulma.Column
 import bulma.ColumnSize
+import bulma.Control
 import bulma.Controller
 import bulma.ElementColor
+import bulma.Help
 import bulma.Icon
 import bulma.Level
 import bulma.Slider
 import bulma.span
 import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
+import bulma.Field as BField
 
 class FieldChangeController(
     value: Pair<Int, Float>, fields: List<Field>, min: Float = -1f, max: Float = 1f,
@@ -47,11 +50,19 @@ class FieldChangeController(
     }
 
     val valueSlider = Slider(
-        data.second.toString(), "${min}", "${max}", "0.01", sliderColor
+        data.second.toString(), "$min", "$max", "0.01", sliderColor
     ) { _, value -> data = data.first to value.toFloat() }
 
+    fun help(value: Float) = when {
+        value < 0f -> "-"
+        value == 0f -> "0"
+        else -> "+"
+    }
+
+    val valueField = BField(Control(Help(help(min))), Control(valueSlider), Control(Help(help(max))), grouped = true)
+
     override val container = Column(
-        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueSlider)), size = ColumnSize.Full
+        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueField)), size = ColumnSize.Full
     )
 
     override fun refresh() {

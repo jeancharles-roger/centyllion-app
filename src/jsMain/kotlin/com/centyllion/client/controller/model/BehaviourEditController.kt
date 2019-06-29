@@ -3,6 +3,7 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
+import bulma.Control
 import bulma.Controller
 import bulma.Delete
 import bulma.ElementColor
@@ -168,10 +169,10 @@ class BehaviourEditController(
             Columns(
                 // first line
                 Column(nameController, size = ColumnSize.S7),
-                Column(HorizontalField(Help("Speed"), probabilityController.container), size = ColumnSize.S5),
+                Column(HorizontalField(Control(Help("Speed")), probabilityController.container), size = ColumnSize.S5),
                 // second line
                 Column(descriptionController, size = ColumnSize.S7),
-                Column(HorizontalField(Help("Age"), agePredicateController.container), size = ColumnSize.S5),
+                Column(HorizontalField(Control(Help("Age")), agePredicateController.container), size = ColumnSize.S5),
                 multiline = true
             ),
             reactionController

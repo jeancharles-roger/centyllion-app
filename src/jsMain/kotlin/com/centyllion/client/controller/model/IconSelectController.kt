@@ -43,7 +43,7 @@ class IconSelectController(
     val iconColumns = Columns(multiline = true, mobile = true)
 
     override val container = Dropdown(
-        DropdownContentItem(Field(Control(search, Icon("search")), name, grouped = true)),
+        DropdownContentItem(Field(Control(search, Icon("search")), Control(name), grouped = true)),
         DropdownContentItem(iconColumns),
         text = "", icon = icon, rounded = true, menuWidth = "30rem"
     ) {

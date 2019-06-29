@@ -149,9 +149,9 @@ class Simulator(
                                 }.sum()
                             }
 
-                            // translates influence to positive float and to the power of 2 for a stronger effect
+                            // translates influence to positive float and to the power of 4 for a stronger effect
                             val translatedInfluence = influence.min()?.let { min ->
-                                influence.map { (it - min + 1f).pow(2) }
+                                influence.map { (it - min + 1f).pow(4) }
                             } ?: influence
 
                             // chooses one randomly influenced by the fields

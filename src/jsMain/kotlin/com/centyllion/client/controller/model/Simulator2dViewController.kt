@@ -6,6 +6,7 @@ import bulma.div
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
+import com.centyllion.model.minFieldLevel
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.browser.window
@@ -68,7 +69,7 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
             data.model.fields.forEach { field ->
                 fields[field.id]?.let { values ->
                     val level = values[i]
-                    if (level > 1e-3f) {
+                    if (level > minFieldLevel) {
                         val color = colorNames[field.color] ?: Triple(255, 50, 50)
                         val alpha = 1f / ( -log10(level)) / 1.6f
                         simulationContext.save()

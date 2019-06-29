@@ -5,6 +5,7 @@ import kotlin.math.pow
 import kotlin.random.Random
 
 const val minField = 1e-15f
+const val minFieldLevel = 1e-14f
 
 class Agent(val index: Int, val id: Int, val age: Int, val deltaFields: FloatArray)
 

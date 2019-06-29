@@ -33,7 +33,7 @@ class FieldChangeController(
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            // TODO valueSlider.disabled
+            valueSlider.disabled = new
         }
     }
 

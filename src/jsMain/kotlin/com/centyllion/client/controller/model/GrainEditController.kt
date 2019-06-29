@@ -141,7 +141,7 @@ class GrainEditController(
         fieldProductionsController,
         Help("Influences"),
         fieldInfluencesController,
-        Help("Permeable"),
+        Help("Permeability"),
         fieldPermeableController
     )
 

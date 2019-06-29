@@ -493,4 +493,6 @@ class Slider(
 
     var size by className(size, root)
 
+    var disabled by booleanAttribute(false, "disabled", root)
+
 }

@@ -5,7 +5,6 @@ import bulma.canvas
 import bulma.div
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
-import com.centyllion.model.Reaction
 import com.centyllion.model.Simulator
 import info.laht.threekt.THREE.DoubleSide
 import info.laht.threekt.THREE.FloatType
@@ -42,7 +41,7 @@ open class Simulator3dViewController(
     class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array)
 
     override var data: Simulator by Delegates.observable(simulator) { _, _, _ ->
-        camera.position.set(0, data.simulation.width, data.simulation.width)
+        camera.position.set(0, 1.25 * data.simulation.width, 0)
         geometries = geometries()
         materials = materials()
         refresh()
@@ -73,8 +72,8 @@ open class Simulator3dViewController(
 
     var fieldSupports: Map<Int, FieldSupport> = mapOf()
 
-    val camera = PerspectiveCamera(45, 4.0 / 3.0, 00.1, 1000.0).apply {
-        position.set(0, data.simulation.width, data.simulation.width)
+    val camera = PerspectiveCamera(45, 1.0, 00.1, 1000.0).apply {
+        position.set(0, data.simulation.width * 1.25, 0)
         lookAt(0, 0, 0)
     }
 
@@ -126,14 +125,9 @@ open class Simulator3dViewController(
         mesh.material = materials[id] ?: defaultMaterial
     }
 
-
-    fun applyReaction(reaction: Reaction, one: ApplicableBehavior) {
-
-
-    }
-
     override fun oneStep(applied: List<ApplicableBehavior>) {
         // Updates agents
+        /* TODO find and corrects the bug in the update
         applied.forEach { one ->
             agentMesh[one.index]?.let {
                 val material = materials[one.behaviour.mainProductId]
@@ -168,6 +162,30 @@ open class Simulator3dViewController(
                     scene.add(newMesh)
                     agentMesh[reactive.index] = newMesh
                 }
+            }
+        }
+         */
+
+        // clear agents
+        agentMesh.values.forEach { scene.remove(it) }
+        agentMesh.clear()
+
+        // adds agents meshes
+        var currentX = -data.simulation.width / 2
+        var currentY = -data.simulation.height / 2
+        for (i in 0 until data.currentAgents.size) {
+            val grain = data.model.indexedGrains[data.idAtIndex(i)]
+
+            if (grain != null) {
+                val cube = createMesh(grain.id, currentX, currentY)
+                scene.add(cube)
+                agentMesh[i] = cube
+            }
+
+            currentX += 1
+            if (currentX >= data.simulation.width / 2) {
+                currentX = -data.simulation.width / 2
+                currentY += 1
             }
         }
 

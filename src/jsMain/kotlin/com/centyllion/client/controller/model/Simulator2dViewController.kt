@@ -30,7 +30,7 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
         // nothing to do
     }
 
-    override fun oneStep(applied: List<ApplicableBehavior>) {
+    override fun oneStep(applied: List<ApplicableBehavior>, deads: List<Int>) {
         refresh()
     }
 

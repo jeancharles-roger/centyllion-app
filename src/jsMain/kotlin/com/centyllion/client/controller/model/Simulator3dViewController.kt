@@ -108,80 +108,59 @@ open class Simulator3dViewController(
     }.toMap()
 
 
-    fun createMesh(id: Int, x: Number, y: Number) =
-        Mesh(geometries[id] ?: defaultGeometry, materials[id] ?: defaultMaterial).apply {
-            position.set(x, 0, y)
-            rotateX(-PI / 2.0)
-        }
+    fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
+        // creates mesh
+        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, materials[grainId] ?: defaultMaterial)
 
-    fun morphMesh(mesh: Mesh, id: Int) {
-        mesh.geometry = geometries[id] ?: defaultGeometry
-        mesh.material = materials[id] ?: defaultMaterial
+        // positions the mesh
+        mesh.position.set(x, 0, y)
+        mesh.rotateX(-PI / 2.0)
+
+        // adds the mesh to scene and register it
+        scene.add(mesh)
+        agentMesh[index] = mesh
+        return mesh
     }
 
-    override fun oneStep(applied: List<ApplicableBehavior>) {
-        // Updates agents
-        /* TODO find and corrects the bug in the update
-        applied.forEach { one ->
-            agentMesh[one.index]?.let {
-                val material = materials[one.behaviour.mainProductId]
-                if (material != null) {
-                    it.material = material
-                } else {
-                    agentMesh.remove(one.index)
-                    scene.remove(it)
-                }
+    fun transformMesh(index: Int, newGrainId: Int) {
+        val mesh = agentMesh[index]
+        when {
+            mesh != null && newGrainId >= 0 -> {
+                // transform it to new one
+                mesh.geometry = geometries[newGrainId] ?: defaultGeometry
+                mesh.material = materials[newGrainId] ?: defaultMaterial
             }
+            mesh != null && newGrainId < 0 -> {
+                // deletes the mesh
+                agentMesh.remove(index)
+                scene.remove(mesh)
+            }
+            mesh == null && newGrainId >= 0 -> {
+                val p = data.simulation.toPosition(index)
+                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0,p.y - data.simulation.height / 2.0)
+            }
+        }
+    }
 
+    override fun oneStep(applied: List<ApplicableBehavior>, deads: List<Int>) {
+        // Updates agents
+
+        // applies behaviors
+        applied.forEach { one ->
+            // applies main reaction
+            transformMesh(one.index, one.behaviour.mainProductId)
+
+            // applies secondary reactions
+            // TODO find if the sort can be avoided
             val reactives = one.usedNeighbours.sortedBy { it.id }
             val reactions = one.behaviour.reaction.sortedBy { it.reactiveId }
-
-            // applies reactions
             reactions.zip(reactives).forEach { (reaction, reactive) ->
-                val mesh = agentMesh[reactive.index]
-                if (mesh != null) {
-                    if (reaction.productId >= 0) {
-                        morphMesh(mesh, reaction.productId)
-                    } else {
-                        agentMesh.remove(one.index)
-                        scene.remove(mesh)
-                    }
-                } else {
-                    val position = data.simulation.toPosition(reactive.index)
-                    val newMesh = createMesh(
-                        reaction.productId,
-                        position.x - data.simulation.width / 2,
-                        position.y - data.simulation.height / 2
-                    )
-                    scene.add(newMesh)
-                    agentMesh[reactive.index] = newMesh
-                }
+                transformMesh(reactive.index, reaction.productId)
             }
         }
-         */
 
-        // clear agents
-        agentMesh.values.forEach { scene.remove(it) }
-        agentMesh.clear()
-
-        // adds agents meshes
-        var currentX = -data.simulation.width / 2
-        var currentY = -data.simulation.height / 2
-        for (i in 0 until data.currentAgents.size) {
-            val grain = data.model.indexedGrains[data.idAtIndex(i)]
-
-            if (grain != null) {
-                val cube = createMesh(grain.id, currentX, currentY)
-                scene.add(cube)
-                agentMesh[i] = cube
-            }
-
-            currentX += 1
-            if (currentX >= data.simulation.width / 2) {
-                currentX = -data.simulation.width / 2
-                currentY += 1
-            }
-        }
+        // applies deaths
+        deads.forEach { transformMesh(it, -1) }
 
         // updates fields
         fieldSupports.forEach {
@@ -204,21 +183,19 @@ open class Simulator3dViewController(
         agentMesh.clear()
 
         // adds agents meshes
-        var currentX = -data.simulation.width / 2
-        var currentY = -data.simulation.height / 2
+        var currentX = -data.simulation.width / 2.0
+        var currentY = -data.simulation.height / 2.0
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
             if (grain != null) {
-                val cube = createMesh(grain.id, currentX, currentY)
-                scene.add(cube)
-                agentMesh[i] = cube
+                createMesh(i, grain.id, currentX, currentY)
             }
 
-            currentX += 1
-            if (currentX >= data.simulation.width / 2) {
-                currentX = -data.simulation.width / 2
-                currentY += 1
+            currentX += 1.0
+            if (currentX >= data.simulation.width / 2.0) {
+                currentX = -data.simulation.width / 2.0
+                currentY += 1.0
             }
         }
 

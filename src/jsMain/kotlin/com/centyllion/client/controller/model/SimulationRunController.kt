@@ -146,7 +146,6 @@ class SimulationRunController(
     var simulationViewController: SimulatorViewController by observable(createSimulationViewController())
     { _, old, new ->
         if (old != new) {
-            println("Old dispose")
             old.dispose()
             simulationView.body = listOf(simulationViewController)
         }
@@ -269,8 +268,8 @@ class SimulationRunController(
     }
 
     private fun executeStep(updateChart: Boolean) {
-        val applied = simulator.oneStep()
-        simulationViewController.oneStep(applied)
+        val (applied, dead) = simulator.oneStep()
+        simulationViewController.oneStep(applied, dead)
         refreshCounts()
 
         // appends data to charts

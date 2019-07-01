@@ -89,14 +89,16 @@ class Simulator(
         speeds[behaviour] = speed
     }
 
-    /** Executes one step and returns the applied behaviour */
-    fun oneStep(): List<ApplicableBehavior> {
+    /** Executes one step and returns the applied behaviours and the dead indexes. */
+    fun oneStep(): Pair<List<ApplicableBehavior>, List<Int>> {
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
         // defines values for fields to avoid dynamic call each time
         val fields = fields
         val nextFields = nextFields
+
+        val deads = mutableListOf<Int>()
 
         // all will contains index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
@@ -109,6 +111,8 @@ class Simulator(
                 if (grain.halfLife > 0.0 && random.nextDouble() < grain.deathProbability) {
                     // it dies, does't count
                     transform(i, i, null)
+                    deads.add(i)
+
                 } else {
                     currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
                     ageGrain(i)
@@ -214,7 +218,7 @@ class Simulator(
         // count a step
         step += 1
 
-        return toExecute
+        return toExecute to deads
     }
 
     fun reset() {

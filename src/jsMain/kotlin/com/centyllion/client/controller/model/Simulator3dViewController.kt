@@ -6,28 +6,39 @@ import bulma.div
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
+import info.laht.threekt.THREE.DoubleSide
+import info.laht.threekt.THREE.FloatType
+import info.laht.threekt.THREE.LuminanceFormat
+import info.laht.threekt.THREE.NearestFilter
 import info.laht.threekt.cameras.PerspectiveCamera
 import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.geometries.BoxBufferGeometry
+import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.helpers.GridHelper
 import info.laht.threekt.lights.AmbientLight
+import info.laht.threekt.materials.MeshBasicMaterial
 import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
 import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
 import info.laht.threekt.scenes.Scene
+import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
 import threejs.extra.core.Font
 import threejs.geometries.TextBufferGeometry
 import threejs.geometries.TextGeometryParametersImpl
+import threejs.textures.DataTexture
 import kotlin.browser.window
 import kotlin.math.PI
+import kotlin.math.log10
 import kotlin.properties.Delegates
 
 open class Simulator3dViewController(
     simulator: Simulator, appContext: AppContext
 ) : SimulatorViewController(simulator) {
+
+    class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array)
 
     override var data: Simulator by Delegates.observable(simulator) { _, _, _ ->
         camera.position.set(0, data.simulation.width, data.simulation.width)
@@ -59,6 +70,8 @@ open class Simulator3dViewController(
 
     val agentMesh: MutableMap<Int, Mesh> = mutableMapOf()
 
+    var fieldSupports: Map<Int, FieldSupport> = mapOf()
+
     val camera = PerspectiveCamera(45, 4.0 / 3.0, 00.1, 1000.0).apply {
         position.set(0, data.simulation.width, data.simulation.width)
         lookAt(0, 0, 0)
@@ -77,6 +90,19 @@ open class Simulator3dViewController(
         setClearColor(ColorConstants.white, 1)
     }
 
+    private var geometries = geometries()
+    private var materials = materials()
+
+    init {
+        appContext.getFont("font/fa-solid-900.json").then {
+            font = it
+            geometries = geometries()
+            refresh()
+        }
+        materials = materials()
+        animate()
+    }
+
     private fun geometries() = data.model.grains.map { grain ->
         grain.id to font?.let {
             val height = grain.size
@@ -88,8 +114,6 @@ open class Simulator3dViewController(
         it.id to MeshPhongMaterial().apply { color.set(it.color.toLowerCase()) }
     }.toMap()
 
-    private var geometries = geometries()
-    private var materials = materials()
 
     fun createMesh(id: Int, x: Number, y: Number) =
         Mesh(geometries[id] ?: defaultGeometry, materials[id] ?: defaultMaterial).apply {
@@ -103,6 +127,7 @@ open class Simulator3dViewController(
     }
 
     override fun oneStep(applied: List<ApplicableBehavior>) {
+        // Updates agents
         applied.forEach { one ->
             agentMesh[one.index]?.let {
                 val material = materials[one.behaviour.mainProductId]
@@ -139,20 +164,29 @@ open class Simulator3dViewController(
                 }
             }
         }
+
+        // updates fields
+        fieldSupports.forEach {
+            val id = it.key
+            // updates alpha
+            it.value.array.set(data.field(id).map { ((if (it >= 1f) 1f else 1f / (-log10(it)) / 1.6f)) }.toTypedArray())
+            // invalidate texture
+            it.value.alphaTexture.needsUpdate = true
+        }
+
     }
 
     fun animate() {
-        window.requestAnimationFrame {
-            animate()
-        }
+        window.requestAnimationFrame { animate() }
         renderer.render(scene, camera)
     }
 
     override fun refresh() {
-        // clear scene
+        // clear agents
         agentMesh.values.forEach { scene.remove(it) }
         agentMesh.clear()
 
+        // adds agents meshes
         var currentX = -data.simulation.width / 2
         var currentY = -data.simulation.height / 2
         for (i in 0 until data.currentAgents.size) {
@@ -170,15 +204,38 @@ open class Simulator3dViewController(
                 currentY += 1
             }
         }
+
+        // clear fields
+        fieldSupports.values.forEach { scene.remove(it.mesh) }
+
+        // adds field meshes
+        fieldSupports = data.model.fields.map { field ->
+            val levels = data.fields[field.id]!!
+            val alpha = Float32Array(levels.map { ((if (it >= 1f) 1f else 1f / (-log10(it)) / 1.6f)) }.toTypedArray())
+
+            val alphaTexture = DataTexture(
+                alpha, data.simulation.width, data.simulation.height, LuminanceFormat, FloatType
+            ).apply {
+                needsUpdate = true
+                magFilter = NearestFilter
+            }
+
+            val material = MeshBasicMaterial().apply {
+                side = DoubleSide
+                color.set(field.color.toLowerCase())
+                this.alphaMap = alphaTexture
+
+                transparent = true
+            }
+
+            val geometry = PlaneBufferGeometry(100, 100)
+            geometry.rotateX(PI / 2.0)
+            geometry.translate(0.0, 0.0, 1.0)
+            val mesh = Mesh(geometry, material)
+            scene.add(mesh)
+            field.id to FieldSupport(mesh, alphaTexture, alpha)
+        }.toMap()
+
     }
 
-    init {
-        appContext.getFont("font/fa-solid-900.json").then {
-            font = it
-            geometries = geometries()
-            refresh()
-        }
-        materials = materials()
-        animate()
-    }
 }

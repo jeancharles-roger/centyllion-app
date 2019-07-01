@@ -64,19 +64,15 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
         var currentY = yStep
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
-
-            val fields = data.fields
             data.model.fields.forEach { field ->
-                fields[field.id]?.let { values ->
-                    val level = values[i]
-                    if (level > minFieldLevel) {
-                        val color = colorNames[field.color] ?: Triple(255, 50, 50)
-                        val alpha = if (level >= 1f) 1f else  1f / ( -log10(level)) / 1.6f
-                        simulationContext.save()
-                        simulationContext.fillStyle = "rgba(${color.first}, ${color.second}, ${color.third}, $alpha)"
-                        simulationContext.fillRect(currentX, currentY, xSize, ySize)
-                        simulationContext.restore()
-                    }
+                val level = data.field(field.id)[i]
+                if (level > minFieldLevel) {
+                    val color = colorNames[field.color] ?: Triple(255, 50, 50)
+                    val alpha = if (level >= 1f) 1f else  1f / ( -log10(level)) / 1.6f
+                    simulationContext.save()
+                    simulationContext.fillStyle = "rgba(${color.first}, ${color.second}, ${color.third}, $alpha)"
+                    simulationContext.fillRect(currentX, currentY, xSize, ySize)
+                    simulationContext.restore()
                 }
             }
 

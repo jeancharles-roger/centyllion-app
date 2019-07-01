@@ -57,6 +57,8 @@ class Simulator(
     val fields get() = if (currentFields) fields1 else fields2
     val nextFields get() = if (!currentFields) fields1 else fields2
 
+    fun field(id: Int) = fields[id] ?: FloatArray(simulation.agents.size)
+
     private var currentFields: Boolean = true
 
     private val fields1: Map<Int, FloatArray> = model.fields
@@ -273,7 +275,7 @@ class Simulator(
         return Direction.values().map { direction ->
             direction to simulation.moveIndex(index, direction).let { id ->
                 val fieldValues = FloatArray(fieldMaxId + 1) {
-                    fields[it]?.let { field -> log10(field[id]) - log10(field[index]) } ?: 0f
+                    field(it).let { field -> log10(field[id]) - log10(field[index]) }
                 }
                 Agent(id, currentAgents[id], ages[id], fieldValues)
             }

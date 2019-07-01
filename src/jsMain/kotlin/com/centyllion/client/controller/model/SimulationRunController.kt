@@ -82,7 +82,7 @@ class SimulationRunController(
 
     private var running = false
     private var fps = 50.0
-    private var lastTimestamp = 0.0
+    private var lastStepTimestamp = 0.0
     private var lastRequestSkipped = true
     private var lastFpsColorRefresh = 0
     private var lastChartRefresh = 0
@@ -190,8 +190,8 @@ class SimulationRunController(
     ))
 
     init {
+        animationCallback(0.0)
         fpsSlider.root.style.width = "200px"
-        refresh()
     }
 
     fun setFpsColor(slowed: Boolean) {
@@ -207,7 +207,6 @@ class SimulationRunController(
     fun run() {
         if (!running) {
             running = true
-            animationCallback(0.0)
             refreshButtons()
         }
     }
@@ -215,16 +214,16 @@ class SimulationRunController(
     fun animationCallback(timestamp: Double) {
         if (running) {
             val time = 1000 / fps
-            val delta = timestamp - lastTimestamp
+            val delta = timestamp - lastStepTimestamp
 
             lastFpsColorRefresh += 1
             if (lastFpsColorRefresh > fps) {
                 setFpsColor(delta > time && lastRequestSkipped)
             }
 
-            val refresh = fps >= 200 || lastTimestamp == 0.0 || delta >= time
+            val refresh = fps >= 200 || lastStepTimestamp == 0.0 || delta >= time
             if (refresh) {
-                lastTimestamp = timestamp
+                lastStepTimestamp = timestamp
                 executeStep(lastChartRefresh >= 10)
                 lastChartRefresh += 1
 
@@ -234,7 +233,7 @@ class SimulationRunController(
             lastRequestSkipped = refresh
 
         }
-
+        simulationViewController.animate()
         window.requestAnimationFrame(this::animationCallback)
     }
 
@@ -248,7 +247,7 @@ class SimulationRunController(
     fun stop() {
         if (running) {
             running = false
-            lastTimestamp = 0.0
+            lastStepTimestamp = 0.0
             refresh()
         }
     }

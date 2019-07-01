@@ -8,9 +8,11 @@ import bulma.Delete
 import bulma.Help
 import bulma.Level
 import bulma.Media
+import bulma.Slider
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
+import bulma.Value
 import bulma.columnsController
 import bulma.div
 import com.centyllion.client.controller.utils.EditableStringController
@@ -85,6 +87,12 @@ class GrainEditController(
         data = data.copy(name = new)
     }
 
+    val sizeSlider = Slider("${data.size}", "0", "5", "0.1") { _, value ->
+        data = data.copy(size = value.toDoubleOrNull() ?: 1.0)
+    }
+
+    val sizeValue = Value("${data.size}")
+
     val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
         data = data.copy(description = new)
     }
@@ -153,6 +161,9 @@ class GrainEditController(
                 Column(nameController, size = ColumnSize.S6),
                 mobile = true
             ),
+            Level(
+                center = listOf(Help("Size"), sizeSlider, sizeValue)
+            ),
             descriptionController,
             TileAncestor(
                 TileParent(
@@ -185,6 +196,9 @@ class GrainEditController(
         fieldProductionsController.refresh()
         fieldInfluencesController.refresh()
         fieldPermeableController.refresh()
+
+        sizeSlider.value = "${data.size}"
+        sizeValue.text = "${data.size}"
 
         fieldsConfiguration.hidden = context.fields.isEmpty()
     }

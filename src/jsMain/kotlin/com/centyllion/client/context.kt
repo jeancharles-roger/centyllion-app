@@ -1,9 +1,15 @@
 package com.centyllion.client
 
-import bulma.*
+import bulma.BulmaElement
+import bulma.Button
+import bulma.ElementColor
+import bulma.ModalCard
+import bulma.NavBar
 import com.centyllion.model.User
 import keycloak.KeycloakInstance
 import org.w3c.dom.HTMLElement
+import threejs.extra.core.Font
+import kotlin.js.Promise
 
 
 data class ClientEvent(
@@ -25,6 +31,8 @@ interface AppContext {
     val api: Api
 
     val stripeKey: String
+
+    fun getFont(url: String): Promise<Font>
 
     val events: List<ClientEvent>
 

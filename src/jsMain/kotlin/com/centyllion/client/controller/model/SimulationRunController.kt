@@ -28,6 +28,7 @@ import chartjs.LineChartOptions
 import chartjs.LineChartPlot
 import chartjs.LineDataSet
 import chartjs.LinearAxisOptions
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
 import com.centyllion.model.Grain
@@ -38,7 +39,7 @@ import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
-    simulation: Simulation, model: GrainModel,
+    simulation: Simulation, model: GrainModel, val appContext: AppContext,
     val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Simulation, GrainModel, BulmaElement> {
@@ -295,7 +296,7 @@ class SimulationRunController(
     }
 
     private fun createSimulationViewController(): SimulatorViewController = when {
-        view3d -> Simulator3dViewController(simulator)
+        view3d -> Simulator3dViewController(simulator, appContext)
         readOnly -> Simulator2dViewController(simulator)
         else -> SimulatorEditController(simulator) { ended, new, _ ->
             updatedSimulatorFromView(ended, new)

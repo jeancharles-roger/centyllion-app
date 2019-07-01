@@ -139,7 +139,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel) { old, new, _ ->
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, context) { old, new, _ ->
         if (old != new) {
             simulation = simulation.copy(simulation = new)
         }

@@ -101,7 +101,6 @@ open class Simulator3dViewController(
             refresh()
         }
         materials = materials()
-        animate()
     }
 
     private fun geometries() = data.model.grains.map { grain ->
@@ -236,7 +235,7 @@ open class Simulator3dViewController(
 
             val geometry = PlaneBufferGeometry(100, 100)
             geometry.rotateX(PI / 2.0)
-            geometry.translate(0.0, 0.0, 1.0)
+            geometry.translate(0.0, -1.0, 0.0)
             val mesh = Mesh(geometry, material)
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)

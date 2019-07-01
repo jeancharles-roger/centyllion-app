@@ -176,8 +176,7 @@ open class Simulator3dViewController(
 
     }
 
-    fun animate() {
-        window.requestAnimationFrame { animate() }
+    override fun animate() {
         renderer.render(scene, camera)
     }
 

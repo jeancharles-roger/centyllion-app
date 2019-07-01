@@ -26,6 +26,10 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
         }
     }
 
+    override fun animate() {
+        // nothing to do
+    }
+
     override fun oneStep(applied: List<ApplicableBehavior>) {
         refresh()
     }

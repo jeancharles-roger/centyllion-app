@@ -207,12 +207,12 @@ class SimulationRunController(
     fun run() {
         if (!running) {
             running = true
-            runningCallback(0.0)
+            animationCallback(0.0)
             refreshButtons()
         }
     }
 
-    fun runningCallback(timestamp: Double) {
+    fun animationCallback(timestamp: Double) {
         if (running) {
             val time = 1000 / fps
             val delta = timestamp - lastTimestamp
@@ -233,8 +233,9 @@ class SimulationRunController(
             }
             lastRequestSkipped = refresh
 
-            window.requestAnimationFrame(this::runningCallback)
         }
+
+        window.requestAnimationFrame(this::animationCallback)
     }
 
     fun step() {

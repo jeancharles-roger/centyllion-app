@@ -14,7 +14,6 @@ import info.laht.threekt.cameras.PerspectiveCamera
 import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.geometries.BoxBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
-import info.laht.threekt.helpers.GridHelper
 import info.laht.threekt.lights.AmbientLight
 import info.laht.threekt.materials.MeshBasicMaterial
 import info.laht.threekt.materials.MeshPhongMaterial
@@ -77,12 +76,7 @@ open class Simulator3dViewController(
         lookAt(0, 0, 0)
     }
 
-    val grid = GridHelper(100, 10)
-
-    val scene = Scene().apply {
-        add(AmbientLight())
-        add(grid)
-    }
+    val scene = Scene().apply { add(AmbientLight()) }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root)
 
@@ -253,7 +247,7 @@ open class Simulator3dViewController(
 
             val geometry = PlaneBufferGeometry(100, 100)
             geometry.rotateX(PI / 2.0)
-            geometry.translate(0.0, -1.0, 0.0)
+            geometry.translate(0.0, -0.1, 0.0)
             val mesh = Mesh(geometry, material)
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)

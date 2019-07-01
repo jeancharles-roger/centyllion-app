@@ -80,6 +80,7 @@ class SimulationRunController(
 
     private var simulator = Simulator(context, data)
 
+    private var animating = true
     private var running = false
     private var fps = 50.0
     private var lastStepTimestamp = 0.0
@@ -145,6 +146,8 @@ class SimulationRunController(
     var simulationViewController: SimulatorViewController by observable(createSimulationViewController())
     { _, old, new ->
         if (old != new) {
+            println("Old dispose")
+            old.dispose()
             simulationView.body = listOf(simulationViewController)
         }
     }
@@ -190,8 +193,8 @@ class SimulationRunController(
     ))
 
     init {
-        animationCallback(0.0)
         fpsSlider.root.style.width = "200px"
+        window.setTimeout( { animationCallback(0.0) }, 250 )
     }
 
     fun setFpsColor(slowed: Boolean) {
@@ -227,14 +230,19 @@ class SimulationRunController(
                 executeStep(lastChartRefresh >= 10)
                 lastChartRefresh += 1
 
-                // if the document was removed, stop the simulation
-                if (container.root.ownerDocument != container.root.getRootNode()) stop()
+
             }
             lastRequestSkipped = refresh
 
         }
-        simulationViewController.animate()
-        window.requestAnimationFrame(this::animationCallback)
+
+        if (animating) {
+            simulationViewController.animate()
+            window.requestAnimationFrame(this::animationCallback)
+        }
+
+        // if the document was removed, stop the simulation
+        if (container.root.ownerDocument != container.root.getRootNode()) dispose()
     }
 
     fun step() {
@@ -262,7 +270,6 @@ class SimulationRunController(
 
     private fun executeStep(updateChart: Boolean) {
         val applied = simulator.oneStep()
-
         simulationViewController.oneStep(applied)
         refreshCounts()
 
@@ -358,5 +365,11 @@ class SimulationRunController(
             chart.data.datasets = emptyArray()
             chart.update()
         }
+    }
+
+    fun dispose() {
+        stop()
+        simulationViewController.dispose()
+        animating = false
     }
 }

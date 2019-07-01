@@ -5,6 +5,7 @@ import bulma.canvas
 import bulma.div
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
+import com.centyllion.model.Reaction
 import com.centyllion.model.Simulator
 import info.laht.threekt.THREE.DoubleSide
 import info.laht.threekt.THREE.FloatType
@@ -126,6 +127,12 @@ open class Simulator3dViewController(
         mesh.material = materials[id] ?: defaultMaterial
     }
 
+
+    fun applyReaction(reaction: Reaction, one: ApplicableBehavior) {
+
+
+    }
+
     override fun oneStep(applied: List<ApplicableBehavior>) {
         // Updates agents
         applied.forEach { one ->
@@ -235,6 +242,10 @@ open class Simulator3dViewController(
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()
 
+    }
+
+    override fun dispose() {
+        orbitControl.dispose()
     }
 
 }

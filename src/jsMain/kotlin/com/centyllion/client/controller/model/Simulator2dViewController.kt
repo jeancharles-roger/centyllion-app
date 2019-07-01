@@ -100,4 +100,8 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
 
         simulationContext.restore()
     }
+
+    override fun dispose() {
+        // nothing to do
+    }
 }

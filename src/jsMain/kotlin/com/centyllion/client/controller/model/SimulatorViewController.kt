@@ -23,4 +23,5 @@ abstract class SimulatorViewController(simulator: Simulator) : NoContextControll
 
     open var selectedGrain: Grain? = null
 
+    abstract fun dispose()
 }

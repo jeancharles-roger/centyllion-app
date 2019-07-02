@@ -26,10 +26,10 @@ class GrainModelEditController(
     override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
             fieldsController.data = data.fields
-            grainsController.data = data.grains
             grainsController.context = data
-            behavioursController.data = data.behaviours
+            grainsController.data = data.grains
             behavioursController.context = data
+            behavioursController.data = data.behaviours
             onUpdate(old, new, this@GrainModelEditController)
             refresh()
         }

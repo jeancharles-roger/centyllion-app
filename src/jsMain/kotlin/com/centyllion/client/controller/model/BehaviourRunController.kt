@@ -1,9 +1,6 @@
 package com.centyllion.client.controller.model
 
 import bulma.BulmaElement
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
 import bulma.Controller
 import bulma.Div
 import bulma.Help
@@ -48,9 +45,13 @@ class BehaviourRunController(
         speedValue.text = format(probability)
     }
 
-    val speedColumns = Columns(Column(speedValue, size = ColumnSize.S1), Column(speedSlider), mobile = true)
+    val header = Level(
+        left = listOf(titleLabel),
+        right = listOf(speedSlider, speedValue),
+        mobile = true
+     )
 
-    override val container = Media(center = listOf(titleLabel, grains, speedColumns)).apply {
+    override val container = Media(center = listOf(header, grains)).apply {
         root.classList.add("is-outlined")
     }
 
@@ -59,7 +60,7 @@ class BehaviourRunController(
     fun toProbability(value: String) = log10(value.toDouble())
 
     fun format(value: Double) = value.toString().let {
-        it.substring(0, min(it.lastIndexOf("") + 3, it.length))
+        it.substring(0, min(it.lastIndexOf(".") + 4, it.length))
     }
 
     fun grainIcon(id: Int) = context.model.indexedGrains[id].let {

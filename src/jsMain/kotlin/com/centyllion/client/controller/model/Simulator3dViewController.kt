@@ -31,22 +31,27 @@ import threejs.textures.DataTexture
 import kotlin.browser.window
 import kotlin.math.PI
 import kotlin.math.log10
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 open class Simulator3dViewController(
     simulator: Simulator, appContext: AppContext
 ) : SimulatorViewController(simulator) {
 
-    class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array)
+    class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array) {
+        fun dispose() {
+            alphaTexture.dispose()
+            mesh.geometry.dispose()
+        }
+    }
 
-    override var data: Simulator by Delegates.observable(simulator) { _, _, _ ->
+    override var data: Simulator by observable(simulator) { _, _, _ ->
         camera.position.set(0, 1.25 * data.simulation.width, 0)
         geometries = geometries()
         materials = materials()
         refresh()
     }
 
-    override var readOnly: Boolean by Delegates.observable(false) { _, old, new ->
+    override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             // TODO
         }
@@ -69,7 +74,9 @@ open class Simulator3dViewController(
 
     val agentMesh: MutableMap<Int, Mesh> = mutableMapOf()
 
-    var fieldSupports: Map<Int, FieldSupport> = mapOf()
+    var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
+        old.values.forEach { it.dispose() }
+    }
 
     val camera = PerspectiveCamera(45, 1.0, 00.1, 1000.0).apply {
         position.set(0, data.simulation.width * 1.25, 0)
@@ -84,8 +91,13 @@ open class Simulator3dViewController(
         setClearColor(ColorConstants.white, 1)
     }
 
-    private var geometries = geometries()
-    private var materials = materials()
+    private var geometries by observable(geometries()) { _, old, _ ->
+        old.values.filterNotNull().forEach { it.dispose() }
+    }
+
+    private var materials by observable(materials()) { _, old, _ ->
+        old.values.forEach { it.dispose() }
+    }
 
     init {
         appContext.getFont("font/fa-solid-900.json").then {
@@ -111,10 +123,12 @@ open class Simulator3dViewController(
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
         val mesh = Mesh(geometries[grainId] ?: defaultGeometry, materials[grainId] ?: defaultMaterial)
-
         // positions the mesh
         mesh.position.set(x, 0, y)
         mesh.rotateX(-PI / 2.0)
+
+        mesh.updateMatrix()
+        mesh.matrixAutoUpdate = false
 
         // adds the mesh to scene and register it
         scene.add(mesh)
@@ -234,6 +248,10 @@ open class Simulator3dViewController(
 
     override fun dispose() {
         orbitControl.dispose()
+        materials = emptyMap()
+        defaultMaterial.dispose()
+        geometries = emptyMap()
+        defaultGeometry.dispose()
     }
 
 }

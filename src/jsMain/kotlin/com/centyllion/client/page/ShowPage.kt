@@ -6,6 +6,7 @@ import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
+import bulma.Div
 import bulma.Dropdown
 import bulma.DropdownDivider
 import bulma.DropdownSimpleItem
@@ -18,7 +19,6 @@ import bulma.TabPage
 import bulma.TabPages
 import bulma.Tabs
 import bulma.TextColor
-import bulma.div
 import bulma.iconButton
 import bulma.p
 import bulma.textButton
@@ -385,7 +385,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
         val modal = context.modalDialog(
             "Delete model, Are you sure ?",
-            div(
+            Div(
                 p("You're about to delete the model '${model.label}' and its simulations."),
                 p("This action can't be undone.", "has-text-weight-bold")
             ),
@@ -406,7 +406,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
         val modal = context.modalDialog(
             "Delete simulation, Are you sure ?",
-            div(
+            Div(
                 p("You're about to delete the simulation '${simulation.label}'."),
                 p("This action can't be undone.", "has-text-weight-bold")
             ),

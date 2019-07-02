@@ -141,7 +141,6 @@ data class Behaviour(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ) {
-
     fun reactionIndex(reaction: Reaction) = this.reaction.indexOfFirst { it === reaction }
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */

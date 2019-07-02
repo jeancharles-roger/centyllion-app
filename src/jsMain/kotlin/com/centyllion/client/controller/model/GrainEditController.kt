@@ -5,6 +5,7 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Controller
 import bulma.Delete
+import bulma.Div
 import bulma.Help
 import bulma.Level
 import bulma.Media
@@ -14,7 +15,6 @@ import bulma.TileChild
 import bulma.TileParent
 import bulma.Value
 import bulma.columnsController
-import bulma.div
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -144,7 +144,7 @@ class GrainEditController(
 
     val delete = Delete { onDelete(data, this@GrainEditController) }
 
-    val fieldsConfiguration = div(
+    val fieldsConfiguration = Div(
         Help("Productions"),
         fieldProductionsController,
         Help("Influences"),

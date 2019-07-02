@@ -1,8 +1,8 @@
 package com.centyllion.client.controller.model
 
+import bulma.Div
 import bulma.HtmlWrapper
 import bulma.canvas
-import bulma.div
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
@@ -40,8 +40,8 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
-    override val container = div(
-        div(simulationCanvas, classes = "has-text-centered")
+    override val container = Div(
+        Div(simulationCanvas, classes = "has-text-centered")
     )
 
     val simulationContext = simulationCanvas.root.getContext("2d") as CanvasRenderingContext2D

@@ -1,13 +1,13 @@
 package com.centyllion.client.controller.model
 
 import bulma.Control
+import bulma.Div
 import bulma.Dropdown
 import bulma.DropdownSimpleItem
 import bulma.ElementColor
 import bulma.Field
 import bulma.Icon
 import bulma.Level
-import bulma.div
 import bulma.iconButton
 import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
@@ -311,8 +311,8 @@ class SimulatorEditController(
         }, sizeDropdown, selectedGrainController.container, clearAllButton)
     )
 
-    override val container = div(
-        div(simulationCanvas, classes = "has-text-centered"),
+    override val container = Div(
+        Div(simulationCanvas, classes = "has-text-centered"),
         editToolbar
     )
 

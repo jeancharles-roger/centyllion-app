@@ -3,11 +3,11 @@ package com.centyllion.client.controller.navigation
 import bulma.BulmaElement
 import bulma.Column
 import bulma.Controller
+import bulma.Div
 import bulma.NoContextController
 import bulma.Pagination
 import bulma.PaginationAction
 import bulma.PaginationLink
-import bulma.div
 import bulma.noContextColumnsController
 import com.centyllion.model.ResultPage
 import com.centyllion.model.emptyResultPage
@@ -48,7 +48,7 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
         noContextColumnsController(data.content, controllerBuilder = controllerBuilder)
             .apply { this.onClick = this@ResultPageController.onClick }
 
-    override val container: BulmaElement = div(pagination, contentController)
+    override val container: BulmaElement = Div(pagination, contentController)
 
     override fun refresh() {
         pagination.items = (0..(data.totalSize - 1) / limit).map { page ->

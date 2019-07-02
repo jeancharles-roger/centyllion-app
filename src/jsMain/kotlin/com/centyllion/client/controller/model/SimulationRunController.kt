@@ -7,6 +7,7 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
 import bulma.Controller
+import bulma.Div
 import bulma.ElementColor
 import bulma.Field
 import bulma.Icon
@@ -17,7 +18,6 @@ import bulma.TextSize
 import bulma.Title
 import bulma.canvas
 import bulma.columnsController
-import bulma.div
 import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
@@ -174,7 +174,7 @@ class SimulationRunController(
                     ), size = ColumnSize.Full
                 ),
                 simulationView,
-                Column(div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
+                Column(Div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
                 multiline = true
             ),
             desktopSize = ColumnSize.S6

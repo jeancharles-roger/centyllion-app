@@ -23,11 +23,6 @@ fun wrap(element: HTMLElement) = HtmlWrapper(element)
 fun wrap(classes: String? = null, block: DIV.() -> Unit = {}) =
     HtmlWrapper(document.create.div(classes, block) as HTMLDivElement)
 
-fun div(vararg body: BulmaElement, classes: String = "") =
-    HtmlWrapper(document.create.div(classes)).apply {
-        body.forEach { root.appendChild(it.root) }
-    }
-
 fun span(text: String = "", classes: String = "") =
     HtmlWrapper(document.create.span(classes) { +text })
 
@@ -36,6 +31,12 @@ fun p(text: String = "", classes: String = "") =
 
 fun canvas(classes: String? = null, block: CANVAS.() -> Unit = {}) =
     HtmlWrapper(document.create.canvas(classes, block) as HTMLCanvasElement)
+
+class Div(vararg initial: BulmaElement, classes: String = ""): BulmaElement {
+    override val root: HTMLElement = document.create.div(classes)
+
+    var body by bulmaList(initial.toList(), root)
+}
 
 /** [Container](https://bulma.io/documentation/layout/container) element */
 class Container(vararg body: BulmaElement) : BulmaElement {

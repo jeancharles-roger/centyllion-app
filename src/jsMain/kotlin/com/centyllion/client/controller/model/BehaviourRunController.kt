@@ -5,6 +5,7 @@ import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Controller
+import bulma.Div
 import bulma.Help
 import bulma.Icon
 import bulma.Label
@@ -12,7 +13,6 @@ import bulma.Level
 import bulma.Media
 import bulma.Slider
 import bulma.TextColor
-import bulma.div
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Simulator
 import kotlin.math.log10
@@ -37,7 +37,7 @@ class BehaviourRunController(
 
     val titleLabel = Label(behaviour.name)
 
-    val header = Level(listOf(titleLabel), grains(), mobile = true)
+    val grains = Level(center = grains(), mobile = true)
 
     val speedValue = Help(data.probability.toString())
 
@@ -50,7 +50,7 @@ class BehaviourRunController(
 
     val speedColumns = Columns(Column(speedValue, size = ColumnSize.S1), Column(speedSlider), mobile = true)
 
-    override val container = Media(center = listOf(header, speedColumns)).apply {
+    override val container = Media(center = listOf(titleLabel, grains, speedColumns)).apply {
         root.classList.add("is-outlined")
     }
 
@@ -74,7 +74,7 @@ class BehaviourRunController(
     private fun grains(): List<BulmaElement> {
         val reactives = grainIcons(data.mainReactiveId, data.reaction.map { it.reactiveId }).toTypedArray()
         val products = grainIcons(data.mainProductId, data.reaction.map { it.productId }).toTypedArray()
-        return listOf(div(*reactives)) + Icon("arrow-right", color = TextColor.Primary) + div(*products)
+        return listOf(Div(*reactives)) + Icon("arrow-right", color = TextColor.Primary) + Div(*products)
     }
 
     override fun refresh() {
@@ -82,7 +82,7 @@ class BehaviourRunController(
         val speed = context.getSpeed(data)
         speedValue.text = format(speed)
         speedSlider.value = toSlider(speed)
-        header.center = grains()
+        grains.center = grains()
     }
 
 }

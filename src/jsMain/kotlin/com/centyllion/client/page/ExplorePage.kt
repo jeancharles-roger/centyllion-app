@@ -5,6 +5,7 @@ import bulma.BulmaElement
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Control
+import bulma.Div
 import bulma.Field
 import bulma.Icon
 import bulma.Input
@@ -13,7 +14,6 @@ import bulma.TabItem
 import bulma.TabPage
 import bulma.TabPages
 import bulma.Title
-import bulma.div
 import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
@@ -116,7 +116,7 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         { context.error(it)}
     )
 
-    val container = div(
+    val container = Div(
         Title("Search"), Box(search, searchTabs),
         Title("Recent simulations"), Box(recentResult),
         Title("Featured"), Box(featuredResult)

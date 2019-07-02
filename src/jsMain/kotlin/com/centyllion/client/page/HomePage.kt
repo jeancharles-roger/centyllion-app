@@ -5,6 +5,7 @@ import bulma.Button
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Control
+import bulma.Div
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Input
@@ -20,7 +21,6 @@ import bulma.TileChild
 import bulma.TileParent
 import bulma.TileSize
 import bulma.Title
-import bulma.div
 import bulma.noContextColumnsController
 import bulma.noContextPanelController
 import bulma.wrap
@@ -113,7 +113,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         TileParent(TileChild(panelController), size = TileSize.S3),
         TileParent(
             TileChild(userController),
-            TileChild(div(Title("Featured models"),featuredController)),
+            TileChild(Div(Title("Featured models"), featuredController)),
             size = TileSize.S9, vertical = true
         )
     )
@@ -144,7 +144,7 @@ class HomePage(val context: AppContext) : BulmaElement {
                 context.api.fetchSimulations(model.id, false).then {
                     val index = elements.indexOf(model)
                     val mutable = elements.toMutableList()
-                    mutable.addAll(index+1, it)
+                    mutable.addAll(index + 1, it)
                     elements = mutable
                 }
             }

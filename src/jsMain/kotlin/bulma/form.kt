@@ -448,11 +448,11 @@ class FileInput(
  */
 class Slider(
     value: String = "", min: String = "0", max: String = "100", step: String = "5",
-    color: ElementColor = ElementColor.None, size: Size = Size.None,
+    color: ElementColor = ElementColor.None, size: Size = Size.None, fullWidth: Boolean = false,
     var onChange: (event: Event, value: String) -> Unit = { _, _ -> }
 ) : ControlElement {
 
-    override val root = document.create.input(InputType.range, classes = "slider is-fullwidth") {
+    override val root = document.create.input(InputType.range, classes = "slider") {
         this.value = value
         this.min = min
         this.max = max
@@ -492,6 +492,8 @@ class Slider(
     var color by className(color, root)
 
     var size by className(size, root)
+
+    var fullWidth by className(fullWidth, "is-fullwidth", root)
 
     var disabled by booleanAttribute(false, "disabled", root)
 

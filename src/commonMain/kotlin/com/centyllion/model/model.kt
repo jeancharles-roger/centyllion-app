@@ -219,7 +219,7 @@ data class GrainModel(
 
         // clears reference to this grain in behaviours
         val newBehaviours = behaviours.map { behaviour ->
-            behaviour.copy(
+            val new = behaviour.copy(
                 mainReactiveId = if (grain.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
                 mainProductId = if (grain.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
                 reaction = behaviour.reaction.map {
@@ -229,6 +229,7 @@ data class GrainModel(
                     )
                 }
             )
+            if (new == behaviour) behaviour else new
         }
 
         return copy(grains = newGrains, behaviours = newBehaviours)
@@ -258,14 +259,17 @@ data class GrainModel(
 
         // clears reference to this field in grains
         val newGrains = grains.map { grain ->
-            grain.copy(
+            val new = grain.copy(
                 fieldProductions = grain.fieldProductions.filter { it.key != field.id },
-                fieldInfluences = grain.fieldInfluences.filter { it.key != field.id }
+                fieldInfluences = grain.fieldInfluences.filter { it.key != field.id },
+                fieldPermeable = grain.fieldPermeable.filter { it.key != field.id }
             )
+            if (new == grain) grain else new
         }
 
         val newBehaviours = behaviours.map { behaviour ->
-            behaviour.copy(fieldInfluences = behaviour.fieldInfluences.filter { it.key != field.id })
+            val new = behaviour.copy(fieldInfluences = behaviour.fieldInfluences.filter { it.key != field.id })
+            if (new == behaviour) behaviour else new
         }
 
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)

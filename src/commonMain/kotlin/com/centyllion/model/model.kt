@@ -143,6 +143,12 @@ data class Behaviour(
 ) {
     fun reactionIndex(reaction: Reaction) = this.reaction.indexOfFirst { it === reaction }
 
+    fun updateFieldInfluence(id: Int, value: Float): Behaviour {
+        val newFields = fieldInfluences.toMutableMap()
+        newFields[id] = value
+        return copy(fieldInfluences = newFields)
+    }
+
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
     fun applicable(grain: Grain, age: Int, neighbours: List<Pair<Direction, Agent>>): Boolean =
         mainReactiveId == grain.id && agePredicate.check(age) &&

@@ -6,6 +6,7 @@ import bulma.Columns
 import bulma.Control
 import bulma.Controller
 import bulma.Delete
+import bulma.Div
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
@@ -43,6 +44,7 @@ class BehaviourEditController(
             sourceReactiveController.context = data to context
             reactionController.data = data.reaction
             reactionController.context = data to context
+            fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             onUpdate(old, new, this@BehaviourEditController)
             refresh()
         }
@@ -56,6 +58,8 @@ class BehaviourEditController(
             mainProductController.context = new.grains
             sourceReactiveController.context = data to context
             reactionController.context = data to context
+            fieldInfluencesController.context = context.fields
+            fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             refresh()
         }
     }
@@ -164,6 +168,18 @@ class BehaviourEditController(
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
+    val fieldInfluencesController =
+        columnsController(context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }, context.fields) { pair, previous ->
+            previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
+                if (old != new) {
+                    this.data = data.updateFieldInfluence(new.first, new.second)
+                }
+            }
+        }
+
+
+    val fieldsConfiguration = Div(Help("Influences"), fieldInfluencesController)
+
     override val container = Media(
         center = listOf(
             Columns(
@@ -175,7 +191,8 @@ class BehaviourEditController(
                 Column(HorizontalField(Control(Help("Age")), agePredicateController.container), size = ColumnSize.S5),
                 multiline = true
             ),
-            reactionController
+            reactionController,
+            fieldsConfiguration
         ),
         right = listOf(delete)
     ).apply {
@@ -192,6 +209,9 @@ class BehaviourEditController(
         mainReactiveController.refresh()
         mainProductController.refresh()
         reactionController.refresh()
+
+        fieldInfluencesController.refresh()
+        fieldsConfiguration.hidden = context.fields.isEmpty()
     }
 
 }

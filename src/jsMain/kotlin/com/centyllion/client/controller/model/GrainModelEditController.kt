@@ -101,8 +101,15 @@ class GrainModelEditController(
         }
 
     override val container = Columns(
-        Column(fieldsController, size = ColumnSize.S11),
-        Column(addFieldButton, size = ColumnSize.S1),
+        Column(
+            Level(
+                left = listOf(Title("Fields", TextSize.S4)),
+                right = listOf(addFieldButton),
+                mobile = true
+            ),
+            fieldsController,
+            size = ColumnSize.Full
+        ),
         Column(
             Level(
                 left = listOf(Title("Grains", TextSize.S4)),

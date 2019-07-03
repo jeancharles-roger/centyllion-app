@@ -46,7 +46,7 @@ open class Simulator3dViewController(
     }
 
     override var data: Simulator by observable(simulator) { _, _, _ ->
-        camera.position.set(0, 1.25 * data.simulation.width, 0)
+        camera.position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         geometries = geometries()
         materials = materials()
         refresh()
@@ -80,16 +80,16 @@ open class Simulator3dViewController(
     }
 
     val camera = PerspectiveCamera(45, 1.0, 00.1, 1000.0).apply {
-        position.set(0, data.simulation.width * 1.25, 0)
+        position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         lookAt(0, 0, 0)
     }
 
     val scene = Scene().apply {
-        add(AmbientLight(0xcccccc))
+        add(AmbientLight(0x444444))
 
         // adds directional light
-        val directionalLight = DirectionalLight(0xffffff, 2)
-        directionalLight.position.set(0, 1.25 * data.simulation.width, 0)
+        val directionalLight = DirectionalLight(0xffffff, 1)
+        directionalLight.position.set(0, 1.25 * data.simulation.width, 1.25 * data.simulation.width)
         directionalLight.castShadow = true
         add(directionalLight)
     }

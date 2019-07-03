@@ -217,8 +217,8 @@ open class Simulator3dViewController(
         agentMesh.clear()
 
         // adds agents meshes
-        var currentX = -data.simulation.width / 2.0
-        var currentY = -data.simulation.height / 2.0
+        var currentX =  -data.simulation.width / 2.0
+        var currentY = -data.simulation.height / 2.0 + 1.0
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 

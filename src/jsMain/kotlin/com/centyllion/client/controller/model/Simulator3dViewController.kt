@@ -90,7 +90,11 @@ open class Simulator3dViewController(
 
         // adds directional light
         val directionalLight = DirectionalLight(0xffffff, 1)
-        directionalLight.position.set(1.25 * data.simulation.width, 1.25 * data.simulation.width, 1.25 * data.simulation.width)
+        directionalLight.position.set(
+            1.25 * data.simulation.width,
+            1.25 * data.simulation.width,
+            1.25 * data.simulation.width
+        )
         directionalLight.castShadow = true
         add(directionalLight)
     }
@@ -166,7 +170,7 @@ open class Simulator3dViewController(
             }
             mesh == null && newGrainId >= 0 -> {
                 val p = data.simulation.toPosition(index)
-                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0,p.y - data.simulation.height / 2.0)
+                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0, p.y - data.simulation.height / 2.0)
             }
         }
     }
@@ -197,7 +201,7 @@ open class Simulator3dViewController(
             // updates alpha
             it.value.array.set(data.field(id).map {
                 when {
-                    it >+ 1f -> 1f
+                    it > +1f -> 1f
                     it <= minFieldLevel -> 0f
                     else -> 1f / (-log10(it)) / 1.6f
                 }
@@ -217,7 +221,7 @@ open class Simulator3dViewController(
         agentMesh.clear()
 
         // adds agents meshes
-        var currentX =  -data.simulation.width / 2.0
+        var currentX = -data.simulation.width / 2.0
         var currentY = -data.simulation.height / 2.0 + 1.0
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
@@ -241,7 +245,7 @@ open class Simulator3dViewController(
             val levels = data.fields[field.id]!!
             val alpha = Float32Array(levels.map {
                 when {
-                    it >+ 1f -> 1f
+                    it > +1f -> 1f
                     it <= minFieldLevel -> 0f
                     else -> 1f / (-log10(it)) / 1.6f
                 }

@@ -27,6 +27,7 @@ import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.homePage
+import com.centyllion.client.toFixed
 import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
@@ -139,11 +140,14 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, context) { old, new, _ ->
-        if (old != new) {
-            simulation = simulation.copy(simulation = new)
-        }
-    }
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, context,
+        { behaviour, speed, _ ->
+            context.message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
+            val newBehaviour = behaviour.copy(probability = speed)
+            model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
+        },
+        { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
+    )
 
     val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
         val restoredModel = modelHistory.last()

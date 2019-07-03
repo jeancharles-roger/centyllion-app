@@ -87,14 +87,10 @@ class GrainModelEditController(
         columnsController(data.behaviours, data) { behaviour, previous ->
             previous ?: BehaviourEditController(behaviour, data).wrap { controller ->
                 controller.onUpdate = { old, new, _ ->
-                    val behaviours = data.behaviours.toMutableList()
-                    behaviours[data.behaviourIndex(old)] = new
-                    data = data.copy(behaviours = behaviours)
+                    data = data.updateBehaviour(old, new)
                 }
                 controller.onDelete = { delete, _ ->
-                    val behaviours = data.behaviours.toMutableList()
-                    behaviours.removeAt(data.behaviourIndex(delete))
-                    data = data.copy(behaviours = behaviours)
+                    data = data.dropBehaviour(delete)
                 }
                 Column(controller.container, size = ColumnSize.Full)
             }

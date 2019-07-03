@@ -31,6 +31,7 @@ import chartjs.LinearAxisOptions
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
+import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
@@ -40,6 +41,8 @@ import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
     simulation: Simulation, model: GrainModel, val appContext: AppContext,
+    val onChangeSpeed: (behaviour: Behaviour, speed: Double, controller: SimulationRunController) -> Unit =
+        { _, _, _ -> },
     val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Simulation, GrainModel, BulmaElement> {
@@ -134,7 +137,12 @@ class SimulationRunController(
         columnsController(model.behaviours, simulator)
         { behaviour, previous ->
             previous ?: BehaviourRunController(behaviour, simulator).wrap { controller ->
-                controller.onSpeedChange = { behaviour, speed -> simulator.setSpeed(behaviour, speed) }
+                controller.onValidate = { behaviour, speed ->
+                    onChangeSpeed(behaviour, speed, this@SimulationRunController)
+                }
+                controller.onSpeedChange = { behaviour, speed ->
+                    simulator.setSpeed(behaviour, speed)
+                }
                 Column(controller, size = ColumnSize.Full)
             }
         }

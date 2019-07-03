@@ -282,6 +282,25 @@ data class GrainModel(
 
     fun behaviourIndex(behaviour: Behaviour) = behaviours.indexOfFirst { it === behaviour }
 
+    fun updateBehaviour(old: Behaviour, new: Behaviour): GrainModel {
+        val behaviourIndex = behaviourIndex(old)
+        if (behaviourIndex < 0) return this
+
+        val newBehaviours = behaviours.toMutableList()
+        newBehaviours[behaviourIndex] = new
+        return copy(behaviours = newBehaviours)
+    }
+
+    fun dropBehaviour(behaviour: Behaviour): GrainModel {
+        val index = behaviourIndex(behaviour)
+        if (index < 0) return this
+
+        val newBehaviours = behaviours.toMutableList()
+        // removes the field
+        newBehaviours.removeAt(index)
+
+        return copy(behaviours = newBehaviours)
+    }
 }
 
 fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }

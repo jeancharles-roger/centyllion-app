@@ -1,24 +1,28 @@
 package com.centyllion.client.controller.model
 
 import bulma.BulmaElement
+import bulma.Button
 import bulma.Controller
 import bulma.Div
-import bulma.Help
+import bulma.ElementColor
 import bulma.Icon
 import bulma.Label
 import bulma.Level
 import bulma.Media
+import bulma.Size
 import bulma.Slider
 import bulma.TextColor
+import bulma.textButton
+import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Simulator
 import kotlin.math.log10
-import kotlin.math.min
 import kotlin.math.pow
 import kotlin.properties.Delegates.observable
 
 class BehaviourRunController(
     behaviour: Behaviour, simulator: Simulator,
+    var onValidate: (Behaviour, Double) -> Unit = { _, _ -> },
     var onSpeedChange: (Behaviour, Double) -> Unit = { _, _ -> }
 ) : Controller<Behaviour, Simulator, Media> {
 
@@ -36,18 +40,28 @@ class BehaviourRunController(
 
     val grains = Level(center = grains(), mobile = true)
 
-    val speedValue = Help(data.probability.toString())
+    val speedValue: Button = textButton(
+        data.probability.toString(), rounded = true,
+        color = ElementColor.Success, size = Size.Small
+    ) { _ ->
+        val probability = toProbability(speedSlider.value)
+        if (probability != data.probability) onValidate(data, probability)
+    }
 
-    val speedSlider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01")
+    val speedSlider: Slider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01")
     { _, new ->
         val probability = toProbability(new)
         onSpeedChange(data, probability)
-        speedValue.text = format(probability)
+        speedValue.text = probability.toFixed()
+        speedValue.disabled = probability == data.probability
+        speedValue.color = if (probability == data.probability) ElementColor.Success else ElementColor.Warning
+
     }
 
     val header = Level(
         left = listOf(titleLabel),
-        right = listOf(speedSlider, speedValue),
+        center = listOf(speedSlider),
+        right = listOf(speedValue),
         mobile = true
      )
 
@@ -58,10 +72,6 @@ class BehaviourRunController(
     fun toSlider(p: Double) = (10.0.pow(p)).toString()
 
     fun toProbability(value: String) = log10(value.toDouble())
-
-    fun format(value: Double) = value.toString().let {
-        it.substring(0, min(it.lastIndexOf(".") + 4, it.length))
-    }
 
     fun grainIcon(id: Int) = context.model.indexedGrains[id].let {
         if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")
@@ -81,7 +91,9 @@ class BehaviourRunController(
     override fun refresh() {
         titleLabel.text = data.name
         val speed = context.getSpeed(data)
-        speedValue.text = format(speed)
+        speedValue.text = speed.toFixed()
+        speedValue.disabled = speed == data.probability
+        speedValue.color = if (speed == data.probability) ElementColor.Success else ElementColor.Warning
         speedSlider.value = toSlider(speed)
         grains.center = grains()
     }

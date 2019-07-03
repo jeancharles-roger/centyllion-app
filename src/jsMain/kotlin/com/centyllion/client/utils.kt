@@ -8,3 +8,5 @@ external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
 
 fun runWithStripe(key: String, block: (Stripe) -> Unit) =
     require<(String) -> Stripe>(arrayOf("stripe")) { block(it(key)) }
+
+fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String

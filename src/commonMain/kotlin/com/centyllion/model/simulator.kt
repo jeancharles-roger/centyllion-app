@@ -180,7 +180,6 @@ class Simulator(
 
             // applies field diffusion
             model.fields.forEach { field ->
-                // val directions = field.allowedDirection.map { simulation.moveIndex(i, it) }.filter { agents[it] }
                 val count = field.allowedDirection.size
                 val current = fields[field.id]
                 val next = nextFields[field.id]

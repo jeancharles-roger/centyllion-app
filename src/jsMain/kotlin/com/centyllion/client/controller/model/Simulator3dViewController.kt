@@ -15,6 +15,7 @@ import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.geometries.BoxBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.lights.AmbientLight
+import info.laht.threekt.lights.DirectionalLight
 import info.laht.threekt.materials.MeshBasicMaterial
 import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
@@ -83,7 +84,15 @@ open class Simulator3dViewController(
         lookAt(0, 0, 0)
     }
 
-    val scene = Scene().apply { add(AmbientLight()) }
+    val scene = Scene().apply {
+        add(AmbientLight(0xcccccc))
+
+        // adds directional light
+        val directionalLight = DirectionalLight(0xffffff, 2)
+        directionalLight.position.set(0, 1.25 * data.simulation.width, 0)
+        directionalLight.castShadow = true
+        add(directionalLight)
+    }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root)
 
@@ -116,13 +125,18 @@ open class Simulator3dViewController(
     }.toMap()
 
     private fun materials() = data.model.grains.map {
-        it.id to MeshPhongMaterial().apply { color.set(it.color.toLowerCase()) }
+        it.id to MeshPhongMaterial().apply {
+            color.set(it.color.toLowerCase())
+        }
     }.toMap()
 
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
         val mesh = Mesh(geometries[grainId] ?: defaultGeometry, materials[grainId] ?: defaultMaterial)
+        mesh.receiveShadows = true
+        mesh.castShadow = true
+
         // positions the mesh
         mesh.position.set(x, 0, y)
         mesh.rotateX(-PI / 2.0)

@@ -90,7 +90,7 @@ open class Simulator3dViewController(
 
         // adds directional light
         val directionalLight = DirectionalLight(0xffffff, 1)
-        directionalLight.position.set(0, 1.25 * data.simulation.width, 1.25 * data.simulation.width)
+        directionalLight.position.set(1.25 * data.simulation.width, 1.25 * data.simulation.width, 1.25 * data.simulation.width)
         directionalLight.castShadow = true
         add(directionalLight)
     }
@@ -121,7 +121,7 @@ open class Simulator3dViewController(
     private fun geometries() = data.model.grains.map { grain ->
         grain.id to font?.let {
             val height = grain.size
-            TextBufferGeometry(grain.iconString ?: "\uf45c", TextGeometryParametersImpl(it, 1, height))
+            TextBufferGeometry(grain.iconString ?: "\uf45c", TextGeometryParametersImpl(it, 0.8, height))
         }
     }.toMap()
 
@@ -205,7 +205,6 @@ open class Simulator3dViewController(
             // invalidate texture
             it.value.alphaTexture.needsUpdate = true
         }
-
     }
 
     override fun animate() {

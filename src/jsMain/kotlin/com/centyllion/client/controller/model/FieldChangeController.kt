@@ -50,7 +50,7 @@ class FieldChangeController(
     }
 
     val valueSlider = Slider(
-        data.second.toString(), "$min", "$max", "0.01", sliderColor
+        data.second.toString(), "$min", "$max", "0.01", sliderColor, fullWidth = true
     ) { _, value -> data = data.first to value.toFloat() }
 
     fun help(value: Float) = when {

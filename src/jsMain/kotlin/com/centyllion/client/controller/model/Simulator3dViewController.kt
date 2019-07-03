@@ -6,6 +6,7 @@ import bulma.canvas
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
+import com.centyllion.model.minFieldLevel
 import info.laht.threekt.THREE.DoubleSide
 import info.laht.threekt.THREE.FloatType
 import info.laht.threekt.THREE.LuminanceFormat
@@ -194,7 +195,13 @@ open class Simulator3dViewController(
         fieldSupports.forEach {
             val id = it.key
             // updates alpha
-            it.value.array.set(data.field(id).map { ((if (it >= 1f) 1f else 1f / (-log10(it)) / 1.6f)) }.toTypedArray())
+            it.value.array.set(data.field(id).map {
+                when {
+                    it >+ 1f -> 1f
+                    it <= minFieldLevel -> 0f
+                    else -> 1f / (-log10(it)) / 1.6f
+                }
+            }.toTypedArray())
             // invalidate texture
             it.value.alphaTexture.needsUpdate = true
         }
@@ -233,7 +240,13 @@ open class Simulator3dViewController(
         // adds field meshes
         fieldSupports = data.model.fields.map { field ->
             val levels = data.fields[field.id]!!
-            val alpha = Float32Array(levels.map { ((if (it >= 1f) 1f else 1f / (-log10(it)) / 1.6f)) }.toTypedArray())
+            val alpha = Float32Array(levels.map {
+                when {
+                    it >+ 1f -> 1f
+                    it <= minFieldLevel -> 0f
+                    else -> 1f / (-log10(it)) / 1.6f
+                }
+            }.toTypedArray())
 
             val alphaTexture = DataTexture(
                 alpha, data.simulation.width, data.simulation.height, LuminanceFormat, FloatType

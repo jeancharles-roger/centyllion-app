@@ -65,7 +65,7 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
         simulationContext.clearRect(0.0, 0.0, canvasWidth, canvasHeight)
 
         var currentX = 0.0
-        var currentY = yStep
+        var currentY = 0.0
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
             data.model.fields.forEach { field ->
@@ -84,7 +84,7 @@ open class Simulator2dViewController(simulator: Simulator) : SimulatorViewContro
             if (grain != null) {
                 simulationContext.fillStyle = grain.color
                 if (grain.iconString != null) {
-                    simulationContext.fillText(grain.iconString, currentX, currentY)
+                    simulationContext.fillText(grain.iconString, currentX, currentY+yStep)
                 } else {
                     simulationContext.fillRect(currentX, currentY, xSize, ySize)
                 }

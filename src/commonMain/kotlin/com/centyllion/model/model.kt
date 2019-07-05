@@ -329,6 +329,26 @@ data class Simulation(
     val width: Int, val height: Int, val depth: Int,
     val agents: List<Int>, val assets: List<Asset3d> = emptyList()
 ) {
+
+    fun assetIndex(asset: Asset3d) = assets.indexOfFirst { it === asset }
+
+    fun updateAsset(old: Asset3d, new: Asset3d): Simulation {
+        val newAssets = assets.toMutableList()
+        newAssets[assetIndex(old)] = new
+        return copy(assets = newAssets)
+    }
+
+    fun dropAsset(asset: Asset3d): Simulation {
+        val index = assetIndex(asset)
+        if (index < 0) return this
+
+        val assets = assets.toMutableList()
+        // removes the asset
+        assets.removeAt(index)
+
+        return copy(assets = assets)
+    }
+
     @Transient
     val levelSize = width * height
 

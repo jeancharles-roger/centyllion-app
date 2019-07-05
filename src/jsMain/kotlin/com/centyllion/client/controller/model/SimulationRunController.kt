@@ -31,6 +31,7 @@ import chartjs.LinearAxisOptions
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
+import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
@@ -53,6 +54,7 @@ class SimulationRunController(
             descriptionController.data = new.description
             simulator = Simulator(context, new)
             simulationViewController.data = simulator
+            asset3dController.data = new.assets
             running = false
             onUpdate(old, new, this@SimulationRunController)
             refresh()
@@ -78,6 +80,8 @@ class SimulationRunController(
             descriptionController.readOnly = new
             simulationViewController = createSimulationViewController()
             simulationViewController.readOnly = new
+            asset3dController.readOnly = new
+            assetsColumn.hidden = new
         }
     }
 
@@ -161,10 +165,35 @@ class SimulationRunController(
 
     val simulationView = Column(simulationViewController.container, size = ColumnSize.Full)
 
+    val addAsset3dButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+        this.data = data.copy(assets = data.assets + Asset3d(""))
+    }
+
+    val asset3dController = noContextColumnsController(simulation.assets) {
+        asset, previous -> previous ?: Asset3dEditController(asset).wrap { controller ->
+            controller.onUpdate = { old, new, _ ->
+                if (old != new) data = data.updateAsset(old, new)
+            }
+            controller.onDelete = { delete, _ ->
+                data = data.dropAsset(delete)
+            }
+            Column(controller, size = ColumnSize.Half)
+        }
+    }
+
+    val assetsColumn = Column(
+        Level(
+            left = listOf(Title("Assets", TextSize.S4)),
+            right = listOf(addAsset3dButton),
+            mobile = true
+        ),
+        asset3dController, desktopSize = ColumnSize.Full
+    )
+
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
-        Column(Title("Grains", TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
+        Column(Title("Grains", TextSize.S4),  grainsController, desktopSize = ColumnSize.S2),
         Column(
             Columns(
                 Column(
@@ -188,6 +217,7 @@ class SimulationRunController(
             desktopSize = ColumnSize.S6
         ),
         Column(Title("Behaviours", TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
+        assetsColumn,
         multiline = true
     )
 

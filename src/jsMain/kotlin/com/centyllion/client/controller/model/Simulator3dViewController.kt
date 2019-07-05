@@ -51,11 +51,10 @@ open class Simulator3dViewController(
     }
 
     override var data: Simulator by observable(simulator) { _, _, _ ->
-        println("Update simulator")
         camera.position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         geometries = geometries()
         materials = materials()
-        addAssets()
+        refreshAssets()
         refresh()
     }
 
@@ -85,8 +84,7 @@ open class Simulator3dViewController(
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-
-    init { addAssets() }
+    init { refreshAssets() }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -163,13 +161,19 @@ open class Simulator3dViewController(
         }
     }
 
-    private fun addAssets() {
+    private fun refreshAssets() {
+        // clears previous assets
+        assetScenes.values.forEach { scene.remove(it) }
+        assetScenes.clear()
+
+        // sets new assets
         data.simulation.assets.map { asset ->
             loadAsset(asset.url).then {
                 it.position.set(asset.x, asset.y, asset.z)
                 it.scale.set(asset.xScale, asset.yScale, asset.zScale)
                 it.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
                 scene.add(it)
+                assetScenes[asset] = it
             }.catch { appContext.error(it) }
         }
     }

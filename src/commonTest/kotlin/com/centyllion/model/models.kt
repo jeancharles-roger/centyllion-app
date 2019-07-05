@@ -22,5 +22,5 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
             else -> if (Random.nextDouble() < 0.15) 0 else -1
         }
     }
-    return Simulation("", "", width, height, 1, agents)
+    return createSimulation("", "", width, height, 1, agents)
 }

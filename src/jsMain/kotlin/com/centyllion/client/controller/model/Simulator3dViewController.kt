@@ -5,6 +5,7 @@ import bulma.HtmlWrapper
 import bulma.canvas
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
+import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
 import com.centyllion.model.minFieldLevel
 import info.laht.threekt.THREE.DoubleSide
@@ -13,6 +14,7 @@ import info.laht.threekt.THREE.LuminanceFormat
 import info.laht.threekt.THREE.NearestFilter
 import info.laht.threekt.cameras.PerspectiveCamera
 import info.laht.threekt.external.controls.OrbitControls
+import info.laht.threekt.external.loaders.GLTFLoader
 import info.laht.threekt.geometries.BoxBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.lights.AmbientLight
@@ -24,6 +26,7 @@ import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
 import info.laht.threekt.scenes.Scene
+import kotlinx.io.IOException
 import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
 import threejs.extra.core.Font
@@ -31,12 +34,13 @@ import threejs.geometries.TextBufferGeometry
 import threejs.geometries.TextGeometryParametersImpl
 import threejs.textures.DataTexture
 import kotlin.browser.window
+import kotlin.js.Promise
 import kotlin.math.PI
 import kotlin.math.log10
 import kotlin.properties.Delegates.observable
 
 open class Simulator3dViewController(
-    simulator: Simulator, appContext: AppContext
+    simulator: Simulator, val appContext: AppContext
 ) : SimulatorViewController(simulator) {
 
     class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array) {
@@ -47,9 +51,11 @@ open class Simulator3dViewController(
     }
 
     override var data: Simulator by observable(simulator) { _, _, _ ->
+        println("Update simulator")
         camera.position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         geometries = geometries()
         materials = materials()
+        addAssets()
         refresh()
     }
 
@@ -75,6 +81,12 @@ open class Simulator3dViewController(
     val defaultMaterial = MeshPhongMaterial().apply { color.set("red") }
 
     val agentMesh: MutableMap<Int, Mesh> = mutableMapOf()
+
+    val scenesCache: MutableMap<String, Scene> = mutableMapOf()
+
+    val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
+
+    init { addAssets() }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -135,6 +147,32 @@ open class Simulator3dViewController(
         }
     }.toMap()
 
+    private fun loadAsset(url: String): Promise<Scene> = Promise { resolve, reject ->
+        val scene = scenesCache[url]
+        if (scene != null) {
+            resolve(scene)
+        } else {
+            GLTFLoader().load(url,
+                {
+                    println("Asset $url loaded.")
+                    scenesCache[url] = it.scene
+                    resolve(it.scene)
+                },
+                {}, { reject(IOException(it.toString())) }
+            )
+        }
+    }
+
+    private fun addAssets() {
+        data.simulation.assets.map { asset ->
+            loadAsset(asset.url).then {
+                it.position.set(asset.x, asset.y, asset.z)
+                it.scale.set(asset.xScale, asset.yScale, asset.zScale)
+                it.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
+                scene.add(it)
+            }.catch { appContext.error(it) }
+        }
+    }
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
@@ -270,6 +308,7 @@ open class Simulator3dViewController(
             geometry.rotateX(PI / 2.0)
             geometry.translate(0.0, -0.1, 0.0)
             val mesh = Mesh(geometry, material)
+            mesh.receiveShadows = true
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()

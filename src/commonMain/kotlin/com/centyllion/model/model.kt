@@ -40,6 +40,14 @@ data class Predicate<C : Comparable<C>>(
 }
 
 @Serializable
+data class Asset3d(
+    val url: String,
+    val x: Double = 0.0, val y: Double = 0.0, val z: Double = 0.0,
+    val xScale: Double = 1.0, val yScale: Double = 1.0, val zScale: Double = 1.0,
+    val xRotation: Double = 0.0, val yRotation: Double = 0.0, val zRotation: Double = 0.0
+)
+
+@Serializable
 data class Field(
     val id: Int = 0,
     val name: String = "",
@@ -311,13 +319,15 @@ fun createSimulation(
     width: Int = 100,
     height: Int = 100,
     depth: Int = 1,
-    agents: List<Int> = emptyList(width * height * depth)
-) = Simulation(name, description, width, height, depth, agents)
+    agents: List<Int> = emptyList(width * height * depth),
+    assets: List<Asset3d> = emptyList()
+) = Simulation(name, description, width, height, depth, agents, assets)
 
 @Serializable
 data class Simulation(
     val name: String, val description: String,
-    val width: Int, val height: Int, val depth: Int, val agents: List<Int>
+    val width: Int, val height: Int, val depth: Int,
+    val agents: List<Int>, val assets: List<Asset3d> = emptyList()
 ) {
     @Transient
     val levelSize = width * height

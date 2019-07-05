@@ -1,13 +1,20 @@
 package com.centyllion.backend.route
 
 import com.centyllion.backend.data.Data
+import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.common.adminRole
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.PartData
+import io.ktor.http.content.readAllParts
+import io.ktor.http.content.streamProvider
+import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.route
 
 fun Route.asset(data: Data) {
@@ -19,6 +26,30 @@ fun Route.asset(data: Data) {
                 context.respondBytes(asset.data, ContentType.Image.PNG)
             } else {
                 context.respond(HttpStatusCode.NotFound)
+            }
+        }
+
+        post {
+            withRequiredPrincipal(adminRole) {
+                val multipart = call.receiveMultipart()
+                val parts = multipart.readAllParts()
+
+                val name = parts
+                    .filterIsInstance(PartData.FormItem::class.java)
+                    .firstOrNull { it.name == "name" }?.value
+
+                val content = parts
+                    .filterIsInstance(PartData.FileItem::class.java)
+                    .firstOrNull()?.let { it.streamProvider().use { it.readBytes()} }
+
+                parts.forEach { it.dispose() }
+
+                if (name != null && content != null) {
+                    val asset = data.createAsset(name, content)
+                    context.respond(asset.id)
+                } else {
+                    context.respond(HttpStatusCode.BadRequest)
+                }
             }
         }
     }

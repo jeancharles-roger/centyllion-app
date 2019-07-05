@@ -14,6 +14,8 @@ import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
+import org.w3c.files.File
+import org.w3c.xhr.FormData
 import org.w3c.xhr.XMLHttpRequest
 import kotlin.js.Promise
 
@@ -21,12 +23,12 @@ import kotlin.js.Promise
 const val finalState: Short = 4
 const val successStatus: Short = 200
 
-fun fetch(method: String, url: String, bearer: String? = null, content: String? = null): Promise<String> =
+fun fetch(method: String, url: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
     Promise { resolve, reject ->
         val request = XMLHttpRequest()
         request.open(method, url, true)
         bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
-        request.setRequestHeader("Content-Type", "application/json")
+        contentType?.let { request.setRequestHeader("Content-Type", it) }
         request.onreadystatechange = {
             if (request.readyState == finalState) {
                 if (request.status == successStatus) {
@@ -213,4 +215,11 @@ class Api(val instance: KeycloakInstance?) {
                 .then { json.parse(Subscription.serializer(), it) }
         }
 
+    fun createAsset(name: String, file: File) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            val data = FormData()
+            data.append("name", name)
+            data.append("file", file)
+            fetch("POST", "/api/asset", bearer, data, null)
+        }
 }

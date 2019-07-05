@@ -1,12 +1,17 @@
 package com.centyllion.client.page
 
 import bulma.BulmaElement
+import bulma.Button
 import bulma.CardFooter
 import bulma.CardFooterContentItem
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Delete
+import bulma.ElementColor
+import bulma.FileInput
+import bulma.Icon
+import bulma.Level
 import bulma.SubTitle
 import bulma.TabItem
 import bulma.TabPage
@@ -26,6 +31,7 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
+import org.w3c.files.get
 
 class AdministrationPage(val context: AppContext) : BulmaElement {
 
@@ -70,6 +76,25 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val userPage = TabPage(TabItem("Users", "user"), userController)
 
+    val assetInput: FileInput = FileInput("Asset") { input, files ->
+        val file = files?.get(0)
+        input.fileName = file?.name ?: ""
+        assetSend.disabled = file == null
+    }
+
+    val assetSend = Button("Send", Icon("upload"), ElementColor.Primary, rounded = true, disabled = true) {
+        assetInput.files?.get(0)?.let { file ->
+            api.createAsset(file.name, file)
+                .then { context.message("Asset ${file.name} created with id $it." )}
+                .catch { context.error(it) }
+        }
+    }
+
+    val assetPage = TabPage(
+        TabItem("Assets", "file-code"),
+        Level(center = listOf(assetInput, assetSend))
+    )
+
     val onTabChange: (TabPage) -> Unit = {
         when (it) {
             featuredPage -> {
@@ -82,7 +107,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     }
 
     val container: BulmaElement = TabPages(
-        featuredPage, userPage,
+        featuredPage, userPage, assetPage,
         tabs = Tabs(boxed = true), onTabChange = onTabChange
     )
 

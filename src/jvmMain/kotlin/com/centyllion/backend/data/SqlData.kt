@@ -196,15 +196,10 @@ class SqlData(
             DbSimulationDescription
                 .find { DbSimulationDescriptions.modelId eq UUID.fromString(modelId) }
                 .forEach { deleteSimulation(it) }
-            deleteGrainModel(DbModelDescription.findById(UUID.fromString(modelId)))
-        }
-    }
-
-    /** Must be called inside transaction */
-    private fun deleteGrainModel(model: DbModelDescription?) {
-        model?.let {
-            it.delete()
-            it.info.delete()
+            DbModelDescription.findById(UUID.fromString(modelId))?.let {
+                it.delete()
+                it.info.delete()
+            }
         }
     }
 

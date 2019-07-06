@@ -20,7 +20,6 @@ import org.jetbrains.exposed.dao.UUIDTable
 import org.jetbrains.exposed.sql.ColumnType
 import org.joda.time.DateTime
 import java.util.UUID
-import javax.sql.rowset.serial.SerialBlob
 
 class TsVectorColumnType : ColumnType()  {
     override fun sqlType() = "tsvector"
@@ -288,12 +287,10 @@ class DbAsset(id: EntityID<UUID>) : UUIDEntity(id) {
     var content by DbAssets.content
 
     fun toModel() = Asset(
-        id.toString(), name,
-        content.getBytes(1, content.length().toInt())
+        id.toString(), name
     )
 
     fun fromModel(source: Asset) {
         name = source.name
-        content = SerialBlob(source.data)
     }
 }

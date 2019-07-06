@@ -280,6 +280,7 @@ class SqlData(
         simulation?.let {
             it.delete()
             it.info.delete()
+            it.thumbnailId?.let { deleteAsset(it.toString()) }
         }
     }
 
@@ -371,8 +372,16 @@ class SqlData(
         }
     }
 
-    override fun getAsset(id: String) = transaction(database) {
-        DbAsset.findById(UUID.fromString(id))?.toModel()
+    private fun assetsRequest(extension: String? ) =
+        if (extension == null) DbAsset.all() else DbAsset.find { DbAssets.name regexp "^.*\\.$extension$" }
+
+    override fun getAllAssets(offset: Int, limit: Int, extension: String?) = transaction(database) {
+        val content = assetsRequest(extension).limit(limit, offset).reversed().map { it.toModel() }
+        ResultPage(content, offset, assetsRequest(extension).count())
+    }
+
+    override fun getAssetContent(id: String) = transaction(database) {
+        DbAsset.findById(UUID.fromString(id))?.content?.let { it.getBytes(1, it.length().toInt()) }
     }
 
     override fun createAsset(name: String, data: ByteArray): Asset = transaction(database) {
@@ -382,8 +391,10 @@ class SqlData(
         }.toModel()
     }
 
-    override fun deleteAsset(id: String) {
-        transaction(database) { DbAsset.findById(UUID.fromString(id))?.delete() }
+    override fun deleteAsset(id: String) = deleteAsset(UUID.fromString(id))
+
+    fun deleteAsset(id: UUID) {
+        transaction(database) { DbAsset.findById(id)?.delete() }
     }
 }
 

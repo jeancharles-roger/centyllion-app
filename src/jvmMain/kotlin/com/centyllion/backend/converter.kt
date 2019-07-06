@@ -1,5 +1,6 @@
 package com.centyllion.backend
 
+import com.centyllion.model.Asset
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -65,6 +66,10 @@ class JsonConverter : ContentConverter {
                 is User -> stringify(
                     ResultPage.serializer(User.serializer()),
                     value as ResultPage<User>
+                )
+                is Asset -> stringify(
+                    ResultPage.serializer(Asset.serializer()),
+                    value as ResultPage<Asset>
                 )
                 else -> stringify(
                     ResultPage.serializer(SimulationDescription.serializer()),

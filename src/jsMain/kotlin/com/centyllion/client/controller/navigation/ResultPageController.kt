@@ -30,8 +30,8 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
 
     override var readOnly: Boolean = true
 
-    var limit: Int by observable(8) { _, old, new ->
-        if (old != new) refresh()
+    var limit: Int by observable(16) { _, old, new ->
+        if (old != new) fetch(offset, new).then { data = it }.catch { error(it) }
     }
 
     var offset: Int by observable(0) { _, old, new ->
@@ -49,6 +49,8 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
             .apply { this.onClick = this@ResultPageController.onClick }
 
     override val container: BulmaElement = Div(pagination, contentController)
+
+    fun refreshFetch() = fetch(offset, limit).then { data = it }.catch { error(it) }
 
     override fun refresh() {
         pagination.items = (0..(data.totalSize - 1) / limit).map { page ->

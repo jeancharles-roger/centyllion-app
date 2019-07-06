@@ -8,9 +8,11 @@ import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Delete
+import bulma.Div
 import bulma.ElementColor
 import bulma.FileInput
 import bulma.Icon
+import bulma.Label
 import bulma.Level
 import bulma.SubTitle
 import bulma.TabItem
@@ -21,6 +23,7 @@ import bulma.columnsController
 import bulma.noContextColumnsController
 import bulma.wrap
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.admin.AssetAdministrationController
 import com.centyllion.client.controller.admin.GrainModelFeaturedController
 import com.centyllion.client.controller.admin.UserAdministrationController
 import com.centyllion.client.controller.navigation.FeaturedController
@@ -80,19 +83,41 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
         val file = files?.get(0)
         input.fileName = file?.name ?: ""
         assetSend.disabled = file == null
+        assetSendResult.text = ""
     }
 
-    val assetSend = Button("Send", Icon("upload"), ElementColor.Primary, rounded = true, disabled = true) {
+    val assetSend = Button(
+        "Send", Icon("upload"), ElementColor.Primary, rounded = true, disabled = true
+    ) { button ->
+        button.disabled = true
+        button.loading = true
         assetInput.files?.get(0)?.let { file ->
             api.createAsset(file.name, file)
-                .then { context.message("Asset ${file.name} created with id $it." )}
-                .catch { context.error(it) }
+                .then {
+                    button.loading = false
+                    assetsController.refreshFetch()
+                    assetSendResult.text = "Asset created with id $it."
+                }
+                .catch {
+                    button.loading = false
+                    assetSendResult.text = it.message ?: "error"
+                    context.error(it)
+                }
         }
     }
 
+    val assetSendResult = Label()
+
+    val assetsController = ResultPageController(
+        { data, previous ->
+            previous ?: AssetAdministrationController(data).wrap { Column(it.container, size = ColumnSize.S3) }
+        },
+        { offset, limit -> api.fetchAllAssets(offset, limit) }
+    )
+
     val assetPage = TabPage(
         TabItem("Assets", "file-code"),
-        Level(center = listOf(assetInput, assetSend))
+        Div(Level(center = listOf(assetInput, assetSend, assetSendResult)), assetsController)
     )
 
     val onTabChange: (TabPage) -> Unit = {
@@ -103,6 +128,8 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
             }
             userPage -> api.fetchAllUsers(true, 0, userController.limit)
                 .then { userController.data = it }.catch { context.error(it) }
+            assetPage -> api.fetchAllAssets(0, userController.limit)
+                .then { assetsController.data = it }.catch { context.error(it) }
         }
     }
 

@@ -55,7 +55,8 @@ class MemoryData(
     val simulations: LinkedHashMap<String, SimulationDescription> = linkedMapOf(),
     val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf(),
     val subscriptions: LinkedHashMap<String, Subscription> = linkedMapOf(),
-    val assets: LinkedHashMap<String, Asset> = linkedMapOf()
+    val assets: LinkedHashMap<String, Asset> = linkedMapOf(),
+    val assetContents: LinkedHashMap<String, ByteArray> = linkedMapOf()
 ) : Data {
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
@@ -199,11 +200,16 @@ class MemoryData(
         subscriptions.remove(subscriptionId)
     }
 
-    override fun getAsset(id: String) = assets[id]
+    override fun getAllAssets(offset: Int, limit: Int, extension: String?) =
+        assets.values.filter { extension == null || it.name.endsWith(extension) } .toList().limit(offset, limit)
+
+    override fun getAssetContent(id: String) = assetContents[id]
 
     override fun createAsset(name: String, data: ByteArray): Asset {
-        val result = Asset(newId(), name, data)
-        assets[newId()] = result
+        val id = newId()
+        val result = Asset(id, name)
+        assets[id] = result
+        assetContents[id] = data
         return result
     }
 

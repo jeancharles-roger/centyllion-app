@@ -1,5 +1,6 @@
 package com.centyllion.client
 
+import com.centyllion.model.Asset
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -213,6 +214,13 @@ class Api(val instance: KeycloakInstance?) {
             val content = json.stringify(SubscriptionParameters.serializer(), parameters)
             fetch("POST", "/api/user/$userId/subscription", bearer, content)
                 .then { json.parse(Subscription.serializer(), it) }
+        }
+
+    fun fetchAllAssets(offset: Int = 0, limit: Int = 20) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/asset?offset=$offset&limit=$limit", bearer).then {
+                json.parse(ResultPage.serializer(Asset.serializer()), it)
+            }
         }
 
     fun createAsset(name: String, file: File) =

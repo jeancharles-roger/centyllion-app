@@ -19,11 +19,18 @@ import io.ktor.routing.route
 
 fun Route.asset(data: Data) {
     route("asset") {
+        get {
+            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+            val extension = call.parameters["extension"]
+            context.respond(data.getAllAssets(offset, limit, extension))
+        }
+
         get("{asset}") {
             val id = call.parameters["asset"]!!
-            val asset = data.getAsset(id)
+            val asset = data.getAssetContent(id)
             if (asset != null) {
-                context.respondBytes(asset.data, ContentType.Image.PNG)
+                context.respondBytes(asset, ContentType.Image.PNG)
             } else {
                 context.respond(HttpStatusCode.NotFound)
             }

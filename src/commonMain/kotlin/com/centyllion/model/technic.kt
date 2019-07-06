@@ -72,8 +72,8 @@ data class Subscription(
 
 }
 
+@Serializable
 class Asset(
     val id: String,
-    val name: String,
-    val data: ByteArray
+    val name: String
 )

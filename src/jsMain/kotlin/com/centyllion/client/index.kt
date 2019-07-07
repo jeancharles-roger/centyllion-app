@@ -15,8 +15,6 @@ import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
-import kotlinx.html.dom.create
-import kotlinx.html.js.link
 import kotlinx.io.IOException
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
@@ -35,13 +33,6 @@ interface CssFile {
 @JsName("index")
 fun index() {
 
-    // fetches css config and includes css files
-    fetch("GET", "css/centyllion/css.config.json").then {
-        JSON.parse<CssFile>(it).files.forEach {
-            document.head?.appendChild(document.create.link(it, "stylesheet"))
-        }
-    }
-
     // creates nav bar and adds it to body
     val navBar = NavBar(
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),
@@ -59,6 +50,7 @@ fun index() {
     val keycloak = Keycloak()
 
     val api = Api(keycloak)
+    api.addCss()
 
     val options = KeycloakInitOptions(
         promiseType = "native", onLoad = "check-sso", timeSkew = 10
@@ -201,12 +193,12 @@ class BrowserContext(
         }
     }
 
-    override fun getFont(url: String): Promise<Font> = Promise { resolve, reject ->
-        val font = fontCache[url]
+    override fun getFont(path: String): Promise<Font> = Promise { resolve, reject ->
+        val font = fontCache[path]
         if (font != null) resolve(font)
 
-        FontLoader().load(url,
-            { fontCache[url] = it; resolve(it) },
+        FontLoader().load(api.url(path),
+            { fontCache[path] = it; resolve(it) },
             {},
             { reject(IOException("${it.message}: ${it.filename}")) }
         )

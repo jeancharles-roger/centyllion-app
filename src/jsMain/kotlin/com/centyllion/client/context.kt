@@ -32,7 +32,7 @@ interface AppContext {
 
     val stripeKey: String
 
-    fun getFont(url: String): Promise<Font>
+    fun getFont(path: String): Promise<Font>
 
     val events: List<ClientEvent>
 

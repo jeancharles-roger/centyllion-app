@@ -13,7 +13,7 @@ import com.centyllion.model.Asset3d
 import kotlin.properties.Delegates.observable
 
 class Asset3dEditController(
-    initialData: Asset3d,
+    initialData: Asset3d, readOnly: Boolean = false,
     var onUpdate: (old: Asset3d, new: Asset3d, controller: Asset3dEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Asset3d, controller: Asset3dEditController) -> Unit = { _, _ -> }
 ) : NoContextController<Asset3d, Media>() {
@@ -26,7 +26,7 @@ class Asset3dEditController(
         }
     }
 
-    override var readOnly: Boolean by observable(false) { _, old, new ->
+    override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
             urlController.readOnly = new
             xController.readOnly = new

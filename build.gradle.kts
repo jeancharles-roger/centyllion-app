@@ -158,7 +158,10 @@ tasks {
     val cssDir = "$buildDir/assemble/main/css"
     val webRoot = rootProject.file("webroot")
     val deploy = rootProject.file("deploy")
+
     val mainFunction = "com.centyllion.client.index()"
+    val centyllionUrl = "https://beta.centyllion.com"
+    val externalFunction = "com.centyllion.client.external(\"$centyllionUrl\")"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
 
@@ -224,6 +227,22 @@ tasks {
 
                 requirejs(['chartjs', 'centyllion'], function(chartjs, centyllion) {
                     centyllion.$mainFunction
+                })""".trimIndent()
+            )
+
+            // Constructs a centyllion.config.json
+            val centyllionFile = file("$jsDir/centyllion.config.json")
+            centyllionFile.writeText(
+                """requirejs.config({
+                    'baseUrl': '$centyllionUrl/js',
+                    paths: {
+                        'chartjs': 'Chart.js-2.8.0/Chart',
+                        $moduleJoined
+                    }
+                })
+                
+                requirejs(['chartjs', 'centyllion'], function(chartjs, centyllion) {
+                    centyllion.$externalFunction
                 })""".trimIndent()
             )
         }

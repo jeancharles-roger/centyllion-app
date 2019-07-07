@@ -140,7 +140,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, context,
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, context, isSimulationReadOnly,
         { behaviour, speed, _ ->
             context.message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
             val newBehaviour = behaviour.copy(probability = speed)

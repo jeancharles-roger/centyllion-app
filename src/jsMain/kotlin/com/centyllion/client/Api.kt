@@ -12,37 +12,21 @@ import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import com.centyllion.model.emptyFeatured
 import keycloak.KeycloakInstance
+import kotlinx.html.dom.create
+import kotlinx.html.js.link
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
 import org.w3c.files.File
 import org.w3c.xhr.FormData
 import org.w3c.xhr.XMLHttpRequest
+import kotlin.browser.document
 import kotlin.js.Promise
-
 
 const val finalState: Short = 4
 const val successStatus: Short = 200
 
-fun fetch(method: String, url: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
-    Promise { resolve, reject ->
-        val request = XMLHttpRequest()
-        request.open(method, url, true)
-        bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
-        contentType?.let { request.setRequestHeader("Content-Type", it) }
-        request.onreadystatechange = {
-            if (request.readyState == finalState) {
-                if (request.status == successStatus) {
-                    resolve(request.responseText)
-                } else {
-                    reject(Throwable("Can't $method '$url': (${request.status}) ${request.statusText}"))
-                }
-            }
-        }
-        request.send(content)
-    }
-
-class Api(val instance: KeycloakInstance?) {
+class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     val json = Json(JsonConfiguration.Companion.Stable)
 
@@ -55,6 +39,32 @@ class Api(val instance: KeycloakInstance?) {
             result.then { bearer -> block(bearer).then(resolve).catch(reject) }.catch(reject)
         }
 
+    fun url(path: String) = "$baseUrl$path"
+
+    fun fetch(method: String, path: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
+        Promise { resolve, reject ->
+            val request = XMLHttpRequest()
+            request.open(method, url(path), true)
+            bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
+            contentType?.let { request.setRequestHeader("Content-Type", it) }
+            request.onreadystatechange = {
+                if (request.readyState == finalState) {
+                    if (request.status == successStatus) {
+                        resolve(request.responseText)
+                    } else {
+                        reject(Throwable("Can't $method '${url(path)}': (${request.status}) ${request.statusText}"))
+                    }
+                }
+            }
+            request.send(content)
+        }
+
+    /** Fetches css config and includes css files */
+    fun addCss() = fetch("GET", "/css/centyllion/css.config.json").then {path ->
+            JSON.parse<CssFile>(path).files.forEach {
+                document.head?.appendChild(document.create.link(url(it), "stylesheet"))
+            }
+        }
 
     fun fetchVersion() =
         fetch("GET", "/version.json").then { json.parse(Version.serializer(), it) }

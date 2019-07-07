@@ -145,15 +145,15 @@ open class Simulator3dViewController(
         }
     }.toMap()
 
-    private fun loadAsset(url: String): Promise<Scene> = Promise { resolve, reject ->
-        val scene = scenesCache[url]
+    private fun loadAsset(path: String): Promise<Scene> = Promise { resolve, reject ->
+        val scene = scenesCache[path]
         if (scene != null) {
             resolve(scene)
         } else {
-            GLTFLoader().load(url,
+            GLTFLoader().load(appContext.api.url(path),
                 {
-                    println("Asset $url loaded.")
-                    scenesCache[url] = it.scene
+                    println("Asset $path loaded.")
+                    scenesCache[path] = it.scene
                     resolve(it.scene)
                 },
                 {}, { reject(IOException(it.toString())) }

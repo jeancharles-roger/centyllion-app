@@ -37,11 +37,13 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
+import kotlinx.html.classes
 import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
-    simulation: Simulation, model: GrainModel, val appContext: AppContext,
+    simulation: Simulation, model: GrainModel,
+    val appContext: AppContext, readOnly: Boolean = false,
     val onChangeSpeed: (behaviour: Behaviour, speed: Double, controller: SimulationRunController) -> Unit =
         { _, _, _ -> },
     val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
@@ -74,7 +76,7 @@ class SimulationRunController(
         }
     }
 
-    override var readOnly: Boolean by observable(false) { _, old, new ->
+    override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
             nameController.readOnly = new
             descriptionController.readOnly = new
@@ -99,12 +101,12 @@ class SimulationRunController(
 
     private var view3d = true
 
-    val nameController = EditableStringController(data.name, "Simulation Name")
+    val nameController = EditableStringController(data.name, "Simulation Name", readOnly)
     { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description")
+    val descriptionController = EditableStringController(data.description, "Description", readOnly)
     { _, new, _ ->
         data = data.copy(description = new)
     }
@@ -153,7 +155,9 @@ class SimulationRunController(
 
     val selectedGrainController = GrainSelectController(null, model.grains)
 
-    val chartCanvas = canvas {}
+    val chartCanvas = canvas {
+        if (!presentCharts) classes = setOf("is-hidden")
+    }
 
     var simulationViewController: SimulatorViewController by observable(createSimulationViewController())
     { _, old, new ->
@@ -170,7 +174,7 @@ class SimulationRunController(
     }
 
     val asset3dController = noContextColumnsController(simulation.assets) {
-        asset, previous -> previous ?: Asset3dEditController(asset).wrap { controller ->
+        asset, previous -> previous ?: Asset3dEditController(asset, readOnly).wrap { controller ->
             controller.onUpdate = { old, new, _ ->
                 if (old != new) data = data.updateAsset(old, new)
             }
@@ -188,7 +192,7 @@ class SimulationRunController(
             mobile = true
         ),
         asset3dController, desktopSize = ColumnSize.Full
-    )
+    ).apply { hidden = readOnly }
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),

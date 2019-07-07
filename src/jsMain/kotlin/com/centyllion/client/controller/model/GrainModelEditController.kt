@@ -77,7 +77,7 @@ class GrainModelEditController(
                     data = data.updateGrain(old, new)
                 }
                 controller.onDelete = { delete, _ ->
-                    data = data.dropGrain(data.grainIndex(delete))
+                    data = data.dropGrain(delete)
                 }
                 Column(controller, size = ColumnSize.Full)
             }

@@ -151,6 +151,26 @@ data class Behaviour(
 ) {
     fun reactionIndex(reaction: Reaction) = this.reaction.indexOfFirst { it === reaction }
 
+    fun updateReaction(old: Reaction, new: Reaction): Behaviour {
+        val index = reactionIndex(old)
+        if (index < 0) return this
+
+        val newBehaviours = reaction.toMutableList()
+        newBehaviours[index] = new
+        return copy(reaction = newBehaviours)
+    }
+
+    fun dropReaction(reaction: Reaction): Behaviour{
+        val index = reactionIndex(reaction)
+        if (index < 0) return this
+
+        val newReactions = this.reaction.toMutableList()
+        // removes the field
+        newReactions.removeAt(index)
+
+        return copy(reaction = newReactions)
+    }
+
     fun updateFieldInfluence(id: Int, value: Float): Behaviour {
         val newFields = fieldInfluences.toMutableMap()
         newFields[id] = value
@@ -223,8 +243,9 @@ data class GrainModel(
         return copy(grains = newGrains)
     }
 
-    fun dropGrain(index: Int): GrainModel {
-        val grain = grains[index]
+    fun dropGrain(grain: Grain): GrainModel {
+        val index = grainIndex(grain)
+        if (index < 0) return this
 
         val newGrains = grains.toMutableList()
         // removes the grain
@@ -236,10 +257,11 @@ data class GrainModel(
                 mainReactiveId = if (grain.id == behaviour.mainReactiveId) -1 else behaviour.mainReactiveId,
                 mainProductId = if (grain.id == behaviour.mainProductId) -1 else behaviour.mainProductId,
                 reaction = behaviour.reaction.map {
-                    it.copy(
+                    val newReaction = it.copy(
                         reactiveId = if (grain.id == it.reactiveId) -1 else it.reactiveId,
                         productId = if (grain.id == it.productId) -1 else it.productId
                     )
+                    if (newReaction == it) it else newReaction
                 }
             )
             if (new == behaviour) behaviour else new
@@ -420,7 +442,7 @@ data class Simulation(
     fun positionInside(x: Int, y: Int, z: Int = 0) =
         z in 0 until depth && y in 0 until height && x in 0 until width
 
-    /** Cleans the simulation to remove unexisting grains */
+    /** Cleans the simulation to remove non existing grains */
     fun cleaned(model: GrainModel) =
         copy(agents = agents.map { if (model.indexedGrains[it] == null) -1 else it })
 

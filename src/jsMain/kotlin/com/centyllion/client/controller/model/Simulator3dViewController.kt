@@ -124,7 +124,7 @@ open class Simulator3dViewController(
     }
 
     init {
-        appContext.getFont("font/fa-solid-900.json").then {
+        appContext.getFont("/font/fa-solid-900.json").then {
             font = it
             geometries = geometries()
             refresh()

@@ -32,7 +32,6 @@ interface CssFile {
 
 @JsName("index")
 fun index() {
-
     // creates nav bar and adds it to body
     val navBar = NavBar(
         brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),

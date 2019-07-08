@@ -25,7 +25,8 @@ class ToastOptions(
     val animation: ToastAnimation? = null
 )
 
-@JsName("bulmaToast")
-external object bulmaToast {
-    fun toast(options: ToastOptions)
+external interface BulmaToast {
+    fun toast(options: ToastOptions = definedExternally)
 }
+
+lateinit var bulmaToast: BulmaToast

@@ -221,11 +221,18 @@ tasks {
                     'baseUrl': 'js',
                     paths: {
                         'chartjs': 'Chart.js-2.8.0/Chart',
+                        'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
                         $moduleJoined
+                    },
+                    shim: {
+                        'bulmaToast': {
+                            exports: 'bulmaToast'
+                        }
                     }
                 })
-
-                requirejs(['chartjs', 'centyllion'], function(chartjs, centyllion) {
+                
+                requirejs(['chartjs', 'bulmaToast', 'centyllion'], function(chartjs, bulmaToast, centyllion) {
+                    centyllion.com.centyllion.client.dependencies(bulmaToast)
                     centyllion.$mainFunction
                 })""".trimIndent()
             )
@@ -241,7 +248,8 @@ tasks {
                     }
                 })
                 
-                requirejs(['chartjs', 'centyllion'], function(chartjs, centyllion) {
+                requirejs(['chartjs', 'bulmaToast', 'centyllion'], function(chartjs, bulmaToast, centyllion) {
+                    centyllion.com.centyllion.client.dependencies(bulmaToast)
                     centyllion.$externalFunction
                 })""".trimIndent()
             )
@@ -361,8 +369,6 @@ tasks {
                 }
             }
         }
-
-
     }
 
 }

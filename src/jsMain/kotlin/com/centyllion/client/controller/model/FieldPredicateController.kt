@@ -9,7 +9,7 @@ import com.centyllion.model.Predicate
 import kotlin.properties.Delegates.observable
 
 class FieldPredicateController(
-    value: Pair<Int, Predicate<Float>>, fields: List<Field>, min: Float = -1f, max: Float = 1f,
+    value: Pair<Int, Predicate<Float>>, fields: List<Field>,
     var onUpdate: (old: Pair<Int, Predicate<Float>>, new: Pair<Int, Predicate<Float>>, controller: FieldPredicateController) -> Unit = { _, _, _ -> }
 ) : Controller<Pair<Int, Predicate<Float>>, List<Field>, Column> {
 
@@ -20,7 +20,7 @@ class FieldPredicateController(
         }
     }
 
-    val field get() = context.find { it.id == data.first }
+    val field get() = context.find { it.id == data.first } ?: context.first()
 
     override var context: List<Field> by observable(fields) { _, old, new ->
         if (old != new) {
@@ -32,6 +32,10 @@ class FieldPredicateController(
         if (old != new) {
             //valueSlider.disabled = new
         }
+    }
+
+    val fieldController = FieldSelectController(field, context) { old, new, _ ->
+        if (old != new) data = new.id to data.second
     }
 
     val predicateController = FloatPredicateController(value.second) { old, new, _ ->

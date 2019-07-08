@@ -21,6 +21,8 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
+import com.centyllion.model.Operator
+import com.centyllion.model.Predicate
 import com.centyllion.model.Reaction
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
@@ -163,6 +165,20 @@ class BehaviourEditController(
         }
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
+
+    val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
+        val predicate = -1 to Predicate(Operator.GreaterThan, 0f)
+        this.data = data.copy(fieldPredicates = data.fieldPredicates + predicate)
+    }
+
+    val fieldPredicatesController =
+        columnsController(data.fieldPredicates, context.fields) { pair, previous ->
+            previous ?: FieldPredicateController(pair, context.fields) { old, new, _ ->
+                if (old != new) {
+                    this.data = data.updateFieldPredicate(old, new)
+                }
+            }
+        }
 
     val fieldInfluencesController =
         columnsController(context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }, context.fields) { pair, previous ->

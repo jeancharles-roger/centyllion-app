@@ -64,8 +64,8 @@ class FieldChangeController(
     override val container = Column(
         Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueField)), size = ColumnSize.Full
     ).apply {
-        root.style.paddingTop = "0.3rem"
-        root.style.paddingBottom = "0.3rem"
+        root.style.paddingTop = "0.2rem"
+        root.style.paddingBottom = "0.1rem"
     }
 
     override fun refresh() {

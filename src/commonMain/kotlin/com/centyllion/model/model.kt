@@ -145,11 +145,15 @@ data class Behaviour(
     val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
+    val fieldPredicates: List<Pair<Int, Predicate<Float>>> = emptyList(),
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ) {
-    fun reactionIndex(reaction: Reaction) = this.reaction.indexOfFirst { it === reaction }
+    fun reactionIndex(reaction: Reaction): Int {
+        val identity = this.reaction.indexOfFirst { it === reaction}
+        return if (identity < 0) this.reaction.indexOf(reaction) else identity
+    }
 
     fun updateReaction(old: Reaction, new: Reaction): Behaviour {
         val index = reactionIndex(old)
@@ -171,6 +175,31 @@ data class Behaviour(
         return copy(reaction = newReactions)
     }
 
+    fun fieldPredicateIndex(predicate: Pair<Int, Predicate<Float>>): Int {
+        val identity = fieldPredicates.indexOfFirst { it === predicate}
+        return if (identity < 0) fieldPredicates.indexOf(predicate) else identity
+    }
+
+    fun updateFieldPredicate(old: Pair<Int, Predicate<Float>>, new: Pair<Int, Predicate<Float>>): Behaviour {
+        val index = fieldPredicateIndex(old)
+        if (index < 0) return this
+
+        val newList = fieldPredicates.toMutableList()
+        newList[index] = new
+        return copy(fieldPredicates = newList)
+    }
+
+    fun dropFieldPredicate(predicate: Pair<Int, Predicate<Float>>): Behaviour {
+        val index = fieldPredicateIndex(predicate)
+        if (index < 0) return this
+
+        val newList = fieldPredicates.toMutableList()
+        // removes the field
+        newList.removeAt(index)
+
+        return copy(fieldPredicates = newList)
+    }
+
     fun updateFieldInfluence(id: Int, value: Float): Behaviour {
         val newFields = fieldInfluences.toMutableMap()
         newFields[id] = value
@@ -178,13 +207,16 @@ data class Behaviour(
     }
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
-    fun applicable(grain: Grain, age: Int, neighbours: List<Pair<Direction, Agent>>): Boolean =
-        mainReactiveId == grain.id && agePredicate.check(age) &&
-                reaction.fold(true) { a, r ->
-                    a && r.allowedDirection.any { d ->
-                        neighbours.any { it.first == d && it.second.id == r.reactiveId }
-                    }
+    fun applicable(grain: Grain, age: Int, fields: List<Pair<Int, Float>>, neighbours: List<Pair<Direction, Agent>>): Boolean =
+            mainReactiveId == grain.id && agePredicate.check(age) &&
+            fieldPredicates.fold(true) { a , p ->
+                a && p.second.check(fields.firstOrNull { it.first == p.first }?.second ?: 0f)
+            } &&
+            reaction.fold(true) { a, r ->
+                a && r.allowedDirection.any { d ->
+                    neighbours.any { it.first == d && it.second.id == r.reactiveId }
                 }
+            }
 
     fun usedGrains(model: GrainModel) =
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)

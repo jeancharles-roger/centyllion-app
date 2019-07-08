@@ -46,6 +46,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val saveIcon = "cloud-upload-alt"
     val shareIcon = "share-square"
     val newIcon = "plus"
+    val cloneIcon = "clone"
     val deleteIcon = "trash"
 
     val api = context.api
@@ -193,15 +194,22 @@ class ShowPage(val context: AppContext) : BulmaElement {
         "Delete Simulation", Icon(deleteIcon, color = TextColor.Danger)
     ) { deleteSimulation() }
 
+    val cloneModelItem =
+        DropdownSimpleItem("Clone Model", Icon(cloneIcon, color = TextColor.Primary)) { cloneModel() }
+
     val newSimulationItem =
         DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
+
+    val cloneSimulationItem =
+        DropdownSimpleItem("Clone Simulation", Icon(cloneIcon, color = TextColor.Primary)) { cloneSimulation() }
 
     val loadingItem = DropdownSimpleItem("Loading simulations", Icon("spinner", spin = true))
 
     val moreDropdownItems = listOf(
         publishModelItem, publishSimulationItem, DropdownDivider(),
         deleteModelItem, deleteSimulationItem, DropdownDivider(),
-        newSimulationItem, DropdownDivider()
+        cloneModelItem, DropdownDivider(),
+        newSimulationItem, cloneSimulationItem, DropdownDivider()
     )
 
     val moreDropdown = Dropdown(
@@ -296,7 +304,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     }
 
     fun save() {
-        val needModelSave = model != originalModel
+        val needModelSave = model != originalModel || model.id.isEmpty()
         if (needModelSave && model.id.isEmpty()) {
             // The model needs to be created first
             api.saveGrainModel(model.model)
@@ -376,12 +384,41 @@ class ShowPage(val context: AppContext) : BulmaElement {
         save()
     }
 
+    fun cloneModel() {
+        // saves current model
+        save()
+
+        // creates cloned model
+        val cloned = emptyGrainModelDescription.copy(
+            model = model.model.copy(name = model.model.name + " cloned")
+        )
+        setModel(cloned)
+        setSimulation(emptySimulationDescription)
+
+        // closes the action
+        moreDropdown.active = false
+        editionTab.selectedPage = modelPage
+        context.message("Model cloned")
+    }
+
     fun newSimulation() {
         save()
         setSimulation(emptySimulationDescription)
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
         context.message("New simulation")
+    }
+
+    fun cloneSimulation() {
+        save()
+        val cloned = emptySimulationDescription.copy(
+            simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
+        )
+        setSimulation(cloned)
+        
+        moreDropdown.active = false
+        editionTab.selectedPage = simulationPage
+        context.message("Simulation cloned")
     }
 
     fun deleteModel() {
@@ -447,7 +484,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         redoModelButton.disabled = modelFuture.isEmpty()
         undoSimulationButton.disabled = simulationHistory.isEmpty()
         redoSimulationButton.disabled = simulationFuture.isEmpty()
-        saveButton.disabled = model == originalModel && simulation == originalSimulation
+        saveButton.disabled = model == originalModel && model.id.isNotEmpty() && simulation == originalSimulation && simulation.id.isNotEmpty()
     }
 
     fun refreshMoreButtons() {

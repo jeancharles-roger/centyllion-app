@@ -223,11 +223,6 @@ tasks {
                         'chartjs': 'Chart.js-2.8.0/Chart',
                         'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
                         $moduleJoined
-                    },
-                    shim: {
-                        'bulmaToast': {
-                            exports: 'bulmaToast'
-                        }
                     }
                 })
                 
@@ -244,6 +239,7 @@ tasks {
                     'baseUrl': '$centyllionUrl/js',
                     paths: {
                         'chartjs': 'Chart.js-2.8.0/Chart',
+                        'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
                         $moduleJoined
                     }
                 })

@@ -34,7 +34,11 @@ interface CssFile {
 fun index() {
     // creates nav bar and adds it to body
     val navBar = NavBar(
-        brand = listOf(NavBarImageItem("https://www.centyllion.com/assets/images/logo-white-2by1.png", "/")),
+        brand = listOf(
+            NavBarImageItem(
+                "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
+            ).apply { imgNode.style.maxHeight = "4rem" }
+        ),
         end = listOf(
             NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),
             NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")

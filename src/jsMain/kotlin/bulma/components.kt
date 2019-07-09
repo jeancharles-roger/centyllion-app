@@ -1,13 +1,42 @@
 package bulma
 
-import kotlinx.html.*
+import kotlinx.html.a
+import kotlinx.html.article
+import kotlinx.html.aside
+import kotlinx.html.button
+import kotlinx.html.div
 import kotlinx.html.dom.create
+import kotlinx.html.footer
+import kotlinx.html.header
+import kotlinx.html.hr
+import kotlinx.html.i
+import kotlinx.html.img
 import kotlinx.html.js.div
 import kotlinx.html.js.li
 import kotlinx.html.js.nav
 import kotlinx.html.js.onClickFunction
-import org.w3c.dom.*
+import kotlinx.html.p
+import kotlinx.html.role
+import kotlinx.html.section
+import kotlinx.html.span
+import kotlinx.html.ul
+import org.w3c.dom.HTMLAnchorElement
+import org.w3c.dom.HTMLButtonElement
+import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLParagraphElement
+import org.w3c.dom.HTMLSpanElement
+import org.w3c.dom.HTMLUListElement
 import kotlin.browser.document
+import kotlin.collections.List
+import kotlin.collections.emptyList
+import kotlin.collections.firstOrNull
+import kotlin.collections.forEach
+import kotlin.collections.getOrNull
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.set
+import kotlin.collections.toList
 import kotlin.properties.Delegates.observable
 
 enum class BreadcrumbSeparator(override val className: String) : HasClassName {
@@ -416,7 +445,7 @@ class NavBarImageItem(
         onClickFunction = { onClick(this@NavBarImageItem) }
     }
 
-    private val imgNode = root.querySelector("img") as HTMLElement
+    val imgNode = root.querySelector("img") as HTMLElement
 
     var href by attribute(href, "href", root)
 

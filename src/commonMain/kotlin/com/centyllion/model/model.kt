@@ -210,7 +210,7 @@ data class Behaviour(
     fun applicable(grain: Grain, age: Int, fields: List<Pair<Int, Float>>, neighbours: List<Pair<Direction, Agent>>): Boolean =
             mainReactiveId == grain.id && agePredicate.check(age) &&
             fieldPredicates.fold(true) { a , p ->
-                a && p.second.check(fields.firstOrNull { it.first == p.first }?.second ?: 0f)
+                a && p.second.check((fields.firstOrNull { it.first == p.first }?.second ?: 0f).flatten(minFieldLevel))
             } &&
             reaction.fold(true) { a, r ->
                 a && r.allowedDirection.any { d ->

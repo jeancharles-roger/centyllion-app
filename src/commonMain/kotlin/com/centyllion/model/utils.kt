@@ -120,3 +120,5 @@ fun availableName(existing: Collection<String>, prefix: String): String = existi
 /** Find a color excluding already [used] */
 fun availableColor(used: Collection<String>) =
     (colorNames.keys - used).let { if (it.isEmpty()) "red" else it.random() }
+
+fun Float.flatten(threshold: Float, line: Float = 0f) = if (this <= threshold) line else this

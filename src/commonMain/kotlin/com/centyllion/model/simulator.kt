@@ -121,14 +121,14 @@ class Simulator(
                     if (reactiveGrains.contains(grain)) {
                         // a grain is present, a behaviour can be triggered
                         val age = ageAtIndex(i)
-                        val fields = fieldsAtIndex(i)
+                        val fieldValues = fieldsAtIndex(i)
 
                         // find all neighbours
                         val neighbours = neighbours(i)
 
                         // searches for applicable behaviours
                         val applicable = allBehaviours
-                            .filter { it.applicable(grain, age, fields, neighbours) } // found applicable behaviours
+                            .filter {it.applicable(grain, age, fieldValues, neighbours) } // found applicable behaviours
                             .filter { random.nextDouble() < speeds[it]!! } // filters by probability
 
                         // selects behaviour if any is applicable

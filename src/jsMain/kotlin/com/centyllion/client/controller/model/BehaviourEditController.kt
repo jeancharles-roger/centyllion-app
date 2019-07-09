@@ -6,7 +6,6 @@ import bulma.Columns
 import bulma.Control
 import bulma.Controller
 import bulma.Delete
-import bulma.Div
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
@@ -46,6 +45,7 @@ class BehaviourEditController(
             sourceReactiveController.context = data to context
             reactionController.data = data.reaction
             reactionController.context = data to context
+            fieldPredicatesController.data = data.fieldPredicates
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             onUpdate(old, new, this@BehaviourEditController)
             refresh()
@@ -60,6 +60,7 @@ class BehaviourEditController(
             mainProductController.context = new.grains
             sourceReactiveController.context = data to context
             reactionController.context = data to context
+            fieldPredicatesController.context = context.fields
             fieldInfluencesController.context = context.fields
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             refresh()
@@ -77,6 +78,8 @@ class BehaviourEditController(
             mainProductController.readOnly = new
             sourceReactiveController.readOnly = new
             reactionController.readOnly = new
+            fieldPredicatesController.readOnly = new
+            fieldInfluencesController.readOnly = new
             container.right = if (new) emptyList() else listOf(delete)
         }
     }
@@ -167,7 +170,7 @@ class BehaviourEditController(
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
     val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
-        val predicate = -1 to Predicate(Operator.GreaterThan, 0f)
+        val predicate = context.fields.first().id to Predicate(Operator.GreaterThan, 0f)
         this.data = data.copy(fieldPredicates = data.fieldPredicates + predicate)
     }
 
@@ -190,7 +193,10 @@ class BehaviourEditController(
         }
 
 
-    val fieldsConfiguration = Div(Help("Influences"), fieldInfluencesController)
+    val fieldsConfiguration = Columns(
+        Column(Level(left= listOf(Help("Predicates")), right = listOf(addFieldPredicateButton)), fieldPredicatesController, size = ColumnSize.S7),
+        Column(Help("Influences"), fieldInfluencesController, size = ColumnSize.S5)
+    )
 
     override val container = Media(
         center = listOf(
@@ -222,6 +228,7 @@ class BehaviourEditController(
         mainProductController.refresh()
         reactionController.refresh()
 
+        fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()
         fieldsConfiguration.hidden = context.fields.isEmpty()
     }

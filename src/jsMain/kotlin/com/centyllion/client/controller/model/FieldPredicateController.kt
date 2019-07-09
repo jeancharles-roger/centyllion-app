@@ -15,6 +15,8 @@ class FieldPredicateController(
 
     override var data: Pair<Int, Predicate<Float>> by observable(value) { _, old, new ->
         if (old != new) {
+            fieldController.data = field
+            predicateController.data = new.second
             onUpdate(old, new, this@FieldPredicateController)
             refresh()
         }
@@ -24,13 +26,15 @@ class FieldPredicateController(
 
     override var context: List<Field> by observable(fields) { _, old, new ->
         if (old != new) {
+            fieldController.context = new
             refresh()
         }
     }
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            //valueSlider.disabled = new
+            fieldController.readOnly = new
+            predicateController.readOnly = new
         }
     }
 
@@ -44,10 +48,12 @@ class FieldPredicateController(
 
 
     override val container = Column(
-        Level(left = listOf(), right = listOf(predicateController)), size = ColumnSize.Full
+        Level(left = listOf(fieldController), right = listOf(predicateController)), size = ColumnSize.Full
     )
 
     override fun refresh() {
+        fieldController.refresh()
+        predicateController.refresh()
     }
 
 }

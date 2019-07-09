@@ -284,7 +284,7 @@ tasks {
 
             // Constructs a css.files
             val cssFiles = file("$cssDir/css.config.json")
-            val content = files.map { "\"css/centyllion/$it\"" }.joinToString(",")
+            val content = files.map { "\"/css/centyllion/$it\"" }.joinToString(",")
             cssFiles.writeText("{ \"files\": [$content] }")
         }
     }

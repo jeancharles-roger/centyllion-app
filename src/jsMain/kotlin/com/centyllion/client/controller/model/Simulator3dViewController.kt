@@ -16,6 +16,7 @@ import info.laht.threekt.cameras.PerspectiveCamera
 import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.external.loaders.GLTFLoader
 import info.laht.threekt.geometries.BoxBufferGeometry
+import info.laht.threekt.geometries.CylinderBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.lights.AmbientLight
 import info.laht.threekt.lights.DirectionalLight
@@ -135,7 +136,15 @@ open class Simulator3dViewController(
     private fun geometries() = data.model.grains.map { grain ->
         grain.id to font?.let {
             val height = grain.size
-            TextBufferGeometry(grain.iconString ?: "\uf45c", TextGeometryParametersImpl(it, 0.8, height))
+            when (grain.icon) {
+                "square" -> BoxBufferGeometry(0.8, height, 0.8)
+                "square-full" -> BoxBufferGeometry(1, height, 1)
+                "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
+                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
+                    rotateX(-PI / 2.0)
+                }
+            }
+
         }
     }.toMap()
 
@@ -186,7 +195,6 @@ open class Simulator3dViewController(
 
         // positions the mesh
         mesh.position.set(x, 0, y)
-        mesh.rotateX(-PI / 2.0)
 
         mesh.updateMatrix()
         mesh.matrixAutoUpdate = false

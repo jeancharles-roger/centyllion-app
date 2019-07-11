@@ -98,7 +98,7 @@ data class Grain(
     val deathProbability = if (halfLife > 0) 1.0 - 2.0.pow(-1.0 / halfLife) else 0.0
 
     @Transient
-    val iconString = solidIconNames[icon]
+    val iconString = solidIconNames[icon] ?: "\uf45c"
 
     fun updateFieldProduction(id: Int, value: Float): Grain {
         val newFields = fieldProductions.toMutableMap()

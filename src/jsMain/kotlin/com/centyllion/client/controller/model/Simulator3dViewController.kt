@@ -110,7 +110,10 @@ open class Simulator3dViewController(
         add(directionalLight)
     }
 
-    val orbitControl = OrbitControls(camera, simulationCanvas.root)
+    val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
+        it.asDynamic().addEventListener("change", this::render)
+         Unit
+    }
 
     val renderer = WebGLRenderer(WebGLRendererParams(simulationCanvas.root, antialias = true)).apply {
         setClearColor(ColorConstants.white, 1)
@@ -259,9 +262,15 @@ open class Simulator3dViewController(
             // invalidate texture
             it.value.alphaTexture.needsUpdate = true
         }
+
+        render()
     }
 
     override fun animate() {
+
+    }
+
+    fun render() {
         renderer.render(scene, camera)
     }
 
@@ -325,6 +334,7 @@ open class Simulator3dViewController(
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()
 
+        render()
     }
 
     override fun dispose() {

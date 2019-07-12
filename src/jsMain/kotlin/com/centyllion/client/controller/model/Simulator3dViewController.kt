@@ -186,6 +186,7 @@ open class Simulator3dViewController(
                 it.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
                 scene.add(it)
                 assetScenes[asset] = it
+                render()
             }.catch { appContext.error(it) }
         }
     }

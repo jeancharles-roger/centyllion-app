@@ -20,6 +20,11 @@ val emptySimulation = createSimulation("")
 val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
+fun <T> List<T>.identityFirstIndexOf(value: T): Int {
+    val identity = this.indexOfFirst { it === value}
+    return if (identity < 0) this.indexOf(value) else identity
+}
+
 enum class Operator(val label: String) {
     Equals("="), NotEquals("!="), LessThan("<"), LessThanOrEquals("<="), GreaterThan(">"), GreaterThanOrEquals(">=")
 }
@@ -150,10 +155,7 @@ data class Behaviour(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ) {
-    fun reactionIndex(reaction: Reaction): Int {
-        val identity = this.reaction.indexOfFirst { it === reaction}
-        return if (identity < 0) this.reaction.indexOf(reaction) else identity
-    }
+    fun reactionIndex(reaction: Reaction) = this.reaction.identityFirstIndexOf(reaction)
 
     fun updateReaction(old: Reaction, new: Reaction): Behaviour {
         val index = reactionIndex(old)
@@ -175,10 +177,7 @@ data class Behaviour(
         return copy(reaction = newReactions)
     }
 
-    fun fieldPredicateIndex(predicate: Pair<Int, Predicate<Float>>): Int {
-        val identity = fieldPredicates.indexOfFirst { it === predicate}
-        return if (identity < 0) fieldPredicates.indexOf(predicate) else identity
-    }
+    fun fieldPredicateIndex(predicate: Pair<Int, Predicate<Float>>) = fieldPredicates.identityFirstIndexOf(predicate)
 
     fun updateFieldPredicate(old: Pair<Int, Predicate<Float>>, new: Pair<Int, Predicate<Float>>): Behaviour {
         val index = fieldPredicateIndex(old)
@@ -262,7 +261,7 @@ data class GrainModel(
 
     fun availableColor() = availableColor(grains.map(Grain::color) + fields.map(Field::color))
 
-    fun grainIndex(grain: Grain) = grains.indexOfFirst { it === grain }
+    fun grainIndex(grain: Grain) = grains.identityFirstIndexOf(grain)
 
     fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableColor())
 
@@ -308,7 +307,7 @@ data class GrainModel(
 
     fun newField() = Field(availableFieldId(), availableFieldName(), availableColor())
 
-    fun fieldIndex(field: Field) = fields.indexOfFirst { it === field }
+    fun fieldIndex(field: Field) = fields.identityFirstIndexOf(field)
 
     fun updateField(old: Field, new: Field): GrainModel {
         val newFields = fields.toMutableList()
@@ -342,7 +341,7 @@ data class GrainModel(
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
 
-    fun behaviourIndex(behaviour: Behaviour) = behaviours.indexOfFirst { it === behaviour }
+    fun behaviourIndex(behaviour: Behaviour) = behaviours.identityFirstIndexOf(behaviour)
 
     fun updateBehaviour(old: Behaviour, new: Behaviour): GrainModel {
         val behaviourIndex = behaviourIndex(old)
@@ -384,7 +383,7 @@ data class Simulation(
     val agents: List<Int>, val assets: List<Asset3d> = emptyList()
 ) {
 
-    fun assetIndex(asset: Asset3d) = assets.indexOfFirst { it === asset }
+    fun assetIndex(asset: Asset3d) = assets.identityFirstIndexOf(asset)
 
     fun updateAsset(old: Asset3d, new: Asset3d): Simulation {
         val newAssets = assets.toMutableList()

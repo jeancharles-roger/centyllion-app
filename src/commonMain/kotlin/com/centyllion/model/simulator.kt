@@ -9,10 +9,6 @@ const val minFieldLevel = 1e-14f
 
 val emptyFloatArray = FloatArray(0)
 
-/** Gets value at [index] or put the result of [setter]. */
-inline fun <T> Array<T?>.getOrPut(index: Int, setter: () -> T): T =
-    this[index].let { if (it == null) { val new = setter(); this[index] = new; new } else { it } }
-
 class Agent(val index: Int, val id: Int, val age: Int, val deltaFields: FloatArray)
 
 class ApplicableBehavior(
@@ -63,9 +59,7 @@ class Simulator(
     val fields get() = if (currentFields) fields1 else fields2
     val nextFields get() = if (!currentFields) fields1 else fields2
 
-    fun field(id: Int) = fields[id] ?: FloatArray(simulation.agents.size).apply {
-        println("Creating array for field $id")
-    }
+    fun field(id: Int) = fields[id] ?: emptyFloatArray
 
     private var currentFields: Boolean = true
 

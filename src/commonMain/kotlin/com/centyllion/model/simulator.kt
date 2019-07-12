@@ -98,7 +98,7 @@ class Simulator(
     }
 
     /** Executes one step and returns the applied behaviours and the dead indexes. */
-    fun oneStep(): Pair<List<ApplicableBehavior>, List<Int>> {
+    fun oneStep(): Pair<Collection<ApplicableBehavior>, Collection<Int>> {
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
 
@@ -111,8 +111,8 @@ class Simulator(
         // all will contains index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
-        //val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
-        val all: Array<MutableList<ApplicableBehavior>?> = arrayOfNulls(simulation.dataSize)
+        val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
+        //val all: Array<MutableList<ApplicableBehavior>?> = arrayOfNulls(simulation.dataSize)
         for (i in 0 until simulation.dataSize) {
             val grain = grainAtIndex(i)
             if (grain != null) {
@@ -225,12 +225,9 @@ class Simulator(
             }
         }
 
-        // all not null and not empty
-        val allNotNull = all.filterNotNull().filter { it.isNotEmpty() }
         // filters behaviors that are concurrent
-        val toExclude = allNotNull.filter { it.size > 1 }.flatMap { it - it[random.nextInt(it.size)] }
-        // flatMap { it } is better in performances than flatten().
-        val toExecute = allNotNull.flatMap { it } - toExclude
+        val toExclude = all.values.filter { it.size > 1 }.flatMap { it - it[random.nextInt(it.size)] }
+        val toExecute = (all.values.flatten() - toExclude).toSet()
         toExecute.forEach { it.apply(this) }
 
         // stores count for each grain

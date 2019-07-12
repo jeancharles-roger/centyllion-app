@@ -19,7 +19,7 @@ abstract class SimulatorViewController(simulator: Simulator) : NoContextControll
 
     abstract fun animate()
 
-    abstract fun oneStep(applied: List<ApplicableBehavior>, deads: List<Int>)
+    abstract fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>)
 
     open var selectedGrain: Grain? = null
 

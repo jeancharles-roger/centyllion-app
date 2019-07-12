@@ -225,7 +225,7 @@ open class Simulator3dViewController(
         }
     }
 
-    override fun oneStep(applied: List<ApplicableBehavior>, deads: List<Int>) {
+    override fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {
         // Updates agents
 
         // applies behaviors
@@ -243,7 +243,7 @@ open class Simulator3dViewController(
         }
 
         // applies deaths
-        deads.forEach { transformMesh(it, -1) }
+        dead.forEach { transformMesh(it, -1) }
 
         // updates fields
         fieldSupports.forEach {

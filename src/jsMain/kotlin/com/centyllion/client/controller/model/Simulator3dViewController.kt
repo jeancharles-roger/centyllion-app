@@ -220,7 +220,7 @@ open class Simulator3dViewController(
             }
             mesh == null && newGrainId >= 0 -> {
                 val p = data.simulation.toPosition(index)
-                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0, p.y - data.simulation.height / 2.0)
+                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0, p.y - data.simulation.height / 2.0 + 1.0)
             }
         }
     }

@@ -58,7 +58,6 @@ open class Simulator3dViewController(
     }
 
     override var data: Simulator by observable(simulator) { _, _, _ ->
-        camera.position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         geometries = geometries()
         materials = materials()
         refreshAssets()
@@ -101,7 +100,7 @@ open class Simulator3dViewController(
     }
 
     val camera = PerspectiveCamera(45, 1.0, 0.1, 1000.0).apply {
-        position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
+        position.set(0, 0.0,  1.25 * data.simulation.width)
         lookAt(0, 0, 0)
     }
 
@@ -112,8 +111,8 @@ open class Simulator3dViewController(
         val directionalLight = DirectionalLight(0xffffff, 1)
         directionalLight.position.set(
             1.25 * data.simulation.width,
-            2 * data.simulation.width,
-            1.25 * data.simulation.width
+            1.25 * data.simulation.width,
+            2 * data.simulation.width
         )
         directionalLight.castShadow = true
         add(directionalLight)
@@ -123,7 +122,6 @@ open class Simulator3dViewController(
         PlaneBufferGeometry(100, 100),
         MeshBasicMaterial().apply { visible = false }
     ).apply {
-        rotateX(-PI / 2.0)
         scene.add(this)
     }
 
@@ -160,8 +158,8 @@ open class Simulator3dViewController(
         intersect.forEach {
             pointer.position.set(
                 (it.point.x - 0.5).roundToInt(),
-                0.0,//(it.point.y - 0.5).roundToInt(),
-                (it.point.z - 0.5).roundToInt()
+                (it.point.y - 0.5).roundToInt(),
+                0.0 //(it.point.z - 0.5).roundToInt()
             )
         }
 
@@ -194,12 +192,10 @@ open class Simulator3dViewController(
         grain.id to font?.let {
             val height = grain.size
             when (grain.icon) {
-                "square" -> BoxBufferGeometry(0.8, height, 0.8)
-                "square-full" -> BoxBufferGeometry(1, height, 1)
+                "square" -> BoxBufferGeometry(0.8, 0.8, height)
+                "square-full" -> BoxBufferGeometry(1, 1, height)
                 "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
-                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
-                    rotateX(-PI / 2.0)
-                }
+                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height))
             }
 
         }
@@ -253,7 +249,7 @@ open class Simulator3dViewController(
         mesh.castShadow = true
 
         // positions the mesh
-        mesh.position.set(x, 0, y)
+        mesh.position.set(x,  y, 0.0)
 
         mesh.updateMatrix()
         mesh.matrixAutoUpdate = false
@@ -283,7 +279,7 @@ open class Simulator3dViewController(
                     index,
                     newGrainId,
                     p.x - data.simulation.width / 2.0,
-                    p.y - data.simulation.height / 2.0 + 1.0
+                    - (p.y - data.simulation.height / 2.0 - 1.0)
                 )
             }
         }
@@ -341,7 +337,7 @@ open class Simulator3dViewController(
 
         // adds agents meshes
         var currentX = -data.simulation.width / 2.0
-        var currentY = -data.simulation.height / 2.0 + 1.0
+        var currentY = data.simulation.height / 2.0 + 1.0
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
@@ -352,7 +348,7 @@ open class Simulator3dViewController(
             currentX += 1.0
             if (currentX >= data.simulation.width / 2.0) {
                 currentX = -data.simulation.width / 2.0
-                currentY += 1.0
+                currentY -= 1.0
             }
         }
 
@@ -386,10 +382,8 @@ open class Simulator3dViewController(
             }
 
             val geometry = PlaneBufferGeometry(100, 100)
-            geometry.rotateX(PI / 2.0)
-            geometry.translate(0.0, -0.1, 0.0)
             val mesh = Mesh(geometry, material)
-            mesh.receiveShadows = true
+            mesh.rotateX(PI)
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()

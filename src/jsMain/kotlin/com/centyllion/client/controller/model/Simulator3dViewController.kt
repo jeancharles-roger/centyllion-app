@@ -20,9 +20,12 @@ import info.laht.threekt.geometries.CylinderBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.lights.AmbientLight
 import info.laht.threekt.lights.DirectionalLight
+import info.laht.threekt.materials.Material
 import info.laht.threekt.materials.MeshBasicMaterial
 import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
+import info.laht.threekt.math.Vector2
+import info.laht.threekt.math.Vector3
 import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
@@ -30,6 +33,8 @@ import info.laht.threekt.scenes.Scene
 import kotlinx.io.IOException
 import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.MouseEvent
+import threejs.core.Raycaster
 import threejs.extra.core.Font
 import threejs.geometries.TextBufferGeometry
 import threejs.geometries.TextGeometryParametersImpl
@@ -38,6 +43,7 @@ import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.math.PI
 import kotlin.math.log10
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 
 open class Simulator3dViewController(
@@ -85,13 +91,16 @@ open class Simulator3dViewController(
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-    init { refreshAssets() }
+
+    init {
+        refreshAssets()
+    }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
 
-    val camera = PerspectiveCamera(45, 1.0, 00.1, 1000.0).apply {
+    val camera = PerspectiveCamera(45, 1.0, 0.1, 1000.0).apply {
         position.set(0, 1.25 * data.simulation.width, 0.5 * data.simulation.width)
         lookAt(0, 0, 0)
     }
@@ -110,14 +119,55 @@ open class Simulator3dViewController(
         add(directionalLight)
     }
 
+    val plane = Mesh(
+        PlaneBufferGeometry(100, 100),
+        MeshBasicMaterial().apply { visible = false }
+    ).apply {
+        rotateX(-PI / 2.0)
+        scene.add(this)
+    }
+
+    val pointer = Mesh(BoxBufferGeometry(1, 1, 1), MeshBasicMaterial().apply {
+        color.set("#ff0000")
+        opacity = 0.40
+    }).apply {
+        renderOrder = 5
+        scene.add(this)
+    }
+
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
         it.asDynamic().addEventListener("change", this::render)
-         Unit
+        Unit
     }
 
     val renderer = WebGLRenderer(WebGLRendererParams(simulationCanvas.root, antialias = true)).apply {
         setClearColor(ColorConstants.white, 1)
     }
+
+    val rayCaster = Raycaster(Vector3(), Vector3(), 0.1, 1000.0)
+
+    private fun mouseMove(event: MouseEvent) {
+
+        val rectangle = simulationCanvas.root.getBoundingClientRect()
+        val simulationX = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1;
+        val simulationY = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1;
+
+        // updates the picking ray with the camera and mouse position
+        rayCaster.setFromCamera(Vector2(simulationX, simulationY), camera)
+
+        // calculates objects intersecting the picking ray
+        val intersect = rayCaster.intersectObject(plane, false)
+        intersect.forEach {
+            pointer.position.set(
+                (it.point.x - 0.5).roundToInt(),
+                0.0,//(it.point.y - 0.5).roundToInt(),
+                (it.point.z - 0.5).roundToInt()
+            )
+        }
+
+        render()
+    }
+
 
     private var geometries by observable(geometries()) { _, old, _ ->
         old.values.filterNotNull().forEach { it.dispose() }
@@ -134,6 +184,10 @@ open class Simulator3dViewController(
             refresh()
         }
         materials = materials()
+
+        simulationCanvas.root.apply {
+            onmousemove = { mouseMove(it) }
+        }
     }
 
     private fun geometries() = data.model.grains.map { grain ->
@@ -193,7 +247,8 @@ open class Simulator3dViewController(
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
-        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, materials[grainId] ?: defaultMaterial)
+        val material: Material = materials[grainId] ?: defaultMaterial
+        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, material.clone())
         mesh.receiveShadows = true
         mesh.castShadow = true
 
@@ -224,7 +279,12 @@ open class Simulator3dViewController(
             }
             mesh == null && newGrainId >= 0 -> {
                 val p = data.simulation.toPosition(index)
-                createMesh(index, newGrainId, p.x - data.simulation.width / 2.0, p.y - data.simulation.height / 2.0 + 1.0)
+                createMesh(
+                    index,
+                    newGrainId,
+                    p.x - data.simulation.width / 2.0,
+                    p.y - data.simulation.height / 2.0 + 1.0
+                )
             }
         }
     }
@@ -268,7 +328,6 @@ open class Simulator3dViewController(
     }
 
     override fun animate() {
-
     }
 
     fun render() {

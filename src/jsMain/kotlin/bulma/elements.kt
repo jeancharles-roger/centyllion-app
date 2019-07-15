@@ -1,8 +1,16 @@
 package bulma
 
-import kotlinx.html.*
+import kotlinx.html.DIV
+import kotlinx.html.button
+import kotlinx.html.div
 import kotlinx.html.dom.create
+import kotlinx.html.figure
+import kotlinx.html.h1
+import kotlinx.html.i
+import kotlinx.html.img
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.progress
+import kotlinx.html.span
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLImageElement
 import kotlin.browser.document
@@ -36,7 +44,7 @@ class Button(
 
     var inverted by className(inverted, "is-inverted", root)
 
-    var loading by className(inverted, "is-loading", root)
+    var loading by className(false, "is-loading", root)
 
     var color by className(color, root)
 

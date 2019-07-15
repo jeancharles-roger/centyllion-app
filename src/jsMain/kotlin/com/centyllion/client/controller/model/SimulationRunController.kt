@@ -80,7 +80,6 @@ class SimulationRunController(
         if (old != new) {
             nameController.readOnly = new
             descriptionController.readOnly = new
-            simulationViewController = createSimulationViewController()
             simulationViewController.readOnly = new
             asset3dController.readOnly = new
             assetsColumn.hidden = new
@@ -99,8 +98,6 @@ class SimulationRunController(
 
     private var presentCharts = false
 
-    private var view3d = true
-
     val nameController = EditableStringController(data.name, "Simulation Name", readOnly)
     { _, new, _ ->
         data = data.copy(name = new)
@@ -117,7 +114,6 @@ class SimulationRunController(
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
-    val view3dButton = iconButton(Icon("cubes"), ElementColor.Info, rounded = true) { toggle3d() }
 
     val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
         fps = value.toDouble()
@@ -159,12 +155,8 @@ class SimulationRunController(
         if (!presentCharts) classes = setOf("is-hidden")
     }
 
-    var simulationViewController: SimulatorViewController by observable(createSimulationViewController())
-    { _, old, new ->
-        if (old != new) {
-            old.dispose()
-            simulationView.body = listOf(simulationViewController)
-        }
+    var simulationViewController = Simulator3dViewController(simulator, appContext) { ended, new, _ ->
+        updatedSimulatorFromView(ended, new)
     }
 
     val simulationView = Column(simulationViewController.container, size = ColumnSize.Full)
@@ -209,8 +201,7 @@ class SimulationRunController(
                             ),
                             Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
                             stepLabel,
-                            toggleChartsButton,
-                            view3dButton
+                            toggleChartsButton
                         )
                     ), size = ColumnSize.Full
                 ),
@@ -336,20 +327,6 @@ class SimulationRunController(
         toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
         refreshChart()
     }
-
-    fun toggle3d() {
-        view3d = !view3d
-        view3dButton.color = if (view3d) ElementColor.Info else ElementColor.Dark
-        simulationViewController = createSimulationViewController()
-    }
-
-    private fun createSimulationViewController(): SimulatorViewController = when {
-        view3d -> Simulator3dViewController(simulator, appContext)
-        readOnly -> Simulator2dViewController(simulator)
-        else -> SimulatorEditController(simulator) { ended, new, _ ->
-            updatedSimulatorFromView(ended, new)
-        }
-    }.apply { refresh() }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
         simulator.resetCount()

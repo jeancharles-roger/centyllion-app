@@ -1,11 +1,20 @@
 package com.centyllion.client.controller.model
 
+import bulma.Control
 import bulma.Div
+import bulma.Dropdown
+import bulma.DropdownSimpleItem
+import bulma.ElementColor
+import bulma.Field
 import bulma.HtmlWrapper
+import bulma.Icon
+import bulma.Level
 import bulma.canvas
+import bulma.iconButton
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
+import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
 import com.centyllion.model.minFieldLevel
 import info.laht.threekt.THREE.DoubleSide
@@ -42,13 +51,24 @@ import threejs.textures.DataTexture
 import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.log10
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
+import kotlin.random.Random
 
 open class Simulator3dViewController(
-    simulator: Simulator, val appContext: AppContext
+    simulator: Simulator, val appContext: AppContext,
+    var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : SimulatorViewController(simulator) {
+
+    enum class EditTools(val icon: String) {
+        Move("arrows-alt"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
+    }
+
+    enum class ToolSize(val size: Int) {
+        Fine(1), Small(5), Medium(10), Large(20)
+    }
 
     class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array) {
         fun dispose() {
@@ -57,7 +77,10 @@ open class Simulator3dViewController(
         }
     }
 
-    override var data: Simulator by observable(simulator) { _, _, _ ->
+    override var data: Simulator by observable(simulator) { _, _, new ->
+        onUpdate(true, new, this)
+
+        selectedGrainController.context = new.model.grains
         geometries = geometries()
         materials = materials()
         refreshAssets()
@@ -66,7 +89,7 @@ open class Simulator3dViewController(
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            // TODO
+            editToolbar.invisible = new
         }
     }
 
@@ -76,8 +99,51 @@ open class Simulator3dViewController(
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
+    fun selectTool(tool: EditTools) {
+        orbitControl.enabled = tool == EditTools.Move
+        toolButtons.forEach { it.outlined = false }
+        toolButtons[tool.ordinal].outlined = true
+        selectedTool = tool
+    }
+
+    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
+
+    override var selectedGrain: Grain?
+        get() = selectedGrainController.data
+        set(value) {
+            selectedGrainController.data = value
+        }
+
+    val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
+        items = ToolSize.values().map { size ->
+            DropdownSimpleItem(size.name) {
+                this.text = size.name
+                this.toggleDropdown()
+            }
+        }
+    }
+
+    val toolButtons = EditTools.values().map { tool ->
+        iconButton(
+            Icon(tool.icon), ElementColor.Primary,
+            rounded = true, outlined = tool.ordinal == 0
+        ) { selectTool(tool) }
+    }
+
+    val clearAllButton = iconButton(Icon("trash"), ElementColor.Danger, true) {
+        (0 until data.simulation.dataSize).forEach { data.resetIdAtIndex(it) }
+        onUpdate(true, data, this)
+        refresh()
+    }
+
+    val editToolbar = Level(
+        center = listOf(Field(addons = true).apply {
+            body = toolButtons.map { Control(it) }
+        }, sizeDropdown, selectedGrainController.container, clearAllButton)
+    )
+
     override val container = Div(
-        Div(simulationCanvas, classes = "has-text-centered")
+        Div(simulationCanvas, classes = "has-text-centered"), editToolbar
     )
 
     private var font: Font? = null
@@ -90,10 +156,7 @@ open class Simulator3dViewController(
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-
-    init {
-        refreshAssets()
-    }
+    init { refreshAssets() }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -129,6 +192,7 @@ open class Simulator3dViewController(
         color.set("#ff0000")
         opacity = 0.40
     }).apply {
+        visible = false
         renderOrder = 5
         scene.add(this)
     }
@@ -144,26 +208,180 @@ open class Simulator3dViewController(
 
     val rayCaster = Raycaster(Vector3(), Vector3(), 0.1, 1000.0)
 
-    private fun mouseMove(event: MouseEvent) {
+    // simulation content edition
+    private var selectedTool: EditTools = EditTools.Move
 
-        val rectangle = simulationCanvas.root.getBoundingClientRect()
-        val simulationX = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1;
-        val simulationY = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1;
+    private var toolElement: Mesh? = null
 
-        // updates the picking ray with the camera and mouse position
-        rayCaster.setFromCamera(Vector2(simulationX, simulationY), camera)
+    var drawStep = -1
 
-        // calculates objects intersecting the picking ray
-        val intersect = rayCaster.intersectObject(plane, false)
-        intersect.forEach {
-            pointer.position.set(
-                (it.point.x - 0.5).roundToInt(),
-                (it.point.y - 0.5).roundToInt(),
-                0.0 //(it.point.z - 0.5).roundToInt()
-            )
+    var simulationSourceX = -1
+    var simulationSourceY = -1
+
+    var simulationX = -1
+    var simulationY = -1
+
+    fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
+        val size = ToolSize.valueOf(sizeDropdown.text).size * factor
+        val halfSize = (size / 2).coerceAtLeast(1)
+        if (halfSize == 1) {
+            block(x, y)
+        } else {
+            for (i in x - halfSize until x + halfSize) {
+                for (j in y - halfSize until y + halfSize) {
+                    val inCircle = (x - i) * (x - i) + (y - j - 1) * (y - j) + 1 < halfSize * halfSize
+                    val inSimulation = data.simulation.positionInside(i, j)
+                    if (inCircle && inSimulation) block(i, j)
+                }
+            }
+        }
+    }
+
+    fun line(sourceX: Int, sourceY: Int, x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
+        val dx = x - sourceX
+        val dy = y - sourceY
+        if (dx.absoluteValue > dy.absoluteValue) {
+            if (sourceX < x) {
+                for (i in sourceX until x) {
+                    val j = sourceY + dy * (i - sourceX) / dx
+                    block(i, j)
+                }
+            } else {
+                for (i in x until sourceX) {
+                    val j = y + dy * (i - x) / dx
+                    block(i, j)
+                }
+            }
+        } else {
+            if (sourceY < y) {
+                for (j in sourceY until y) {
+                    val i = sourceX + dx * (j - sourceY) / dy
+                    block(i, j)
+                }
+            } else {
+                for (j in y until sourceY) {
+                    val i = x + dx * (j - y) / dy
+                    block(i, j)
+                }
+            }
+        }
+    }
+
+    fun drawOnSimulation(step: Int) {
+        console.log("Draw on simulation $step")
+        when (selectedTool) {
+            EditTools.Pen -> {
+                selectedGrainController.data?.id?.let { idToSet ->
+                    circle(simulationX, simulationY) { i, j ->
+                        data.setIdAtIndex(
+                            data.simulation.toIndex(i, j),
+                            idToSet
+                        )
+                    }
+                }
+            }
+            EditTools.Line -> {
+                selectedGrainController.data?.id?.let { idToSet ->
+                    if (step == -1) {
+                        // draw the line
+                        line(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
+                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                        }
+                    }
+                }
+
+            }
+            EditTools.Spray -> {
+                val random = Random
+                selectedGrainController.data?.id?.let { idToSet ->
+                    val sprayDensity = 0.005
+                    circle(simulationX, simulationY, 4) { i, j ->
+                        if (Random.nextDouble() < sprayDensity) {
+                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                        }
+                    }
+                }
+            }
+            EditTools.Eraser -> {
+                circle(simulationX, simulationY) { i, j ->
+                    data.resetIdAtIndex(data.simulation.toIndex(i, j))
+                }
+            }
+            EditTools.Move -> {
+            }
         }
 
-        render()
+        if (step == -1) {
+            toolElement = null
+        }
+
+        onUpdate(step == -1, data, this)
+        refresh()
+    }
+
+    private fun mouseChange(event: MouseEvent) {
+        // only update if there a tool
+        if (selectedTool != EditTools.Move) {
+            val rectangle = simulationCanvas.root.getBoundingClientRect()
+            val x = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1
+            val y = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1
+
+            // updates the picking ray with the camera and mouse position
+            rayCaster.setFromCamera(Vector2(x, y), camera)
+
+            // calculates objects intersecting the picking ray
+            val intersect = rayCaster.intersectObject(plane, false).firstOrNull()
+            if (intersect != null) {
+                pointer.visible = true
+
+                val planeX = (intersect.point.x - 0.5).roundToInt()
+                val planeY = (intersect.point.y - 0.5).roundToInt()
+                pointer.position.set(planeX, planeY, 0.0)
+
+                val clicked = event.buttons.toInt() == 1
+                val newStep = when {
+                    clicked && drawStep >= 0 -> drawStep + 1
+                    clicked -> 0
+                    drawStep >= 0 -> -1
+                    else -> null
+                }
+
+                simulationX = planeX + 50
+                simulationY = (100 - planeY) - 50 + 1
+
+                console.log("Plane $planeX, $planeY Simulation $simulationX, $simulationY")
+
+                if (newStep != null) {
+                    if (newStep == 0) {
+                        simulationSourceX = simulationX
+                        simulationSourceY = simulationY
+                    }
+                    drawStep = newStep
+
+                    drawOnSimulation(drawStep)
+                }
+
+                /* TODO
+            toolElement = when {
+                selectedTool == EditTools.Pen && selectedGrainController.data != null -> roundDrawElement
+                selectedTool == EditTools.Spray && selectedGrainController.data != null -> roundDrawElement
+                selectedTool == EditTools.Eraser -> roundDrawElement
+                selectedTool == EditTools.Line && drawStep > 0 -> lineDrawElement
+                else -> null
+            }
+             */
+
+                // updates the picking ray with the camera and mouse position
+                rayCaster.setFromCamera(Vector2(planeX, planeY), camera)
+
+                render()
+            } else {
+                if (pointer.visible) {
+                    pointer.visible = false
+                    render()
+                }
+            }
+        }
     }
 
 
@@ -184,7 +402,13 @@ open class Simulator3dViewController(
         materials = materials()
 
         simulationCanvas.root.apply {
-            onmousemove = { mouseMove(it) }
+            onmouseup = { mouseChange(it) }
+            onmousedown = { mouseChange(it) }
+            onmousemove = { mouseChange(it) }
+            onmouseout = {
+                toolElement = null
+                render()
+            }
         }
     }
 

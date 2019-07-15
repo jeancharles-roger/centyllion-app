@@ -68,6 +68,7 @@ class SimulationRunController(
             grainsController.data = new.grains
             behaviourController.data = new.behaviours
             selectedGrainController.context = new.grains
+            selectedGrainController.data = new.grains.firstOrNull()
             simulator = Simulator(new, data)
             behaviourController.context = simulator
             simulationViewController.data = simulator
@@ -129,7 +130,7 @@ class SimulationRunController(
         { grain, previous ->
             val controller = previous ?: GrainDisplayController(grain)
             controller.body.root.onclick = {
-                    simulationViewController.selectedGrain = controller.data
+                    simulationViewController.selectedGrainController.data = controller.data
                     Unit
                 }
             controller
@@ -149,7 +150,7 @@ class SimulationRunController(
             }
         }
 
-    val selectedGrainController = GrainSelectController(null, model.grains)
+    val selectedGrainController = GrainSelectController(model.grains.firstOrNull(), model.grains)
 
     val chartCanvas = canvas {
         if (!presentCharts) classes = setOf("is-hidden")

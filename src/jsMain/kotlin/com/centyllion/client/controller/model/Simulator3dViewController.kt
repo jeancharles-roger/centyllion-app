@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.model
 
+import bulma.BulmaElement
 import bulma.Control
 import bulma.Div
 import bulma.Dropdown
@@ -9,12 +10,12 @@ import bulma.Field
 import bulma.HtmlWrapper
 import bulma.Icon
 import bulma.Level
+import bulma.NoContextController
 import bulma.canvas
 import bulma.iconButton
 import com.centyllion.client.AppContext
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
-import com.centyllion.model.Grain
 import com.centyllion.model.Simulator
 import com.centyllion.model.minFieldLevel
 import info.laht.threekt.THREE.DoubleSide
@@ -60,7 +61,7 @@ import kotlin.random.Random
 open class Simulator3dViewController(
     simulator: Simulator, val appContext: AppContext,
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
-) : SimulatorViewController(simulator) {
+): NoContextController<Simulator, BulmaElement>() {
 
     enum class EditTools(val icon: String) {
         Move("arrows-alt"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
@@ -81,6 +82,7 @@ open class Simulator3dViewController(
         onUpdate(true, new, this)
 
         selectedGrainController.context = new.model.grains
+        selectedGrainController.data = new.model.grains.firstOrNull()
         geometries = geometries()
         materials = materials()
         refreshAssets()
@@ -108,16 +110,12 @@ open class Simulator3dViewController(
 
     val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
 
-    override var selectedGrain: Grain?
-        get() = selectedGrainController.data
-        set(value) {
-            selectedGrainController.data = value
-        }
-
     val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->
             DropdownSimpleItem(size.name) {
                 this.text = size.name
+
+                pointer.geometry = CylinderBufferGeometry(0.5 * size.size, 0.5 * size.size,  1.0)
                 this.toggleDropdown()
             }
         }
@@ -188,12 +186,13 @@ open class Simulator3dViewController(
         scene.add(this)
     }
 
-    val pointer = Mesh(BoxBufferGeometry(1, 1, 1), MeshBasicMaterial().apply {
+    val pointer = Mesh(CylinderBufferGeometry(0.5, 0.5, 1.0), MeshBasicMaterial().apply {
         color.set("#ff0000")
         opacity = 0.40
     }).apply {
         visible = false
         renderOrder = 5
+        rotateX(PI/2)
         scene.add(this)
     }
 
@@ -268,7 +267,6 @@ open class Simulator3dViewController(
     }
 
     fun drawOnSimulation(step: Int) {
-        console.log("Draw on simulation $step")
         when (selectedTool) {
             EditTools.Pen -> {
                 selectedGrainController.data?.id?.let { idToSet ->
@@ -349,8 +347,6 @@ open class Simulator3dViewController(
                 simulationX = planeX + 50
                 simulationY = (100 - planeY) - 50 + 1
 
-                console.log("Plane $planeX, $planeY Simulation $simulationX, $simulationY")
-
                 if (newStep != null) {
                     if (newStep == 0) {
                         simulationSourceX = simulationX
@@ -361,7 +357,7 @@ open class Simulator3dViewController(
                     drawOnSimulation(drawStep)
                 }
 
-                /* TODO
+            /* TODO
             toolElement = when {
                 selectedTool == EditTools.Pen && selectedGrainController.data != null -> roundDrawElement
                 selectedTool == EditTools.Spray && selectedGrainController.data != null -> roundDrawElement
@@ -418,7 +414,7 @@ open class Simulator3dViewController(
             when (grain.icon) {
                 "square" -> BoxBufferGeometry(0.8, 0.8, height)
                 "square-full" -> BoxBufferGeometry(1, 1, height)
-                "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
+                "circle" -> CylinderBufferGeometry(0.5, 0.5, height).apply { rotateX(PI/2) }
                 else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height))
             }
 
@@ -509,7 +505,7 @@ open class Simulator3dViewController(
         }
     }
 
-    override fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {
+    fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {
         // Updates agents
 
         // applies behaviors
@@ -547,7 +543,7 @@ open class Simulator3dViewController(
         render()
     }
 
-    override fun animate() {
+    fun animate() {
     }
 
     fun render() {
@@ -615,7 +611,7 @@ open class Simulator3dViewController(
         render()
     }
 
-    override fun dispose() {
+    fun dispose() {
         orbitControl.dispose()
         materials = emptyMap()
         defaultMaterial.dispose()

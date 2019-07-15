@@ -1,3 +1,5 @@
+@file:JsQualifier("THREE")
+@file:Suppress("ConvertSecondaryConstructorToPrimary")
 package threejs.lights
 
 import info.laht.threekt.lights.Light

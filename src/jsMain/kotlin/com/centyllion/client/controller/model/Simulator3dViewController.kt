@@ -111,7 +111,7 @@ open class Simulator3dViewController(
         val directionalLight = DirectionalLight(0xffffff, 1)
         directionalLight.position.set(
             1.25 * data.simulation.width,
-            1.25 * data.simulation.width,
+            -1.25 * data.simulation.width,
             2 * data.simulation.width
         )
         directionalLight.castShadow = true

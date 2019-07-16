@@ -23,11 +23,14 @@ import info.laht.threekt.THREE.FloatType
 import info.laht.threekt.THREE.LuminanceFormat
 import info.laht.threekt.THREE.NearestFilter
 import info.laht.threekt.cameras.PerspectiveCamera
+import info.laht.threekt.core.BufferGeometry
+import info.laht.threekt.core.Object3D
 import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.external.loaders.GLTFLoader
 import info.laht.threekt.geometries.BoxBufferGeometry
 import info.laht.threekt.geometries.CylinderBufferGeometry
 import info.laht.threekt.geometries.PlaneBufferGeometry
+import info.laht.threekt.geometries.WireframeGeometry
 import info.laht.threekt.lights.AmbientLight
 import info.laht.threekt.lights.DirectionalLight
 import info.laht.threekt.materials.Material
@@ -36,6 +39,7 @@ import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
 import info.laht.threekt.math.Vector2
 import info.laht.threekt.math.Vector3
+import info.laht.threekt.objects.LineSegments
 import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
@@ -61,10 +65,42 @@ import kotlin.random.Random
 open class Simulator3dViewController(
     simulator: Simulator, val appContext: AppContext,
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
-): NoContextController<Simulator, BulmaElement>() {
+) : NoContextController<Simulator, BulmaElement>() {
 
-    enum class EditTools(val icon: String) {
-        Move("arrows-alt"), Pen("pen"), Line("pencil-ruler"), Spray("spray-can"), Eraser("eraser")
+    enum class EditTools(val icon: String, val factor: Int = 1) {
+        Move("arrows-alt"), Pen("pen"),
+        Line("pencil-ruler"), Spray("spray-can", 4),
+        Eraser("eraser");
+
+        fun createPointer(sourceMaterial: Material?, size: Int): Object3D? = when (this) {
+            Move -> null
+            Line ->  LineSegments(
+                BufferGeometry(), sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
+            )
+            else -> Mesh(
+                CylinderBufferGeometry(
+                    0.5*size*factor, 0.5*size*factor, 6.0, 16
+                ).apply { rotateX(PI/2); translate(0.0, 0.0, 3.0) },
+                sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
+            ).apply {
+                val wireFrame = LineSegments(
+                    WireframeGeometry(geometry as BufferGeometry),
+                    MeshPhongMaterial().apply {
+                        transparent = true
+                        opacity = 0.4
+                    }
+                )
+                add(wireFrame)
+
+                renderOrder = 5
+                material.opacity = when (this@EditTools) {
+                    Eraser -> 0.0
+                    Spray -> 0.4
+                    else -> 0.7
+                }
+                material.transparent = true
+            }
+        }
     }
 
     enum class ToolSize(val size: Int) {
@@ -82,7 +118,9 @@ open class Simulator3dViewController(
         onUpdate(true, new, this)
 
         selectedGrainController.context = new.model.grains
-        selectedGrainController.data = new.model.grains.firstOrNull()
+        if (!new.model.grains.contains(selectedGrainController.data)) {
+            selectedGrainController.data = new.model.grains.firstOrNull()
+        }
         geometries = geometries()
         materials = materials()
         refreshAssets()
@@ -101,21 +139,15 @@ open class Simulator3dViewController(
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
-    fun selectTool(tool: EditTools) {
-        orbitControl.enabled = tool == EditTools.Move
-        toolButtons.forEach { it.outlined = false }
-        toolButtons[tool.ordinal].outlined = true
-        selectedTool = tool
-    }
-
     val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
+    { _, _, _ -> updatePointer() }
 
     val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->
             DropdownSimpleItem(size.name) {
                 this.text = size.name
-
-                pointer.geometry = CylinderBufferGeometry(0.5 * size.size, 0.5 * size.size,  1.0)
+                selectedSize = size
+                updatePointer()
                 this.toggleDropdown()
             }
         }
@@ -154,14 +186,17 @@ open class Simulator3dViewController(
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-    init { refreshAssets() }
+
+    init {
+        refreshAssets()
+    }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
 
     val camera = PerspectiveCamera(45, 1.0, 0.1, 1000.0).apply {
-        position.set(0, 0.0,  1.25 * data.simulation.width)
+        position.set(0, 0.0, 1.25 * data.simulation.width)
         lookAt(0, 0, 0)
     }
 
@@ -186,14 +221,16 @@ open class Simulator3dViewController(
         scene.add(this)
     }
 
-    val pointer = Mesh(CylinderBufferGeometry(0.5, 0.5, 1.0), MeshBasicMaterial().apply {
-        color.set("#ff0000")
-        opacity = 0.40
-    }).apply {
-        visible = false
-        renderOrder = 5
-        rotateX(PI/2)
-        scene.add(this)
+    var pointer by observable<Object3D?>(null) { _, old, new ->
+        if (old !== new) {
+            old?.let {
+                scene.remove(it)
+                it.asDynamic().material?.dispose()
+                it.asDynamic().geometry?.dispose()
+                Unit
+            }
+            new?.let { scene.add(it) }
+        }
     }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
@@ -209,8 +246,7 @@ open class Simulator3dViewController(
 
     // simulation content edition
     private var selectedTool: EditTools = EditTools.Move
-
-    private var toolElement: Mesh? = null
+    private var selectedSize: ToolSize = ToolSize.Fine
 
     var drawStep = -1
 
@@ -220,8 +256,8 @@ open class Simulator3dViewController(
     var simulationX = -1
     var simulationY = -1
 
-    fun circle(x: Int, y: Int, factor: Int = 1, block: (i: Int, j: Int) -> Unit) {
-        val size = ToolSize.valueOf(sizeDropdown.text).size * factor
+    fun circle(x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
+        val size = selectedSize.size * selectedTool.factor
         val halfSize = (size / 2).coerceAtLeast(1)
         if (halfSize == 1) {
             block(x, y)
@@ -266,6 +302,19 @@ open class Simulator3dViewController(
         }
     }
 
+    fun updatePointer() {
+        pointer = selectedTool.createPointer(materials[selectedGrainController.data?.id], selectedSize.size)
+    }
+
+    fun selectTool(tool: EditTools) {
+        toolButtons.forEach { it.outlined = false }
+        toolButtons[tool.ordinal].outlined = true
+        selectedTool = tool
+
+        orbitControl.enabled = tool == EditTools.Move
+        updatePointer()
+    }
+
     fun drawOnSimulation(step: Int) {
         when (selectedTool) {
             EditTools.Pen -> {
@@ -290,10 +339,9 @@ open class Simulator3dViewController(
 
             }
             EditTools.Spray -> {
-                val random = Random
                 selectedGrainController.data?.id?.let { idToSet ->
                     val sprayDensity = 0.005
-                    circle(simulationX, simulationY, 4) { i, j ->
+                    circle(simulationX, simulationY) { i, j ->
                         if (Random.nextDouble() < sprayDensity) {
                             data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
                         }
@@ -307,10 +355,6 @@ open class Simulator3dViewController(
             }
             EditTools.Move -> {
             }
-        }
-
-        if (step == -1) {
-            toolElement = null
         }
 
         onUpdate(step == -1, data, this)
@@ -330,11 +374,11 @@ open class Simulator3dViewController(
             // calculates objects intersecting the picking ray
             val intersect = rayCaster.intersectObject(plane, false).firstOrNull()
             if (intersect != null) {
-                pointer.visible = true
+                pointer?.visible = true
 
                 val planeX = (intersect.point.x - 0.5).roundToInt()
                 val planeY = (intersect.point.y - 0.5).roundToInt()
-                pointer.position.set(planeX, planeY, 0.0)
+                pointer?.position?.set(planeX, planeY, 0.0)
 
                 val clicked = event.buttons.toInt() == 1
                 val newStep = when {
@@ -357,23 +401,13 @@ open class Simulator3dViewController(
                     drawOnSimulation(drawStep)
                 }
 
-            /* TODO
-            toolElement = when {
-                selectedTool == EditTools.Pen && selectedGrainController.data != null -> roundDrawElement
-                selectedTool == EditTools.Spray && selectedGrainController.data != null -> roundDrawElement
-                selectedTool == EditTools.Eraser -> roundDrawElement
-                selectedTool == EditTools.Line && drawStep > 0 -> lineDrawElement
-                else -> null
-            }
-             */
-
                 // updates the picking ray with the camera and mouse position
                 rayCaster.setFromCamera(Vector2(planeX, planeY), camera)
 
                 render()
             } else {
-                if (pointer.visible) {
-                    pointer.visible = false
+                if (pointer?.visible == true) {
+                    pointer?.visible = false
                     render()
                 }
             }
@@ -402,7 +436,7 @@ open class Simulator3dViewController(
             onmousedown = { mouseChange(it) }
             onmousemove = { mouseChange(it) }
             onmouseout = {
-                toolElement = null
+                pointer?.visible = false
                 render()
             }
         }
@@ -414,9 +448,9 @@ open class Simulator3dViewController(
             when (grain.icon) {
                 "square" -> BoxBufferGeometry(0.8, 0.8, height)
                 "square-full" -> BoxBufferGeometry(1, 1, height)
-                "circle" -> CylinderBufferGeometry(0.5, 0.5, height).apply { rotateX(PI/2) }
+                "circle" -> CylinderBufferGeometry(0.5, 0.5, height).apply { rotateX(PI / 2) }
                 else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height))
-            }
+            }.apply { translate(0.0, 0.0, height/2.0) }
 
         }
     }.toMap()
@@ -464,12 +498,12 @@ open class Simulator3dViewController(
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
         val material: Material = materials[grainId] ?: defaultMaterial
-        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, material.clone())
+        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, material)
         mesh.receiveShadows = true
         mesh.castShadow = true
 
         // positions the mesh
-        mesh.position.set(x,  y, 0.0)
+        mesh.position.set(x, y, 0.0)
 
         mesh.updateMatrix()
         mesh.matrixAutoUpdate = false
@@ -499,7 +533,7 @@ open class Simulator3dViewController(
                     index,
                     newGrainId,
                     p.x - data.simulation.width / 2.0,
-                    - (p.y - data.simulation.height / 2.0 - 1.0)
+                    -(p.y - data.simulation.height / 2.0 - 1.0)
                 )
             }
         }

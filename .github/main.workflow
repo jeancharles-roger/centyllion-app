@@ -25,7 +25,7 @@ action "Deploy" {
   uses = "MrRamych/gradle-actions/openjdk-11@2.1"
   needs = ["On master branch"]
   secrets = ["DEPLOY_KEY", "PASSWORD"]
-  args = "--info deployBeta"
+  args = "-Xmx2048m --info deployBeta"
 }
 
 action "Deploy Slack" {

@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
 val debug: String by project
+val d = debug.toBoolean()
 
 val serialization_version: String by project
 val coroutine_version: String by project
@@ -83,7 +84,7 @@ kotlin {
                     // needed by ktor-auth-jwt (strange since it was included at some time ...)
                     implementation("com.google.guava:guava:27.1-jre")
 
-                    implementation("ch.qos.logback:logback-classic:$logback_version")
+                    if (d) implementation("ch.qos.logback:logback-classic:$logback_version")
 
                     implementation("io.ktor:ktor-html-builder:$ktor_version")
                     implementation("io.ktor:ktor-client-apache:$ktor_version")
@@ -146,8 +147,8 @@ kotlin {
                 it.kotlinOptions {
                     moduleKind = "amd"
                     main = "noCall"
-                    sourceMap = debug.toBoolean()
-                    sourceMapEmbedSources = if (debug.toBoolean()) "always" else "never"
+                    sourceMap = d
+                    sourceMapEmbedSources = if (d) "always" else "never"
                 }
             }
         }

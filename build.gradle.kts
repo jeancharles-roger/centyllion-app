@@ -22,6 +22,7 @@ val debug: String by project
 val serialization_version: String by project
 val coroutine_version: String by project
 val clikt_version: String by project
+val logback_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
 val exposed_version: String by project
@@ -82,6 +83,8 @@ kotlin {
                     // needed by ktor-auth-jwt (strange since it was included at some time ...)
                     implementation("com.google.guava:guava:27.1-jre")
 
+                    implementation("ch.qos.logback:logback-classic:$logback_version")
+
                     implementation("io.ktor:ktor-html-builder:$ktor_version")
                     implementation("io.ktor:ktor-client-apache:$ktor_version")
                     implementation("io.ktor:ktor-auth:$ktor_version")
@@ -91,7 +94,7 @@ kotlin {
 
                     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 
-                    // adds dependences for postgres
+                    // adds dependencies for postgres
                     implementation("org.jetbrains.exposed:exposed:$exposed_version")
                     implementation("org.postgresql:postgresql:$postgresql_version")
                     implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool

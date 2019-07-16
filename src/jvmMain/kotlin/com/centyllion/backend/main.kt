@@ -102,7 +102,7 @@ fun Application.centyllion(config: ServerConfig) {
     }
 
     install(CallLogging) {
-        if (config.debug) level = Level.TRACE else level = Level.WARN
+        if (config.debug) level = Level.TRACE else level = Level.INFO
         logger = mainLogger
     }
 

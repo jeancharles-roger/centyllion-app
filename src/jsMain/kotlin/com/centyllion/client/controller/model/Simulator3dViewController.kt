@@ -39,7 +39,6 @@ import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
 import info.laht.threekt.math.Vector2
 import info.laht.threekt.math.Vector3
-import info.laht.threekt.objects.LineSegments
 import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
@@ -52,6 +51,7 @@ import threejs.core.Raycaster
 import threejs.extra.core.Font
 import threejs.geometries.TextBufferGeometry
 import threejs.geometries.TextGeometryParametersImpl
+import threejs.objects.LineSegments
 import threejs.textures.DataTexture
 import kotlin.browser.window
 import kotlin.js.Promise

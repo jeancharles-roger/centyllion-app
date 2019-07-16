@@ -74,9 +74,6 @@ open class Simulator3dViewController(
 
         fun createPointer(sourceMaterial: Material?, size: Int): Object3D? = when (this) {
             Move -> null
-            Line ->  LineSegments(
-                BufferGeometry(), sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
-            )
             else -> Mesh(
                 CylinderBufferGeometry(
                     0.5*size*factor, 0.5*size*factor, 6.0, 16
@@ -400,9 +397,6 @@ open class Simulator3dViewController(
 
                     drawOnSimulation(drawStep)
                 }
-
-                // updates the picking ray with the camera and mouse position
-                rayCaster.setFromCamera(Vector2(planeX, planeY), camera)
 
                 render()
             } else {

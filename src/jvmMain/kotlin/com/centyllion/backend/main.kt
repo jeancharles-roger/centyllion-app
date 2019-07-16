@@ -14,14 +14,12 @@ import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.application.log
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
 import io.ktor.features.AutoHeadResponse
-import io.ktor.features.CORS
 import io.ktor.features.CachingHeaders
 import io.ktor.features.CallLogging
 import io.ktor.features.Compression
@@ -31,14 +29,12 @@ import io.ktor.features.StatusPages
 import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.CachingOptions
 import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.withCharset
-import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.route
@@ -81,12 +77,15 @@ fun Application.centyllion(config: ServerConfig) {
 
     val subscription = SubscriptionManager(config)
 
+    /* TODO CORS did raise https://github.com/jeancharles-roger/centyllion/issues/126.
+        Need fixing
     install(CORS) {
         allowCredentials = true
         header(HttpHeaders.Origin)
         header(HttpHeaders.Referrer)
         anyHost()
     }
+     */
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)
@@ -203,12 +202,6 @@ fun PipelineContext<Unit, ApplicationCall>.checkRoles(requiredRole: String? = nu
 suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
     requiredRole: String? = null, block: suspend (JWTPrincipal) -> Unit
 ) = call.principal<JWTPrincipal>().let {
-    if (it != null) {
-        val checked = checkRoles(requiredRole)
-        if (requiredRole != null) {
-            this.context.application.log.info("Check role $requiredRole for ${call.request.path()}: ${if (checked) "granted" else "refused"}")
-        }
-        // test if authenticated and all required roles are present
-        if (checked) block(it) else context.respond(HttpStatusCode.Unauthorized)
-    }
+    // test if authenticated and all required roles are present
+    if (it != null && checkRoles(requiredRole)) block(it) else context.respond(HttpStatusCode.Unauthorized)
 }

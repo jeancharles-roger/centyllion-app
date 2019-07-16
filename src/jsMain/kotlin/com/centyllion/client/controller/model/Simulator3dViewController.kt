@@ -33,6 +33,7 @@ import info.laht.threekt.geometries.PlaneBufferGeometry
 import info.laht.threekt.geometries.WireframeGeometry
 import info.laht.threekt.lights.AmbientLight
 import info.laht.threekt.lights.DirectionalLight
+import info.laht.threekt.materials.LineBasicMaterial
 import info.laht.threekt.materials.Material
 import info.laht.threekt.materials.MeshBasicMaterial
 import info.laht.threekt.materials.MeshPhongMaterial
@@ -82,7 +83,8 @@ open class Simulator3dViewController(
             ).apply {
                 val wireFrame = LineSegments(
                     WireframeGeometry(geometry as BufferGeometry),
-                    MeshPhongMaterial().apply {
+                    LineBasicMaterial().apply {
+                        color.set("grey")
                         transparent = true
                         opacity = 0.4
                     }
@@ -215,6 +217,17 @@ open class Simulator3dViewController(
         PlaneBufferGeometry(100, 100),
         MeshBasicMaterial().apply { visible = false }
     ).apply {
+        val wireFrame = LineSegments(
+            WireframeGeometry(geometry as BufferGeometry),
+            LineBasicMaterial().apply {
+                color.set("grey")
+                transparent = true
+                opacity = 0.4
+            }
+        )
+        add(wireFrame)
+
+
         scene.add(this)
     }
 

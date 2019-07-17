@@ -3,17 +3,24 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Controller
+import bulma.ElementColor
+import bulma.Icon
 import bulma.Level
+import bulma.Size
+import bulma.iconButton
 import com.centyllion.model.Field
 import com.centyllion.model.Predicate
 import kotlin.properties.Delegates.observable
 
-class FieldPredicateController(
-    value: Pair<Int, Predicate<Float>>, fields: List<Field>,
-    var onUpdate: (old: Pair<Int, Predicate<Float>>, new: Pair<Int, Predicate<Float>>, controller: FieldPredicateController) -> Unit = { _, _, _ -> }
-) : Controller<Pair<Int, Predicate<Float>>, List<Field>, Column> {
+typealias FieldPredicate = Pair<Int, Predicate<Float>>
 
-    override var data: Pair<Int, Predicate<Float>> by observable(value) { _, old, new ->
+class FieldPredicateController(
+    value: FieldPredicate, fields: List<Field>,
+    var onUpdate: (old: FieldPredicate, new: FieldPredicate, controller: FieldPredicateController) -> Unit = { _, _, _ -> },
+    var onDelete: (FieldPredicate, controller: FieldPredicateController) -> Unit = { _, _ -> }
+) : Controller<FieldPredicate, List<Field>, Column> {
+
+    override var data: FieldPredicate by observable(value) { _, old, new ->
         if (old != new) {
             fieldController.data = field
             predicateController.data = new.second
@@ -46,9 +53,19 @@ class FieldPredicateController(
         if (old != new) data = data.first to new
     }
 
+    val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small)
+    {
+        onDelete(this.data, this@FieldPredicateController)
+    }
+
 
     override val container = Column(
-        Level(left = listOf(fieldController), right = listOf(predicateController)), size = ColumnSize.Full
+        Level(
+            left = listOf(fieldController),
+            center = listOf(predicateController),
+            right = listOf(delete)
+        ),
+        size = ColumnSize.Full
     )
 
     override fun refresh() {

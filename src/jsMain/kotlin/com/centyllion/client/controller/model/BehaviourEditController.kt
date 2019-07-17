@@ -176,11 +176,9 @@ class BehaviourEditController(
 
     val fieldPredicatesController =
         columnsController(data.fieldPredicates, context.fields) { pair, previous ->
-            previous ?: FieldPredicateController(pair, context.fields) { old, new, _ ->
-                if (old != new) {
-                    this.data = data.updateFieldPredicate(old, new)
-                }
-            }
+            previous ?: FieldPredicateController(pair, context.fields,
+            { old, new, _ -> if (old != new) this.data = data.updateFieldPredicate(old, new) },
+            { delete, _ -> this.data = data.dropFieldPredicate(delete) })
         }
 
     val fieldInfluencesController =

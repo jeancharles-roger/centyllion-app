@@ -34,6 +34,7 @@ class FieldPredicateController(
     override var context: List<Field> by observable(fields) { _, old, new ->
         if (old != new) {
             fieldController.context = new
+            fieldController.data = field
             refresh()
         }
     }

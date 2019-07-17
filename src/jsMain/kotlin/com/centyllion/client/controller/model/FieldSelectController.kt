@@ -24,7 +24,7 @@ class FieldSelectController(
     override var context: List<Field> by observable(fields) { _, old, new ->
         if (old != new) {
             dropdown.items = items()
-            this@FieldSelectController.refresh()
+            refresh()
         }
     }
 
@@ -50,6 +50,7 @@ class FieldSelectController(
     }
 
     private fun items() = context.map { item(it) }
+
     override fun refresh() {
         dropdown.text = data.label()
         icon.root.style.color = data.color

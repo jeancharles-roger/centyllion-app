@@ -26,6 +26,8 @@ interface AppContext {
 
     val keycloak: KeycloakInstance
 
+    fun hasRole(role: String) = keycloak.hasRealmRole(role)
+
     val me: User?
 
     val api: Api

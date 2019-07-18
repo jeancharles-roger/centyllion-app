@@ -85,7 +85,7 @@ fun index() {
 
             // adds menu
             context.navBar.start = pages
-                .filter { page -> page.header && page.authorized(context.keycloak) }
+                .filter { page -> page.header && page.authorized(context) }
                 .map { page -> NavBarLinkItem(page.title, id = page.id) { context.openPage(page) } }
 
             // shows version
@@ -185,7 +185,7 @@ class BrowserContext(
                 }
 
                 // tries to load page if authorized
-                if (page.authorized(keycloak)) {
+                if (page.authorized(this)) {
                     content = page.callback(this).also {
                         root.appendChild(it.root)
                     }

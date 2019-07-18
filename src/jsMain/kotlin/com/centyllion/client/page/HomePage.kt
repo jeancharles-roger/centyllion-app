@@ -92,7 +92,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     val panelController = noContextPanelController(
         Panel("My models and simulations"), emptyList<Description>(),
         header = listOfNotNull(
-            if (context.keycloak.hasRealmRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
+            if (context.hasRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )

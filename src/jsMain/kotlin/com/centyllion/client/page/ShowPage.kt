@@ -26,15 +26,19 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.toFixed
 import com.centyllion.common.creatorRole
+import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptyModel
 import com.centyllion.model.emptySimulation
 import com.centyllion.model.emptySimulationDescription
+import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
@@ -47,11 +51,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val shareIcon = "share-square"
     val newIcon = "plus"
     val cloneIcon = "clone"
+    val downloadIcon = "download"
     val deleteIcon = "trash"
 
     val api = context.api
-
-    val hasModelRole = context.keycloak.hasRealmRole(creatorRole)
 
     private var undoModel = false
 
@@ -76,7 +79,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
     val isModelReadOnly
-        get() = !hasModelRole || (model.id.isNotEmpty() && model.info.userId != context.me?.id)
+        get() = !context.hasRole(creatorRole) || (model.id.isNotEmpty() && model.info.userId != context.me?.id)
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
@@ -120,7 +123,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     var originalSimulation: SimulationDescription = emptySimulationDescription
 
     val isSimulationReadOnly
-        get() = !hasModelRole || simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
+        get() = !context.hasRole(creatorRole) || simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
@@ -197,19 +200,27 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val cloneModelItem =
         DropdownSimpleItem("Clone Model", Icon(cloneIcon, color = TextColor.Primary)) { cloneModel() }
 
+    val downloadModelItem = DropdownSimpleItem(
+        "Download Model", Icon(downloadIcon, color = TextColor.Primary), !context.hasRole(creatorRole)
+    ) { downloadModel() }
+
     val newSimulationItem =
         DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
 
     val cloneSimulationItem =
         DropdownSimpleItem("Clone Simulation", Icon(cloneIcon, color = TextColor.Primary)) { cloneSimulation() }
 
+    val downloadSimulationItem = DropdownSimpleItem(
+        "Download Simulation", Icon(downloadIcon, color = TextColor.Primary), !context.hasRole(creatorRole)
+    ) { downloadSimulation() }
+
     val loadingItem = DropdownSimpleItem("Loading simulations", Icon("spinner", spin = true))
 
     val moreDropdownItems = listOf(
         publishModelItem, publishSimulationItem, DropdownDivider(),
         deleteModelItem, deleteSimulationItem, DropdownDivider(),
-        cloneModelItem, DropdownDivider(),
-        newSimulationItem, cloneSimulationItem, DropdownDivider()
+        cloneModelItem, downloadModelItem, DropdownDivider(),
+        newSimulationItem, cloneSimulationItem, downloadSimulationItem, DropdownDivider()
     )
 
     val moreDropdown = Dropdown(
@@ -401,6 +412,11 @@ class ShowPage(val context: AppContext) : BulmaElement {
         context.message("Model cloned")
     }
 
+    fun downloadModel() {
+        download("${model.name}.json", Json.stringify(GrainModel.serializer(), model.model))
+        moreDropdown.active = false
+    }
+
     fun newSimulation() {
         save()
         setSimulation(emptySimulationDescription)
@@ -419,6 +435,11 @@ class ShowPage(val context: AppContext) : BulmaElement {
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
         context.message("Simulation cloned")
+    }
+
+    fun downloadSimulation() {
+        download("${simulation.name}.json", Json.stringify(Simulation.serializer(), simulation.simulation))
+        moreDropdown.active = false
     }
 
     fun deleteModel() {

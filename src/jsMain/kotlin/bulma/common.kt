@@ -37,7 +37,7 @@ enum class Size(override val className: String) : HasClassName {
 }
 
 enum class FasSize(override val className: String) : HasClassName {
-    None(""), Small("fa-1x"),
+    None(""), Small("fa-sm"),
     Medium("fa-2x"), Large("fa-3x")
 }
 

@@ -12,7 +12,7 @@ import com.centyllion.common.SubscriptionType
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
-class UserController(user: User) : NoContextController<User, Media>() {
+class MeController(user: User) : NoContextController<User, Media>() {
 
     override var data: User by observable(user) { _, _, _ ->
         newData = data

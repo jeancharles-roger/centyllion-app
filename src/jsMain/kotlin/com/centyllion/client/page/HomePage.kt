@@ -26,7 +26,7 @@ import bulma.noContextPanelController
 import bulma.wrap
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.FeaturedController
-import com.centyllion.client.controller.navigation.UserController
+import com.centyllion.client.controller.navigation.MeController
 import com.centyllion.client.showPage
 import com.centyllion.common.creatorRole
 import com.centyllion.model.Description
@@ -66,7 +66,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val userController = UserController(context.me ?: emptyUser)
+    val userController = MeController(context.me ?: emptyUser)
 
     val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
         updateElements()

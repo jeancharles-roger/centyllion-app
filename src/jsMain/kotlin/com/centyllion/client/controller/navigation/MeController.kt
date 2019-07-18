@@ -1,7 +1,8 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.Div
+import bulma.Control
 import bulma.ElementColor
+import bulma.Field
 import bulma.Icon
 import bulma.Image
 import bulma.ImageSize
@@ -10,6 +11,8 @@ import bulma.Media
 import bulma.NoContextController
 import bulma.Size
 import bulma.Tag
+import bulma.TextColor
+import bulma.iconButton
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.SubscriptionType
@@ -38,8 +41,18 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
-    val roles = Div().apply {
-        body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
+    val roles = Field(grouped = true).apply {
+        body = roleIcons.map {
+            appContext.hasRole(it.key).let { hasRole ->
+                Control(
+                    iconButton(
+                        Icon(it.value, color = if (hasRole) TextColor.White else TextColor.GreyLighter),
+                        if (hasRole) ElementColor.Primary else ElementColor.White,
+                        rounded = true, size = Size.None
+                    )
+                )
+            }
+        }
     }
 
     override val container = Media(
@@ -55,6 +68,6 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
         group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
-        roles.body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
+        //roles.body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
     }
 }

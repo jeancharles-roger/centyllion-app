@@ -7,7 +7,6 @@ import com.centyllion.client.page.HomePage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.client.page.SubscriptionPage
 import com.centyllion.common.adminRole
-import keycloak.KeycloakInstance
 import kotlin.js.Promise
 
 data class Page<T: BulmaElement>(
@@ -15,10 +14,10 @@ data class Page<T: BulmaElement>(
     val header: Boolean, val callback: (appContext: AppContext) -> T,
     val exitCallback: T.(appContext: AppContext) -> Promise<Boolean> = { _ -> Promise.resolve(true) }
 ) {
-    fun authorized(keycloak: KeycloakInstance): Boolean = when {
+    fun authorized(context: AppContext): Boolean = when {
         !needUser -> true
-        role == null -> keycloak.authenticated
-        else -> keycloak.hasRealmRole(role)
+        role == null -> context.keycloak.authenticated
+        else -> context.hasRole(role)
     }
 }
 

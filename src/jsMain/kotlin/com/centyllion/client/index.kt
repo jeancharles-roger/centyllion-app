@@ -3,14 +3,13 @@ package com.centyllion.client
 import bulma.BulmaElement
 import bulma.ElementColor
 import bulma.Icon
+import bulma.Message
 import bulma.NavBar
 import bulma.NavBarIconItem
 import bulma.NavBarImageItem
 import bulma.NavBarLinkItem
 import bulma.Position
-import bulmatoast.ToastAnimation
-import bulmatoast.ToastOptions
-import bulmatoast.bulmaToast
+import bulma.span
 import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
@@ -23,7 +22,6 @@ import threejs.extra.core.Font
 import threejs.loaders.FontLoader
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.Date
 import kotlin.js.Promise
 
 interface CssFile {
@@ -62,7 +60,7 @@ fun index() {
         .then { _ -> api.fetchMe() }
         .then { user ->
             // creates context
-            val context = BrowserContext(navBar, root, keycloak, user, api)
+            val context = BrowserContext(navBar, keycloak, user, api)
 
             // updates login link
             if (keycloak.tokenParsed != null) {
@@ -96,10 +94,17 @@ fun index() {
             val page = findPageInUrl() ?: if (user != null) homePage else explorePage
             context.openPage(page, register = false)
         }.catch {
-            val context = BrowserContext(navBar, root, keycloak, null, api)
-            context.error(it)
-            console.error("Error on initialize")
-            console.error(it.asDynamic().stack)
+            fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
+            findCause(it).let {
+                root.appendChild(Message(
+                    listOf(span("Error")),
+                    listOf(span(it.message ?: "")),
+                    color = ElementColor.Danger
+                ).root)
+                console.error("Error on initialize")
+                console.error(it.asDynamic().stack)
+            }
+
         }
 }
 
@@ -134,7 +139,6 @@ fun findPageInUrl(): Page<*>? {
 
 class BrowserContext(
     override val navBar: NavBar,
-    override val root: HTMLElement,
     override val keycloak: KeycloakInstance,
     override val me: User?,
     override val api: Api = Api(keycloak)
@@ -150,6 +154,8 @@ class BrowserContext(
     private val storedEvents = mutableListOf<ClientEvent>()
 
     override val events: List<ClientEvent> get() = storedEvents
+
+    override fun notify(event: ClientEvent) { storedEvents.add(event) }
 
     /** Open the given [page] */
     override fun openPage(page: Page<*>, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
@@ -206,40 +212,4 @@ class BrowserContext(
             { reject(IOException("${it.message}: ${it.filename}")) }
         )
     }
-
-    override fun error(throwable: Throwable) {
-        fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
-        findCause(throwable).let {
-            error(it.message.toString())
-            console.error(it)
-        }
-    }
-
-    override fun error(content: String) = event(content, ElementColor.Danger)
-
-    override fun warning(content: String) = event(content, ElementColor.Warning)
-
-    override fun message(content: String) = event(content, ElementColor.Info)
-
-    private fun event(content: String, color: ElementColor) {
-        val date = Date().toISOString()
-        val event = ClientEvent(date, content, color)
-        storedEvents.add(event)
-        notification(event.context, event.color)
-    }
-}
-
-private fun notification(content: String, color: ElementColor = ElementColor.None) {
-    when (color) {
-        ElementColor.Danger -> console.error(content)
-        ElementColor.Warning -> console.warn(content)
-        else -> console.log(content)
-    }
-
-    val animation = ToastAnimation("fadeIn", "fadeOut")
-    val options = ToastOptions(
-        content, color.className, 2000, "bottom-center",
-        false, true, true, 0.8, animation
-    )
-    bulmaToast.toast(options)
 }

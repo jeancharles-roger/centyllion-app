@@ -13,7 +13,7 @@ import bulma.Level
 import bulma.NoContextController
 import bulma.canvas
 import bulma.iconButton
-import com.centyllion.client.AppContext
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
@@ -64,7 +64,7 @@ import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
 open class Simulator3dViewController(
-    simulator: Simulator, val appContext: AppContext,
+    simulator: Simulator, val page: BulmaPage,
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
@@ -431,7 +431,7 @@ open class Simulator3dViewController(
     }
 
     init {
-        appContext.getFont("/font/fa-solid-900.json").then {
+        page.appContext.getFont("/font/fa-solid-900.json").then {
             font = it
             geometries = geometries()
             refresh()
@@ -473,7 +473,7 @@ open class Simulator3dViewController(
         if (scene != null) {
             resolve(scene)
         } else {
-            GLTFLoader().load(appContext.api.url(path),
+            GLTFLoader().load(page.appContext.api.url(path),
                 {
                     println("Asset $path loaded.")
                     scenesCache[path] = it.scene
@@ -498,7 +498,7 @@ open class Simulator3dViewController(
                 scene.add(it)
                 assetScenes[asset] = it
                 render()
-            }.catch { appContext.error(it) }
+            }.catch { page.error(it) }
         }
     }
 

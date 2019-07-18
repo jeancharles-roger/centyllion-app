@@ -143,9 +143,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, appContext, isSimulationReadOnly,
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
-            appContext.message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
+            message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
             val newBehaviour = behaviour.copy(probability = speed)
             model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
         },
@@ -296,7 +296,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             setSimulation(it.first)
             setModel(it.second)
         }.catch {
-            appContext.error(it)
+            error(it)
         }
     }
 
@@ -330,10 +330,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     originalSimulation = newSimulation
                     simulation = newSimulation
                     refreshButtons()
-                    appContext.message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
+                    message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
                     Unit
                 }.catch {
-                    this.appContext.error(it)
+                    this.error(it)
                     Unit
                 }
         } else {
@@ -343,10 +343,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 api.updateGrainModel(model).then {
                     originalModel = model
                     refreshButtons()
-                    appContext.message("Model ${model.model.name} saved")
+                    message("Model ${model.model.name} saved")
                     Unit
                 }.catch {
-                    this.appContext.error(it)
+                    this.error(it)
                     Unit
                 }
             }
@@ -359,10 +359,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         originalSimulation = newSimulation
                         simulation = newSimulation
                         refreshButtons()
-                        appContext.message("Simulation ${simulation.simulation.name} saved")
+                        message("Simulation ${simulation.simulation.name} saved")
                         Unit
                     }.catch {
-                        this.appContext.error(it)
+                        this.error(it)
                         Unit
                     }
                 } else {
@@ -370,10 +370,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     api.updateSimulation(simulation).then {
                         originalSimulation = simulation
                         refreshButtons()
-                        appContext.message("Simulation ${simulation.simulation.name} saved")
+                        message("Simulation ${simulation.simulation.name} saved")
                         Unit
                     }.catch {
-                        this.appContext.error(it)
+                        this.error(it)
                         Unit
                     }
                 }
@@ -385,7 +385,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val readAccess = !model.info.readAccess
         model = model.copy(info = model.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        appContext.message("${if (!readAccess) "Un-" else ""}Published model")
+        message("${if (!readAccess) "Un-" else ""}Published model")
         save()
     }
 
@@ -393,7 +393,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val readAccess = !simulation.info.readAccess
         simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        appContext.message("${if (!readAccess) "Un-" else ""}Published simulation")
+        message("${if (!readAccess) "Un-" else ""}Published simulation")
         save()
     }
 
@@ -411,7 +411,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         // closes the action
         moreDropdown.active = false
         editionTab.selectedPage = modelPage
-        appContext.message("Model cloned")
+        message("Model cloned")
     }
 
     fun downloadModel() {
@@ -424,7 +424,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         setSimulation(emptySimulationDescription)
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
-        appContext.message("New simulation")
+        message("New simulation")
     }
 
     fun cloneSimulation() {
@@ -436,7 +436,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
-        appContext.message("Simulation cloned")
+        message("Simulation cloned")
     }
 
     fun downloadSimulation() {
@@ -447,7 +447,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun deleteModel() {
         moreDropdown.active = false
 
-        val modal = appContext.modalDialog(
+        val modal = modalDialog(
             "Delete model, Are you sure ?",
             Div(
                 p("You're about to delete the model '${model.label}' and its simulations."),
@@ -456,7 +456,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteGrainModel(model).then {
                     appContext.openPage(homePage)
-                    appContext.message("Model ${model.label} deleted")
+                    message("Model ${model.label} deleted")
                 }
             },
             textButton("No")
@@ -468,7 +468,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun deleteSimulation() {
         moreDropdown.active = false
 
-        val modal = appContext.modalDialog(
+        val modal = modalDialog(
             "Delete simulation, Are you sure ?",
             Div(
                 p("You're about to delete the simulation '${simulation.label}'."),
@@ -476,7 +476,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             ),
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteSimulation(simulation).then {
-                    appContext.message("Simulation ${simulation.label} deleted")
+                    message("Simulation ${simulation.label} deleted")
                     appContext.api.fetchSimulations(model.id, false)
                 }.then {
                     setSimulation(it.firstOrNull() ?: emptySimulationDescription)
@@ -535,7 +535,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         editionTab.selectedPage = simulationPage
                     }
                 }
-            }.catch { appContext.error(it) }
+            }.catch { error(it) }
         } else {
             moreDropdown.items = moreDropdownItems
         }
@@ -543,7 +543,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun canExit(context: AppContext) = Promise<Boolean> { resolve, _ ->
         if (model != originalModel || simulation != originalSimulation) {
-            val model = context.modalDialog("Modifications not saved, Do you wan't to save ?",
+            val model = modalDialog("Modifications not saved, Do you wan't to save ?",
                 p("You're about to quit the page and some modifications haven't been saved."),
                 textButton("Save", ElementColor.Success) {
                     save()

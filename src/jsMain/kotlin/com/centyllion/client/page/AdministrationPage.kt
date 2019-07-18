@@ -36,9 +36,9 @@ import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 import org.w3c.files.get
 
-class AdministrationPage(val context: AppContext) : BulmaElement {
+class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
-    val api = context.api
+    val api = appContext.api
 
     val featuredController =
         noContextColumnsController(emptyList<FeaturedDescription>())
@@ -72,7 +72,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
 
     val userController = ResultPageController(
         { data, previous ->
-            previous ?: UserAdministrationController(data, context).wrap { Column(it.container, size = ColumnSize.S6) }
+            previous ?: UserAdministrationController(data, this).wrap { Column(it.container, size = ColumnSize.S6) }
         },
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )
@@ -101,7 +101,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
                 .catch {
                     button.loading = false
                     assetSendResult.text = it.message ?: "error"
-                    context.error(it)
+                    error(it)
                 }
         }
     }
@@ -123,13 +123,13 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
     val onTabChange: (TabPage) -> Unit = {
         when (it) {
             featuredPage -> {
-                api.fetchAllFeatured().then { featuredController.data = it.content }.catch { context.error(it) }
-                api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { context.error(it) }
+                api.fetchAllFeatured().then { featuredController.data = it.content }.catch { error(it) }
+                api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { error(it) }
             }
             userPage -> api.fetchAllUsers(true, 0, userController.limit)
-                .then { userController.data = it }.catch { context.error(it) }
+                .then { userController.data = it }.catch { error(it) }
             assetPage -> api.fetchAllAssets(0, userController.limit)
-                .then { assetsController.data = it }.catch { context.error(it) }
+                .then { assetsController.data = it }.catch { error(it) }
         }
     }
 
@@ -157,7 +157,7 @@ class AdministrationPage(val context: AppContext) : BulmaElement {
         result.then {
             featuredController.data = it
             publicModelsController.context = it
-        }.catch { context.error(it) }
+        }.catch { error(it) }
     }
 
     init {

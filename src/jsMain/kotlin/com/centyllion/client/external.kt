@@ -6,6 +6,7 @@ import bulma.NavBar
 import bulma.Title
 import bulma.span
 import com.centyllion.client.controller.model.SimulationRunController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptySimulationDescription
 import keycloak.Keycloak
@@ -45,8 +46,11 @@ fun external(baseUrl: String = "https://beta.centyllion.com") {
 
             result.then {
                 // creates context
-                val context = BrowserContext(NavBar(), container, keycloak, null, api)
-                val simulatorView = SimulationRunController(it.first.simulation, it.second.model, context, true)
+                val page = object : BulmaPage {
+                    override val appContext = BrowserContext(NavBar(), keycloak, null, api)
+                    override val root: HTMLElement = container
+                }
+                val simulatorView = SimulationRunController(it.first.simulation, it.second.model, page, true)
                 container.append(simulatorView.root)
             }.catch {
                 val message = Message(

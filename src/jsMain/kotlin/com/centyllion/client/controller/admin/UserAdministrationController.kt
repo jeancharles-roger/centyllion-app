@@ -17,15 +17,15 @@ import bulma.Size
 import bulma.Slider
 import bulma.Tag
 import bulma.textButton
-import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
-class UserAdministrationController(user: User, context: AppContext) : NoContextController<User, BulmaElement>() {
+class UserAdministrationController(user: User, val page: BulmaPage) : NoContextController<User, BulmaElement>() {
 
     override var data: User by observable(user) { _, _, _ ->
         newData = data
@@ -58,15 +58,15 @@ class UserAdministrationController(user: User, context: AppContext) : NoContextC
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
             val durationMillis = duration.value.toLong() * (24 * 60 * 60 * 1_000)
             val parameters = SubscriptionParameters(autoRenew.checked, type, durationMillis, 0.0,"manual")
-            context.api.createSubscriptionForUser(user.id, parameters).then {
+            page.appContext.api.createSubscriptionForUser(user.id, parameters).then {
                 group.text = it.subscription.name
                 group.color = if (it.state == SubscriptionState.Waiting) ElementColor.Warning else ElementColor.Success
-                context.message("Subscription ${parameters.subscription} created")
-            }.catch { context.error(it) }
+                page.message("Subscription ${parameters.subscription} created")
+            }.catch { page.error(it) }
         }
         val cancelButton = textButton("Cancel")
 
-        val modal = context.modalDialog(
+        val modal = page.modalDialog(
             "Create subscription",
             Level(center = listOf(autoRenew, subscription, duration, durationLabel)),
             createButton, cancelButton

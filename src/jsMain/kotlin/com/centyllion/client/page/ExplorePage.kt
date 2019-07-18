@@ -1,7 +1,6 @@
 package com.centyllion.client.page
 
 import bulma.Box
-import bulma.BulmaElement
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Control
@@ -26,7 +25,7 @@ import com.centyllion.client.showPage
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 
-class ExplorePage(val context: AppContext) : BulmaElement {
+class ExplorePage(override val appContext: AppContext) : BulmaPage {
 
     val noSimulationResult = Column(SubTitle("No simulation found"), size = ColumnSize.Full)
 
@@ -69,17 +68,17 @@ class ExplorePage(val context: AppContext) : BulmaElement {
         searchedModelController.data = emptyList()
         searchedSimulationController.data = emptyList()
 
-        context.api.searchSimulation(value).then {
+        appContext.api.searchSimulation(value).then {
             searchSimulationTabItem.text = "Simulation (${it.totalSize})"
             searchedSimulationController.header = if (it.content.isEmpty()) listOf(noSimulationResult) else emptyList()
             searchedSimulationController.data = it.content
-        }.catch { context.error(it) }
+        }.catch { error(it) }
 
-        context.api.searchModel(value).then {
+        appContext.api.searchModel(value).then {
             searchModelTabItem.text = "Model (${it.totalSize})"
             searchedModelController.header = if (it.content.isEmpty()) listOf(noModelResult) else emptyList()
             searchedModelController.data = it.content
-        }.catch { context.error(it) }
+        }.catch { error(it) }
     }
 
     val clearSearch = iconButton(Icon("times"), rounded = true) { searchInput.value = "" }
@@ -99,9 +98,9 @@ class ExplorePage(val context: AppContext) : BulmaElement {
                 Column(it.container, size = ColumnSize.OneQuarter)
             }
         },
-        { offset, limit ->  context.api.fetchPublicSimulations(offset, limit) },
-        { simulation, _ -> context.openPage(showPage, mapOf("simulation" to simulation.id)) },
-        { context.error(it)}
+        { offset, limit ->  appContext.api.fetchPublicSimulations(offset, limit) },
+        { simulation, _ -> appContext.openPage(showPage, mapOf("simulation" to simulation.id)) },
+        { error(it) }
     )
 
     val featuredResult = ResultPageController(
@@ -111,9 +110,9 @@ class ExplorePage(val context: AppContext) : BulmaElement {
                 Column(it.container, size = ColumnSize.OneQuarter)
             }
         },
-        { offset, limit ->  context.api.fetchAllFeatured(offset, limit) },
-        { featured , _  -> context.openPage(showPage, mapOf("simulation" to featured.simulationId)) },
-        { context.error(it)}
+        { offset, limit ->  appContext.api.fetchAllFeatured(offset, limit) },
+        { featured , _  -> appContext.openPage(showPage, mapOf("simulation" to featured.simulationId)) },
+        { error(it)}
     )
 
     val container = Div(
@@ -126,14 +125,14 @@ class ExplorePage(val context: AppContext) : BulmaElement {
 
     init {
         searchedSimulationController.onClick = { simulation, _ ->
-            context.openPage(showPage, mapOf("simulation" to simulation.id))
+            appContext.openPage(showPage, mapOf("simulation" to simulation.id))
         }
         searchedModelController.onClick = { model, _ ->
-            context.openPage(showPage, mapOf("model" to model.id))
+            appContext.openPage(showPage, mapOf("model" to model.id))
         }
 
-        context.api.fetchAllFeatured(0, featuredResult.limit).then { featuredResult.data = it }
-        context.api.fetchPublicSimulations(0, recentResult.limit).then { recentResult.data = it }
+        appContext.api.fetchAllFeatured(0, featuredResult.limit).then { featuredResult.data = it }
+        appContext.api.fetchPublicSimulations(0, recentResult.limit).then { recentResult.data = it }
     }
 
 }

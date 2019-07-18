@@ -2,9 +2,22 @@ package com.centyllion.common
 
 const val centyllionHost = "centyllion.com"
 
+const val apprenticeRole = "apprentice"
 const val creatorRole = "creator"
 const val masterRole = "master"
 const val adminRole = "admin"
+
+const val apprenticeIcon = "graduation-cap"
+const val creatorIcon = "hammer"
+const val masterIcon = "chalkboard"
+const val adminIcon = "cogs"
+
+val roleIcons = mapOf(
+    apprenticeRole to apprenticeIcon,
+    creatorRole to creatorIcon,
+    masterRole to masterIcon,
+    adminRole to adminIcon
+)
 
 enum class SubscriptionType(val role: String?, val groupId: String) {
     Apprentice(null, "632088b8-ef86-4cb9-8ad4-6c65a88c1e5b"),
@@ -24,5 +37,6 @@ enum class SubscriptionType(val role: String?, val groupId: String) {
     fun max(other: SubscriptionType?) = if (other == null || other.ordinal <= ordinal) this else other
 }
 
-fun List<SubscriptionType>?.topGroup() =
-    this?.fold(SubscriptionType.Apprentice) { p, c -> if (c.ordinal > p.ordinal) c else p } ?: SubscriptionType.Apprentice
+fun List<SubscriptionType>?.topGroup() = this
+    ?.fold(SubscriptionType.Apprentice) { p, c -> if (c.ordinal > p.ordinal) c else p }
+    ?: SubscriptionType.Apprentice

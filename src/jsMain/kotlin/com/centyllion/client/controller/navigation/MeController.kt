@@ -41,19 +41,19 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
-    val roles = Field(grouped = true).apply {
-        body = roleIcons.map {
-            appContext.hasRole(it.key).let { hasRole ->
-                Control(
-                    iconButton(
-                        Icon(it.value, color = if (hasRole) TextColor.White else TextColor.GreyLighter),
-                        if (hasRole) ElementColor.Primary else ElementColor.White,
-                        rounded = true, size = Size.None
-                    )
+    fun roleButtons() = roleIcons.map {
+        appContext.hasRole(it.key).let { hasRole ->
+            Control(
+                iconButton(
+                    Icon(it.value, color = if (hasRole) TextColor.White else TextColor.GreyLighter),
+                    if (hasRole) ElementColor.Primary else ElementColor.White,
+                    rounded = true, size = Size.None
                 )
-            }
+            )
         }
     }
+
+    val roles = Field(grouped = true).apply { body = roleButtons() }
 
     override val container = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
@@ -68,6 +68,6 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
         group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
-        //roles.body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
+        roles.body = roleButtons()
     }
 }

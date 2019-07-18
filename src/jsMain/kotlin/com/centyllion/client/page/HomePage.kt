@@ -33,7 +33,6 @@ import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.emptyUser
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
@@ -66,7 +65,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val userController = MeController(context.me ?: emptyUser)
+    val userController = MeController(context)
 
     val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
         updateElements()

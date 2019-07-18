@@ -1,20 +1,26 @@
 package com.centyllion.client.controller.navigation
 
+import bulma.Div
 import bulma.ElementColor
+import bulma.Icon
 import bulma.Image
 import bulma.ImageSize
+import bulma.Level
 import bulma.Media
 import bulma.NoContextController
 import bulma.Size
 import bulma.Tag
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.SubscriptionType
+import com.centyllion.common.roleIcons
 import com.centyllion.model.User
+import com.centyllion.model.emptyUser
 import kotlin.properties.Delegates.observable
 
-class MeController(user: User) : NoContextController<User, Media>() {
+class MeController(val appContext: AppContext) : NoContextController<User, Media>() {
 
-    override var data: User by observable(user) { _, _, _ ->
+    override var data: User by observable(appContext.me ?: emptyUser) { _, _, _ ->
         newData = data
         refresh()
     }
@@ -23,18 +29,25 @@ class MeController(user: User) : NoContextController<User, Media>() {
 
     var newData: User = data
 
-    val nameController = EditableStringController(user.name, readOnly = true)
-    val usernameController = EditableStringController(user.username, readOnly = true)
-    val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
+    val nameController = EditableStringController(data.name, readOnly = true)
+    val usernameController = EditableStringController(data.username, readOnly = true)
+    val emailController = EditableStringController(data.details?.email ?: "", readOnly = true)
 
     val group = Tag(
         (newData.details?.subscription ?: SubscriptionType.Apprentice).name,
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
+    val roles = Div().apply {
+        body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
+    }
+
     override val container = Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
-        center = listOf(nameController, usernameController, emailController, group)
+        center = listOf(
+            Level(left = listOf(group, usernameController), right = listOf(roles)),
+            nameController, emailController
+        )
     )
 
     override fun refresh() {
@@ -42,5 +55,6 @@ class MeController(user: User) : NoContextController<User, Media>() {
         usernameController.text = newData.username
         emailController.text = newData.details?.email ?: ""
         group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
+        roles.body = roleIcons.filter { appContext.hasRole(it.key) }.map { Icon(it.value) }
     }
 }

@@ -9,7 +9,6 @@ import bulma.Control
 import bulma.Div
 import bulma.Dropdown
 import bulma.DropdownDivider
-import bulma.DropdownSimpleItem
 import bulma.ElementColor
 import bulma.FaFlip
 import bulma.Field
@@ -45,7 +44,7 @@ import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class ShowPage(val context: AppContext) : BulmaElement {
+class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val saveIcon = "cloud-upload-alt"
     val shareIcon = "share-square"
@@ -54,7 +53,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     val downloadIcon = "download"
     val deleteIcon = "trash"
 
-    val api = context.api
+    val api = appContext.api
 
     private var undoModel = false
 
@@ -79,7 +78,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
     val isModelReadOnly
-        get() = !context.hasRole(creatorRole) || (model.id.isNotEmpty() && model.info.userId != context.me?.id)
+        get() = !appContext.hasRole(creatorRole) || (model.id.isNotEmpty() && model.info.userId != appContext.me?.id)
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
@@ -123,7 +122,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
     var originalSimulation: SimulationDescription = emptySimulationDescription
 
     val isSimulationReadOnly
-        get() = !context.hasRole(creatorRole) || simulation.id.isNotEmpty() && simulation.info.userId != context.me?.id
+        get() = !appContext.hasRole(creatorRole) || simulation.id.isNotEmpty() && simulation.info.userId != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
@@ -144,9 +143,9 @@ class ShowPage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, context, isSimulationReadOnly,
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, appContext, isSimulationReadOnly,
         { behaviour, speed, _ ->
-            context.message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
+            appContext.message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
             val newBehaviour = behaviour.copy(probability = speed)
             model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
         },
@@ -181,40 +180,43 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
 
-    val publishModelItem = DropdownSimpleItem(
-        "Publish Model", Icon(shareIcon, color = TextColor.Success)
+    val publishModelItem = createMenuItem(
+        "Publish Model", shareIcon, TextColor.Success, creatorRole
     ) { toggleModelPublication() }
 
-    val publishSimulationItem = DropdownSimpleItem(
-        "Publish Simulation", Icon(shareIcon, color = TextColor.Success)
+    val publishSimulationItem = createMenuItem(
+        "Publish Simulation", shareIcon, TextColor.Success, creatorRole
     ) { toggleSimulationPublication() }
 
-    val deleteModelItem = DropdownSimpleItem(
-        "Delete Model", Icon(deleteIcon, color = TextColor.Danger)
+    val deleteModelItem = createMenuItem(
+        "Delete Model", deleteIcon, TextColor.Danger
     ) { deleteModel() }
 
-    val deleteSimulationItem = DropdownSimpleItem(
-        "Delete Simulation", Icon(deleteIcon, color = TextColor.Danger)
+    val deleteSimulationItem = createMenuItem(
+        "Delete Simulation", deleteIcon, TextColor.Danger
     ) { deleteSimulation() }
 
-    val cloneModelItem =
-        DropdownSimpleItem("Clone Model", Icon(cloneIcon, color = TextColor.Primary)) { cloneModel() }
+    val cloneModelItem = createMenuItem(
+        "Clone Model", cloneIcon, TextColor.Primary
+    ) { cloneModel() }
 
-    val downloadModelItem = DropdownSimpleItem(
-        "Download Model", Icon(downloadIcon, color = TextColor.Primary), !context.hasRole(creatorRole)
+    val downloadModelItem = createMenuItem(
+        "Download Model", downloadIcon, TextColor.Primary, creatorRole
     ) { downloadModel() }
 
-    val newSimulationItem =
-        DropdownSimpleItem("New Simulation", Icon(newIcon, color = TextColor.Primary)) { newSimulation() }
+    val newSimulationItem = createMenuItem(
+        "New Simulation",newIcon, TextColor.Primary
+    ) { newSimulation() }
 
-    val cloneSimulationItem =
-        DropdownSimpleItem("Clone Simulation", Icon(cloneIcon, color = TextColor.Primary)) { cloneSimulation() }
+    val cloneSimulationItem = createMenuItem(
+        "Clone Simulation", cloneIcon, TextColor.Primary
+    ) { cloneSimulation() }
 
-    val downloadSimulationItem = DropdownSimpleItem(
-        "Download Simulation", Icon(downloadIcon, color = TextColor.Primary), !context.hasRole(creatorRole)
+    val downloadSimulationItem = createMenuItem(
+        "Download Simulation", downloadIcon, TextColor.Primary, creatorRole
     ) { downloadSimulation() }
 
-    val loadingItem = DropdownSimpleItem("Loading simulations", Icon("spinner", spin = true))
+    val loadingItem = createMenuItem("Loading simulations", "spinner").apply { itemIcon.spin = true }
 
     val moreDropdownItems = listOf(
         publishModelItem, publishSimulationItem, DropdownDivider(),
@@ -275,14 +277,14 @@ class ShowPage(val context: AppContext) : BulmaElement {
         val result = when {
             // if there is a simulation id, use it to find the model
             simulationId != null && simulationId.isNotEmpty() ->
-                context.api.fetchSimulation(simulationId).then { simulation ->
-                    context.api.fetchGrainModel(simulation.modelId).then { simulation to it }
+                appContext.api.fetchSimulation(simulationId).then { simulation ->
+                    appContext.api.fetchGrainModel(simulation.modelId).then { simulation to it }
                 }.then { it }
 
             // if there is a model id, use it to list all simulation and take the first one
             modelId != null && modelId.isNotEmpty() ->
-                context.api.fetchGrainModel(modelId).then { model ->
-                    context.api.fetchSimulations(model.id, false).then { simulations ->
+                appContext.api.fetchGrainModel(modelId).then { model ->
+                    appContext.api.fetchSimulations(model.id, false).then { simulations ->
                         (simulations.firstOrNull() ?: emptySimulationDescription) to model
                     }
                 }.then { it }
@@ -294,7 +296,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
             setSimulation(it.first)
             setModel(it.second)
         }.catch {
-            context.error(it)
+            appContext.error(it)
         }
     }
 
@@ -328,10 +330,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
                     originalSimulation = newSimulation
                     simulation = newSimulation
                     refreshButtons()
-                    context.message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
+                    appContext.message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
                     Unit
                 }.catch {
-                    this.context.error(it)
+                    this.appContext.error(it)
                     Unit
                 }
         } else {
@@ -341,10 +343,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
                 api.updateGrainModel(model).then {
                     originalModel = model
                     refreshButtons()
-                    context.message("Model ${model.model.name} saved")
+                    appContext.message("Model ${model.model.name} saved")
                     Unit
                 }.catch {
-                    this.context.error(it)
+                    this.appContext.error(it)
                     Unit
                 }
             }
@@ -357,10 +359,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
                         originalSimulation = newSimulation
                         simulation = newSimulation
                         refreshButtons()
-                        context.message("Simulation ${simulation.simulation.name} saved")
+                        appContext.message("Simulation ${simulation.simulation.name} saved")
                         Unit
                     }.catch {
-                        this.context.error(it)
+                        this.appContext.error(it)
                         Unit
                     }
                 } else {
@@ -368,10 +370,10 @@ class ShowPage(val context: AppContext) : BulmaElement {
                     api.updateSimulation(simulation).then {
                         originalSimulation = simulation
                         refreshButtons()
-                        context.message("Simulation ${simulation.simulation.name} saved")
+                        appContext.message("Simulation ${simulation.simulation.name} saved")
                         Unit
                     }.catch {
-                        this.context.error(it)
+                        this.appContext.error(it)
                         Unit
                     }
                 }
@@ -383,7 +385,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         val readAccess = !model.info.readAccess
         model = model.copy(info = model.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        context.message("${if (!readAccess) "Un-" else ""}Published model")
+        appContext.message("${if (!readAccess) "Un-" else ""}Published model")
         save()
     }
 
@@ -391,7 +393,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         val readAccess = !simulation.info.readAccess
         simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        context.message("${if (!readAccess) "Un-" else ""}Published simulation")
+        appContext.message("${if (!readAccess) "Un-" else ""}Published simulation")
         save()
     }
 
@@ -409,7 +411,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         // closes the action
         moreDropdown.active = false
         editionTab.selectedPage = modelPage
-        context.message("Model cloned")
+        appContext.message("Model cloned")
     }
 
     fun downloadModel() {
@@ -422,7 +424,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         setSimulation(emptySimulationDescription)
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
-        context.message("New simulation")
+        appContext.message("New simulation")
     }
 
     fun cloneSimulation() {
@@ -434,7 +436,7 @@ class ShowPage(val context: AppContext) : BulmaElement {
         
         moreDropdown.active = false
         editionTab.selectedPage = simulationPage
-        context.message("Simulation cloned")
+        appContext.message("Simulation cloned")
     }
 
     fun downloadSimulation() {
@@ -445,16 +447,16 @@ class ShowPage(val context: AppContext) : BulmaElement {
     fun deleteModel() {
         moreDropdown.active = false
 
-        val modal = context.modalDialog(
+        val modal = appContext.modalDialog(
             "Delete model, Are you sure ?",
             Div(
                 p("You're about to delete the model '${model.label}' and its simulations."),
                 p("This action can't be undone.", "has-text-weight-bold")
             ),
             textButton("Yes", ElementColor.Danger) {
-                context.api.deleteGrainModel(model).then {
-                    context.openPage(homePage)
-                    context.message("Model ${model.label} deleted")
+                appContext.api.deleteGrainModel(model).then {
+                    appContext.openPage(homePage)
+                    appContext.message("Model ${model.label} deleted")
                 }
             },
             textButton("No")
@@ -466,16 +468,16 @@ class ShowPage(val context: AppContext) : BulmaElement {
     fun deleteSimulation() {
         moreDropdown.active = false
 
-        val modal = context.modalDialog(
+        val modal = appContext.modalDialog(
             "Delete simulation, Are you sure ?",
             Div(
                 p("You're about to delete the simulation '${simulation.label}'."),
                 p("This action can't be undone.", "has-text-weight-bold")
             ),
             textButton("Yes", ElementColor.Danger) {
-                context.api.deleteSimulation(simulation).then {
-                    context.message("Simulation ${simulation.label} deleted")
-                    context.api.fetchSimulations(model.id, false)
+                appContext.api.deleteSimulation(simulation).then {
+                    appContext.message("Simulation ${simulation.label} deleted")
+                    appContext.api.fetchSimulations(model.id, false)
                 }.then {
                     setSimulation(it.firstOrNull() ?: emptySimulationDescription)
                 }
@@ -510,12 +512,12 @@ class ShowPage(val context: AppContext) : BulmaElement {
 
     fun refreshMoreButtons() {
         publishModelItem.disabled = model.id.isEmpty()
-        publishModelItem.icon?.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishModelItem.text = "${if (model.info.readAccess) "Un-" else ""}Publish Model"
+        publishModelItem.itemIcon.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
+        publishModelItem.itemText.text = "${if (model.info.readAccess) "Un-" else ""}Publish Model"
 
         publishSimulationItem.disabled = simulation.id.isEmpty()
-        publishSimulationItem.icon?.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishSimulationItem.text = "${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation"
+        publishSimulationItem.itemIcon.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
+        publishSimulationItem.itemText.text = "${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation"
 
         deleteModelItem.disabled = model.id.isEmpty()
 
@@ -524,16 +526,16 @@ class ShowPage(val context: AppContext) : BulmaElement {
         if (model.id.isNotEmpty()) {
             moreDropdown.items = moreDropdownItems + loadingItem
 
-            context.api.fetchSimulations(model.id, false).then {
+            appContext.api.fetchSimulations(model.id, false).then {
                 moreDropdown.items = moreDropdownItems + it.map { current ->
-                    DropdownSimpleItem(current.label, Icon(current.icon), current == simulation) {
+                    createMenuItem(current.label, current.icon, disabled = current == simulation) {
                         save()
                         setSimulation(current)
                         moreDropdown.active = false
                         editionTab.selectedPage = simulationPage
                     }
                 }
-            }.catch { context.error(it) }
+            }.catch { appContext.error(it) }
         } else {
             moreDropdown.items = moreDropdownItems
         }

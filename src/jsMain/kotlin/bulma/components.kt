@@ -28,15 +28,7 @@ import org.w3c.dom.HTMLParagraphElement
 import org.w3c.dom.HTMLSpanElement
 import org.w3c.dom.HTMLUListElement
 import kotlin.browser.document
-import kotlin.collections.List
-import kotlin.collections.emptyList
-import kotlin.collections.firstOrNull
-import kotlin.collections.forEach
-import kotlin.collections.getOrNull
-import kotlin.collections.listOf
-import kotlin.collections.map
 import kotlin.collections.set
-import kotlin.collections.toList
 import kotlin.properties.Delegates.observable
 
 enum class BreadcrumbSeparator(override val className: String) : HasClassName {
@@ -159,7 +151,9 @@ class Card(
 
 }
 
-interface DropdownItem : BulmaElement
+interface DropdownItem : BulmaElement {
+    var disabled: Boolean
+}
 
 class DropdownSimpleItem(
     text: String, icon: Icon? = null, disabled: Boolean = false,
@@ -172,7 +166,7 @@ class DropdownSimpleItem(
 
     private val textNode = root.querySelector("span") as HTMLElement
 
-    var disabled by className(disabled, "is-disabled", root)
+    override var disabled by className(disabled, "is-disabled", root)
 
     override var text: String
         get() = textNode.innerText
@@ -183,13 +177,27 @@ class DropdownSimpleItem(
     var icon by bulma(icon, root, Position.AfterBegin)
 }
 
-class DropdownContentItem(vararg body: BulmaElement) : DropdownItem {
-    override val root = document.create.div("dropdown-item")
+class DropdownContentItem(
+    vararg body: BulmaElement, highlighted: Boolean = false, disabled: Boolean = false,
+    onSelect: (DropdownContentItem) -> Unit = {}
+) : DropdownItem {
+
+    override val root: HTMLElement =
+        (if (highlighted) document.create.a() else document.create.div()).apply {
+            classList.add("dropdown-item")
+            onclick = { if (!this@DropdownContentItem.disabled) onSelect(this@DropdownContentItem) }
+        }
+
     var body by bulmaList(body.toList(), root)
+
+    override var disabled by className(disabled, "is-disabled", root)
+
 }
 
 class DropdownDivider : DropdownItem {
     override val root = document.create.hr("dropdown-divider")
+
+    override var disabled by className(false, "is-disabled", root)
 }
 
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */
@@ -462,7 +470,7 @@ class NavBarIconItem(icon: Icon, href: String? = null, onClick: (NavBarIconItem)
     var icon by bulma(icon, root)
 }
 
-class NavBarContentItem(vararg body: BulmaElement) : DropdownItem {
+class NavBarContentItem(vararg body: BulmaElement) : NavBarItem {
     override val root = document.create.div("navbar-item")
     var body by bulmaList(body.toList(), root)
 }

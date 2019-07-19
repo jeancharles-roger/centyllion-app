@@ -161,6 +161,10 @@ open class Simulator3dViewController(
         }
     }
 
+    val resetOrbit = iconButton(Icon("compress-arrows-alt"), rounded = true) {
+        orbitControl.reset()
+    }
+
     val toolButtons = EditTools.values().map { tool ->
         iconButton(
             Icon(tool.icon), ElementColor.Primary,
@@ -175,9 +179,13 @@ open class Simulator3dViewController(
     }
 
     val editToolbar = Level(
-        center = listOf(Field(addons = true).apply {
-            body = toolButtons.map { Control(it) }
-        }, sizeDropdown, selectedGrainController.container, clearAllButton)
+        center = listOf(
+            resetOrbit,
+            Field(addons = true).apply { body = toolButtons.map { Control(it) } },
+            sizeDropdown,
+            selectedGrainController,
+            clearAllButton
+        )
     )
 
     override val container = Div(

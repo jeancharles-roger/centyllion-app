@@ -113,17 +113,26 @@ open class Simulator3dViewController(
         }
     }
 
-    override var data: Simulator by observable(simulator) { _, _, new ->
-        onUpdate(true, new, this)
+    override var data: Simulator by observable(simulator) { _, old, new ->
+        if (old != new) {
+            onUpdate(true, new, this)
 
-        selectedGrainController.context = new.model.grains
-        if (!new.model.grains.contains(selectedGrainController.data)) {
-            selectedGrainController.data = new.model.grains.firstOrNull()
+            selectedGrainController.context = new.model.grains
+            if (!new.model.grains.contains(selectedGrainController.data)) {
+                selectedGrainController.data = new.model.grains.firstOrNull()
+            }
+
+            // only refresh geometries and material if grains changed
+            if (old.model.grains != new.model.grains) {
+                geometries = geometries()
+                materials = materials()
+            }
+
+            // only refresh assets if they changed
+            if(old.simulation.assets != new.simulation.assets) refreshAssets()
+
+            refresh()
         }
-        geometries = geometries()
-        materials = materials()
-        refreshAssets()
-        refresh()
     }
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
@@ -185,10 +194,6 @@ open class Simulator3dViewController(
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-
-    init {
-        refreshAssets()
-    }
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -468,6 +473,8 @@ open class Simulator3dViewController(
         }
     }.toMap()
 
+    /* TODO there is a problem to solve here when the same asset is loaded twice before the first one succeeded
+        need to add a waiting mechanism */
     private fun loadAsset(path: String): Promise<Scene> = Promise { resolve, reject ->
         val scene = scenesCache[path]
         if (scene != null) {
@@ -485,13 +492,17 @@ open class Simulator3dViewController(
     }
 
     private fun refreshAssets() {
+        println("Refresh assets")
         // clears previous assets
-        assetScenes.values.forEach { scene.remove(it) }
+        assetScenes.values.forEach {
+            scene.remove(it)
+        }
         assetScenes.clear()
 
         // sets new assets
         data.simulation.assets.map { asset ->
             loadAsset(asset.url).then {
+                println("Adds asset $it")
                 it.position.set(asset.x, asset.y, asset.z)
                 it.scale.set(asset.xScale, asset.yScale, asset.zScale)
                 it.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
@@ -500,6 +511,7 @@ open class Simulator3dViewController(
                 render()
             }.catch { page.error(it) }
         }
+
     }
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {

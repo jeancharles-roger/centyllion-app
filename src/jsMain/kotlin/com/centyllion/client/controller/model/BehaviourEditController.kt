@@ -70,6 +70,7 @@ class BehaviourEditController(
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             addReactionButton.invisible = new
+            addFieldPredicateButton.invisible = new
             nameController.readOnly = new
             descriptionController.readOnly = new
             probabilityController.readOnly = new

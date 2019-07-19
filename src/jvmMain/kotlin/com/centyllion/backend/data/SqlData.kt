@@ -25,9 +25,11 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -367,12 +369,17 @@ class SqlData(
         }
     }
 
-    private fun assetsRequest(extension: String? ) =
-        if (extension == null) DbAsset.all() else DbAsset.find { DbAssets.name regexp "^.*\\.$extension$" }
+    private fun assetExtension(extension: String) = DbAssets.name like "%.$extension"
 
-    override fun getAllAssets(offset: Int, limit: Int, extension: String?) = transaction(database) {
-        val content = assetsRequest(extension).limit(limit, offset).reversed().map { it.toModel() }
-        ResultPage(content, offset, assetsRequest(extension).count())
+    private fun assetsRequest(extensions: List<String>) =
+        if (extensions.isEmpty()) DbAsset.all() else DbAsset.find {
+            val first = assetExtension(extensions.first())
+            extensions.drop(1).fold(first) { a, c -> a or assetExtension(c) }
+        }
+
+    override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) = transaction(database) {
+        val content = assetsRequest(extensions).limit(limit, offset).reversed().map { it.toModel() }
+        ResultPage(content, offset, assetsRequest(extensions).count())
     }
 
     override fun getAssetContent(id: String) = transaction(database) {

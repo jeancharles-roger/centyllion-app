@@ -45,7 +45,7 @@ interface Data {
     fun saveSubscription(subscription: Subscription)
     fun deleteSubscription(subscriptionId: String)
 
-    fun getAllAssets(offset: Int = 0, limit: Int = 20, extension: String?): ResultPage<Asset>
+    fun getAllAssets(offset: Int = 0, limit: Int = 20, extensions: List<String>): ResultPage<Asset>
     fun getAssetContent(id: String): ByteArray?
     fun createAsset(name: String, data: ByteArray): Asset
     fun deleteAsset(id: String)

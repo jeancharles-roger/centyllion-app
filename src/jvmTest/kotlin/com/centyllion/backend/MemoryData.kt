@@ -200,8 +200,8 @@ class MemoryData(
         subscriptions.remove(subscriptionId)
     }
 
-    override fun getAllAssets(offset: Int, limit: Int, extension: String?) =
-        assets.values.filter { extension == null || it.name.endsWith(extension) } .toList().limit(offset, limit)
+    override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
+        assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } } .toList().limit(offset, limit)
 
     override fun getAssetContent(id: String) = assetContents[id]
 

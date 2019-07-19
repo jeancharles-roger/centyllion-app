@@ -226,9 +226,11 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 .then { json.parse(Subscription.serializer(), it) }
         }
 
-    fun fetchAllAssets(offset: Int = 0, limit: Int = 20) =
+    fun fetchAllAssets(offset: Int = 0, limit: Int = 20, vararg extensions: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/asset?offset=$offset&limit=$limit", bearer).then {
+            val options = listOf("offset=$offset", "limit=$limit") + extensions.map { "extension=$it" }
+            val path = "/api/asset?${options.joinToString("&")}"
+            fetch("GET", path, bearer).then {
                 json.parse(ResultPage.serializer(Asset.serializer()), it)
             }
         }

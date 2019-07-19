@@ -249,7 +249,9 @@ open class Simulator3dViewController(
     }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
+        it.saveState()
         it.asDynamic().addEventListener("change", this::render)
+        it.asDynamic().screenSpacePanning = true
         Unit
     }
 
@@ -492,22 +494,30 @@ open class Simulator3dViewController(
     }
 
     private fun refreshAssets() {
-        println("Refresh assets")
         // clears previous assets
-        assetScenes.values.forEach {
-            scene.remove(it)
-        }
+        assetScenes.values.forEach { scene.remove(it) }
         assetScenes.clear()
 
         // sets new assets
         data.simulation.assets.map { asset ->
-            loadAsset(asset.url).then {
-                println("Adds asset $it")
-                it.position.set(asset.x, asset.y, asset.z)
-                it.scale.set(asset.xScale, asset.yScale, asset.zScale)
-                it.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
-                scene.add(it)
-                assetScenes[asset] = it
+            loadAsset(asset.url).then { loaded ->
+                // clone scene to allow multiple occurrences of the same asset
+                val cloned = loaded.clone(true) as Scene
+                cloned.position.set(asset.x, asset.y, asset.z)
+                cloned.scale.set(asset.xScale, asset.yScale, asset.zScale)
+                cloned.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
+                if (asset.opacity < 1.0) {
+                    cloned.traverse {
+                        val dynamic = it.asDynamic()
+                        if (dynamic.material != null) {
+                            dynamic.material = dynamic.material.clone()
+                            dynamic.material.opacity = asset.opacity
+                            dynamic.material.transparent = true
+                        }
+                    }
+                }
+                scene.add(cloned)
+                assetScenes[asset] = cloned
                 render()
             }.catch { page.error(it) }
         }

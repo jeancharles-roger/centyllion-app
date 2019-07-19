@@ -3,10 +3,14 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
+import bulma.Control
 import bulma.Delete
+import bulma.Field
+import bulma.Help
 import bulma.Label
 import bulma.Media
 import bulma.NoContextController
+import bulma.Slider
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Asset3d
@@ -47,32 +51,41 @@ class Asset3dEditController(
         this.data = this.data.copy(url = new)
     }
 
+    val opacitySlider = Slider(
+        data.opacity.toString(), "0.0", "1.0", "0.01", fullWidth = true
+    ) { _, value -> data = data.copy(opacity = value.toDouble()) }
+
+    val opacityField = Field(
+        Control(Help("transparent")), Control(opacitySlider), Control(Help("visible")),
+        grouped = true
+    )
+
     val xController = editableDoubleController(data.x)
-        { _, new, _ -> data = data.copy(x = new) }
+    { _, new, _ -> data = data.copy(x = new) }
 
     val yController = editableDoubleController(data.y)
-        { _, new, _ -> data = data.copy(y = new) }
+    { _, new, _ -> data = data.copy(y = new) }
 
     val zController = editableDoubleController(data.z)
-        { _, new, _ -> data = data.copy(z = new) }
+    { _, new, _ -> data = data.copy(z = new) }
 
     val xScaleController = editableDoubleController(data.xScale)
-        { _, new, _ -> data = data.copy(xScale = new) }
+    { _, new, _ -> data = data.copy(xScale = new) }
 
     val yScaleController = editableDoubleController(data.yScale)
-        { _, new, _ -> data = data.copy(yScale = new) }
+    { _, new, _ -> data = data.copy(yScale = new) }
 
     val zScaleController = editableDoubleController(data.zScale)
-        { _, new, _ -> data = data.copy(zScale = new) }
+    { _, new, _ -> data = data.copy(zScale = new) }
 
     val xRotationController = editableDoubleController(data.xRotation)
-        { _, new, _ -> data = data.copy(xRotation = new) }
+    { _, new, _ -> data = data.copy(xRotation = new) }
 
     val yRotationController = editableDoubleController(data.yRotation)
-        { _, new, _ -> data = data.copy(yRotation = new) }
+    { _, new, _ -> data = data.copy(yRotation = new) }
 
     val zRotationController = editableDoubleController(data.zRotation)
-        { _, new, _ -> data = data.copy(zRotation = new) }
+    { _, new, _ -> data = data.copy(zRotation = new) }
 
     val delete = Delete { onDelete(this.data, this@Asset3dEditController) }
 
@@ -81,6 +94,7 @@ class Asset3dEditController(
             Columns(
                 // first line
                 Column(urlController, size = ColumnSize.Full),
+                Column(opacityField, size = ColumnSize.Full),
                 Column(Label("Position (x,y,z)"), size = ColumnSize.Full),
                 Column(xController, size = ColumnSize.OneThird),
                 Column(yController, size = ColumnSize.OneThird),

@@ -46,7 +46,7 @@ data class Predicate<C : Comparable<C>>(
 
 @Serializable
 data class Asset3d(
-    val url: String,
+    val url: String, val opacity: Double = 1.0,
     val x: Double = 0.0, val y: Double = 0.0, val z: Double = 0.0,
     val xScale: Double = 1.0, val yScale: Double = 1.0, val zScale: Double = 1.0,
     val xRotation: Double = 0.0, val yRotation: Double = 0.0, val zRotation: Double = 0.0

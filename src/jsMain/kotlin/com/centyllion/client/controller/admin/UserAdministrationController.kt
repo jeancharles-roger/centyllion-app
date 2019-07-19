@@ -27,21 +27,18 @@ import kotlin.properties.Delegates.observable
 
 class UserAdministrationController(user: User, val page: BulmaPage) : NoContextController<User, BulmaElement>() {
 
-    override var data: User by observable(user) { _, _, _ ->
-        newData = data
-        refresh()
+    override var data: User by observable(user) { _, old, new ->
+        if (old != new) refresh()
     }
 
     override var readOnly: Boolean by observable(false) { _, _, _ -> }
-
-    var newData: User = data
 
     val nameController = EditableStringController(user.name, readOnly = true)
     val usernameController = EditableStringController(user.username, readOnly = true)
     val emailController = EditableStringController(user.details?.email ?: "", readOnly = true)
 
     val group = Tag(
-        (newData.details?.subscription ?: SubscriptionType.Apprentice).name,
+        (data.details?.subscription ?: SubscriptionType.Apprentice).name,
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
@@ -58,7 +55,7 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
             val durationMillis = duration.value.toLong() * (24 * 60 * 60 * 1_000)
             val parameters = SubscriptionParameters(autoRenew.checked, type, durationMillis, 0.0,"manual")
-            page.appContext.api.createSubscriptionForUser(user.id, parameters).then {
+            page.appContext.api.createSubscriptionForUser(data.id, parameters).then {
                 group.text = it.subscription.name
                 group.color = if (it.state == SubscriptionState.Waiting) ElementColor.Warning else ElementColor.Success
                 page.message("Subscription ${parameters.subscription} created")
@@ -82,9 +79,9 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
     )
 
     override fun refresh() {
-        nameController.text = newData.name
-        usernameController.text = newData.username
-        emailController.text = newData.details?.email ?: ""
-        group.text = (newData.details?.subscription ?: SubscriptionType.Apprentice).name
+        nameController.text = data.name
+        usernameController.text = data.username
+        emailController.text = data.details?.email ?: ""
+        group.text = (data.details?.subscription ?: SubscriptionType.Apprentice).name
     }
 }

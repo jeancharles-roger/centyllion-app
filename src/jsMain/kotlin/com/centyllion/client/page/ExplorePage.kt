@@ -22,6 +22,7 @@ import com.centyllion.client.controller.navigation.GrainModelDisplayController
 import com.centyllion.client.controller.navigation.ResultPageController
 import com.centyllion.client.controller.navigation.SimulationDisplayController
 import com.centyllion.client.showPage
+import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 
@@ -91,28 +92,39 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         TabPage(searchModelTabItem, searchedModelController)
     )
 
-    val recentResult = ResultPageController(
+    val recentListController =
+        noContextColumnsController(emptyList<SimulationDescription>())
         { data, previous ->
-            previous ?: SimulationDisplayController(data).wrap {
-                it.root.style.cursor = "pointer"
-                Column(it.container, size = ColumnSize.OneQuarter)
+            previous ?: SimulationDisplayController(data).wrap { ctrl ->
+                ctrl.root.style.cursor = "pointer"
+                ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.id)) }
+                Column(ctrl.container, size = ColumnSize.OneQuarter)
             }
-        },
-        { offset, limit ->  appContext.api.fetchPublicSimulations(offset, limit) },
-        { simulation, _ -> appContext.openPage(showPage, mapOf("simulation" to simulation.id)) },
-        { error(it) }
-    )
+        }
+
+    val recentResult =
+        ResultPageController(
+            recentListController,
+            { Column(it, size = ColumnSize.Full) },
+            { offset, limit ->  appContext.api.fetchPublicSimulations(offset, limit) },
+            { error(it) }
+        )
+
+    val featuredListController =
+        noContextColumnsController(emptyList<FeaturedDescription>())
+        { data, previous ->
+            previous ?: FeaturedController(data).wrap { ctrl ->
+                ctrl.root.style.cursor = "pointer"
+                ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.simulationId)) }
+                Column(ctrl.container, size = ColumnSize.OneQuarter)
+            }
+        }
 
     val featuredResult = ResultPageController(
-        { data, previous ->
-            previous ?: FeaturedController(data).wrap {
-                it.root.style.cursor = "pointer"
-                Column(it.container, size = ColumnSize.OneQuarter)
-            }
-        },
-        { offset, limit ->  appContext.api.fetchAllFeatured(offset, limit) },
-        { featured , _  -> appContext.openPage(showPage, mapOf("simulation" to featured.simulationId)) },
-        { error(it)}
+        featuredListController,
+        { Column(it, size = ColumnSize.Full) },
+        { offset, limit -> appContext.api.fetchAllFeatured(offset, limit) },
+        { error(it) }
     )
 
     val container = Div(

@@ -1,25 +1,34 @@
 package com.centyllion.client.controller.navigation
 
 import bulma.BulmaElement
-import bulma.Column
 import bulma.Controller
-import bulma.Div
+import bulma.MultipleController
 import bulma.NoContextController
 import bulma.Pagination
 import bulma.PaginationAction
 import bulma.PaginationLink
-import bulma.noContextColumnsController
 import com.centyllion.model.ResultPage
 import com.centyllion.model.emptyResultPage
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
-class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
-    controllerBuilder: (data: Data, previous: Ctrl?) -> Ctrl,
+class ResultPageController<
+    /** Data type for each controller */
+    Data,
+    /** Context for each controller (on context for all) */
+    Context,
+    /** BulmaElement for the whole list */
+    ParentElement : BulmaElement,
+    /** BulmaElement for each item */
+    ItemElement : BulmaElement,
+    /** Controller for each item */
+    Ctrl : Controller<Data, Context, ItemElement>
+>(
+    val contentController: MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>,
+    val toHeader: (Pagination) -> ItemElement,
     var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
-    var onClick: (Data, Ctrl) -> Unit = { _, _ -> },
     var error: (Throwable) -> Unit = {}
-) : NoContextController<ResultPage<Data>, BulmaElement>() {
+) : NoContextController<ResultPage<Data>, ParentElement>() {
 
     override var data: ResultPage<Data> by observable(emptyResultPage()) { _, old, new ->
         if (old != new) {
@@ -42,13 +51,11 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
 
     val previous = PaginationAction("Previous") { offset -= limit }
 
-    val pagination = Pagination(previous = previous, next = next, rounded = true)
+    val pagination = Pagination(previous = previous, next = next, rounded = true).apply {
+        contentController.header += toHeader(this)
+    }
 
-    val contentController =
-        noContextColumnsController(data.content, controllerBuilder = controllerBuilder)
-            .apply { this.onClick = this@ResultPageController.onClick }
-
-    override val container: BulmaElement = Div(pagination, contentController)
+    override val container = contentController.container
 
     fun refreshFetch() = fetch(offset, limit).then { data = it }.catch { error(it) }
 
@@ -60,5 +67,4 @@ class ResultPageController<Data, Ctrl : Controller<Data, Unit, Column>>(
         previous.disabled = offset == 0
         next.disabled = offset > (data.totalSize-1) - limit
     }
-
 }

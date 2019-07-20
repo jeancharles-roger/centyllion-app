@@ -70,14 +70,15 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
 
-    val userController = ResultPageController(
-        { data, previous ->
+    val usersPageController = ResultPageController(
+        noContextColumnsController(emptyList()) { data, previous ->
             previous ?: UserAdministrationController(data, this).wrap { Column(it.container, size = ColumnSize.S6) }
         },
+        { Column(it, size = ColumnSize.Full) },
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )
 
-    val userPage = TabPage(TabItem("Users", "user"), userController)
+    val userPage = TabPage(TabItem("Users", "user"), usersPageController)
 
     val assetInput: FileInput = FileInput("Asset") { input, files ->
         val file = files?.get(0)
@@ -95,7 +96,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
             api.createAsset(file.name, file)
                 .then {
                     button.loading = false
-                    assetsController.refreshFetch()
+                    assetsPageController.refreshFetch()
                     assetSendResult.text = "Asset created with id $it."
                 }
                 .catch {
@@ -108,16 +109,17 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val assetSendResult = Label()
 
-    val assetsController = ResultPageController(
-        { data, previous ->
+    val assetsPageController = ResultPageController(
+        noContextColumnsController(emptyList()) { data, previous ->
             previous ?: AssetAdministrationController(data).wrap { Column(it.container, size = ColumnSize.S3) }
         },
+        { Column(it, size = ColumnSize.Full) },
         { offset, limit -> api.fetchAllAssets(offset, limit) }
     )
 
     val assetPage = TabPage(
         TabItem("Assets", "file-code"),
-        Div(Level(center = listOf(assetInput, assetSend, assetSendResult)), assetsController)
+        Div(Level(center = listOf(assetInput, assetSend, assetSendResult)), assetsPageController)
     )
 
     val onTabChange: (TabPage) -> Unit = {
@@ -126,10 +128,10 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
                 api.fetchAllFeatured().then { featuredController.data = it.content }.catch { error(it) }
                 api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { error(it) }
             }
-            userPage -> api.fetchAllUsers(true, 0, userController.limit)
-                .then { userController.data = it }.catch { error(it) }
-            assetPage -> api.fetchAllAssets(0, userController.limit)
-                .then { assetsController.data = it }.catch { error(it) }
+            userPage -> api.fetchAllUsers(true, 0, usersPageController.limit)
+                .then { usersPageController.data = it }.catch { error(it) }
+            assetPage -> api.fetchAllAssets(0, assetsPageController.limit)
+                .then { assetsPageController.data = it }.catch { error(it) }
         }
     }
 

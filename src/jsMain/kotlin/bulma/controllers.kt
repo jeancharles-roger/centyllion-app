@@ -143,7 +143,7 @@ fun <Data, Ctrl : Controller<Data, Unit, Column>> noContextColumnsController(
 ) = columnsController(initialList, Unit, header, footer, container, controllerBuilder)
 
 fun <Data, Context, Ctrl : Controller<Data, Context, DropdownItem>> dropdownController(
-    container: Dropdown, initialList: List<Data>, initialContext: Context,
+    initialList: List<Data>, initialContext: Context, container: Dropdown = Dropdown(),
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
     controllerBuilder: (data: Data, previous: Ctrl?) -> Ctrl
 ) = MultipleController(
@@ -151,10 +151,10 @@ fun <Data, Context, Ctrl : Controller<Data, Context, DropdownItem>> dropdownCont
 ) { parent, items -> parent.items = items }
 
 fun <Data, Ctrl : Controller<Data, Unit, DropdownItem>> noContextDropdownController(
-    container: Dropdown, initialList: List<Data>,
+    initialList: List<Data>, container: Dropdown = Dropdown(),
     header: List<DropdownItem> = emptyList(), footer: List<DropdownItem> = emptyList(),
     controllerBuilder: (data: Data, previous: Ctrl?) -> Ctrl
-) = dropdownController(container, initialList, Unit, header, footer, controllerBuilder)
+) = dropdownController(initialList, Unit, container, header, footer, controllerBuilder)
 
 fun <Data, Context, Ctrl : Controller<Data, Context, PanelItem>> panelController(
     container: Panel, initialList: List<Data>, initialContext: Context,

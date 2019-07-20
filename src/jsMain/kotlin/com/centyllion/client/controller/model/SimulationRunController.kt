@@ -130,9 +130,9 @@ class SimulationRunController(
         { grain, previous ->
             val controller = previous ?: GrainDisplayController(grain)
             controller.body.root.onclick = {
-                    simulationViewController.selectedGrainController.data = controller.data
-                    Unit
-                }
+                simulationViewController.selectedGrainController.data = controller.data
+                Unit
+            }
             controller
         }
 
@@ -166,17 +166,18 @@ class SimulationRunController(
         this.data = data.copy(assets = data.assets + Asset3d(""))
     }
 
-    val asset3dController = noContextColumnsController(simulation.assets) {
-        asset, previous -> previous ?: Asset3dEditController(asset, readOnly).wrap { controller ->
-            controller.onUpdate = { old, new, _ ->
-                if (old != new) data = data.updateAsset(old, new)
+    val asset3dController =
+        noContextColumnsController(simulation.assets) { asset, previous ->
+            previous ?: Asset3dEditController(asset, readOnly, page.appContext.api).wrap { controller ->
+                controller.onUpdate = { old, new, _ ->
+                    if (old != new) data = data.updateAsset(old, new)
+                }
+                controller.onDelete = { delete, _ ->
+                    data = data.dropAsset(delete)
+                }
+                Column(controller, size = ColumnSize.Half)
             }
-            controller.onDelete = { delete, _ ->
-                data = data.dropAsset(delete)
-            }
-            Column(controller, size = ColumnSize.Half)
         }
-    }
 
     val assetsColumn = Column(
         Level(
@@ -190,7 +191,7 @@ class SimulationRunController(
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
-        Column(Title("Grains", TextSize.S4),  grainsController, desktopSize = ColumnSize.S2),
+        Column(Title("Grains", TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
         Column(
             Columns(
                 Column(
@@ -227,7 +228,7 @@ class SimulationRunController(
 
     init {
         fpsSlider.root.style.width = "200px"
-        window.setTimeout( { animationCallback(0.0) }, 250 )
+        window.setTimeout({ animationCallback(0.0) }, 250)
     }
 
     fun setFpsColor(slowed: Boolean) {

@@ -436,7 +436,6 @@ open class Simulator3dViewController(
         }
     }
 
-
     private var geometries by observable(geometries()) { _, old, _ ->
         old.values.filterNotNull().forEach { it.dispose() }
     }

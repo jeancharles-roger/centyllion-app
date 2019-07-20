@@ -11,13 +11,14 @@ import bulma.Label
 import bulma.Media
 import bulma.NoContextController
 import bulma.Slider
+import com.centyllion.client.Api
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Asset3d
 import kotlin.properties.Delegates.observable
 
 class Asset3dEditController(
-    initialData: Asset3d, readOnly: Boolean = false,
+    initialData: Asset3d, readOnly: Boolean = false, api: Api,
     var onUpdate: (old: Asset3d, new: Asset3d, controller: Asset3dEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Asset3d, controller: Asset3dEditController) -> Unit = { _, _ -> }
 ) : NoContextController<Asset3d, Media>() {
@@ -25,6 +26,7 @@ class Asset3dEditController(
     override var data: Asset3d by observable(initialData) { _, old, new ->
         if (old != new) {
             urlController.data = data.url
+            assetSelectController.data = data.url
             onUpdate(old, new, this@Asset3dEditController)
             refresh()
         }
@@ -32,6 +34,7 @@ class Asset3dEditController(
 
     override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
+            assetSelectController.readOnly = new
             urlController.readOnly = new
             xController.readOnly = new
             yController.readOnly = new
@@ -44,6 +47,10 @@ class Asset3dEditController(
             zRotationController.readOnly = new
             container.right = if (new) emptyList() else listOf(delete)
         }
+    }
+
+    val assetSelectController = Asset3dSelectController(data.url, api) { old, new, _ ->
+        if (old != new) this.data = this.data.copy(url = new)
     }
 
     val urlController = EditableStringController(data.url, "Url")
@@ -93,7 +100,7 @@ class Asset3dEditController(
         center = listOf(
             Columns(
                 // first line
-                Column(urlController, size = ColumnSize.Full),
+                Column(assetSelectController, size = ColumnSize.Full),
                 Column(opacityField, size = ColumnSize.Full),
                 Column(Label("Position (x,y,z)"), size = ColumnSize.Full),
                 Column(xController, size = ColumnSize.OneThird),

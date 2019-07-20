@@ -72,7 +72,7 @@ class MultipleController<
         }
     }
 
-    var onClick: (Data, Ctrl) -> Unit = { _, _ -> }
+    var onClick: ((Data, Ctrl) -> Unit)? = null
 
     var header: List<ItemElement> by observable(header)
     { _, _, _ -> updateAllList() }
@@ -94,7 +94,9 @@ class MultipleController<
             when (it.action) {
                 DiffAction.Added -> {
                     val newController = controllerBuilder(it.element, null)
-                    newController.root.onclick = { onClick(newController.data, newController) }
+                    onClick?.let { onClick ->
+                        newController.root.onclick = { onClick(newController.data, newController) }
+                    }
                     newController.readOnly = readOnly
                     newControllers.add(it.index, newController)
                 }

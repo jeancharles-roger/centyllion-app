@@ -20,6 +20,24 @@ class Asset3dSelectController(
     var onUpdate: (old: String, new: String, controller: Asset3dSelectController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, Dropdown>() {
 
+    class AssetItem(asset: Asset, parent: Asset3dSelectController): NoContextController<Asset, DropdownItem>() {
+
+        override var data: Asset by observable(asset) { _, old, new ->
+            if (old != new) refresh()
+        }
+
+        override val container = DropdownSimpleItem(data.name) { _ ->
+            parent.data = "/api/asset/${data.id}"
+            parent.dropdown.active = false
+        }
+
+        override var readOnly: Boolean = false
+
+        override fun refresh() {
+            container.text = data.name
+        }
+    }
+
     override var data by observable(url) { _, old, new ->
         if (old != new) {
             onUpdate(old, new, this@Asset3dSelectController)
@@ -40,17 +58,9 @@ class Asset3dSelectController(
         text = url, rounded = true, menuWidth = "30rem"
     ) { assetsPageController.refreshFetch() }
 
-    val assetsController = noContextDropdownController(emptyList<Asset>(), dropdown) { asset, _ ->
-        object: NoContextController<Asset, DropdownItem>() {
-            override var data: Asset = asset
-            override val container = DropdownSimpleItem(asset.name) { _ ->
-                this@Asset3dSelectController.data = "/api/asset/${asset.id}"
-                dropdown.active = false
-            }
-            override var readOnly: Boolean = false
-            override fun refresh() {}
-        }
-    }
+    val assetsController =
+        noContextDropdownController(emptyList<Asset>(), dropdown)
+        { asset, _ -> AssetItem(asset, this) }
 
     val assetsPageController = ResultPageController(
         assetsController, { DropdownContentItem(it) },

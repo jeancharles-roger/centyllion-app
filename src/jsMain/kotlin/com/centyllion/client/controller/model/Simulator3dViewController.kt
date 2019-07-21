@@ -77,8 +77,8 @@ open class Simulator3dViewController(
             Move -> null
             else -> Mesh(
                 CylinderBufferGeometry(
-                    0.5*size*factor, 0.5*size*factor, 6.0, 16
-                ).apply { rotateX(PI/2); translate(0.0, 0.0, 3.0) },
+                    0.5 * size * factor, 0.5 * size * factor, 6.0, 16
+                ).apply { rotateX(PI / 2); translate(0.0, 0.0, 3.0) },
                 sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
             ).apply {
                 val wireFrame = LineSegments(
@@ -129,7 +129,7 @@ open class Simulator3dViewController(
             }
 
             // only refresh assets if they changed
-            if(old.simulation.assets != new.simulation.assets) refreshAssets()
+            if (old.simulation.assets != new.simulation.assets) refreshAssets()
 
             refresh()
         }
@@ -208,7 +208,7 @@ open class Simulator3dViewController(
     }
 
     val camera = PerspectiveCamera(45, 1.0, 0.1, 1000.0).apply {
-        position.set(0, 0.0, 1.25 * data.simulation.width)
+        position.set(0, 1.25 * data.simulation.width, 0.0)
         lookAt(0, 0, 0)
     }
 
@@ -219,8 +219,8 @@ open class Simulator3dViewController(
         val directionalLight = DirectionalLight(0xffffff, 1)
         directionalLight.position.set(
             1.25 * data.simulation.width,
-            -1.25 * data.simulation.width,
-            2 * data.simulation.width
+            2 * data.simulation.width,
+            1.25 * data.simulation.width
         )
         directionalLight.castShadow = true
         add(directionalLight)
@@ -239,8 +239,7 @@ open class Simulator3dViewController(
             }
         )
         add(wireFrame)
-
-
+        rotateX(PI / 2)
         scene.add(this)
     }
 
@@ -465,14 +464,16 @@ open class Simulator3dViewController(
 
     private fun geometries() = data.model.grains.map { grain ->
         grain.id to font?.let {
-            val height = grain.size
+            val height = grain.size.coerceAtLeast(0.1)
             when (grain.icon) {
-                "square" -> BoxBufferGeometry(0.8, 0.8, height)
-                "square-full" -> BoxBufferGeometry(1, 1, height)
-                "circle" -> CylinderBufferGeometry(0.5, 0.5, height).apply { rotateX(PI / 2) }
-                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height))
-            }.apply { translate(0.0, 0.0, height/2.0) }
-
+                "square" -> BoxBufferGeometry(0.8, height, 0.8)
+                "square-full" -> BoxBufferGeometry(1.0, height, 1.0)
+                "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
+                else -> TextBufferGeometry(
+                    grain.iconString,
+                    TextGeometryParametersImpl(it, 0.8, height)
+                ).apply { rotateX(PI / 2) }
+            }.apply { translate(0.0, height/2.0, 0.0) }
         }
     }.toMap()
 
@@ -539,7 +540,8 @@ open class Simulator3dViewController(
         mesh.castShadow = true
 
         // positions the mesh
-        mesh.position.set(x, y, 0.0)
+        //val height = data.model.indexedGrains[grainId]?.size ?: 1.0
+        mesh.position.set(x, 0, y)
 
         mesh.updateMatrix()
         mesh.matrixAutoUpdate = false
@@ -568,8 +570,8 @@ open class Simulator3dViewController(
                 createMesh(
                     index,
                     newGrainId,
-                    p.x - data.simulation.width / 2.0,
-                    -(p.y - data.simulation.height / 2.0 - 1.0)
+                    p.x - data.simulation.width / 2.0 + 0.5,
+                    p.y - data.simulation.height / 2.0 + 0.5
                 )
             }
         }
@@ -626,8 +628,9 @@ open class Simulator3dViewController(
         agentMesh.clear()
 
         // adds agents meshes
-        var currentX = -data.simulation.width / 2.0
-        var currentY = data.simulation.height / 2.0 + 1.0
+        val startX = -data.simulation.width / 2.0 + 0.5
+        var currentX = startX
+        var currentY = -data.simulation.height / 2.0 + 0.5
         for (i in 0 until data.currentAgents.size) {
             val grain = data.model.indexedGrains[data.idAtIndex(i)]
 
@@ -637,8 +640,8 @@ open class Simulator3dViewController(
 
             currentX += 1.0
             if (currentX >= data.simulation.width / 2.0) {
-                currentX = -data.simulation.width / 2.0
-                currentY -= 1.0
+                currentX = startX
+                currentY += 1.0
             }
         }
 
@@ -673,7 +676,7 @@ open class Simulator3dViewController(
 
             val geometry = PlaneBufferGeometry(100, 100)
             val mesh = Mesh(geometry, material)
-            mesh.rotateX(PI)
+            mesh.rotateX(PI / 2)
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()

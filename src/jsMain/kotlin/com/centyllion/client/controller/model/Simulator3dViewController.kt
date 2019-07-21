@@ -466,19 +466,17 @@ open class Simulator3dViewController(
         grain.id to font?.let {
             val height = grain.size.coerceAtLeast(0.1)
             when (grain.icon) {
-                "square", "square-full", "circle" -> when (grain.icon) {
-                    "square" -> BoxBufferGeometry(0.8, height, 0.8)
-                    "square-full" -> BoxBufferGeometry(1.0, height, 1.0)
-                    else -> CylinderBufferGeometry(0.5, 0.5, height)
-                }.apply { translate(0.0, height/2.0, 0.0) }
+                "square" -> BoxBufferGeometry(0.8, height, 0.8)
+                "square-full" -> BoxBufferGeometry(1.0, height, 1.0)
+                "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
                 else -> TextBufferGeometry(
                     grain.iconString,
                     TextGeometryParametersImpl(it, 0.8, height)
                 ).apply {
                     rotateX(PI / 2)
-                    translate(-0.5, height,-0.5)
+                    translate(-0.5, height/2.0,-0.5)
                 }
-            }
+            }.apply { translate(0.0, height/2.0, 0.0) }
         }
     }.toMap()
 

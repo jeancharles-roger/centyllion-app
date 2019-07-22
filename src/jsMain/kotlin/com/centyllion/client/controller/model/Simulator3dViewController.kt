@@ -131,7 +131,9 @@ open class Simulator3dViewController(
             }
 
             // only refresh assets if they changed
-            if (old.simulation.assets != new.simulation.assets) refreshAssets()
+            if (old.simulation.assets != new.simulation.assets) {
+                refreshAssets()
+            }
 
             refresh()
         }
@@ -344,12 +346,14 @@ open class Simulator3dViewController(
     fun drawOnSimulation(step: Int) {
         when (selectedTool) {
             EditTools.Pen -> {
-                selectedGrainController.data?.id?.let { idToSet ->
-                    circle(simulationX, simulationY) { i, j ->
-                        data.setIdAtIndex(
-                            data.simulation.toIndex(i, j),
-                            idToSet
-                        )
+                if (step >= 0) {
+                    selectedGrainController.data?.id?.let { idToSet ->
+                        circle(simulationX, simulationY) { i, j ->
+                            data.setIdAtIndex(
+                                data.simulation.toIndex(i, j),
+                                idToSet
+                            )
+                        }
                     }
                 }
             }
@@ -366,10 +370,12 @@ open class Simulator3dViewController(
             }
             EditTools.Spray -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-                    val sprayDensity = 0.005
-                    circle(simulationX, simulationY) { i, j ->
-                        if (Random.nextDouble() < sprayDensity) {
-                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                    if (step >= 0) {
+                        val sprayDensity = 0.005
+                        circle(simulationX, simulationY) { i, j ->
+                            if (Random.nextDouble() < sprayDensity) {
+                                data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                            }
                         }
                     }
                 }

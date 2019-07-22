@@ -260,6 +260,10 @@ open class Simulator3dViewController(
     }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
+        it.keys.LEFT = -1
+        it.keys.RIGHT = -1
+        it.keys.UP = -1
+        it.keys.BOTTOM = -1
         it.saveState()
         it.asDynamic().addEventListener("change", this::render)
         it.asDynamic().screenSpacePanning = true

@@ -73,13 +73,15 @@ open class Simulator3dViewController(
         Line("pencil-ruler"), Spray("spray-can", 4),
         Eraser("eraser");
 
+        val height = 6.0
+
         fun createPointer(sourceMaterial: Material?, size: Int): Object3D? = when (this) {
             Move -> null
             else -> Mesh(
-                CylinderBufferGeometry(
-                    0.5 * size * factor, 0.5 * size * factor, 6.0, 16
-                ).apply { rotateX(PI / 2); translate(0.0, 0.0, 3.0) },
-                sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
+                CylinderBufferGeometry(0.5 * size * factor, 0.5 * size * factor, height, 16)
+                    .apply { translate(0.5, height/2.0,0.5) },
+                sourceMaterial?.clone() ?: MeshPhongMaterial()
+                    .apply { color.set("#ff0000") }
             ).apply {
                 val wireFrame = LineSegments(
                     WireframeGeometry(geometry as BufferGeometry),
@@ -227,7 +229,8 @@ open class Simulator3dViewController(
     }
 
     val plane = Mesh(
-        PlaneBufferGeometry(100, 100),
+        //PlaneBufferGeometry(100, 100),
+        BoxBufferGeometry(100, 0.1, 100),
         MeshBasicMaterial().apply { visible = false }
     ).apply {
         val wireFrame = LineSegments(
@@ -239,7 +242,6 @@ open class Simulator3dViewController(
             }
         )
         add(wireFrame)
-        rotateX(PI / 2)
         scene.add(this)
     }
 
@@ -401,8 +403,9 @@ open class Simulator3dViewController(
                 pointer?.visible = true
 
                 val planeX = (intersect.point.x - 0.5).roundToInt()
-                val planeY = (intersect.point.y - 0.5).roundToInt()
-                pointer?.position?.set(planeX, planeY, 0.0)
+                val planeY = (intersect.point.z - 0.5).roundToInt()
+
+                pointer?.position?.set(planeX, 0.0, planeY)
 
                 val clicked = event.buttons.toInt() == 1
                 val newStep = when {
@@ -413,7 +416,7 @@ open class Simulator3dViewController(
                 }
 
                 simulationX = planeX + 50
-                simulationY = (100 - planeY) - 50 + 1
+                simulationY = planeY + 50
 
                 if (newStep != null) {
                     if (newStep == 0) {

@@ -79,7 +79,7 @@ open class Simulator3dViewController(
             Move -> null
             else -> Mesh(
                 CylinderBufferGeometry(0.5 * size * factor, 0.5 * size * factor, height, 16)
-                    .apply { translate(0.5, height/2.0,0.5) },
+                    .apply { translate(0.5, height / 2.0, 0.5) },
                 sourceMaterial?.clone() ?: MeshPhongMaterial()
                     .apply { color.set("#ff0000") }
             ).apply {
@@ -483,9 +483,9 @@ open class Simulator3dViewController(
                     TextGeometryParametersImpl(it, 0.8, height)
                 ).apply {
                     rotateX(PI / 2)
-                    translate(-0.5, height/2.0,-0.5)
+                    translate(-0.5, height / 2.0, -0.5)
                 }
-            }.apply { translate(0.0, height/2.0, 0.0) }
+            }.apply { translate(0.0, height / 2.0, 0.0) }
         }
     }.toMap()
 
@@ -635,26 +635,9 @@ open class Simulator3dViewController(
     }
 
     override fun refresh() {
-        // clear agents
-        agentMesh.values.forEach { scene.remove(it) }
-        agentMesh.clear()
-
-        // adds agents meshes
-        val startX = -data.simulation.width / 2.0 + 0.5
-        var currentX = startX
-        var currentY = -data.simulation.height / 2.0 + 0.5
+        // applies transform mesh to all simulation
         for (i in 0 until data.currentAgents.size) {
-            val grain = data.model.indexedGrains[data.idAtIndex(i)]
-
-            if (grain != null) {
-                createMesh(i, grain.id, currentX, currentY)
-            }
-
-            currentX += 1.0
-            if (currentX >= data.simulation.width / 2.0) {
-                currentX = startX
-                currentY += 1.0
-            }
+            transformMesh(i, data.idAtIndex(i))
         }
 
         // clear fields
@@ -702,6 +685,13 @@ open class Simulator3dViewController(
         defaultMaterial.dispose()
         geometries = emptyMap()
         defaultGeometry.dispose()
+        scenesCache.values.forEach {
+            it.traverse {
+                val dynamic = it.asDynamic()
+                dynamic.material?.dispose()
+                dynamic.geomtry?.dispose()
+            }
+        }
     }
 
 }

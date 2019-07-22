@@ -492,6 +492,7 @@ open class Simulator3dViewController(
                     TextGeometryParametersImpl(it, 0.8, height)
                 ).apply {
                     rotateX(PI / 2)
+                    rotateY(PI)
                     translate(-0.5, height / 2.0, -0.5)
                 }
             }.apply { translate(0.0, height / 2.0, 0.0) }

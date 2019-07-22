@@ -379,12 +379,9 @@ class SimulationRunController(
                     data = it.value.mapIndexed { index, i -> LineChartPlot(index, i) }.toTypedArray()
                 }
             }.toTypedArray()
-            chart.update()
             lastChartRefresh = 0
-        } else {
-            chart.data.datasets = emptyArray()
-            chart.update()
         }
+        chart.update()
     }
 
     fun dispose() {

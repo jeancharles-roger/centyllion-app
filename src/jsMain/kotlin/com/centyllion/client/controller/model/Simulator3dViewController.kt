@@ -24,7 +24,6 @@ import info.laht.threekt.THREE.LuminanceFormat
 import info.laht.threekt.THREE.NearestFilter
 import info.laht.threekt.cameras.PerspectiveCamera
 import info.laht.threekt.core.BufferGeometry
-import info.laht.threekt.core.Object3D
 import info.laht.threekt.external.controls.OrbitControls
 import info.laht.threekt.external.loaders.GLTFLoader
 import info.laht.threekt.geometries.BoxBufferGeometry
@@ -40,6 +39,7 @@ import info.laht.threekt.materials.MeshPhongMaterial
 import info.laht.threekt.math.ColorConstants
 import info.laht.threekt.math.Vector2
 import info.laht.threekt.math.Vector3
+import info.laht.threekt.objects.Group
 import info.laht.threekt.objects.Mesh
 import info.laht.threekt.renderers.WebGLRenderer
 import info.laht.threekt.renderers.WebGLRendererParams
@@ -75,31 +75,50 @@ open class Simulator3dViewController(
 
         val height = 6.0
 
-        fun createPointer(sourceMaterial: Material?, size: Int): Object3D? = when (this) {
-            Move -> null
-            else -> Mesh(
-                CylinderBufferGeometry(0.5 * size * factor, 0.5 * size * factor, height, 16)
-                    .apply { translate(0.5, height / 2.0, 0.5) },
-                sourceMaterial?.clone() ?: MeshPhongMaterial()
-                    .apply { color.set("#ff0000") }
-            ).apply {
-                val wireFrame = LineSegments(
-                    WireframeGeometry(geometry as BufferGeometry),
-                    LineBasicMaterial().apply {
-                        color.set("grey")
-                        transparent = true
-                        opacity = 0.4
+        fun changePointer(pointer: Group, sourceMaterial: Material?, size: Int) {
+            // clear all children
+            while (pointer.children.isNotEmpty()) {
+                pointer.remove(pointer.children.first())
+            }
+            if (this != Move) {
+                val radius = 0.5 * size * factor
+                val geometry = CylinderBufferGeometry(radius, radius, height, 16)
+                geometry.translate(0.5, height / 2.0, 0.5)
+                val material = sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
+                val mesh = Mesh(geometry, material).apply {
+                    renderOrder = 5
+                    material.opacity = when (this@EditTools) {
+                        Eraser -> 0.0
+                        Spray -> 0.4
+                        else -> 0.7
                     }
-                )
-                add(wireFrame)
-
-                renderOrder = 5
-                material.opacity = when (this@EditTools) {
-                    Eraser -> 0.0
-                    Spray -> 0.4
-                    else -> 0.7
+                    material.transparent = true
                 }
-                material.transparent = true
+
+                val wireMaterial = LineBasicMaterial().apply {
+                    color.set("grey")
+                    transparent = true
+                    opacity = 0.4
+                }
+                mesh.add(LineSegments(WireframeGeometry(geometry), wireMaterial))
+                pointer.add(mesh)
+            }
+        }
+
+        fun positionPointer(pointer: Group, x: Int, y: Int) {
+            pointer.children.firstOrNull()?.position?.set(x, 0.0, y)
+        }
+
+        fun updatePointer(pointer: Group, step: Int) {
+            val mesh = pointer.children.firstOrNull()
+            if (mesh != null && this == Line) {
+                if (step == 0) {
+                    val newMesh = mesh.clone()
+                    pointer.add(newMesh)
+                }
+                if (step < 0) {
+                    pointer.remove(pointer.children.last())
+                }
             }
         }
     }
@@ -152,14 +171,14 @@ open class Simulator3dViewController(
     }
 
     val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
-    { _, _, _ -> updatePointer() }
+    { _, _, _ -> selectPointer() }
 
     val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
         items = ToolSize.values().map { size ->
             DropdownSimpleItem(size.name) {
                 this.text = size.name
                 selectedSize = size
-                updatePointer()
+                selectPointer()
                 this.toggleDropdown()
             }
         }
@@ -227,7 +246,6 @@ open class Simulator3dViewController(
     }
 
     val plane = Mesh(
-        //PlaneBufferGeometry(100, 100),
         BoxBufferGeometry(100, 0.1, 100),
         MeshBasicMaterial().apply { visible = false }
     ).apply {
@@ -243,17 +261,7 @@ open class Simulator3dViewController(
         scene.add(this)
     }
 
-    var pointer by observable<Object3D?>(null) { _, old, new ->
-        if (old !== new) {
-            old?.let {
-                scene.remove(it)
-                it.asDynamic().material?.dispose()
-                it.asDynamic().geometry?.dispose()
-                Unit
-            }
-            new?.let { scene.add(it) }
-        }
-    }
+    val pointer = Group().apply { scene.add(this) }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
         it.keys.LEFT = -1
@@ -330,8 +338,8 @@ open class Simulator3dViewController(
         }
     }
 
-    fun updatePointer() {
-        pointer = selectedTool.createPointer(materials[selectedGrainController.data?.id], selectedSize.size)
+    fun selectPointer() {
+        selectedTool.changePointer(pointer, materials[selectedGrainController.data?.id], selectedSize.size)
     }
 
     fun selectTool(tool: EditTools) {
@@ -340,7 +348,7 @@ open class Simulator3dViewController(
         selectedTool = tool
 
         orbitControl.enabled = tool == EditTools.Move
-        updatePointer()
+        selectPointer()
     }
 
     fun drawOnSimulation(step: Int) {
@@ -406,12 +414,12 @@ open class Simulator3dViewController(
             // calculates objects intersecting the picking ray
             val intersect = rayCaster.intersectObject(plane, false).firstOrNull()
             if (intersect != null) {
-                pointer?.visible = true
+                pointer.visible = true
 
                 val planeX = (intersect.point.x - 0.5).roundToInt()
                 val planeY = (intersect.point.z - 0.5).roundToInt()
 
-                pointer?.position?.set(planeX, 0.0, planeY)
+                selectedTool.positionPointer(pointer, planeX, planeY)
 
                 val clicked = event.buttons.toInt() == 1
                 val newStep = when {
@@ -431,13 +439,14 @@ open class Simulator3dViewController(
                     }
                     drawStep = newStep
 
+                    selectedTool.updatePointer(pointer, drawStep)
                     drawOnSimulation(drawStep)
                 }
 
                 render()
             } else {
-                if (pointer?.visible == true) {
-                    pointer?.visible = false
+                if (pointer.visible == true) {
+                    pointer.visible = false
                     render()
                 }
             }
@@ -465,7 +474,7 @@ open class Simulator3dViewController(
             onmousedown = { mouseChange(it) }
             onmousemove = { mouseChange(it) }
             onmouseout = {
-                pointer?.visible = false
+                pointer.visible = false
                 render()
             }
         }
@@ -685,6 +694,11 @@ open class Simulator3dViewController(
         defaultMaterial.dispose()
         geometries = emptyMap()
         defaultGeometry.dispose()
+        pointer.traverse {
+            val dynamic = it.asDynamic()
+            dynamic.material?.dispose()
+            dynamic.geomtry?.dispose()
+        }
         scenesCache.values.forEach {
             it.traverse {
                 val dynamic = it.asDynamic()

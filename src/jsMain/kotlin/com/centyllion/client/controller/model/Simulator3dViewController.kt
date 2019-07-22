@@ -64,7 +64,7 @@ import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
 open class Simulator3dViewController(
-    simulator: Simulator, val page: BulmaPage,
+    simulator: Simulator, val page: BulmaPage, readOnly: Boolean = true,
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
@@ -139,9 +139,9 @@ open class Simulator3dViewController(
         }
     }
 
-    override var readOnly: Boolean by observable(false) { _, old, new ->
+    override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
-            editToolbar.invisible = new
+            toolbar.center = if (new) emptyList() else editTools
         }
     }
 
@@ -176,24 +176,20 @@ open class Simulator3dViewController(
         ) { selectTool(tool) }
     }
 
+    val toolsField = Field(addons = true).apply { body = toolButtons.map { Control(it) } }
+
     val clearAllButton = iconButton(Icon("trash"), ElementColor.Danger, true) {
         (0 until data.simulation.dataSize).forEach { data.resetIdAtIndex(it) }
         onUpdate(true, data, this)
         refresh()
     }
 
-    val editToolbar = Level(
-        center = listOf(
-            resetOrbit,
-            Field(addons = true).apply { body = toolButtons.map { Control(it) } },
-            sizeDropdown,
-            selectedGrainController,
-            clearAllButton
-        )
-    )
+    val editTools = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton)
+
+    val toolbar = Level(left = listOf(resetOrbit), center = if (readOnly) emptyList() else editTools)
 
     override val container = Div(
-        Div(simulationCanvas, classes = "has-text-centered"), editToolbar
+        Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
     private var font: Font? = null

@@ -156,7 +156,7 @@ class SimulationRunController(
         if (!presentCharts) classes = setOf("is-hidden")
     }
 
-    var simulationViewController = Simulator3dViewController(simulator, page) { ended, new, _ ->
+    var simulationViewController = Simulator3dViewController(simulator, page, readOnly) { ended, new, _ ->
         updatedSimulatorFromView(ended, new)
     }
 

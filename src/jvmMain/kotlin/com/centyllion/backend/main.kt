@@ -20,6 +20,7 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
 import io.ktor.features.AutoHeadResponse
+import io.ktor.features.CORS
 import io.ktor.features.CachingHeaders
 import io.ktor.features.CallLogging
 import io.ktor.features.Compression
@@ -29,6 +30,8 @@ import io.ktor.features.StatusPages
 import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.CachingOptions
 import io.ktor.http.content.TextContent
@@ -80,16 +83,20 @@ fun Application.centyllion(config: ServerConfig) {
     /* TODO CORS did raise https://github.com/jeancharles-roger/centyllion/issues/126.
         Need fixing
         */
-    /*
     install(CORS) {
         allowCredentials = true
+        method(HttpMethod.Get)
+        method(HttpMethod.Post)
+        method(HttpMethod.Delete)
+        method(HttpMethod.Patch)
+        method(HttpMethod.Options)
+
         header(HttpHeaders.Origin)
         header(HttpHeaders.Referrer)
         header(HttpHeaders.Authorization)
         header(HttpHeaders.Origin)
         anyHost()
     }
-     */
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)

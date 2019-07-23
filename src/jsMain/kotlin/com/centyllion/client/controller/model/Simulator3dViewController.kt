@@ -445,7 +445,7 @@ open class Simulator3dViewController(
 
                 render()
             } else {
-                if (pointer.visible == true) {
+                if (pointer.visible) {
                     pointer.visible = false
                     render()
                 }
@@ -487,13 +487,12 @@ open class Simulator3dViewController(
                 "square" -> BoxBufferGeometry(0.8, height, 0.8)
                 "square-full" -> BoxBufferGeometry(1.0, height, 1.0)
                 "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
-                else -> TextBufferGeometry(
-                    grain.iconString,
-                    TextGeometryParametersImpl(it, 0.8, height)
-                ).apply {
+                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
+                    // moves the geometry into place
                     rotateX(PI / 2)
                     rotateY(PI)
-                    translate(-0.5, height / 2.0, -0.5)
+                    translate(0.5, height / 2.0, 0.5)
+                    rotateZ(PI)
                 }
             }.apply { translate(0.0, height / 2.0, 0.0) }
         }

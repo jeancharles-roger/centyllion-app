@@ -65,6 +65,7 @@ class SimulationRunController(
 
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
+            data = data.cleaned(new)
             grainsController.data = new.grains
             behaviourController.data = new.behaviours
             selectedGrainController.context = new.grains

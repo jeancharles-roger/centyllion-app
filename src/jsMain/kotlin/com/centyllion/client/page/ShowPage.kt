@@ -293,8 +293,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
 
         result.then {
-            setSimulation(it.first)
             setModel(it.second)
+            setSimulation(it.first)
         }.catch {
             error(it)
         }
@@ -310,7 +310,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun setSimulation(simulation: SimulationDescription) {
         this.originalSimulation = simulation
-        this.simulation = originalSimulation
+        this.simulation = originalSimulation.cleaned(model)
         this.simulationHistory = emptyList()
         this.simulationFuture = emptyList()
         refreshButtons()

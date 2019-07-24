@@ -21,7 +21,7 @@ val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 fun <T> List<T>.identityFirstIndexOf(value: T): Int {
-    val identity = this.indexOfFirst { it === value}
+    val identity = this.indexOfFirst { it === value }
     return if (identity < 0) this.indexOf(value) else identity
 }
 
@@ -166,7 +166,7 @@ data class Behaviour(
         return copy(reaction = newBehaviours)
     }
 
-    fun dropReaction(reaction: Reaction): Behaviour{
+    fun dropReaction(reaction: Reaction): Behaviour {
         val index = reactionIndex(reaction)
         if (index < 0) return this
 
@@ -206,16 +206,23 @@ data class Behaviour(
     }
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
-    fun applicable(grain: Grain, age: Int, fields: List<Pair<Int, Float>>, neighbours: List<Pair<Direction, Agent>>): Boolean =
-            mainReactiveId == grain.id && agePredicate.check(age) &&
-            fieldPredicates.fold(true) { a , p ->
-                a && p.second.check((fields.firstOrNull { it.first == p.first }?.second ?: 0f).flatten(minFieldLevel))
-            } &&
-            reaction.fold(true) { a, r ->
-                a && r.allowedDirection.any { d ->
-                    neighbours.any { it.first == d && it.second.id == r.reactiveId }
+    fun applicable(
+        grain: Grain,
+        age: Int,
+        fields: List<Pair<Int, Float>>,
+        neighbours: List<Pair<Direction, Agent>>
+    ): Boolean =
+        mainReactiveId == grain.id && agePredicate.check(age) &&
+                fieldPredicates.fold(true) { a, p ->
+                    a && p.second.check(
+                        (fields.firstOrNull { it.first == p.first }?.second ?: 0f).flatten(minFieldLevel)
+                    )
+                } &&
+                reaction.fold(true) { a, r ->
+                    a && r.allowedDirection.any { d ->
+                        neighbours.any { it.first == d && it.second.id == r.reactiveId }
+                    }
                 }
-            }
 
     fun usedGrains(model: GrainModel) =
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
@@ -474,8 +481,17 @@ data class Simulation(
         z in 0 until depth && y in 0 until height && x in 0 until width
 
     /** Cleans the simulation to remove non existing grains */
-    fun cleaned(model: GrainModel) =
-        copy(agents = agents.map { if (model.indexedGrains[it] == null) -1 else it })
+    fun cleaned(model: GrainModel): Simulation {
+        val newAgents = agents.map {
+            val new = when {
+                it < 0 -> -1
+                model.indexedGrains[it] == null -> -1
+                else -> it
+            }
+            new
+        }
+        return if (newAgents != agents) copy(agents = newAgents) else this
+    }
 
 }
 
@@ -523,6 +539,11 @@ data class SimulationDescription(
     override val name = simulation.name
     @Transient
     override val icon = "play"
+
+    fun cleaned(model: GrainModelDescription): SimulationDescription {
+        val new = simulation.cleaned(model.model)
+        return if (new != simulation) copy(simulation = new) else this
+    }
 }
 
 @Serializable

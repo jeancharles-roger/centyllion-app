@@ -622,7 +622,7 @@ open class Simulator3dViewController(
             // updates alpha
             it.value.array.set(data.field(id).map {
                 when {
-                    it > +1f -> 1f
+                    it >= 1f -> 1f
                     it <= minFieldLevel -> 0f
                     else -> 1f / (-log10(it)) / 1.6f
                 }
@@ -655,7 +655,7 @@ open class Simulator3dViewController(
             val levels = data.fields[field.id]!!
             val alpha = Float32Array(levels.map {
                 when {
-                    it > +1f -> 1f
+                    it >= 1f -> 1f
                     it <= minFieldLevel -> 0f
                     else -> 1f / (-log10(it)) / 1.6f
                 }

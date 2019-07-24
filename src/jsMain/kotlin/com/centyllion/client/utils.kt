@@ -3,6 +3,7 @@ package com.centyllion.client
 import bulmatoast.BulmaToast
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
+import org.w3c.dom.HTMLElement
 import stripe.Stripe
 import kotlin.browser.document
 
@@ -31,3 +32,24 @@ fun download(filename: String, content: String) {
     a.click()
     document.body?.removeChild(a)
 }
+
+/** Toggles a element into fullscreen */
+fun toggleElementToFullScreen(htmlElement: HTMLElement) {
+    val d = document.asDynamic()
+    if (d.webkitFullscreenElement != null || d.fullscreenElement != null) {
+        if (d.webkitExitFullscreen != null) {
+            d.webkitExitFullscreen()
+        } else if (d.exitFullscreen != null) {
+            d.exitFullscreen()
+        }
+    } else {
+        val view = htmlElement.asDynamic()
+        if (view.webkitRequestFullscreen != null) {
+            view.webkitRequestFullscreen()
+        } else if (view.requestFullscreen != null) {
+            view.requestFullscreen()
+        }
+    }
+    Unit
+}
+

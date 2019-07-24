@@ -1,6 +1,9 @@
 package com.centyllion.model
 
 val solidIconNames = mapOf(
+    "square" to "\uf0c8",
+    "square-full" to "\uf45c",
+    "circle" to "\uf111",
     "ad" to "\uf641",
     "address-book" to "\uf2b9",
     "address-card" to "\uf2bb",
@@ -177,7 +180,6 @@ val solidIconNames = mapOf(
     "chevron-up" to "\uf077",
     "child" to "\uf1ae",
     "church" to "\uf51d",
-    "circle" to "\uf111",
     "circle-notch" to "\uf1ce",
     "city" to "\uf64f",
     "clinic-medical" to "\uf7f2",
@@ -755,8 +757,6 @@ val solidIconNames = mapOf(
     "spinner" to "\uf110",
     "splotch" to "\uf5bc",
     "spray-can" to "\uf5bd",
-    "square" to "\uf0c8",
-    "square-full" to "\uf45c",
     "square-root-alt" to "\uf698",
     "stamp" to "\uf5bf",
     "star" to "\uf005",

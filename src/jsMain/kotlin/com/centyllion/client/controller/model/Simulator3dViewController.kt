@@ -160,7 +160,7 @@ open class Simulator3dViewController(
 
     override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
-            toolbar.center = if (new) emptyList() else editTools
+            toolbar.hidden = new
         }
     }
 
@@ -184,10 +184,6 @@ open class Simulator3dViewController(
         }
     }
 
-    val resetOrbit = iconButton(Icon("compress-arrows-alt"), rounded = true) {
-        orbitControl.reset()
-    }
-
     val toolButtons = EditTools.values().map { tool ->
         iconButton(
             Icon(tool.icon), ElementColor.Primary,
@@ -203,9 +199,7 @@ open class Simulator3dViewController(
         refresh()
     }
 
-    val editTools = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton)
-
-    val toolbar = Level(left = listOf(resetOrbit), center = if (readOnly) emptyList() else editTools)
+    val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton))
 
     override val container = Div(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar
@@ -478,6 +472,10 @@ open class Simulator3dViewController(
                 render()
             }
         }
+    }
+
+    fun resetCamera() {
+        orbitControl.reset()
     }
 
     private fun geometries() = data.model.grains.map { grain ->

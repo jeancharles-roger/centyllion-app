@@ -120,10 +120,17 @@ class SimulationRunController(
         fps = value.toDouble()
         setFpsColor(false)
         fpsLabel.text = if (fps >= 200) "warp" else "$value fps"
+    }.apply {
+        root.style.width = "100px"
     }
-    val fpsLabel = Button("$fps fps", rounded = true, color = ElementColor.Info)
 
     val stepLabel = Label()
+
+    val fpsLabel = Button("$fps fps", rounded = true, color = ElementColor.Info)
+
+    val resetOrbitButton = iconButton(Icon("compress-arrows-alt"), rounded = true) {
+        simulationViewController.resetCamera()
+    }
 
     val grainsController =
         noContextColumnsController<Grain, GrainDisplayController>(model.grains)
@@ -188,31 +195,32 @@ class SimulationRunController(
         asset3dController, desktopSize = ColumnSize.Full
     ).apply { hidden = readOnly }
 
+    val simulationColumn: Columns = Columns(
+        Column(
+            Level(
+                center = listOf(
+                    Field(
+                        Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
+                        addons = true
+                    ),
+                    Control(stepLabel),
+                    Field(Control(fpsSlider), Control(fpsLabel), grouped = true)
+                ),
+                right = listOf(
+                    Field(Control(toggleChartsButton), Control(resetOrbitButton), grouped = true)
+                )
+            ), size = ColumnSize.Full
+        ),
+        simulationView,
+        Column(Div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
+        multiline = true
+    )
+
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
         Column(Title("Grains", TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
-        Column(
-            Columns(
-                Column(
-                    Level(
-                        center = listOf(
-                            Field(
-                                Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
-                                addons = true
-                            ),
-                            Field(Control(fpsSlider), Control(fpsLabel), grouped = true),
-                            stepLabel,
-                            toggleChartsButton
-                        )
-                    ), size = ColumnSize.Full
-                ),
-                simulationView,
-                Column(Div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
-                multiline = true
-            ),
-            desktopSize = ColumnSize.S6
-        ),
+        Column(simulationColumn, desktopSize = ColumnSize.S6),
         Column(Title("Behaviours", TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
         assetsColumn,
         multiline = true
@@ -227,7 +235,6 @@ class SimulationRunController(
     ))
 
     init {
-        fpsSlider.root.style.width = "200px"
         window.setTimeout({ animationCallback(0.0) }, 250)
     }
 

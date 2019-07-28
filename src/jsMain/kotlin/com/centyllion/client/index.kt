@@ -35,7 +35,7 @@ fun index() {
         brand = listOf(
             NavBarImageItem(
                 "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
-            ).apply { imgNode.style.maxHeight = "4rem" }
+            ).apply { imgNode.style.maxHeight = "2rem" }
         ),
         end = listOf(
             NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),

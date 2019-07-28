@@ -383,20 +383,20 @@ external interface KeycloakInstance {
      * Returns the URL to login form.
      * @param options Supports same options as Keycloak#login.
      */
-    fun createLoginUrl(options: KeycloakLoginOptions?): String
+    fun createLoginUrl(options: KeycloakLoginOptions? = definedExternally): String
 
     /**
      * Returns the URL to logout the user.
      * @param options Logout options. `options?.redirectUri` Specifies the uri to redirect to after logout.
      */
-    fun createLogoutUrl(options: Any?): String
+    fun createLogoutUrl(options: Any? = definedExternally): String
 
     /**
      * Returns the URL to registration page.
      * @param options Supports same options as Keycloak#createLoginUrl but
      *                `action` is set to `'register'`.
      */
-    fun createRegisterUrl(options: KeycloakLoginOptions?): String
+    fun createRegisterUrl(options: KeycloakLoginOptions? = definedExternally): String
 
     /**
      * Returns the URL to the Account Management Console.

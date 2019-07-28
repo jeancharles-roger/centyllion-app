@@ -65,15 +65,14 @@ fun index() {
             // updates login link
             if (keycloak.tokenParsed != null) {
                 val token = keycloak.tokenParsed.asDynamic()
-                val userItem = NavBarLinkItem(
+                navBar.end += NavBarLinkItem(
                     token.name as String? ?: token.preferred_username as String ?: "Not named",
                     keycloak.createAccountUrl()
                 )
-                val logoutItem = NavBarLinkItem("Logout", keycloak.createLogoutUrl(null))
-                navBar.end += listOf(userItem, logoutItem)
+                navBar.end += NavBarLinkItem("Logout", keycloak.createLogoutUrl())
             } else {
-                val loginItem = NavBarLinkItem("Log In", keycloak.createLoginUrl(null))
-                navBar.end += loginItem
+                navBar.end += NavBarLinkItem("Sign In", keycloak.createRegisterUrl())
+                navBar.end += NavBarLinkItem("Log In", keycloak.createLoginUrl())
             }
 
             // listens to pop state

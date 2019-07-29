@@ -182,7 +182,11 @@ class BrowserContext(
                         root.appendChild(it.root)
                     }
                 } else {
-                    error("You are not authorized to access this page")
+                    root.appendChild(Message(
+                        listOf(span("Error")),
+                        listOf(span("You are not authorized to access this page")),
+                        color = ElementColor.Danger
+                    ).root)
                 }
             }
         }

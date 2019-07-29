@@ -21,11 +21,11 @@ data class Page(
 
 const val contentSelector = "section.cent-main"
 
-val homePage = Page("Home", "", true, null, true, ::HomePage)
-val explorePage = Page("Explore", "explore", false, null, true, ::ExplorePage)
-val showPage = Page("Show", "show", false, null, false, ::ShowPage)
-val subscribePage = Page("Subscribe", "subscribe", true, null, false, ::SubscriptionPage)
-val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
+val explorePage = Page("Explore", "/", false, null, true, ::ExplorePage)
+val homePage = Page("Home", "/home", true, null, true, ::HomePage)
+val showPage = Page("Show", "/show", false, null, false, ::ShowPage)
+val subscribePage = Page("Subscribe", "/subscribe", true, null, false, ::SubscriptionPage)
+val administrationPage = Page("Administration", "/administration", true, adminRole, true, ::AdministrationPage)
 
-val pages = listOf(homePage, explorePage, showPage, subscribePage, administrationPage)
+val pages = listOf(explorePage, homePage, showPage, subscribePage, administrationPage)
 

@@ -58,6 +58,8 @@ class TestConfig: ServerConfig {
     override val authorization: AuthorizationManager = MemoryAuthorizationManager()
     override val payment: PaymentManager = MemoryPaymentManager()
     override val data: Data = MemoryData()
+
+    override val webroot = "webroot"
 }
 
 /** Execute tests with the Centyllion API testing rig */

@@ -46,6 +46,8 @@ interface ServerConfig {
     val authorization: AuthorizationManager
     val payment: PaymentManager
     val data: Data
+
+    val webroot: String
 }
 
 data class CliServerConfig(
@@ -53,7 +55,8 @@ data class CliServerConfig(
     val host: String, val port: Int,
     val dbType: String, val dbHost: String, val dbPort: Int,
     val dbName: String, val dbUser: String, val dbPassword: String,
-    val stripeKey: String, val keycloakPassword: String
+    val stripeKey: String, val keycloakPassword: String,
+    override val webroot: String = "webroot"
 ): ServerConfig {
 
     override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
@@ -110,6 +113,7 @@ class ServerCommand : CliktCommand("Start the server") {
         "--keycloak-password-alias", help = "Keycloak key alias for keystore"
     ).default("keycloak")
 
+    val webroot by option("--webroot", help = "Directory of static resources").default("webroot")
 
     fun extractPassword(keystore: KeyStore, alias: String, pwd: CharArray): String {
         if (keystore.containsAlias(alias)) {
@@ -142,7 +146,8 @@ class ServerCommand : CliktCommand("Start the server") {
             dbUser,
             actualDbPassword,
             actualStripeKey,
-            actualKeycloakPassword
+            actualKeycloakPassword,
+            webroot
         )
     }
 

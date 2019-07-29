@@ -109,32 +109,22 @@ fun index() {
 
 /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
 fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
-    window.location.let {
+    window.location.let { location ->
         // sets parameters
-        val params = URLSearchParams(if (clearParameters) "" else it.search)
+        val params = URLSearchParams(if (clearParameters) "" else location.search)
         parameters.forEach { params.set(it.key, it.value) }
-        val currentPage = if (page != null) {
-            params.set("page", page.id)
-            page
-        } else {
-            pages.find { it.id == params.get("page") }
-        }
+        val currentPage = if (page != null) page else pages.find { it.id == location.pathname }
 
         // registers page to history if needed
         if (register) {
-            val newUrl = "${it.protocol}//${it.host}${it.pathname}?$params"
+            val stringParams = params.toString().let { if (it.isNotBlank()) "?$it" else "" }
+            val newUrl = "${location.protocol}//${location.host}${page?.id ?: "/"}$stringParams"
             window.history.pushState(null, "Centyllion ${currentPage?.title}", newUrl)
         }
     }
 }
 
-fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
-
-fun findPageInUrl(): Page? {
-    // gets params active page if any to activate it is allowed
-    val params = URLSearchParams(window.location.search)
-    return params.get("page")?.let { id -> pages.find { it.id == id } }
-}
+fun findPageInUrl(): Page? = pages.find { it.id == window.location.pathname }
 
 class BrowserContext(
     override val navBar: NavBar,
@@ -158,9 +148,7 @@ class BrowserContext(
 
     /** Open the given [page] */
     override fun openPage(page: Page, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
-
         val open = content?.onExit() ?: Promise.resolve(true)
-
         open.then {
             if (it) {
                 currentPage = page

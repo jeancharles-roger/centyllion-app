@@ -47,6 +47,7 @@ import io.ktor.util.pipeline.PipelineContext
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.net.URL
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
@@ -178,10 +179,12 @@ fun Application.centyllion(config: ServerConfig) {
     }
 
     routing {
-        get("/") { context.respondHtml { index() } }
+        get("/{page?}") { context.respondHtml { index() } }
 
         // Static files
-        static { files("webroot") }
+        Files.list(Paths.get(config.webroot)).forEach {
+            static(it.fileName.toString()) { files(it.toFile()) }
+        }
 
         authenticate(optional = true) {
             route("/api") {

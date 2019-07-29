@@ -1,6 +1,5 @@
 package com.centyllion.client.page
 
-import bulma.BulmaElement
 import bulma.Button
 import bulma.Column
 import bulma.ColumnSize
@@ -36,7 +35,7 @@ import com.centyllion.model.SimulationDescription
 import org.w3c.dom.HTMLElement
 import kotlin.properties.Delegates.observable
 
-class HomePage(val context: AppContext) : BulmaElement {
+class HomePage(override val appContext: AppContext) : BulmaPage {
 
     class PanelItemController(source: Description) : NoContextController<Description, PanelSimpleBlock>() {
 
@@ -65,14 +64,14 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
     }
 
-    val userController = MeController(context)
+    val userController = MeController(appContext)
 
     val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
         updateElements()
     }
 
     val newModelButton = Button("Model", Icon("plus"), ElementColor.Link, size = Size.Small) {
-        context.openPage(showPage)
+        appContext.openPage(showPage)
     }
 
     val allTabItem = PanelTabsItem("all") { activateFilter(it) }
@@ -91,7 +90,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     val panelController = noContextPanelController(
         Panel("My models and simulations"), emptyList<Description>(),
         header = listOfNotNull(
-            if (context.hasRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
+            if (appContext.hasRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
@@ -101,7 +100,7 @@ class HomePage(val context: AppContext) : BulmaElement {
     { data, previous ->
         previous ?: FeaturedController(data).wrap { ctrl ->
             ctrl.container.root.onclick = {
-                context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+                appContext.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
             }
             ctrl.root.style.cursor = "pointer"
             Column(ctrl.container, size = ColumnSize.OneThird)
@@ -128,19 +127,19 @@ class HomePage(val context: AppContext) : BulmaElement {
         panelController.onClick = { data, _ ->
             when (data) {
                 is GrainModelDescription -> {
-                    context.openPage(showPage, mapOf("model" to data.id))
+                    appContext.openPage(showPage, mapOf("model" to data.id))
                 }
                 is SimulationDescription -> {
-                    context.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
+                    appContext.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.id))
                 }
             }
         }
 
-        context.api.fetchMyGrainModels().then {
+        appContext.api.fetchMyGrainModels().then {
             elements = it
 
             it.forEach { model ->
-                context.api.fetchSimulations(model.id, false).then {
+                appContext.api.fetchSimulations(model.id, false).then {
                     val index = elements.indexOf(model)
                     val mutable = elements.toMutableList()
                     mutable.addAll(index + 1, it)
@@ -150,7 +149,7 @@ class HomePage(val context: AppContext) : BulmaElement {
         }
 
         // retrieves featured models
-        context.api.fetchAllFeatured().then { models -> featuredController.data = models.content }
+        appContext.api.fetchAllFeatured().then { models -> featuredController.data = models.content }
 
     }
 

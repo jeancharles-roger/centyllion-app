@@ -1,6 +1,5 @@
 package com.centyllion.client
 
-import bulma.BulmaElement
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Message
@@ -10,6 +9,7 @@ import bulma.NavBarImageItem
 import bulma.NavBarLinkItem
 import bulma.Position
 import bulma.span
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
@@ -108,7 +108,7 @@ fun index() {
 }
 
 /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
-fun updateLocation(page: Page<*>?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
+fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
     window.location.let {
         // sets parameters
         val params = URLSearchParams(if (clearParameters) "" else it.search)
@@ -130,7 +130,7 @@ fun updateLocation(page: Page<*>?, parameters: Map<String, String>, clearParamet
 
 fun getLocationParams(name: String) = URLSearchParams(window.location.search).get(name)
 
-fun findPageInUrl(): Page<*>? {
+fun findPageInUrl(): Page? {
     // gets params active page if any to activate it is allowed
     val params = URLSearchParams(window.location.search)
     return params.get("page")?.let { id -> pages.find { it.id == id } }
@@ -147,8 +147,8 @@ class BrowserContext(
 
     private val fontCache: MutableMap<String, Font> = mutableMapOf()
 
-    private var content: BulmaElement? = null
-    private var currentPage: Page<BulmaElement>? = null
+    private var content: BulmaPage? = null
+    private var currentPage: Page? = null
 
     private val storedEvents = mutableListOf<ClientEvent>()
 
@@ -157,15 +157,13 @@ class BrowserContext(
     override fun notify(event: ClientEvent) { storedEvents.add(event) }
 
     /** Open the given [page] */
-    override fun openPage(page: Page<*>, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
+    override fun openPage(page: Page, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
 
-        val open = content?.let {
-            currentPage?.exitCallback?.invoke(it, this)
-        } ?: Promise.resolve(true)
+        val open = content?.onExit() ?: Promise.resolve(true)
 
         open.then {
             if (it) {
-                currentPage = page.unsafeCast<Page<BulmaElement>>()
+                currentPage = page
 
                 // highlight active page
                 navBar.start.forEach {

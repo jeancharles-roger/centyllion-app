@@ -1,15 +1,14 @@
 package com.centyllion.client.page
 
-import bulma.BulmaElement
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.PaymentCardElement
 
-class SubscriptionPage(context: AppContext) : BulmaElement {
+class SubscriptionPage(override val appContext: AppContext) : BulmaPage {
 
-    val payment = PaymentCardElement(context.stripeKey) { token ->
+    val payment = PaymentCardElement(appContext.stripeKey) { token ->
         console.log(token)
     }
 

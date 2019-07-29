@@ -23,9 +23,12 @@ import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 import kotlin.js.Date
+import kotlin.js.Promise
 
 interface BulmaPage : BulmaElement {
     val appContext: AppContext
+
+    fun onExit(): Promise<Boolean> = Promise.resolve(true)
 
     fun error(throwable: Throwable) {
         fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable

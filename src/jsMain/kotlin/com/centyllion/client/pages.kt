@@ -1,18 +1,16 @@
 package com.centyllion.client
 
-import bulma.BulmaElement
 import com.centyllion.client.page.AdministrationPage
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.page.ExplorePage
 import com.centyllion.client.page.HomePage
 import com.centyllion.client.page.ShowPage
 import com.centyllion.client.page.SubscriptionPage
 import com.centyllion.common.adminRole
-import kotlin.js.Promise
 
-data class Page<T: BulmaElement>(
+data class Page(
     val title: String, val id: String, val needUser: Boolean, val role: String?,
-    val header: Boolean, val callback: (appContext: AppContext) -> T,
-    val exitCallback: T.(appContext: AppContext) -> Promise<Boolean> = { _ -> Promise.resolve(true) }
+    val header: Boolean, val callback: (appContext: AppContext) -> BulmaPage
 ) {
     fun authorized(context: AppContext): Boolean = when {
         !needUser -> true
@@ -23,9 +21,9 @@ data class Page<T: BulmaElement>(
 
 const val contentSelector = "section.cent-main"
 
-val homePage = Page("Home", "home", true, null, true, ::HomePage)
+val homePage = Page("Home", "", true, null, true, ::HomePage)
 val explorePage = Page("Explore", "explore", false, null, true, ::ExplorePage)
-val showPage = Page("Show", "show", false, null, false, ::ShowPage, ShowPage::canExit)
+val showPage = Page("Show", "show", false, null, false, ::ShowPage)
 val subscribePage = Page("Subscribe", "subscribe", true, null, false, ::SubscriptionPage)
 val administrationPage = Page("Administration", "administration", true, adminRole, true, ::AdministrationPage)
 

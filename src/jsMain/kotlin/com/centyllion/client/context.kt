@@ -7,7 +7,6 @@ import keycloak.KeycloakInstance
 import threejs.extra.core.Font
 import kotlin.js.Promise
 
-
 data class ClientEvent(
     val date: String,
     val context: String,
@@ -36,7 +35,7 @@ interface AppContext {
 
     /** Open the given [page] */
     fun openPage(
-        page: Page<*>, parameters: Map<String, String> = emptyMap(),
+        page: Page, parameters: Map<String, String> = emptyMap(),
         clearParameters: Boolean = true, register: Boolean = true
     )
 }

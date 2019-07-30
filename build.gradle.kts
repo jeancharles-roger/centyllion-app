@@ -1,9 +1,9 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import org.gradle.internal.impldep.org.joda.time.DateTime
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
+import java.util.Date
 
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
@@ -150,12 +150,13 @@ tasks {
 
     val generateVersion by register("generateVersion") {
         doLast {
+            val properties = project.ext.properties
             val version =  project.version
-            val build = project.ext["build.counter"] ?: "dev"
-            val sha = project.ext["build.vcs.number"] ?: "dev"
-            val date = DateTime.now().toString()
+            val build = properties["build.counter"] ?: "dev"
+            val sha = properties["build.vcs.number"] ?: "dev"
+            val date = Date().toString()
             file("$webRoot/version.json").writeText(
-                """{ "version": "$version", "build": "$build", "sha": $sha, "date": "$date" }"""
+                """{ "version": "$version", "build": "$build", "sha": "$sha", "date": "$date" }"""
             )
         }
     }

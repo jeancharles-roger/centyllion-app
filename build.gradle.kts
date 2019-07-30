@@ -3,6 +3,7 @@
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.Date
 
 val debug: String? by project
@@ -154,7 +155,7 @@ tasks {
             val version =  project.version
             val build = properties["build.number"] ?: "dev"
             val sha = properties["build.vcs.number"] ?: "dev"
-            val date = Date().toString()
+            val date = SimpleDateFormat().format(Date())
             file("$webRoot/version.json").writeText(
                 """{ "version": "$version", "build": "$build", "sha": "$sha", "date": "$date" }"""
             )

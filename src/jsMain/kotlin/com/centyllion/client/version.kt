@@ -9,6 +9,7 @@ import kotlin.js.Date
 data class Version(
     val version: String,
     val build: String,
+    val sha: String,
     val date: String
 )
 

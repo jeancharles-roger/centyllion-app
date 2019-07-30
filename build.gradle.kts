@@ -1,24 +1,12 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.URLProtocol
-import io.ktor.http.content.TextContent
-import io.ktor.http.toHttpDate
-import io.ktor.util.date.GMTDate
-import kotlinx.coroutines.runBlocking
-import org.apache.commons.codec.binary.Base64
+import org.gradle.internal.impldep.org.joda.time.DateTime
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 
-val debug: String by project
-val d = debug.toBoolean()
+val debug: String? by project
+val d = debug?.toBoolean() ?: false
 
 val serialization_version: String by project
 val coroutine_version: String by project
@@ -30,15 +18,6 @@ val exposed_version: String by project
 val postgresql_version: String by project
 val keycloak_version: String by project
 val stripe_version: String by project
-
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath("io.ktor:ktor-client-apache:1.1.3")
-    }
-}
 
 plugins {
     kotlin("multiplatform") version "1.3.41"
@@ -171,11 +150,12 @@ tasks {
 
     val generateVersion by register("generateVersion") {
         doLast {
-            val version =  System.getenv("GITHUB_REF") ?: "localrepository"
-            val build = System.getenv("GITHUB_SHA") ?: "dev"
-            val date = GMTDate().toHttpDate()
+            val version =  project.version
+            val build = project.ext["build.counter"] ?: "dev"
+            val sha = project.ext["build.vcs.number"] ?: "dev"
+            val date = DateTime.now().toString()
             file("$webRoot/version.json").writeText(
-                """{ "version": "$version", "build": "$build", "date": "$date" }"""
+                """{ "version": "$version", "build": "$build", "sha": $sha, "date": "$date" }"""
             )
         }
     }
@@ -334,41 +314,6 @@ tasks {
         from(jvmJar.get().archiveFile.get()) { into("libs") }
 
         compression = Compression.GZIP
-    }
-
-    register("deployBeta") {
-        group = "deployment"
-        dependsOn(distribution)
-
-        doLast {
-            runBlocking {
-                val client = HttpClient(Apache)
-
-                val request = HttpRequestBuilder().apply {
-                    method = HttpMethod.Post
-                    url.protocol = URLProtocol.HTTPS
-                    url.host = "deploy.centyllion.com"
-                    url.path("hooks","deploy-beta")
-
-                    val password = System.getenv("PASSWORD")?: System.getProperty("password")
-                    if (password != null) header("X-Password", password)
-
-                    val key = System.getenv("DEPLOY_KEY") ?: System.getProperty("deploy.key")
-                    header("X-Token", key)
-
-                    val bytes = distribution.get().archiveFile.get().asFile.readBytes()
-                    val payload = """{ "content": "${Base64.encodeBase64String(bytes)}" }"""
-                    body = TextContent(payload, ContentType.Application.Json)
-                }
-
-                val result = client.post<String>(request)
-                client.close()
-
-                if (result.contains("failed", true)) {
-                    throw GradleException("Deploy failed due to: $result")
-                }
-            }
-        }
     }
 
 }

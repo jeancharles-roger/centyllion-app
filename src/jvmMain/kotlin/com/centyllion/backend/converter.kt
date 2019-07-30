@@ -93,6 +93,7 @@ class JsonConverter : ContentConverter {
             Simulation::class -> Json.parse(Simulation.serializer(), text)
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
             SubscriptionParameters::class -> Json.parse(SubscriptionParameters.serializer(), text)
+            FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

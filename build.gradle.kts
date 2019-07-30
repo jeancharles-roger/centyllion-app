@@ -151,10 +151,9 @@ tasks {
     val generateVersion by register("generateVersion") {
         doLast {
             val properties = project.ext.properties
-            println(properties)
             val version =  project.version
-            val build = properties["build.counter"] ?: "dev"
-            val sha = properties["build.vcs.number"] ?: "dev"
+            val build = properties["teamcity.build.counter"] ?: "dev"
+            val sha = properties["teamcity.build.vcs.number"] ?: "dev"
             val date = Date().toString()
             file("$webRoot/version.json").writeText(
                 """{ "version": "$version", "build": "$build", "sha": "$sha", "date": "$date" }"""

@@ -151,6 +151,7 @@ tasks {
     val generateVersion by register("generateVersion") {
         doLast {
             val properties = project.ext.properties
+            println(properties)
             val version =  project.version
             val build = properties["build.counter"] ?: "dev"
             val sha = properties["build.vcs.number"] ?: "dev"

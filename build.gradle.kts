@@ -152,8 +152,8 @@ tasks {
         doLast {
             val properties = project.ext.properties
             val version =  project.version
-            val build = properties["teamcity.build.counter"] ?: "dev"
-            val sha = properties["teamcity.build.vcs.number"] ?: "dev"
+            val build = properties["build.number"] ?: "dev"
+            val sha = properties["build.vcs.number"] ?: "dev"
             val date = Date().toString()
             file("$webRoot/version.json").writeText(
                 """{ "version": "$version", "build": "$build", "sha": "$sha", "date": "$date" }"""

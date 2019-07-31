@@ -316,7 +316,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         refreshButtons()
     }
 
-    fun save() {
+    fun save(after: () -> Unit = {}) {
         val needModelSave = model != originalModel || model.id.isEmpty()
         if (needModelSave && model.id.isEmpty()) {
             // The model needs to be created first
@@ -331,6 +331,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     simulation = newSimulation
                     refreshButtons()
                     message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
+                    after()
                     Unit
                 }.catch {
                     this.error(it)
@@ -360,6 +361,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         simulation = newSimulation
                         refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
+                        after()
                         Unit
                     }.catch {
                         this.error(it)
@@ -371,12 +373,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         originalSimulation = simulation
                         refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
+                        after()
                         Unit
                     }.catch {
                         this.error(it)
                         Unit
                     }
                 }
+            } else {
+                after()
             }
         }
     }
@@ -399,19 +404,19 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun cloneModel() {
         // saves current model
-        save()
+        save {
+            // creates cloned model
+            val cloned = emptyGrainModelDescription.copy(
+                model = model.model.copy(name = model.model.name + " cloned")
+            )
+            setModel(cloned)
+            setSimulation(emptySimulationDescription)
 
-        // creates cloned model
-        val cloned = emptyGrainModelDescription.copy(
-            model = model.model.copy(name = model.model.name + " cloned")
-        )
-        setModel(cloned)
-        setSimulation(emptySimulationDescription)
-
-        // closes the action
-        moreDropdown.active = false
-        editionTab.selectedPage = modelPage
-        message("Model cloned")
+            // closes the action
+            moreDropdown.active = false
+            editionTab.selectedPage = modelPage
+            message("Model cloned")
+        }
     }
 
     fun downloadModel() {
@@ -420,23 +425,25 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun newSimulation() {
-        save()
-        setSimulation(emptySimulationDescription)
-        moreDropdown.active = false
-        editionTab.selectedPage = simulationPage
-        message("New simulation")
+        save {
+            setSimulation(emptySimulationDescription)
+            moreDropdown.active = false
+            editionTab.selectedPage = simulationPage
+            message("New simulation")
+        }
     }
 
     fun cloneSimulation() {
-        save()
-        val cloned = emptySimulationDescription.copy(
-            simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
-        )
-        setSimulation(cloned)
-        
-        moreDropdown.active = false
-        editionTab.selectedPage = simulationPage
-        message("Simulation cloned")
+        save {
+            val cloned = emptySimulationDescription.copy(
+                simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
+            )
+            setSimulation(cloned)
+
+            moreDropdown.active = false
+            editionTab.selectedPage = simulationPage
+            message("Simulation cloned")
+        }
     }
 
     fun downloadSimulation() {
@@ -529,10 +536,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             appContext.api.fetchSimulations(model.id, false).then {
                 moreDropdown.items = moreDropdownItems + it.map { current ->
                     createMenuItem(current.label, current.icon, disabled = current == simulation) {
-                        save()
-                        setSimulation(current)
-                        moreDropdown.active = false
-                        editionTab.selectedPage = simulationPage
+                        save {
+                            setSimulation(current)
+                            moreDropdown.active = false
+                            editionTab.selectedPage = simulationPage
+                        }
                     }
                 }
             }.catch { error(it) }

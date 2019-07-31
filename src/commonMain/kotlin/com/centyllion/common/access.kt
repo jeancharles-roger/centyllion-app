@@ -1,6 +1,6 @@
 package com.centyllion.common
 
-const val centyllionHost = "centyllion.com"
+const val centyllionHost = "app.centyllion.com"
 
 const val apprenticeRole = "apprentice"
 const val creatorRole = "creator"

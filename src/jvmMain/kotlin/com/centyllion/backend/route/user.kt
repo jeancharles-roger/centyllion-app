@@ -2,7 +2,7 @@ package com.centyllion.backend.route
 
 import com.centyllion.backend.ServerConfig
 import com.centyllion.backend.SubscriptionManager
-import com.centyllion.backend.checkRoles
+import com.centyllion.backend.checkRole
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.adminRole
@@ -22,7 +22,7 @@ fun Route.user(subscriptionManager: SubscriptionManager, config: ServerConfig) {
             val detailed = call.parameters["detailed"]?.toBoolean() ?: false
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-            if (!detailed || checkRoles(adminRole)) {
+            if (!detailed || checkRole(adminRole)) {
                 val users = subscriptionManager.getAllUsers(detailed, offset, limit)
                 context.respond(users)
             } else {
@@ -38,7 +38,7 @@ fun Route.user(subscriptionManager: SubscriptionManager, config: ServerConfig) {
                 context.respond(
                     when {
                         user == null -> HttpStatusCode.NotFound
-                        detailed && !checkRoles(adminRole) -> HttpStatusCode.Unauthorized
+                        detailed && !checkRole(adminRole) -> HttpStatusCode.Unauthorized
                         else -> user
                     }
                 )

@@ -151,9 +151,7 @@ class Card(
 
 }
 
-interface DropdownItem : BulmaElement {
-    var disabled: Boolean
-}
+interface DropdownItem : BulmaElement
 
 class DropdownSimpleItem(
     text: String, icon: Icon? = null, disabled: Boolean = false,
@@ -166,7 +164,7 @@ class DropdownSimpleItem(
 
     private val textNode = root.querySelector("span") as HTMLElement
 
-    override var disabled by className(disabled, "is-disabled", root)
+    var disabled by className(disabled, "is-disabled", root)
 
     override var text: String
         get() = textNode.innerText
@@ -190,14 +188,11 @@ class DropdownContentItem(
 
     var body by bulmaList(body.toList(), root)
 
-    override var disabled by className(disabled, "is-disabled", root)
-
+    var disabled by className(disabled, "is-disabled", root)
 }
 
 class DropdownDivider : DropdownItem {
     override val root = document.create.hr("dropdown-divider")
-
-    override var disabled by className(false, "is-disabled", root)
 }
 
 /** [Dropdown](https://bulma.io/documentation/components/dropdown) element */

@@ -9,6 +9,8 @@ import com.centyllion.backend.route.model
 import com.centyllion.backend.route.simulation
 import com.centyllion.backend.route.user
 import com.centyllion.model.DescriptionInfo
+import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -199,23 +201,37 @@ fun Application.centyllion(config: ServerConfig) {
     }
 }
 
+fun GrainModelDescription.checkAccess(canPublish: Boolean) =
+    if (!canPublish && (info.readAccess || info.cloneAccess))
+        copy(info = info.copy(readAccess = false, cloneAccess = false))
+    else this
+
+fun SimulationDescription.checkAccess(canPublish: Boolean) =
+    if (!canPublish && (info.readAccess || info.cloneAccess))
+        copy(info = info.copy(readAccess = false, cloneAccess = false))
+    else this
+
 /** Checks if [info] authorizes access for [user] */
 fun hasReadAccess(info: DescriptionInfo, user: User?) =
     info.readAccess || (user != null && isOwner(info, user))
 
 fun isOwner(info: DescriptionInfo, user: User) = info.userId == user.id
 
-fun PipelineContext<Unit, ApplicationCall>.checkRoles(requiredRole: String? = null) =
-    if (requiredRole == null) true else {
-        val principal = call.principal<JWTPrincipal>()
-        val rolesClaim = principal?.payload?.getClaim("roles")
-        val roles: List<String> = rolesClaim?.asList<String>(String::class.java) ?: emptyList()
-        roles.contains(requiredRole)
-    }
+/** Checks if [this] JWT has the [role]. */
+fun JWTPrincipal.hasRole(role: String): Boolean {
+    val rolesClaim = payload.getClaim("roles")
+    val roles: List<String> = rolesClaim?.asList<String>(String::class.java) ?: emptyList()
+    return roles.contains(role)
+}
+
+/** Checks if [this] context has the given [role] in his principal JWT. */
+fun PipelineContext<Unit, ApplicationCall>.checkRole(role: String) =
+    call.principal<JWTPrincipal>()?.hasRole(role) ?: false
 
 suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
     requiredRole: String? = null, block: suspend (JWTPrincipal) -> Unit
 ) = call.principal<JWTPrincipal>().let {
     // test if authenticated and all required roles are present
-    if (it != null && checkRoles(requiredRole)) block(it) else context.respond(HttpStatusCode.Unauthorized)
+    if (it != null && (requiredRole == null || it.hasRole(requiredRole))) block(it)
+    else context.respond(HttpStatusCode.Unauthorized)
 }

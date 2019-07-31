@@ -1,10 +1,13 @@
 package com.centyllion.backend.route
 
 import com.centyllion.backend.SubscriptionManager
+import com.centyllion.backend.checkAccess
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
+import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
@@ -55,10 +58,11 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
 
             // patch an existing simulation for user
             patch {
-                withRequiredPrincipal(creatorRole) {
+                withRequiredPrincipal(apprenticeRole) {
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
-                    val simulation = call.receive(SimulationDescription::class)
+                    val canPublish = it.hasRole(creatorRole)
+                    val simulation = call.receive(SimulationDescription::class).checkAccess(canPublish)
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
@@ -74,7 +78,7 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
 
             // delete an existing model for user
             delete {
-                withRequiredPrincipal(creatorRole) {
+                withRequiredPrincipal(apprenticeRole) {
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val simulation = data.getSimulation(simulationId)

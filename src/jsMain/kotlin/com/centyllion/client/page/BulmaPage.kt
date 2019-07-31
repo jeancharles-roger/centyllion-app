@@ -24,6 +24,7 @@ import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 import kotlin.js.Date
 import kotlin.js.Promise
+import kotlin.properties.Delegates
 
 interface BulmaPage : BulmaElement {
     val appContext: AppContext
@@ -71,9 +72,8 @@ interface BulmaPage : BulmaElement {
         requiredRole: String? = null, disabled: Boolean = false, onClick: () -> Unit = {}
     ) =
         MenuItem(
-            Icon(icon, color = color), span(text),
-            Icon(roleIcons[requiredRole] ?: "", Size.Small, TextColor.GreyLight),
-            disabled = disabled || requiredRole != null && !appContext.hasRole(requiredRole)
+            Icon(icon, color = color), span(text), requiredRole,
+            requiredRole == null || appContext.hasRole(requiredRole), disabled
         ) { onClick() }
 
 }
@@ -94,12 +94,14 @@ private fun notification(content: String, color: ElementColor = ElementColor.Non
 }
 
 class MenuItem(
-    val itemIcon: Icon, val itemText: BulmaElement, roleIcon: Icon?,
-    disabled: Boolean = false, onSelect: (MenuItem) -> Unit = {}
+    val itemIcon: Icon, val itemText: BulmaElement, val role: String? = null,
+    hasRole: Boolean = role == null, disabled: Boolean = false, onSelect: (MenuItem) -> Unit = {}
 ) : DropdownItem {
 
+    val roleIcon = Icon(roleIcons[role] ?: "", Size.Small, TextColor.GreyLight)
+
     override val root: HTMLElement = document.create.a(classes = "dropdown-item") {
-        onClickFunction = { if (!this@MenuItem.disabled) onSelect(this@MenuItem) }
+        onClickFunction = { if (!this@MenuItem.internalDisabled) onSelect(this@MenuItem) }
     }
 
     override var text: String
@@ -110,6 +112,9 @@ class MenuItem(
 
     val body by bulmaList(listOfNotNull(itemIcon, itemText, span(" "), roleIcon), root)
 
-    override var disabled by className(disabled, "is-disabled", root)
+    var disabled by Delegates.observable(disabled) { _, _, new ->
+        internalDisabled = new || !hasRole
+    }
 
+    private var internalDisabled by className(disabled || !hasRole, "is-disabled", root)
 }

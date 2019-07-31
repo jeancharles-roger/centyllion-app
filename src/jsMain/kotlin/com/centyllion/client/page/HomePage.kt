@@ -27,7 +27,6 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.MeController
 import com.centyllion.client.showPage
-import com.centyllion.common.creatorRole
 import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
@@ -90,7 +89,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
     val panelController = noContextPanelController(
         Panel("My models and simulations"), emptyList<Description>(),
         header = listOfNotNull(
-            if (appContext.hasRole(creatorRole)) PanelContentBlock(Control(newModelButton)) else null,
+            PanelContentBlock(Control(newModelButton)),
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )

@@ -28,6 +28,7 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.toFixed
+import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -78,7 +79,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
     val isModelReadOnly
-        get() = !appContext.hasRole(creatorRole) || (model.id.isNotEmpty() && model.info.userId != appContext.me?.id)
+        get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() && model.info.userId != appContext.me?.id)
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
@@ -122,7 +123,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     var originalSimulation: SimulationDescription = emptySimulationDescription
 
     val isSimulationReadOnly
-        get() = !appContext.hasRole(creatorRole) || simulation.id.isNotEmpty() && simulation.info.userId != appContext.me?.id
+        get() = !appContext.hasRole(apprenticeRole) || simulation.id.isNotEmpty() && simulation.info.userId != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {

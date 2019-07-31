@@ -67,34 +67,31 @@ class TestMeApi {
         // Test that /api/me/model is protected
         testUnauthorized( "/api/me/model")
 
-        // Test that /api/me/model is protected by the role model
+        // Test that /api/me/model is protected by the apprentice model
         testGet("/api/me/model", emptyList(), GrainModelDescription.serializer().list, apprenticeUser)
 
         // Test post on /api/model
         testUnauthorized("/api/me/model", HttpMethod.Post)
-        testUnauthorized("/api/me/model", HttpMethod.Post, apprenticeUser)
-        val model1 = postModel(GrainModel("test1"), creatorUser)
-        val model2 = postModel(GrainModel("test2"), creatorUser)
+        val model1 = postModel(GrainModel("test1"), apprenticeUser)
+        val model2 = postModel(GrainModel("test2"), apprenticeUser)
 
         // Checks that models were posted
-        testGet("/api/me/model", listOf(model1, model2), GrainModelDescription.serializer().list, creatorUser)
+        testGet("/api/me/model", listOf(model1, model2), GrainModelDescription.serializer().list, apprenticeUser)
 
         // Test delete a model
         testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
-        testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete, apprenticeUser)
-        deleteModel(model1, creatorUser)
+        deleteModel(model1, apprenticeUser)
 
         // Checks if delete happened
-        testGet("/api/me/model", listOf(model2), GrainModelDescription.serializer().list, creatorUser)
+        testGet("/api/me/model", listOf(model2), GrainModelDescription.serializer().list, apprenticeUser)
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
         testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch)
-        testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch, apprenticeUser)
-        patchModel(newModel2, creatorUser)
+        patchModel(newModel2, apprenticeUser)
 
         // Checks if patch happened
-        testGet("/api/me/model", listOf(newModel2), GrainModelDescription.serializer().list, creatorUser)
+        testGet("/api/me/model", listOf(newModel2), GrainModelDescription.serializer().list, apprenticeUser)
 
     }
 

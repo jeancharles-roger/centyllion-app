@@ -44,11 +44,11 @@ private val jwtAlgorithm =  KeyPairGenerator.getInstance("RSA").let { generator 
 }
 
 /** Creates a JWT token for test API */
-fun createTextJwtToken(id: String, name: String, email: String, role: String?) =
+fun createTextJwtToken(id: String, name: String, email: String, roles: Array<out String>) =
     JWT.create()
         .withAudience(authClient).withClaim("sub", id)
         .withClaim("name", name).withClaim("email", email)
-        .withArrayClaim("roles", if (role != null) arrayOf(role) else null)
+        .withArrayClaim("roles", roles)
         .withIssuer(authBase).sign(jwtAlgorithm)!!
 
 class TestConfig: ServerConfig {
@@ -73,7 +73,7 @@ fun TestApplicationEngine.request(
     this.uri = uri
     this.method = method
     user?.details?.let{
-        val token = createTextJwtToken(it.keycloakId, user.name, it.email, it.subscription.role)
+        val token = createTextJwtToken(it.keycloakId, user.name, it.email, it.subscription.roles)
         this.addHeader("Authorization", "Bearer $token")
     }
     if (content != null) {

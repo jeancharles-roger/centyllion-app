@@ -1,7 +1,6 @@
 package com.centyllion.backend.route
 
 import com.centyllion.backend.SubscriptionManager
-import com.centyllion.backend.checkAccess
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.hasRole
@@ -76,11 +75,11 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
                 withRequiredPrincipal(apprenticeRole) {
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["model"]!!
-                    val canPublish = it.hasRole(creatorRole)
-                    val model = call.receive(GrainModelDescription::class).checkAccess(canPublish)
+                    val model = call.receive(GrainModelDescription::class)
                     context.respond(
                         when {
                             model.id != id -> HttpStatusCode.Forbidden
+                            !it.hasRole(creatorRole) && model.info.public -> HttpStatusCode.Forbidden
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveGrainModel(model)

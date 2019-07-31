@@ -32,15 +32,19 @@ class TestMeApi {
         return retrieved
     }
 
-    private fun TestApplicationEngine.deleteModel(model: GrainModelDescription, user: User) {
+    private fun TestApplicationEngine.deleteModel(
+        model: GrainModelDescription, user: User, result: HttpStatusCode = HttpStatusCode.OK
+    ) {
         val request = handleDelete("/api/model/${model.id}", user)
-        assertEquals(HttpStatusCode.OK, request.response.status())
+        assertEquals(result, request.response.status())
     }
 
-    private fun TestApplicationEngine.patchModel(model: GrainModelDescription, user: User) {
+    private fun TestApplicationEngine.patchModel(
+        model: GrainModelDescription, user: User, result: HttpStatusCode = HttpStatusCode.OK
+    ) {
         val content = Json.stringify(GrainModelDescription.serializer(), model)
         val request = handlePatch("/api/model/${model.id}", content, user)
-        assertEquals(HttpStatusCode.OK, request.response.status())
+        assertEquals(result, request.response.status())
     }
 
     @Test
@@ -63,7 +67,7 @@ class TestMeApi {
     }
 
     @Test
-    fun testMyModels() = withCentyllion {
+    fun testMyModelsApprentice() = withCentyllion {
         // Test that /api/me/model is protected
         testUnauthorized( "/api/me/model")
 
@@ -93,6 +97,17 @@ class TestMeApi {
         // Checks if patch happened
         testGet("/api/me/model", listOf(newModel2), GrainModelDescription.serializer().list, apprenticeUser)
 
+        // Checks that publish is protected by creator role
+        val newModel2public = model2.copy(info = model2.info.copy(readAccess = true))
+        patchModel(newModel2public, apprenticeUser, HttpStatusCode.Forbidden)
+        patchModel(newModel2public, creatorUser, HttpStatusCode.Unauthorized)
     }
 
+    @Test
+    fun testPublishMyModelsCreator() = withCentyllion {
+        // Creates and make a model public with creator user
+        val model3 = postModel(GrainModel("test3"), creatorUser)
+        val model3public = model3.copy(info = model3.info.copy(readAccess = true))
+        patchModel(model3public, creatorUser)
+    }
 }

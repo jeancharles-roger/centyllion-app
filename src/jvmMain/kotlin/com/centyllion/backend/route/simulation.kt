@@ -1,7 +1,6 @@
 package com.centyllion.backend.route
 
 import com.centyllion.backend.SubscriptionManager
-import com.centyllion.backend.checkAccess
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.hasRole
@@ -62,10 +61,11 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val canPublish = it.hasRole(creatorRole)
-                    val simulation = call.receive(SimulationDescription::class).checkAccess(canPublish)
+                    val simulation = call.receive(SimulationDescription::class)
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
+                            !it.hasRole(creatorRole) && simulation.info.public -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)

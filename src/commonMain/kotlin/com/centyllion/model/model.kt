@@ -511,7 +511,9 @@ data class DescriptionInfo(
     val lastModifiedOn: String = "",
     val readAccess: Boolean = false,
     val cloneAccess: Boolean = false
-)
+) {
+    val public get() = readAccess || cloneAccess
+}
 
 @Serializable
 data class GrainModelDescription(
@@ -522,6 +524,7 @@ data class GrainModelDescription(
 
     @Transient
     override val name = model.name
+
     @Transient
     override val icon = "boxes"
 }
@@ -537,6 +540,7 @@ data class SimulationDescription(
 
     @Transient
     override val name = simulation.name
+
     @Transient
     override val icon = "play"
 

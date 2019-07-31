@@ -9,8 +9,6 @@ import com.centyllion.backend.route.model
 import com.centyllion.backend.route.simulation
 import com.centyllion.backend.route.user
 import com.centyllion.model.DescriptionInfo
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -200,16 +198,6 @@ fun Application.centyllion(config: ServerConfig) {
         }
     }
 }
-
-fun GrainModelDescription.checkAccess(canPublish: Boolean) =
-    if (!canPublish && (info.readAccess || info.cloneAccess))
-        copy(info = info.copy(readAccess = false, cloneAccess = false))
-    else this
-
-fun SimulationDescription.checkAccess(canPublish: Boolean) =
-    if (!canPublish && (info.readAccess || info.cloneAccess))
-        copy(info = info.copy(readAccess = false, cloneAccess = false))
-    else this
 
 /** Checks if [info] authorizes access for [user] */
 fun hasReadAccess(info: DescriptionInfo, user: User?) =

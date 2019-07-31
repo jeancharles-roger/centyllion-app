@@ -19,8 +19,15 @@ val roleIcons = mapOf(
     adminRole to adminIcon
 )
 
-enum class SubscriptionType(val role: String?, val groupId: String) {
-    Apprentice(null, "632088b8-ef86-4cb9-8ad4-6c65a88c1e5b"),
+val roleColors = mapOf(
+    apprenticeRole to "is-primary",
+    creatorRole to "is-warning",
+    masterRole to "is-success",
+    adminRole to "is-danger"
+)
+
+enum class SubscriptionType(val role: String, val groupId: String) {
+    Apprentice(apprenticeRole, "632088b8-ef86-4cb9-8ad4-6c65a88c1e5b"),
     Creator(creatorRole, "822926b1-3a8e-4b8a-9531-d9492d400b09"),
     Master(masterRole, "5fecdefa-4998-4afc-835a-d796ddde5591"),
     Admin(adminRole, "be7ab8c7-1dd1-4569-ba6c-36c6449db7a3");

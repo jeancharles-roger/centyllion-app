@@ -16,6 +16,7 @@ import bulma.iconButton
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.common.SubscriptionType
+import com.centyllion.common.roleColors
 import com.centyllion.common.roleIcons
 import com.centyllion.model.User
 import com.centyllion.model.emptyUser
@@ -41,12 +42,16 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
+    fun roleColor(role: String) = (roleColors[role] ?: "is-primary").let { c ->
+        ElementColor.values().find { c == it.className }
+    } ?: ElementColor.Primary
+
     fun roleButtons() = roleIcons.map {
         appContext.hasRole(it.key).let { hasRole ->
             Control(
                 iconButton(
                     Icon(it.value, color = if (hasRole) TextColor.White else TextColor.GreyLighter),
-                    if (hasRole) ElementColor.Primary else ElementColor.White,
+                    if (hasRole) roleColor(it.key) else ElementColor.White,
                     rounded = true, size = Size.None
                 )
             )

@@ -16,6 +16,7 @@ import bulmatoast.ToastOptions
 import bulmatoast.bulmaToast
 import com.centyllion.client.AppContext
 import com.centyllion.client.ClientEvent
+import com.centyllion.common.SubscriptionType
 import com.centyllion.common.roleIcons
 import kotlinx.html.a
 import kotlinx.html.dom.create
@@ -117,4 +118,9 @@ class MenuItem(
     }
 
     private var internalDisabled by className(disabled || !hasRole, "is-disabled", root)
+
+    init {
+        // If the role isn't included in the biggest subscription it must be hidden when not matched
+        hidden = role != null && !SubscriptionType.Master.roles.contains(role) && !hasRole
+    }
 }

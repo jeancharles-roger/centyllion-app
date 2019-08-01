@@ -30,6 +30,7 @@ import chartjs.LineDataSet
 import chartjs.LinearAxisOptions
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
+import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
@@ -37,7 +38,6 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
-import kotlinx.html.classes
 import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
@@ -160,8 +160,19 @@ class SimulationRunController(
 
     val selectedGrainController = GrainSelectController(model.grains.firstOrNull(), model.grains)
 
-    val chartCanvas = canvas {
-        if (!presentCharts) classes = setOf("is-hidden")
+    val chartCanvas = canvas {}
+
+    var exportCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true, disabled = true) {
+        val header = "step,${context.grains.map { if (it.name.isNotBlank()) it.name else it.id }.joinToString(",")}"
+        val content = (0 until simulator.step).joinToString("\n") { step ->
+            val counts = context.grains.map { simulator.grainCountHistory[it]?.get(step) ?: 0 }.joinToString(",")
+            "$step,$counts"
+        }
+        download("counts.csv", "$header\n$content")
+    }
+
+    val chartContainer = Div(chartCanvas, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
+        hidden = !presentCharts
     }
 
     var simulationViewController = Simulator3dViewController(simulator, page, readOnly) { ended, new, _ ->
@@ -213,7 +224,7 @@ class SimulationRunController(
             ), size = ColumnSize.Full
         ),
         simulationView,
-        Column(Div(chartCanvas, classes = "has-text-centered"), size = ColumnSize.Full),
+        Column(chartContainer, size = ColumnSize.Full),
         multiline = true
     )
 
@@ -353,6 +364,8 @@ class SimulationRunController(
         runButton.disabled = running
         stepButton.disabled = running
         stopButton.disabled = !running
+
+        exportCsvButton.disabled = running || simulator.step <= 0
     }
 
     fun refreshCounts() {
@@ -372,7 +385,7 @@ class SimulationRunController(
     }
 
     fun refreshChart() {
-        chartCanvas.hidden = !presentCharts
+        chartContainer.hidden = !presentCharts
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()

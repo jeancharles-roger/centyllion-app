@@ -28,6 +28,7 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.toFixed
+import com.centyllion.common.adminRole
 import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
@@ -203,7 +204,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { cloneModel() }
 
     val downloadModelItem = createMenuItem(
-        "Download Model", downloadIcon, TextColor.Primary, creatorRole
+        "Download Model", downloadIcon, TextColor.Primary, adminRole
     ) { downloadModel() }
 
     val newSimulationItem = createMenuItem(
@@ -215,7 +216,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { cloneSimulation() }
 
     val downloadSimulationItem = createMenuItem(
-        "Download Simulation", downloadIcon, TextColor.Primary, creatorRole
+        "Download Simulation", downloadIcon, TextColor.Primary, adminRole
     ) { downloadSimulation() }
 
     val loadingItem = createMenuItem("Loading simulations", "spinner").apply { itemIcon.spin = true }

@@ -45,6 +45,7 @@ import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 
+/** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
 class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val saveIcon = "cloud-upload-alt"

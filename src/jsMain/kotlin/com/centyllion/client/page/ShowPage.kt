@@ -406,19 +406,21 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun cloneModel() {
-        // saves current model
-        save {
-            // creates cloned model
-            val cloned = emptyGrainModelDescription.copy(
-                model = model.model.copy(name = model.model.name + " cloned")
-            )
-            setModel(cloned)
-            setSimulation(emptySimulationDescription)
+        // checks if something needs saving before creating a new simulation
+        onExit().then {
+            if (it) {
+                // creates cloned model
+                val cloned = emptyGrainModelDescription.copy(
+                    model = model.model.copy(name = model.model.name + " cloned")
+                )
+                setModel(cloned)
+                setSimulation(emptySimulationDescription)
 
-            // closes the action
-            moreDropdown.active = false
-            editionTab.selectedPage = modelPage
-            message("Model cloned")
+                // closes the action
+                moreDropdown.active = false
+                editionTab.selectedPage = modelPage
+                message("Model cloned")
+            }
         }
     }
 
@@ -428,24 +430,30 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun newSimulation() {
-        save {
-            setSimulation(emptySimulationDescription)
-            moreDropdown.active = false
-            editionTab.selectedPage = simulationPage
-            message("New simulation")
+        // checks if something needs saving before creating a new simulation
+        onExit().then {
+            if (it) {
+                setSimulation(emptySimulationDescription)
+                moreDropdown.active = false
+                editionTab.selectedPage = simulationPage
+                message("New simulation")
+            }
         }
     }
 
     fun cloneSimulation() {
-        save {
-            val cloned = emptySimulationDescription.copy(
-                simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
-            )
-            setSimulation(cloned)
+        // checks if something needs saving before creating a new simulation
+        onExit().then {
+            if (it) {
+                val cloned = emptySimulationDescription.copy(
+                    simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
+                )
+                setSimulation(cloned)
 
-            moreDropdown.active = false
-            editionTab.selectedPage = simulationPage
-            message("Simulation cloned")
+                moreDropdown.active = false
+                editionTab.selectedPage = simulationPage
+                message("Simulation cloned")
+            }
         }
     }
 
@@ -558,8 +566,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             val model = modalDialog("Modifications not saved, Do you wan't to save ?",
                 p("You're about to quit the page and some modifications haven't been saved."),
                 textButton("Save", ElementColor.Success) {
-                    save()
-                    resolve(true)
+                    save { resolve(true) }
                 },
                 textButton("Don't save", ElementColor.Danger) { resolve(true) },
                 textButton("Stay here") { resolve(false) }

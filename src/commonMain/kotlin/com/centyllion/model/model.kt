@@ -492,7 +492,6 @@ data class Simulation(
         }
         return if (newAgents != agents) copy(agents = newAgents) else this
     }
-
 }
 
 interface Description {

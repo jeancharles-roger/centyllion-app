@@ -67,7 +67,6 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                 withRequiredPrincipal(apprenticeRole) {
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
-                    val canPublish = it.hasRole(creatorRole)
                     val simulation = call.receive(SimulationDescription::class)
                     context.respond(
                         when {
@@ -131,6 +130,7 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                             simulation == null -> context.respond(HttpStatusCode.NotFound)
                             !isOwner(simulation.info, user) -> context.respond(HttpStatusCode.Unauthorized)
                             else -> {
+                                // gets all parts
                                 val multipart = call.receiveMultipart()
                                 val parts = multipart.readAllParts()
 
@@ -145,7 +145,13 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                                 parts.forEach { it.dispose() }
 
                                 if (name != null && content != null) {
+                                    // creates asset
                                     val asset = data.createAsset(name, user.id, content)
+                                    // removes previous one if any
+                                    simulation.thumbnailId?.let { data.deleteAsset(it) }
+                                    // updates simulation with new id
+                                    data.saveSimulation(simulation.copy(thumbnailId = asset.id))
+
                                     context.respond(asset.id)
                                 } else {
                                     context.respond(HttpStatusCode.BadRequest)

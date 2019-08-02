@@ -17,6 +17,7 @@ import kotlinx.html.js.link
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
+import org.w3c.files.Blob
 import org.w3c.files.File
 import org.w3c.xhr.FormData
 import org.w3c.xhr.XMLHttpRequest
@@ -168,6 +169,14 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("POST", "/api/model/$modelId/simulation", bearer, json.stringify(Simulation.serializer(), simulation))
                 .then { json.parse(SimulationDescription.serializer(), it) }
+        }
+
+    fun saveSimulationThumbnail(simulationId: String, name: String, blob: Blob) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            val data = FormData()
+            data.append("name", name)
+            data.append("file", blob)
+            fetch("POST", "/api/simulation/$simulationId/thumbnail", bearer, data, null)
         }
 
     fun deleteSimulation(simulation: SimulationDescription) =

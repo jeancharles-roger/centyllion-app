@@ -24,6 +24,7 @@ import bulma.textButton
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
+import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
@@ -36,6 +37,7 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
+import com.centyllion.model.Simulator
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptyModel
 import com.centyllion.model.emptySimulation
@@ -209,8 +211,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { downloadModel() }
 
     val newSimulationItem = createMenuItem(
-        "New Simulation",newIcon, TextColor.Primary
+        "New Simulation", newIcon, TextColor.Primary
     ) { newSimulation() }
+
+    val saveThumbnailItem = createMenuItem(
+        "Save state as thumbnail", "image", TextColor.Primary, creatorRole
+    ) { saveCurrentThumbnail() }
 
     val cloneSimulationItem = createMenuItem(
         "Clone Simulation", cloneIcon, TextColor.Primary
@@ -226,7 +232,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         publishModelItem, publishSimulationItem, DropdownDivider(),
         deleteModelItem, deleteSimulationItem, DropdownDivider(),
         cloneModelItem, downloadModelItem, DropdownDivider(),
-        newSimulationItem, cloneSimulationItem, downloadSimulationItem, DropdownDivider()
+        newSimulationItem, saveThumbnailItem, cloneSimulationItem, downloadSimulationItem, DropdownDivider()
     )
 
     val moreDropdown = Dropdown(
@@ -320,6 +326,23 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         refreshButtons()
     }
 
+    fun saveInitThumbnail() {
+        // creates a new simulator 3d view to create an init view
+        val controller = Simulator3dViewController(Simulator(model.model, simulation.simulation), this)
+        controller.refresh()
+        controller.screenshot().then {
+            controller.dispose()
+            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
+        }.catch { controller.dispose() }
+    }
+
+    fun saveCurrentThumbnail() {
+        simulationController.simulationViewController.screenshot().then {
+            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
+            message("Current state saved as thumbnail")
+        }
+    }
+
     fun save(after: () -> Unit = {}) {
         val needModelSave = model != originalModel || model.id.isEmpty()
         if (needModelSave && model.id.isEmpty()) {
@@ -328,11 +351,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 .then { newModel ->
                     originalModel = newModel
                     model = newModel
-                    // Saves the simulation
+                    // Saves the simulation and thumbnail
                     api.saveSimulation(newModel.id, simulation.simulation)
                 }.then { newSimulation ->
                     originalSimulation = newSimulation
                     simulation = newSimulation
+                    saveInitThumbnail()
                     refreshButtons()
                     message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
                     after()
@@ -363,6 +387,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
                         originalSimulation = newSimulation
                         simulation = newSimulation
+                        saveInitThumbnail()
                         refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
                         after()
@@ -375,6 +400,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     // saves the simulation
                     api.updateSimulation(simulation).then {
                         originalSimulation = simulation
+                        saveInitThumbnail()
                         refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
                         after()
@@ -528,7 +554,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         redoModelButton.disabled = modelFuture.isEmpty()
         undoSimulationButton.disabled = simulationHistory.isEmpty()
         redoSimulationButton.disabled = simulationFuture.isEmpty()
-        saveButton.disabled = model == originalModel && model.id.isNotEmpty() && simulation == originalSimulation && simulation.id.isNotEmpty()
+        saveButton.disabled =
+            model == originalModel && model.id.isNotEmpty() && simulation == originalSimulation && simulation.id.isNotEmpty()
     }
 
     fun refreshMoreButtons() {

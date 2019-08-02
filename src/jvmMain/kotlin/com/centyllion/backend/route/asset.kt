@@ -21,10 +21,12 @@ import io.ktor.routing.route
 fun Route.asset(subscription: SubscriptionManager, data: Data) {
     route("asset") {
         get {
-            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-            val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-            val extensions = call.parameters.getAll("extension") ?: emptyList()
-            context.respond(data.getAllAssets(offset, limit, extensions))
+            withRequiredPrincipal(adminRole) {
+                val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                val extensions = call.parameters.getAll("extension") ?: emptyList()
+                context.respond(data.getAllAssets(offset, limit, extensions))
+            }
         }
 
         get("{asset}") {

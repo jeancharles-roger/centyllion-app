@@ -1,6 +1,13 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.*
+import bulma.Card
+import bulma.CardContent
+import bulma.CardImage
+import bulma.Image
+import bulma.ImageSize
+import bulma.Label
+import bulma.NoContextController
+import bulma.SubTitle
 import com.centyllion.model.SimulationDescription
 import kotlin.properties.Delegates.observable
 
@@ -16,10 +23,7 @@ class SimulationDisplayController(simulationDescription: SimulationDescription) 
     val name = SubTitle(data.simulation.name)
     val description = Label(data.simulation.description)
 
-    val thumbnail = Image(
-        if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png",
-        ImageSize.Square
-    )
+    val thumbnail = Image("/api/simulation/${data.id}/thumbnail", ImageSize.Square)
 
     override val container = Card(
         CardImage(thumbnail),
@@ -31,6 +35,6 @@ class SimulationDisplayController(simulationDescription: SimulationDescription) 
     override fun refresh() {
         name.text = data.name
         description.text = data.simulation.description
-        thumbnail.src = if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png"
+        thumbnail.src = "/api/simulation/${data.id}/thumbnail"
     }
 }

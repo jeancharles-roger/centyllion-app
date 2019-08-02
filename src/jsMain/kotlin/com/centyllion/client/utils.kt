@@ -4,6 +4,8 @@ import bulmatoast.BulmaToast
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.url.URL
+import org.w3c.files.Blob
 import stripe.Stripe
 import kotlin.browser.document
 
@@ -21,9 +23,12 @@ fun dependencies(bulmaToast: BulmaToast) {
     bulmatoast.bulmaToast = bulmaToast
 }
 
+fun stringHref(content: String) = "data:text/plain;charset=utf-8,${encodeURIComponent(content)}"
+
+fun blobHref(blob: Blob) = URL.createObjectURL(blob)
+
 /** Download the given [content] with [filename] using the `<a>` trick. */
-fun download(filename: String, content: String) {
-    val href = "data:text/plain;charset=utf-8,${encodeURIComponent(content)}"
+fun download(filename: String, href: String) {
     val a = document.create.a(href)
     a.setAttribute("download", filename)
     a.style.display = "none"

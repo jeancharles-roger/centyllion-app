@@ -32,6 +32,7 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.stringHref
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
@@ -168,7 +169,7 @@ class SimulationRunController(
             val counts = context.grains.map { simulator.grainCountHistory[it]?.get(step) ?: 0 }.joinToString(",")
             "$step,$counts"
         }
-        download("counts.csv", "$header\n$content")
+        download("counts.csv", stringHref("$header\n$content"))
     }
 
     val chartContainer = Div(chartCanvas, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {

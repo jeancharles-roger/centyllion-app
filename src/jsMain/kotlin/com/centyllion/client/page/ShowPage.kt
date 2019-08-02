@@ -27,6 +27,7 @@ import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
+import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.common.adminRole
 import com.centyllion.common.apprenticeRole
@@ -425,7 +426,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun downloadModel() {
-        download("${model.name}.json", Json.stringify(GrainModel.serializer(), model.model))
+        val href = stringHref(Json.stringify(GrainModel.serializer(), model.model))
+        download("${model.name}.json", href)
         moreDropdown.active = false
     }
 
@@ -458,7 +460,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun downloadSimulation() {
-        download("${simulation.name}.json", Json.stringify(Simulation.serializer(), simulation.simulation))
+        val href = stringHref(Json.stringify(Simulation.serializer(), simulation.simulation))
+        download("${simulation.name}.json", href)
         moreDropdown.active = false
     }
 

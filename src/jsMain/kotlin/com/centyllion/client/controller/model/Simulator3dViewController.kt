@@ -13,6 +13,7 @@ import bulma.Level
 import bulma.NoContextController
 import bulma.canvas
 import bulma.iconButton
+import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
@@ -199,7 +200,12 @@ open class Simulator3dViewController(
         refresh()
     }
 
-    val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton))
+    val imageButton = iconButton(Icon("file-image"), ElementColor.Info, true) {
+        render()
+        download("screenshot.jpg", simulationCanvas.root.toDataURL())
+    }
+
+    val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton, imageButton))
 
     override val container = Div(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar

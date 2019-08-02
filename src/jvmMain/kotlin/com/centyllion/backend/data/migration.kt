@@ -39,8 +39,5 @@ val migrations = listOf(
             DbModelDescriptions,
             DbModelDescriptions.model
         )
-    },
-    Migration(1, 2) {
-        exec("truncate table assets")
     }
 )

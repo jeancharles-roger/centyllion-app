@@ -277,7 +277,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
 
 object DbAssets : UUIDTable("assets") {
     val name = text("name")
-    val userId = uuid("userId")
+    val userId = uuid("userId").default(UUID.fromString("00000000-0000-0000-0000-000000000000"))
     val content = blob("content")
 }
 

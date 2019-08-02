@@ -65,6 +65,7 @@ class GrainEditController(
             colorController.readOnly = new
             iconController.readOnly = new
             nameController.readOnly = new
+            sizeSlider.disabled = new
             descriptionController.readOnly = new
             movementProbabilityController.readOnly = new
             firstDirectionController.readOnly = new

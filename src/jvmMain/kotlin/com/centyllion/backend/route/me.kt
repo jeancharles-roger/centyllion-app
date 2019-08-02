@@ -33,5 +33,13 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                 context.respond(data.subscriptionsForUser(user.id))
             }
         }
+
+        get("asset") {
+            withRequiredPrincipal {
+                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val models = data.grainModelsForUser(user.id)
+                context.respond(models)
+            }
+        }
     }
 }

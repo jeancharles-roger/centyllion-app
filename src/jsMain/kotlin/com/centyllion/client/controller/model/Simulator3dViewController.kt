@@ -49,6 +49,8 @@ import kotlinx.io.IOException
 import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.url.URL
+import org.w3c.files.Blob
 import threejs.core.Raycaster
 import threejs.extra.core.Font
 import threejs.geometries.TextBufferGeometry
@@ -201,8 +203,7 @@ open class Simulator3dViewController(
     }
 
     val imageButton = iconButton(Icon("file-image"), ElementColor.Info, true) {
-        render()
-        download("screenshot.jpg", simulationCanvas.root.toDataURL())
+        screenshot().then { download("screenshot.jpg", URL.createObjectURL(it)) }
     }
 
     val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton, imageButton))
@@ -478,6 +479,11 @@ open class Simulator3dViewController(
                 render()
             }
         }
+    }
+
+    fun screenshot() = Promise<Blob> { resolve, reject ->
+        render()
+        simulationCanvas.root.toBlob({ if (it != null) resolve(it) else reject(Exception("No content")) })
     }
 
     fun resetCamera() {

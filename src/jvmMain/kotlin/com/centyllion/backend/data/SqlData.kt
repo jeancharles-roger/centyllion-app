@@ -1,6 +1,5 @@
 package com.centyllion.backend.data
 
-import com.centyllion.backend.createThumbnail
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.topGroup
 import com.centyllion.model.Asset
@@ -247,23 +246,9 @@ class SqlData(
         }
 
     override fun saveSimulation(simulation: SimulationDescription) {
-        // TODO thumbnails should be sent from client
         transaction(database) {
             val found = DbSimulationDescription.findById(UUID.fromString(simulation.id))
-            // removes current asset if exists
-            val toSave = simulation.let {
-                simulation.thumbnailId?.let { deleteAsset(it) }
-                // creates new asset
-                val asset = getGrainModel(simulation.modelId)?.let {
-                    createAsset(
-                        "${simulation.simulation.name}.png",
-                        createThumbnail(it.model, simulation.simulation)
-                    )
-                }
-                simulation.copy(thumbnailId = asset?.id)
-            }
-            // updates simulation
-            found?.fromModel(toSave)
+            found?.fromModel(simulation)
             found?.info?.lastModifiedOn = DateTime.now()
         }
     }
@@ -382,13 +367,17 @@ class SqlData(
         ResultPage(content, offset, assetsRequest(extensions).count())
     }
 
+    override fun assetsForUser(userId: String) =
+        DbAsset.find { DbAssets.userId eq UUID.fromString(userId) }.map { it.toModel() }
+
     override fun getAssetContent(id: String) = transaction(database) {
         DbAsset.findById(UUID.fromString(id))?.content?.let { it.getBytes(1, it.length().toInt()) }
     }
 
-    override fun createAsset(name: String, data: ByteArray): Asset = transaction(database) {
+    override fun createAsset(name: String, userId: String, data: ByteArray): Asset = transaction(database) {
         DbAsset.new {
             this.name = name
+            this.userId = UUID.fromString(userId)
             this.content = SerialBlob(data)
         }.toModel()
     }

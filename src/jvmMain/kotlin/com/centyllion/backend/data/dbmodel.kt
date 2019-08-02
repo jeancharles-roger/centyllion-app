@@ -277,6 +277,7 @@ class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
 
 object DbAssets : UUIDTable("assets") {
     val name = text("name")
+    val userId = uuid("userId")
     val content = blob("content")
 }
 
@@ -284,13 +285,15 @@ class DbAsset(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<DbAsset>(DbAssets)
 
     var name by DbAssets.name
+    var userId by DbAssets.userId
     var content by DbAssets.content
 
     fun toModel() = Asset(
-        id.toString(), name
+        id.toString(), name, userId.toString()
     )
 
     fun fromModel(source: Asset) {
         name = source.name
+        userId = UUID.fromString(source.userId)
     }
 }

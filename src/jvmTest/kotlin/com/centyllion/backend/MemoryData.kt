@@ -203,11 +203,15 @@ class MemoryData(
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
         assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } } .toList().limit(offset, limit)
 
+    override fun assetsForUser(userId: String): List<Asset> = assets.values.filter {
+        it.userId == userId
+    }
+
     override fun getAssetContent(id: String) = assetContents[id]
 
-    override fun createAsset(name: String, data: ByteArray): Asset {
+    override fun createAsset(name: String, userId: String, data: ByteArray): Asset {
         val id = newId()
-        val result = Asset(id, name)
+        val result = Asset(id, name, userId)
         assets[id] = result
         assetContents[id] = data
         return result
@@ -218,5 +222,5 @@ class MemoryData(
     }
 
     private fun <T> List<T>.limit(offset: Int, limit: Int) =
-        ResultPage<T>(this.dropLast(max(0, this.size - limit)), offset, this.size)
+        ResultPage(this.dropLast(max(0, this.size - limit)), offset, this.size)
 }

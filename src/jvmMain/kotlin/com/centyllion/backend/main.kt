@@ -193,7 +193,7 @@ fun Application.centyllion(config: ServerConfig) {
                 featured(subscription, config.data)
                 model(subscription, config.data)
                 simulation(subscription, config.data)
-                asset(config.data)
+                asset(subscription, config.data)
             }
         }
     }

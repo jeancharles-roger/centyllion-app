@@ -53,8 +53,9 @@ fun index() {
     val api = Api(keycloak)
     api.addCss()
 
+    val page = findPageInUrl()
     val options = KeycloakInitOptions(
-        promiseType = "native", onLoad = "check-sso", timeSkew = 10
+        promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
     )
     keycloak.init(options)
         .then { _ -> api.fetchMe() }
@@ -90,8 +91,8 @@ fun index() {
 
             console.log("Starting function")
 
-            val page = findPageInUrl() ?: if (user != null) homePage else explorePage
-            context.openPage(page, register = false)
+            val selectedPage = page ?: if (user != null) homePage else explorePage
+            context.openPage(selectedPage, register = false)
         }.catch {
             fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
             findCause(it).let {

@@ -105,26 +105,28 @@ class SqlData(
          val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
             ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Apprentice
 
+        val currentName = principal.payload.claims["name"]?.asString() ?: ""
         val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
+        val currentEmail = principal.payload.claims["email"]?.asString() ?: ""
 
         // find or create the user
         val user = transaction(database) {
             DbUser.find { DbUsers.keycloak eq principal.payload.subject }.firstOrNull()
-        } ?: principal.payload.claims.let { claims ->
-            transaction(database) {
-                DbUser.new {
-                    keycloak = principal.payload.subject
-                    name = claims["name"]?.asString() ?: ""
-                    username = currentUsername
-                    email = claims["email"]?.asString() ?: ""
-                    subscription = currentGroup.name
-                }
+        } ?: transaction(database) {
+            DbUser.new {
+                keycloak = principal.payload.subject
+                name = currentName
+                username = currentUsername
+                email = currentEmail
+                subscription = currentGroup.name
             }
         }
+
         /* This shouldn't be needed anymore */
-        if (user.subscription != currentGroup.name || user.username != currentUsername) {
+        if (user.name != currentName || user.subscription != currentGroup.name || user.username != currentUsername) {
             // updates roles for user
             transaction {
+                user.name = currentName
                 user.username = currentUsername
                 user.subscription = currentGroup.name
             }

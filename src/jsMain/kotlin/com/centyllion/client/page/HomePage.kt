@@ -26,6 +26,8 @@ import bulma.wrap
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.MeController
+import com.centyllion.client.controller.navigation.ResultPageController
+import com.centyllion.client.controller.navigation.SimulationDisplayController
 import com.centyllion.client.showPage
 import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
@@ -95,22 +97,47 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         )
     ) { data, previous -> previous ?: PanelItemController(data) }
 
-    val featuredController = noContextColumnsController(emptyList<FeaturedDescription>())
-    { data, previous ->
-        previous ?: FeaturedController(data).wrap { ctrl ->
-            ctrl.container.root.onclick = {
-                appContext.openPage(showPage, mapOf("model" to data.modelId, "simulation" to data.simulationId))
+    val recentSimulationListController =
+        noContextColumnsController(emptyList<SimulationDescription>())
+        { data, previous ->
+            previous ?: SimulationDisplayController(data).wrap { ctrl ->
+                ctrl.root.style.cursor = "pointer"
+                ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.id)) }
+                Column(ctrl.container, size = ColumnSize.OneThird)
             }
-            ctrl.root.style.cursor = "pointer"
-            Column(ctrl.container, size = ColumnSize.OneThird)
         }
-    }
+
+    val recentSimulationResult =
+        ResultPageController(
+            recentSimulationListController,
+            { Column(it, size = ColumnSize.Full) },
+            { offset, limit ->  appContext.api.fetchMySimulations(offset, limit) },
+            { error(it) }
+        ).apply { limit = 6 }
+
+    val featuredListController =
+        noContextColumnsController(emptyList<FeaturedDescription>())
+        { data, previous ->
+            previous ?: FeaturedController(data).wrap { ctrl ->
+                ctrl.root.style.cursor = "pointer"
+                ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.simulationId)) }
+                Column(ctrl.container, size = ColumnSize.OneThird)
+            }
+        }
+
+    val featuredResult = ResultPageController(
+        featuredListController,
+        { Column(it, size = ColumnSize.Full) },
+        { offset, limit -> appContext.api.fetchAllFeatured(offset, limit) },
+        { error(it) }
+    ).apply { limit = 6 }
 
     val container = TileAncestor(
         TileParent(TileChild(panelController), size = TileSize.S3),
         TileParent(
             TileChild(userController),
-            TileChild(Div(Title("Featured models"), featuredController)),
+            TileChild(Div(Title("My Recent simulation"), recentSimulationResult)),
+            TileChild(Div(Title("Featured models"), featuredResult)),
             size = TileSize.S9, vertical = true
         )
     )
@@ -134,7 +161,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
-        appContext.api.fetchMyGrainModels().then {
+        appContext.api.allFetchMyGrainModels().then {
             elements = it
 
             it.forEach { model ->
@@ -148,8 +175,8 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         }
 
         // retrieves featured models
-        appContext.api.fetchAllFeatured().then { models -> featuredController.data = models.content }
-
+        recentSimulationResult.refreshFetch()
+        featuredResult.refreshFetch()
     }
 
     private fun activateFilter(selected: PanelTabsItem) {

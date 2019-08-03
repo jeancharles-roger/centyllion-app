@@ -143,8 +143,8 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
             appContext.openPage(showPage, mapOf("model" to model.id))
         }
 
-        appContext.api.fetchAllFeatured(0, featuredResult.limit).then { featuredResult.data = it }
-        appContext.api.fetchPublicSimulations(0, recentResult.limit).then { recentResult.data = it }
+        recentResult.refreshFetch()
+        featuredResult.refreshFetch()
     }
 
 }

@@ -48,6 +48,7 @@ import info.laht.threekt.scenes.Scene
 import kotlinx.io.IOException
 import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
@@ -479,6 +480,10 @@ open class Simulator3dViewController(
                 render()
             }
         }
+        window.onresize = {
+            resizeSimulationCanvas()
+            Unit
+        }
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
@@ -716,6 +721,24 @@ open class Simulator3dViewController(
                 dynamic.geomtry?.dispose()
             }
         }
+    }
+
+    private fun resizeSimulationCanvas() {
+        val canvas = simulationCanvas.root
+        val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
+        val availableHeight = window.innerHeight
+        val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
+        if ( availableWidth * ratio > availableHeight) {
+            // height is the limiting factor
+            canvas.width = (availableHeight / ratio).roundToInt()
+            canvas.height = availableHeight
+        } else {
+            // width is the limiting factor
+            canvas.width = availableWidth
+            canvas.height = (availableWidth * ratio).roundToInt()
+        }
+        renderer.setSize(canvas.width, canvas.height)
+        render()
     }
 
 }

@@ -33,6 +33,7 @@ import com.centyllion.client.controller.utils.push
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.stringHref
+import com.centyllion.client.toggleElementToFullScreen
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
@@ -134,6 +135,10 @@ class SimulationRunController(
         simulationViewController.resetCamera()
     }
 
+    val fullscreenButton = iconButton(Icon("expand-arrows-alt"), rounded = true) {
+        toggleElementToFullScreen(simulationColumn.root)
+    }
+
     val grainsController =
         noContextColumnsController<Grain, GrainDisplayController>(model.grains)
         { grain, previous ->
@@ -220,7 +225,7 @@ class SimulationRunController(
                     Field(Control(fpsSlider), Control(fpsLabel), grouped = true)
                 ),
                 right = listOf(
-                    Field(Control(toggleChartsButton), Control(resetOrbitButton), grouped = true)
+                    Field(Control(toggleChartsButton), Control(resetOrbitButton), Control(fullscreenButton), grouped = true)
                 )
             ), size = ColumnSize.Full
         ),

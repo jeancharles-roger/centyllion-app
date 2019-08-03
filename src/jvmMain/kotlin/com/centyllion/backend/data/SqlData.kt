@@ -102,7 +102,7 @@ class SqlData(
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         // retrieves roles from claim
-         val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
+        val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
             ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Apprentice
 
         val currentName = principal.payload.claims["name"]?.asString() ?: ""
@@ -156,15 +156,24 @@ class SqlData(
         ResultPage(content, offset, publicGrainModelQuery().count())
     }
 
-    override fun grainModelsForUser(userId: String): List<GrainModelDescription> = transaction(database) {
+    private fun grainModelsForUserQuery(userUUID: UUID) = DbModelDescriptions
+        .innerJoin(DbDescriptionInfos)
+        .select { DbDescriptionInfos.userId eq userUUID }
+        .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+
+    override fun allGrainModelsForUser(userId: String): List<GrainModelDescription> = transaction(database) {
         val userUUID = UUID.fromString(userId)
-        DbModelDescription.wrapRows(
-            DbModelDescriptions
-                .innerJoin(DbDescriptionInfos)
-                .select { DbDescriptionInfos.userId eq userUUID }
-                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
-        ).map { it.toModel() }
+        DbModelDescription.wrapRows(grainModelsForUserQuery(userUUID)).map { it.toModel() }
     }
+
+    override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
+        transaction(database) {
+            val userUUID = UUID.fromString(userId)
+            val content = DbModelDescription.wrapRows(
+                grainModelsForUserQuery(userUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            ).map { it.toModel() }
+            ResultPage(content, offset, grainModelsForUserQuery(userUUID).count())
+        }
 
     override fun getGrainModel(id: String) = transaction(database) {
         DbModelDescription.findById(UUID.fromString(id))?.toModel()
@@ -222,6 +231,25 @@ class SqlData(
         DbSimulationDescription
             .find { DbSimulationDescriptions.modelId eq UUID.fromString(modelId) }
             .map { it.toModel() }
+    }
+
+    private fun simulationsForUserQuery(userUUID: UUID) = DbSimulationDescriptions
+        .innerJoin(DbDescriptionInfos)
+        .select { DbDescriptionInfos.userId eq userUUID }
+        .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+
+    override fun simulationsForUser(userId: String, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+        transaction(database) {
+            val userUUID = UUID.fromString(userId)
+            val content = DbSimulationDescription.wrapRows(
+                simulationsForUserQuery(userUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            ).map { it.toModel() }
+            ResultPage(content, offset, simulationsForUserQuery(userUUID).count())
+        }
+
+    override fun allSimulationsForUser(userId: String)= transaction(database) {
+        val userUUID = UUID.fromString(userId)
+        DbSimulationDescription.wrapRows(simulationsForUserQuery(userUUID)).map { it.toModel() }
     }
 
     override fun getSimulation(id: String) = transaction(database) {
@@ -328,7 +356,11 @@ class SqlData(
         DbSubscription.findById(UUID.fromString(id))?.toModel()
     }
 
-    override fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription = transaction(database) {
+    override fun createSubscription(
+        userId: String,
+        sandbox: Boolean,
+        parameters: SubscriptionParameters
+    ): Subscription = transaction(database) {
         DbSubscription.new {
             this.userId = UUID.fromString(userId)
             this.sandbox = sandbox

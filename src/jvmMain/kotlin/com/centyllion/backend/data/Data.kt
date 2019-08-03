@@ -20,7 +20,8 @@ interface Data {
 
     fun publicGrainModels(offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun searchModel(query: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
-    fun grainModelsForUser(userId: String): List<GrainModelDescription>
+    fun allGrainModelsForUser(userId: String): List<GrainModelDescription>
+    fun grainModelsForUser(userId: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun getGrainModel(id: String): GrainModelDescription?
     fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription
     fun saveGrainModel(model: GrainModelDescription)
@@ -29,6 +30,8 @@ interface Data {
     fun publicSimulations(offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulationForModel(modelId: String): List<SimulationDescription>
+    fun allSimulationsForUser(userId: String): List<SimulationDescription>
+    fun simulationsForUser(userId: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription
     fun saveSimulation(simulation: SimulationDescription)

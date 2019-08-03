@@ -38,16 +38,6 @@ fun createGrainModelDescription(userId: String, sent: GrainModel) = rfc1123Forma
     GrainModelDescription(newId(), DescriptionInfo(userId, it, it, false, false), sent)
 }
 
-fun createFeaturedDescription(
-    asset: Asset, model: GrainModelDescription, simulation: SimulationDescription, author: User
-) = FeaturedDescription(
-    newId(), rfc1123Format.format(Date()), asset.id,
-    model.id, simulation.id, author.id,
-    listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
-    listOf(simulation.simulation.description, model.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
-    author.name
-)
-
 /** Memory implementation for Data. Only used for tests, not optimal at all */
 class MemoryData(
     val users: LinkedHashMap<String, User> = linkedMapOf(),
@@ -84,9 +74,14 @@ class MemoryData(
     override fun publicGrainModels(offset: Int, limit: Int) =
         grainModels.values.toList().limit(offset, limit)
 
-    override fun grainModelsForUser(userId: String): List<GrainModelDescription> = grainModels.values.filter {
+    override fun allGrainModelsForUser(userId: String): List<GrainModelDescription> = grainModels.values.filter {
         it.info.userId == userId
     }
+
+    override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
+        grainModels.values.filter {
+            it.info.userId == userId
+        }.limit(offset, limit)
 
     override fun getGrainModel(id: String) = grainModels[id]
 
@@ -111,10 +106,18 @@ class MemoryData(
             offset, simulations.size
         )
 
-
     override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
         it.modelId == modelId
     }
+
+    override fun allSimulationsForUser(userId: String): List<SimulationDescription> = simulations.values.filter {
+        it.info.userId == userId
+    }
+
+    override fun simulationsForUser(userId: String, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+        simulations.values.filter {
+            it.info.userId == userId
+        }.limit(offset, limit)
 
     override fun getSimulation(id: String) = simulations[id]
 
@@ -201,7 +204,7 @@ class MemoryData(
     }
 
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
-        assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } } .toList().limit(offset, limit)
+        assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } }.toList().limit(offset, limit)
 
     override fun assetsForUser(userId: String): List<Asset> = assets.values.filter {
         it.userId == userId

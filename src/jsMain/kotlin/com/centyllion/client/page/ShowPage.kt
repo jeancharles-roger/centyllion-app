@@ -26,6 +26,7 @@ import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.stringHref
@@ -52,24 +53,9 @@ import kotlin.properties.Delegates.observable
 /** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
 class ShowPage(override val appContext: AppContext) : BulmaPage {
 
-    val saveIcon = "cloud-upload-alt"
-    val shareIcon = "share-square"
-    val newIcon = "plus"
-    val cloneIcon = "clone"
-    val downloadIcon = "download"
-    val deleteIcon = "trash"
-
     val api = appContext.api
 
-    private var undoModel = false
-
-    private var modelHistory: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
-        undoModelButton.disabled = new.isEmpty()
-    }
-
-    private var modelFuture: List<GrainModelDescription> by observable(emptyList()) { _, _, new ->
-        redoModelButton.disabled = new.isEmpty()
-    }
+    private val modelUndoRedo = UndoRedoSupport<GrainModelDescription> { modelController.data = it.model }
 
     private var simulationHistory: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
         undoSimulationButton.disabled = new.isEmpty()
@@ -88,16 +74,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
-            if (undoModel) {
-                modelFuture += old
-            } else {
-                modelHistory += old
-                if (modelFuture.lastOrNull() == new) {
-                    modelFuture = modelFuture.dropLast(1)
-                } else {
-                    modelFuture = emptyList()
-                }
-            }
+            modelUndoRedo.changed(old, new)
 
             val readonly = isModelReadOnly
             modelController.readOnly = readonly
@@ -158,19 +135,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
     )
 
-    val undoModelButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
-        val restoredModel = modelHistory.last()
-        modelHistory = modelHistory.dropLast(1)
-        undoModel = true
-        modelController.data = restoredModel.model
-        undoModel = false
-    }
-
-    val redoModelButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
-        val restoredModel = modelFuture.last()
-        modelController.data = restoredModel.model
-    }
-
     val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
         val restoredSimulation = simulationHistory.last()
         simulationHistory = simulationHistory.dropLast(1)
@@ -184,34 +148,34 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         simulationController.data = restoredSimulation.simulation
     }
 
-    val saveButton = Button("Save", Icon(saveIcon), color = ElementColor.Primary, rounded = true) { save() }
+    val saveButton = Button("Save", Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
 
     val publishModelItem = createMenuItem(
-        "Publish Model", shareIcon, TextColor.Success, creatorRole
+        "Publish Model", "share-square", TextColor.Success, creatorRole
     ) { toggleModelPublication() }
 
     val publishSimulationItem = createMenuItem(
-        "Publish Simulation", shareIcon, TextColor.Success, creatorRole
+        "Publish Simulation", "share-square", TextColor.Success, creatorRole
     ) { toggleSimulationPublication() }
 
     val deleteModelItem = createMenuItem(
-        "Delete Model", deleteIcon, TextColor.Danger
+        "Delete Model", "trash", TextColor.Danger
     ) { deleteModel() }
 
     val deleteSimulationItem = createMenuItem(
-        "Delete Simulation", deleteIcon, TextColor.Danger
+        "Delete Simulation", "trash", TextColor.Danger
     ) { deleteSimulation() }
 
     val cloneModelItem = createMenuItem(
-        "Clone Model", cloneIcon, TextColor.Primary
+        "Clone Model", "clone", TextColor.Primary
     ) { cloneModel() }
 
     val downloadModelItem = createMenuItem(
-        "Download Model", downloadIcon, TextColor.Primary, adminRole
+        "Download Model", "download", TextColor.Primary, adminRole
     ) { downloadModel() }
 
     val newSimulationItem = createMenuItem(
-        "New Simulation", newIcon, TextColor.Primary
+        "New Simulation", "plus", TextColor.Primary
     ) { newSimulation() }
 
     val saveThumbnailItem = createMenuItem(
@@ -219,11 +183,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { saveCurrentThumbnail() }
 
     val cloneSimulationItem = createMenuItem(
-        "Clone Simulation", cloneIcon, TextColor.Primary
+        "Clone Simulation", "clone", TextColor.Primary
     ) { cloneSimulation() }
 
     val downloadSimulationItem = createMenuItem(
-        "Download Simulation", downloadIcon, TextColor.Primary, adminRole
+        "Download Simulation", "download", TextColor.Primary, adminRole
     ) { downloadSimulation() }
 
     val loadingItem = createMenuItem("Loading simulations", "spinner").apply { itemIcon.spin = true }
@@ -242,8 +206,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
 
-    val undoControl = Control(undoModelButton)
-    val redoControl = Control(redoModelButton)
+    val undoControl = Control(modelUndoRedo.undoButton)
+    val redoControl = Control(modelUndoRedo.redoButton)
 
     val tools = Field(
         undoControl, redoControl, Control(saveButton), Control(moreDropdown),
@@ -313,8 +277,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun setModel(model: GrainModelDescription) {
         this.originalModel = model
         this.model = originalModel
-        this.modelHistory = emptyList()
-        this.modelFuture = emptyList()
+        modelUndoRedo.reset()
         refreshButtons()
     }
 
@@ -539,8 +502,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         when (editionTab.selectedPage) {
             modelPage -> {
                 tools.hidden = isModelReadOnly
-                undoControl.body = undoModelButton
-                redoControl.body = redoModelButton
+                undoControl.body = modelUndoRedo.undoButton
+                redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
                 val readonly = isSimulationReadOnly
@@ -550,8 +513,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
-        undoModelButton.disabled = modelHistory.isEmpty()
-        redoModelButton.disabled = modelFuture.isEmpty()
+        modelUndoRedo.refresh()
         undoSimulationButton.disabled = simulationHistory.isEmpty()
         redoSimulationButton.disabled = simulationFuture.isEmpty()
         saveButton.disabled =

@@ -6,8 +6,11 @@ import bulma.iconButton
 import kotlin.properties.Delegates.observable
 
 class UndoRedoSupport<T>(
-    val set: (T) -> Unit
+    initial: T, val set: (T) -> Unit
 ) {
+
+    private var original: T = initial
+
     private var undoModel = false
 
     private var history: List<T> by observable(emptyList()) { _, _, new ->
@@ -31,7 +34,9 @@ class UndoRedoSupport<T>(
         set(restoredModel)
     }
 
-    fun changed(old: T, new: T) {
+    fun changed(model: T) = model != original
+
+    fun update(old: T, new: T) {
         if (undoModel) {
             future += old
         } else {
@@ -49,7 +54,9 @@ class UndoRedoSupport<T>(
         redoButton.disabled = future.isEmpty()
     }
 
-    fun reset() {
+    fun reset(new: T) {
+        original = new
+        set(new)
         history = emptyList()
         future = emptyList()
     }

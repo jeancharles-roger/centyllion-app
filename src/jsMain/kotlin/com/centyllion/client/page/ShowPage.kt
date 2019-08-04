@@ -54,17 +54,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val api = appContext.api
 
-    private val modelUndoRedo = UndoRedoSupport<GrainModelDescription> { modelController.data = it.model }
-    private val simulationUndoRedo = UndoRedoSupport<SimulationDescription> { simulationController.data = it.simulation }
-
-    private var originalModel: GrainModelDescription = emptyGrainModelDescription
-
     val isModelReadOnly
         get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() && model.info.userId != appContext.me?.id)
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
-            modelUndoRedo.changed(old, new)
+            modelUndoRedo.update(old, new)
 
             val readonly = isModelReadOnly
             modelController.readOnly = readonly
@@ -77,6 +72,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             refreshButtons()
         }
     }
+
+    private val modelUndoRedo = UndoRedoSupport(model)
+    { modelController.data = it.model }
 
     val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
@@ -92,19 +90,20 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    var originalSimulation: SimulationDescription = emptySimulationDescription
-
     val isSimulationReadOnly
         get() = !appContext.hasRole(apprenticeRole) || simulation.id.isNotEmpty() && simulation.info.userId != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
-            simulationUndoRedo.changed(old, new)
+            simulationUndoRedo.update(old, new)
             simulationController.readOnly = isSimulationReadOnly
             simulationController.data = new.simulation
             refreshButtons()
         }
     }
+
+    private val simulationUndoRedo = UndoRedoSupport(simulation)
+    { simulationController.data = it.simulation }
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
@@ -242,16 +241,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun setModel(model: GrainModelDescription) {
-        this.originalModel = model
-        this.model = originalModel
-        modelUndoRedo.reset()
+        modelUndoRedo.reset(model)
+        this.model = model
         refreshButtons()
     }
 
     fun setSimulation(simulation: SimulationDescription) {
-        this.originalSimulation = simulation
-        this.simulation = originalSimulation.cleaned(model)
-        simulationUndoRedo.reset()
+        val cleaned = simulation.cleaned(model)
+        simulationUndoRedo.reset(cleaned)
+        this.simulation = cleaned
         refreshButtons()
     }
 
@@ -273,20 +271,17 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun save(after: () -> Unit = {}) {
-        val needModelSave = model != originalModel || model.id.isEmpty()
+        val needModelSave = modelUndoRedo.changed(model) || model.id.isEmpty()
         if (needModelSave && model.id.isEmpty()) {
             // The model needs to be created first
             api.saveGrainModel(model.model)
                 .then { newModel ->
-                    originalModel = newModel
-                    model = newModel
+                    setModel(newModel)
                     // Saves the simulation and thumbnail
                     api.saveSimulation(newModel.id, simulation.simulation)
                 }.then { newSimulation ->
-                    originalSimulation = newSimulation
-                    simulation = newSimulation
+                    setSimulation(newSimulation)
                     saveInitThumbnail()
-                    refreshButtons()
                     message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
                     after()
                     Unit
@@ -299,8 +294,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             // Save the model if needed
             if (needModelSave) {
                 api.updateGrainModel(model).then {
-                    originalModel = model
-                    refreshButtons()
+                    setModel(model)
                     message("Model ${model.model.name} saved")
                     Unit
                 }.catch {
@@ -310,14 +304,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             }
 
             // Save the simulation
-            if (simulation != originalSimulation) {
+            if (simulationUndoRedo.changed(simulation)) {
                 if (simulation.id.isEmpty()) {
                     // simulation must be created
                     api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
-                        originalSimulation = newSimulation
-                        simulation = newSimulation
+                        setSimulation(newSimulation)
                         saveInitThumbnail()
-                        refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
                         after()
                         Unit
@@ -328,7 +320,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 } else {
                     // saves the simulation
                     api.updateSimulation(simulation).then {
-                        originalSimulation = simulation
+                        setSimulation(simulation)
                         saveInitThumbnail()
                         refreshButtons()
                         message("Simulation ${simulation.simulation.name} saved")
@@ -482,7 +474,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         modelUndoRedo.refresh()
         simulationUndoRedo.refresh()
         saveButton.disabled =
-            model == originalModel && model.id.isNotEmpty() && simulation == originalSimulation && simulation.id.isNotEmpty()
+            !modelUndoRedo.changed(model) && model.id.isNotEmpty() &&
+            !simulationUndoRedo.changed(simulation) && simulation.id.isNotEmpty()
     }
 
     fun refreshMoreButtons() {
@@ -517,9 +510,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-
     override fun onExit() = Promise<Boolean> { resolve, _ ->
-        if (model != originalModel || simulation != originalSimulation) {
+        if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
             val model = modalDialog("Modifications not saved, Do you wan't to save ?",
                 p("You're about to quit the page and some modifications haven't been saved."),
                 textButton("Save", ElementColor.Success) {

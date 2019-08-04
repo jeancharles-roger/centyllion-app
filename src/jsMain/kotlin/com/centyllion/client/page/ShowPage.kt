@@ -18,7 +18,6 @@ import bulma.TabPage
 import bulma.TabPages
 import bulma.Tabs
 import bulma.TextColor
-import bulma.iconButton
 import bulma.p
 import bulma.textButton
 import com.centyllion.client.AppContext
@@ -56,16 +55,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val api = appContext.api
 
     private val modelUndoRedo = UndoRedoSupport<GrainModelDescription> { modelController.data = it.model }
-
-    private var simulationHistory: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
-        undoSimulationButton.disabled = new.isEmpty()
-    }
-
-    private var simulationFuture: List<SimulationDescription> by observable(emptyList()) { _, _, new ->
-        redoSimulationButton.disabled = new.isEmpty()
-    }
-
-    private var undoSimulation = false
+    private val simulationUndoRedo = UndoRedoSupport<SimulationDescription> { simulationController.data = it.simulation }
 
     private var originalModel: GrainModelDescription = emptyGrainModelDescription
 
@@ -109,17 +99,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
-            if (undoSimulation) {
-                simulationFuture += old
-            } else {
-                simulationHistory += old
-                if (simulationFuture.lastOrNull() == new) {
-                    simulationFuture = simulationFuture.dropLast(1)
-                } else {
-                    simulationFuture = emptyList()
-                }
-            }
-
+            simulationUndoRedo.changed(old, new)
             simulationController.readOnly = isSimulationReadOnly
             simulationController.data = new.simulation
             refreshButtons()
@@ -134,19 +114,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         },
         { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
     )
-
-    val undoSimulationButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
-        val restoredSimulation = simulationHistory.last()
-        simulationHistory = simulationHistory.dropLast(1)
-        undoSimulation = true
-        simulationController.data = restoredSimulation.simulation
-        undoSimulation = false
-    }
-
-    val redoSimulationButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
-        val restoredSimulation = simulationFuture.last()
-        simulationController.data = restoredSimulation.simulation
-    }
 
     val saveButton = Button("Save", Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
 
@@ -284,8 +251,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun setSimulation(simulation: SimulationDescription) {
         this.originalSimulation = simulation
         this.simulation = originalSimulation.cleaned(model)
-        this.simulationHistory = emptyList()
-        this.simulationFuture = emptyList()
+        simulationUndoRedo.reset()
         refreshButtons()
     }
 
@@ -508,14 +474,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             simulationPage -> {
                 val readonly = isSimulationReadOnly
                 tools.hidden = readonly
-                undoControl.body = undoSimulationButton
-                redoControl.body = redoSimulationButton
+                undoControl.body = simulationUndoRedo.undoButton
+                redoControl.body = simulationUndoRedo.redoButton
             }
         }
 
         modelUndoRedo.refresh()
-        undoSimulationButton.disabled = simulationHistory.isEmpty()
-        redoSimulationButton.disabled = simulationFuture.isEmpty()
+        simulationUndoRedo.refresh()
         saveButton.disabled =
             model == originalModel && model.id.isNotEmpty() && simulation == originalSimulation && simulation.id.isNotEmpty()
     }

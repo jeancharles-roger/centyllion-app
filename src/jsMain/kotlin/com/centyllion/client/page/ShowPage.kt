@@ -8,11 +8,11 @@ import bulma.Columns
 import bulma.Control
 import bulma.Div
 import bulma.Dropdown
-import bulma.DropdownDivider
 import bulma.ElementColor
 import bulma.FaFlip
 import bulma.Field
 import bulma.Icon
+import bulma.Level
 import bulma.TabItem
 import bulma.TabPage
 import bulma.TabPages
@@ -132,10 +132,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         "Delete Simulation", "trash", TextColor.Danger
     ) { deleteSimulation() }
 
-    val cloneModelItem = createMenuItem(
-        "Clone Model", "clone", TextColor.Primary
-    ) { cloneModel() }
-
     val downloadModelItem = createMenuItem(
         "Download Model", "download", TextColor.Primary, adminRole
     ) { downloadModel() }
@@ -148,26 +144,29 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         "Save state as thumbnail", "image", TextColor.Primary, creatorRole
     ) { saveCurrentThumbnail() }
 
-    val cloneSimulationItem = createMenuItem(
-        "Clone Simulation", "clone", TextColor.Primary
-    ) { cloneSimulation() }
-
     val downloadSimulationItem = createMenuItem(
         "Download Simulation", "download", TextColor.Primary, adminRole
     ) { downloadSimulation() }
 
     val loadingItem = createMenuItem("Loading simulations", "spinner").apply { itemIcon.spin = true }
 
-    val moreDropdownItems = listOf(
-        publishModelItem, publishSimulationItem, DropdownDivider(),
-        deleteModelItem, deleteSimulationItem, DropdownDivider(),
-        cloneModelItem, downloadModelItem, DropdownDivider(),
-        newSimulationItem, saveThumbnailItem, cloneSimulationItem, downloadSimulationItem, DropdownDivider()
+    val moreDropdownItems = listOfNotNull(
+        publishModelItem, publishSimulationItem, createMenuDivider(),
+        deleteModelItem, deleteSimulationItem, createMenuDivider(),
+        newSimulationItem, saveThumbnailItem, createMenuDivider(),
+        downloadModelItem, downloadSimulationItem, createMenuDivider(adminRole)
     )
 
     val moreDropdown = Dropdown(
         icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
+
+    val cloneButton = Button("Clone", Icon("clone"), ElementColor.Primary, true, true) {
+        when (editionTab.selectedPage) {
+            modelPage -> cloneModel()
+            simulationPage -> cloneSimulation()
+        }
+    }
 
     val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
     val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
@@ -187,9 +186,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val container: BulmaElement = Columns(
-        Column(modelNameController, size = ColumnSize.S2),
-        Column(modelDescriptionController, size = ColumnSize.S6),
-        Column(tools, size = ColumnSize.S4),
+        Column(
+            Level(
+                left = listOf(modelNameController, modelDescriptionController),
+                center = listOf(cloneButton),
+                right = listOf(tools)
+            ),
+            size = ColumnSize.Full
+        ),
         Column(editionTab, size = ColumnSize.Full),
         multiline = true
     )
@@ -197,6 +201,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     init {
+        // sets input size for description
+        modelDescriptionController.input.root.asDynamic().size = 60
+
         // starts with all readonly
         val modelReadonly = isModelReadOnly
         modelNameController.readOnly = modelReadonly
@@ -395,6 +402,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         onExit().then {
             if (it) {
                 val cloned = emptySimulationDescription.copy(
+                    modelId = model.id,
                     simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
                 )
                 setSimulation(cloned)

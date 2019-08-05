@@ -2,6 +2,7 @@ package com.centyllion.client.page
 
 import bulma.BulmaElement
 import bulma.Button
+import bulma.DropdownDivider
 import bulma.DropdownItem
 import bulma.ElementColor
 import bulma.Icon
@@ -67,6 +68,10 @@ interface BulmaPage : BulmaElement {
         root.appendChild(modal.root)
         return modal
     }
+
+    fun createMenuDivider(role: String? = null) = if (
+        role != null && !SubscriptionType.Master.roles.contains(role) && !appContext.hasRole(role)
+    ) null else DropdownDivider()
 
     fun createMenuItem(
         text: String, icon: String, color: TextColor = TextColor.None,

@@ -145,7 +145,7 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
                         context.respond(
                             when {
                                 model == null -> HttpStatusCode.NotFound
-                                !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
+                                !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
                                 else -> data.createSimulation(user.id, modelId, newSimulation)
                             }
                         )

@@ -28,6 +28,7 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.homePage
+import com.centyllion.client.signInPage
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.common.adminRole
@@ -161,10 +162,29 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
 
-    val cloneButton = Button("Clone", Icon("clone"), ElementColor.Primary, true, true) {
-        when (editionTab.selectedPage) {
-            modelPage -> cloneModel()
-            simulationPage -> cloneSimulation()
+    val cloneButton = Button(
+        "Clone", Icon("clone"), ElementColor.Primary,
+        rounded = true, outlined = true
+    ) {
+        if (appContext.me != null) {
+            // a user is logged, just clone the model or simulation
+            when (editionTab.selectedPage) {
+                modelPage -> cloneModel()
+                simulationPage -> cloneSimulation()
+            }
+        } else {
+            // no user logged, propose to log in or sign in
+            val modal = modalDialog(
+                "Join Centyllion",
+                Div(p("To clone a model or a simulation, you need to be connected.")),
+                textButton("Log-In", ElementColor.Primary) {
+                    // forces to login
+                    window.location.href = appContext.keycloak.createLoginUrl()
+                },
+                textButton("Sign-In", ElementColor.Success) { appContext.openPage(signInPage) },
+                textButton("No, thank you")
+            )
+            modal.active = true
         }
     }
 

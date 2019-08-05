@@ -217,8 +217,10 @@ class Dropdown(
                 }
             }
             onClickFunction = {
-                if (!active) onDropdown(this@Dropdown)
-                toggleDropdown()
+                if (!disabled) {
+                    if (!active) onDropdown(this@Dropdown)
+                    toggleDropdown()
+                }
             }
         }
         div("dropdown-menu") {
@@ -276,14 +278,7 @@ class Dropdown(
         }
 
     var disabled by observable(false) { _, old, new ->
-        if (old != new) {
-            triggerNode.onclick = if (new) null else {
-                if (!active) onDropdown(this@Dropdown)
-                this@Dropdown.toggleDropdown()
-                Unit.asDynamic()
-            }
-            toggleNode.classList.toggle("is-hidden", new)
-        }
+        toggleNode.classList.toggle("is-hidden", new)
     }
 }
 

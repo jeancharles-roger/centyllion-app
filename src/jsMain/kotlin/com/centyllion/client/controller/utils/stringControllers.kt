@@ -42,8 +42,31 @@ class EditableStringController(
 
     val penIcon = Icon("pen")
 
-
     val inputControl = Control(this.input, expanded = true, rightIcon = if (readOnly) null else penIcon)
+
+    private var message: String? by observable(isValid(initialData)) { _, old, new ->
+        if (old != new) {
+            if (new != null) {
+                // there is a error
+                input.color = ElementColor.Danger
+                okButton.disabled = true
+                inputControl.root.classList.add("tooltip")
+                inputControl.root.classList.add("is-tooltip-active")
+                inputControl.root.classList.add("is-tooltip-bottom")
+                inputControl.root.classList.add("is-tooltip-danger")
+                inputControl.root.setAttribute("data-tooltip", new)
+            } else {
+                // input is valid
+                input.color = ElementColor.None
+                okButton.disabled = false
+                inputControl.root.classList.remove("tooltip")
+                inputControl.root.classList.remove("is-tooltip-active")
+                inputControl.root.classList.remove("is-tooltip-bottom")
+                inputControl.root.classList.remove("is-tooltip-danger")
+                inputControl.root.removeAttribute("data-tooltip")
+            }
+        }
+    }
 
     fun edit(start: Boolean) {
         // don't edit if readonly
@@ -64,6 +87,7 @@ class EditableStringController(
 
     override val container: Field = Field(inputControl)
 
+
     init {
         input.apply {
             root.onclick = { edit(true) }
@@ -75,30 +99,8 @@ class EditableStringController(
                     }
                 }
             }
-            onChange = { _, value ->
-                isValid(value).let {
-                    if (it != null) {
-                        // there is a error
-                        color = ElementColor.Danger
-                        okButton.disabled = true
-                        inputControl.root.classList.add("tooltip")
-                        inputControl.root.classList.add("is-tooltip-active")
-                        inputControl.root.classList.add("is-tooltip-bottom")
-                        inputControl.root.classList.add("is-tooltip-danger")
-                        inputControl.root.setAttribute("data-tooltip", it)
-                    } else {
-                        // input is valid
-                        color = ElementColor.None
-                        okButton.disabled = false
-                        inputControl.root.classList.remove("tooltip")
-                        inputControl.root.classList.remove("is-tooltip-active")
-                        inputControl.root.classList.remove("is-tooltip-bottom")
-                        inputControl.root.classList.remove("is-tooltip-danger")
-                        inputControl.root.removeAttribute("data-tooltip")
-                    }
-                }
-            }
-            onFocus = { if (it) edit(true) else validate() }
+            onChange = { _, value -> message = isValid(value) }
+            onFocus = { if (it) edit(true) else if (message == null) validate() else cancel() }
         }
 
     }
@@ -118,14 +120,11 @@ class EditableStringController(
     }
 }
 
-fun <T : Comparable<T>> isNumberIn(value: String, transformer: (String) -> T?, min: T, max: T) =
-    transformer(value).let { number ->
-        when {
-            number == null -> "$value isn't a decimal number"
-            number < min -> "$value must be greater or equal to $min"
-            number > max -> "$value must be less or equal to $max"
-            else -> null
-        }
+fun <T : Comparable<T>> isNumberIn(placeholder: String, number: T?, min: T, max: T) = when {
+        number == null -> "$placeholder must be a number"
+        number < min -> "$placeholder must be greater or equal to $min"
+        number > max -> "$placeholder must be less or equal to $max"
+        else -> null
     }
 
 fun editableFloatController(
@@ -136,7 +135,7 @@ fun editableFloatController(
     onUpdate: (old: Float, new: Float, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { string -> isNumberIn(string, String::toFloatOrNull, minValue, maxValue) },
+    isValid = { isNumberIn(placeHolder, it.toFloatOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toFloat(), new.toFloat(), controller) }
 )
 
@@ -148,7 +147,7 @@ fun editableDoubleController(
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { string -> isNumberIn(string, String::toDoubleOrNull, minValue, maxValue) },
+    isValid = { isNumberIn(placeHolder, it.toDoubleOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toDouble(), new.toDouble(), controller) }
 )
 
@@ -157,7 +156,7 @@ fun editableIntController(
     onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { string -> isNumberIn(string, String::toIntOrNull, minValue, maxValue) },
+    isValid = { isNumberIn(placeHolder, it.toIntOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toInt(), new.toInt(), controller) }
 )
 

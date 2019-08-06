@@ -1,6 +1,11 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Icon
+import bulma.Label
+import bulma.Media
+import bulma.NoContextController
 import com.centyllion.model.Grain
 import kotlin.properties.Delegates.observable
 
@@ -34,6 +39,7 @@ class GrainDisplayController(grain: Grain): NoContextController<Grain, Column>()
     override val container = Column(body, size = ColumnSize.Full)
 
     override fun refresh() {
+        icon.icon = data.icon
         icon.root.style.color = data.color
         titleLabel.text = data.name
     }

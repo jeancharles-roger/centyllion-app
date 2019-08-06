@@ -102,29 +102,35 @@ class EditableStringController(
 }
 
 fun editableFloatController(
-    initialData: Float = 0f, placeHolder: String = "",
+    initialData: Float = 0f,
+    placeHolder: String = "",
+    minValue: Float = Float.MIN_VALUE,
+    maxValue: Float = Float.MAX_VALUE,
     onUpdate: (old: Float, new: Float, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { it.toFloatOrNull() != null },
+    isValid = { string -> isNumberIn(string, String::toFloatOrNull, minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toFloat(), new.toFloat(), controller) }
 )
 
 fun editableDoubleController(
-    initialData: Double = 0.0, placeHolder: String = "",
+    initialData: Double = 0.0,
+    placeHolder: String = "",
+    minValue: Double = Double.MIN_VALUE,
+    maxValue: Double = Double.MAX_VALUE,
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { it.toDoubleOrNull() != null },
+    isValid = { string -> isNumberIn(string, String::toDoubleOrNull, minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toDouble(), new.toDouble(), controller) }
 )
 
 fun editableIntController(
-    initialData: Int = 0, placeHolder: String = "", disabled: Boolean = false,
+    initialData: Int = 0, placeHolder: String = "", minValue: Int = Int.MIN_VALUE, maxValue: Int = Int.MAX_VALUE,
     onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { it.toIntOrNull() != null },
+    isValid = { string -> isNumberIn(string, String::toIntOrNull, minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toInt(), new.toInt(), controller) }
 )
 

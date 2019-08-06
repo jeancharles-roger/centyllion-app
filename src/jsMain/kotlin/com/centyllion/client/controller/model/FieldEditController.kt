@@ -61,7 +61,7 @@ class FieldEditController(
         data = data.copy(description = new)
     }
 
-    val speedController = editableFloatController(data.speed, "speed") { _, new, _ ->
+    val speedController = editableFloatController(data.speed, "speed", 0f, 1f) { _, new, _ ->
         this.data = this.data.copy(speed = new)
     }
 

@@ -131,7 +131,7 @@ class MultipleController<
 fun <Data, Context, Ctrl : Controller<Data, Context, Column>> columnsController(
     initialList: List<Data>, initialContext: Context,
     header: List<Column> = emptyList(), footer: List<Column> = emptyList(),
-    container: Columns = Columns().apply { multiline = true },
+    container: Columns = Columns(multiline = true),
     controllerBuilder: (data: Data, previous: Ctrl?) -> Ctrl
 ) = MultipleController(
     initialList, initialContext, header, footer, container, controllerBuilder

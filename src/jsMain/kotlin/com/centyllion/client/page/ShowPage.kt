@@ -374,6 +374,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun toggleSimulationPublication() {
         val readAccess = !simulation.info.readAccess
+        if (readAccess && !model.info.readAccess) {
+            // first ensure that the model is public
+            model = model.copy(info = model.info.copy(readAccess = true))
+        }
         simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
         moreDropdown.active = false
         message("${if (!readAccess) "Un-" else ""}Published simulation")

@@ -75,7 +75,7 @@ class FieldEditController(
             this.data = this.data.copy(allowedDirection = new)
         }
 
-    val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
+    val halfLifeController = editableIntController(data.halfLife, "half life", 0) { _, new, _ ->
         this.data = this.data.copy(halfLife = new)
     }
 

@@ -98,7 +98,7 @@ class GrainEditController(
         data = data.copy(description = new)
     }
 
-    val halfLifeController = editableIntController(data.halfLife, "half life") { _, new, _ ->
+    val halfLifeController = editableIntController(data.halfLife, "half life", 0) { _, new, _ ->
         data = data.copy(halfLife = new)
     }
 

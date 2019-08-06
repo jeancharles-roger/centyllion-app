@@ -95,7 +95,7 @@ class BehaviourEditController(
         this.data = this.data.copy(description = new)
     }
 
-    val probabilityController = editableDoubleController(data.probability, "Speed")
+    val probabilityController = editableDoubleController(data.probability, "Speed", 0.0, 1.0)
     { _, new, _ ->
         this.data = this.data.copy(probability = new)
     }

@@ -102,7 +102,7 @@ class GrainEditController(
         data = data.copy(halfLife = new)
     }
 
-    val movementProbabilityController = editableDoubleController(data.movementProbability, "speed") { _, new, _ ->
+    val movementProbabilityController = editableDoubleController(data.movementProbability, "speed", 0.0, 1.0) { _, new, _ ->
         data = data.copy(movementProbability = new)
     }
 

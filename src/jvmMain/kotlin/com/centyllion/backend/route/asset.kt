@@ -4,6 +4,7 @@ import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
+import com.centyllion.common.creatorRole
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -21,7 +22,7 @@ import io.ktor.routing.route
 fun Route.asset(subscription: SubscriptionManager, data: Data) {
     route("asset") {
         get {
-            withRequiredPrincipal(adminRole) {
+            withRequiredPrincipal(creatorRole) {
                 val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                 val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                 val extensions = call.parameters.getAll("extension") ?: emptyList()

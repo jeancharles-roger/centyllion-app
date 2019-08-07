@@ -724,21 +724,24 @@ open class Simulator3dViewController(
     }
 
     private fun resizeSimulationCanvas() {
-        val canvas = simulationCanvas.root
-        val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
-        val availableHeight = window.innerHeight
-        val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
-        if ( availableWidth * ratio > availableHeight) {
-            // height is the limiting factor
-            canvas.width = (availableHeight / ratio).roundToInt()
-            canvas.height = availableHeight
-        } else {
-            // width is the limiting factor
-            canvas.width = availableWidth
-            canvas.height = (availableWidth * ratio).roundToInt()
+        // resize only if the canvas is actually shown
+        if (simulationCanvas.root.offsetParent != null) {
+            val canvas = simulationCanvas.root
+            val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
+            val availableHeight = window.innerHeight
+            val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
+            if (availableWidth * ratio > availableHeight) {
+                // height is the limiting factor
+                canvas.width = (availableHeight / ratio).roundToInt()
+                canvas.height = availableHeight
+            } else {
+                // width is the limiting factor
+                canvas.width = availableWidth
+                canvas.height = (availableWidth * ratio).roundToInt()
+            }
+            renderer.setSize(canvas.width, canvas.height)
+            render()
         }
-        renderer.setSize(canvas.width, canvas.height)
-        render()
     }
 
 }

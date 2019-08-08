@@ -52,10 +52,26 @@ paths:
       responses:
         200:
           description: A result page of simulations
+  /me/subscription:
+    get:
+      summary: Get the list of my subscription
+      tags:
+        - me
+      responses:
+        200:
+          description: A list of subscriptions
+  /me/asset:
+    get:
+      summary: Get the list of my assets
+      tags:
+        - me
+      responses:
+        200:
+          description: A list of assets
 
   /model:
     get:
-      summary: Get the list of public simulations
+      summary: Get the list of public models
       tags:
         - models
       parameters:
@@ -79,7 +95,8 @@ paths:
         parameters:
           - in: body
             name: model
-            type: object
+            schema:
+              $ref: '#/definitions/schemas/Model'
             description: A model description
         responses:
           200:
@@ -165,4 +182,203 @@ paths:
         404:
           description: The model with the given id doesn't exist
 
+  /simulation:
+    get:
+      summary: Get the list of public simulations
+      tags:
+        - simulations
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of simulation in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of simulations
+    post:
+        summary: Create a new simulation
+        tags:
+          - simulations
+        parameters:
+          - in: body
+            name: simulation
+            type: object
+            description: A simulation
+          - in: query
+            name: model
+            type: string
+            required: true
+            description: Model id for the simulation
+        responses:
+          200:
+            description: The created model description
+  /simulation/search:
+    get:
+      summary: Full text search in simulations
+      tags:
+        - simulations
+      parameters:
+        - in: query
+          name: q
+          type: string
+          description: Search query
+          required: true
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of simulation in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of models
+  /simulation/{id}:
+    get:
+      summary: Access to a simulation with its id
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Simulation id
+          required: true
+      responses:
+        200:
+          description: A simulation description
+        401:
+          description: Simulation access isn't granted
+        404:
+          description: The simulation with the given id doesn't exist
+    patch:
+      summary: Update the simulation
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Simulation id
+          required: true
+        - in: body
+          name: simulation
+          type: object
+          description: The updated simulation
+      responses:
+        200:
+          description: The simulaltion was updated
+        401:
+          description: Simulation update isn't granted
+        404:
+          description: The simulation with the given id doesn't exist
+    delete:
+      summary: Delete the simulation
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Simulation id
+          required: true
+      responses:
+        200:
+          description: The simulation was updated
+        401:
+          description: Simulation update isn't granted
+        404:
+          description: The simulation with the given id doesn't exist
+  /simulation/{id}/thumbnail:
+    get:
+      summary: Access to a simulation's thumbnail
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Simulation id
+          required: true
+      responses:
+        200:
+          description: The simulation thumbnail
+        401:
+          description: Simulation thumbnail access isn't granted
+        404:
+          description: The simulation with the given id doesn't exist
+    post:
+      summary: Post a new simulation's thumbnail
+      tags:
+        - simulations
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Simulation id
+          required: true
+      responses:
+        200:
+          description: The simulation thumbnail was update
+        401:
+          description: Simulation thumbnail update isn't granted
+        404:
+          description: The simulation with the given id doesn't exist
+
+definitions:
+  schemas:
+    Direction:
+      type: string
+      enums: [Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back]
+    Grain:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        size:
+          type: double
+        description:
+          type: string
+        halfLife:
+          type: integer
+        movementProbability:
+          type: double
+        allowedDirection:
+          type: array
+          items:
+            schema:
+              $ref: '#/definitions/schemas/Direction'
+        fieldProductions:
+          type: object
+        fieldInfluences:
+          type: object
+        fieldPermeable:
+          type: object
+    Model:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        grains:
+          type: array
+          items:
+            schema:
+              $ref: '#/definitions/schemas/Grain'
 

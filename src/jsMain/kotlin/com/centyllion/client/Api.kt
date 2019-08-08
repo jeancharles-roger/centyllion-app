@@ -177,7 +177,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     fun saveSimulation(modelId: String, simulation: Simulation) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/model/$modelId/simulation", bearer, json.stringify(Simulation.serializer(), simulation))
+            fetch("POST", "/api/simulation?model=$modelId", bearer, json.stringify(Simulation.serializer(), simulation))
                 .then { json.parse(SimulationDescription.serializer(), it) }
         }
 

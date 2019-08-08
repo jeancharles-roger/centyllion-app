@@ -29,13 +29,6 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                     context.respond(data.grainModelsForUser(user.id, offset, limit))
                 }
             }
-
-            get("all") {
-                withRequiredPrincipal {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
-                    context.respond(data.allGrainModelsForUser(user.id))
-                }
-            }
         }
 
         // get all user's saved simulations
@@ -46,13 +39,6 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val user = subscription.getOrCreateUserFromPrincipal(it)
                     context.respond(data.simulationsForUser(user.id, offset, limit))
-                }
-            }
-
-            get("all") {
-                withRequiredPrincipal {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
-                    context.respond(data.allSimulationsForUser(user.id))
                 }
             }
         }

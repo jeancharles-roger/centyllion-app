@@ -161,10 +161,10 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
-        appContext.api.allFetchMyGrainModels().then {
-            elements = it
+        appContext.api.fetchMyGrainModels(limit = 50).then {
+            elements = it.content
 
-            it.forEach { model ->
+            it.content.forEach { model ->
                 appContext.api.fetchSimulations(model.id, false).then {
                     val index = elements.indexOf(model)
                     val mutable = elements.toMutableList()

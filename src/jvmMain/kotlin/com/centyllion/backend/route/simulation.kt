@@ -7,7 +7,6 @@ import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.apprenticeRole
-import com.centyllion.common.creatorRole
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
@@ -89,7 +88,7 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
-                            !it.hasRole(creatorRole) && simulation.info.public -> HttpStatusCode.Forbidden
+                            !it.hasRole(apprenticeRole) && simulation.info.public -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)

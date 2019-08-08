@@ -7,7 +7,6 @@ import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.apprenticeRole
-import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import io.ktor.application.call
@@ -78,7 +77,7 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
                     context.respond(
                         when {
                             model.id != id -> HttpStatusCode.Forbidden
-                            !it.hasRole(creatorRole) && model.info.public -> HttpStatusCode.Forbidden
+                            !it.hasRole(apprenticeRole) && model.info.public -> HttpStatusCode.Forbidden
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveGrainModel(model)

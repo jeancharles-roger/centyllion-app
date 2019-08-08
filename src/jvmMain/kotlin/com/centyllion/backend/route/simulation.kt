@@ -3,9 +3,11 @@ package com.centyllion.backend.route
 import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
+import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.apprenticeRole
+import com.centyllion.common.creatorRole
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
@@ -87,6 +89,8 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
+                            // Tests that user has creator role to publish the simulation
+                            !it.hasRole(creatorRole) && simulation.info.public -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)

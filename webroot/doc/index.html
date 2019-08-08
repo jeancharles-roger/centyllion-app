@@ -1,0 +1,33 @@
+<html>
+<head>
+    <title>Centyllion API</title>
+
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css" >
+
+    <script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+</head>
+    <h1>API</h1>
+    <div id="api"></div>
+
+    <script>
+        const i = 0
+
+        function displayDefinitions(definitionUrls) {
+            definitionUrls.forEach((url, i) => {
+                const newElement = document.createElement("div")
+                const divider = document.createElement("hr")
+                newElement.id = "swagger-ui-" + i
+                const container = document.querySelector("#api")
+
+                container.appendChild(newElement)
+                container.appendChild(divider)
+                SwaggerUIBundle({
+                  url: url,
+                  dom_id: '#swagger-ui-' + i
+                })
+                i++
+            })
+        }
+        displayDefinitions(["api.yaml"])
+    </script>
+</html>

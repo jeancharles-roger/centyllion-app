@@ -1,0 +1,116 @@
+swagger: "2.0"
+host: app.centyllion.com
+basePath: /api
+info:
+  version: "1.0"
+  title: API to interface with Centyllion simulations
+
+paths:
+  /me:
+    get:
+      summary: Get my profile description
+      tags:
+        - me
+      responses:
+        '200':
+          description: A JSON containing my profile.
+  /me/model:
+    get:
+      summary: Get the list of my models
+      tags:
+        - me
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of model in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of models
+  /me/simulation:
+    get:
+      summary: Get the list of my simulations
+      tags:
+        - me
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of model in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of simulations
+  /model:
+    get:
+      summary: Get the list of public simulations
+      tags:
+        - models
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of model in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of models
+  /model/search:
+    get:
+      summary: Full text search in models
+      tags:
+        - models
+      parameters:
+        - in: query
+          name: q
+          type: string
+          description: Search query
+          required: true
+        - in: query
+          name: offset
+          type: integer
+          description: Offset in the result list from the overwhole list
+          default: 0
+        - in: query
+          name: limit
+          type: integer
+          description: Limit of model in the result list
+          default: 50
+      responses:
+        200:
+          description: A result page of models
+  /model/{id}:
+    get:
+      summary: Access to a model with its id
+      tags:
+        - models
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Model id
+          required: true
+      responses:
+        200:
+          description: A model description
+        401:
+          description: Model access isn't granted
+        404:
+          description: The model with the given id doesn't exist
+

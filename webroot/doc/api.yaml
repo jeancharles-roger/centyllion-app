@@ -52,6 +52,7 @@ paths:
       responses:
         200:
           description: A result page of simulations
+
   /model:
     get:
       summary: Get the list of public simulations
@@ -71,6 +72,18 @@ paths:
       responses:
         200:
           description: A result page of models
+    post:
+        summary: Create a new model
+        tags:
+          - models
+        parameters:
+          - in: body
+            name: model
+            type: object
+            description: A model description
+        responses:
+          200:
+            description: The created model description
   /model/search:
     get:
       summary: Full text search in models
@@ -113,4 +126,43 @@ paths:
           description: Model access isn't granted
         404:
           description: The model with the given id doesn't exist
+    patch:
+      summary: Update the model
+      tags:
+        - models
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Model id
+          required: true
+        - in: body
+          name: model
+          type: object
+          description: The updated model
+      responses:
+        200:
+          description: The model was updated
+        401:
+          description: Model update isn't granted
+        404:
+          description: The model with the given id doesn't exist
+    delete:
+      summary: Delete the model
+      tags:
+        - models
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: Model id
+          required: true
+      responses:
+        200:
+          description: The model was updated
+        401:
+          description: Model update isn't granted
+        404:
+          description: The model with the given id doesn't exist
+
 

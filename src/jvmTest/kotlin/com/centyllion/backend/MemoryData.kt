@@ -74,10 +74,6 @@ class MemoryData(
     override fun publicGrainModels(offset: Int, limit: Int) =
         grainModels.values.toList().limit(offset, limit)
 
-    override fun allGrainModelsForUser(userId: String): List<GrainModelDescription> = grainModels.values.filter {
-        it.info.userId == userId
-    }
-
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         grainModels.values.filter {
             it.info.userId == userId
@@ -110,13 +106,9 @@ class MemoryData(
         it.modelId == modelId
     }
 
-    override fun allSimulationsForUser(userId: String): List<SimulationDescription> = simulations.values.filter {
-        it.info.userId == userId
-    }
-
-    override fun simulationsForUser(userId: String, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+    override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         simulations.values.filter {
-            it.info.userId == userId
+            it.info.userId == userId && (modelId == null || it.modelId == modelId)
         }.limit(offset, limit)
 
     override fun getSimulation(id: String) = simulations[id]

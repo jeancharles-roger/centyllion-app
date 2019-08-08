@@ -37,8 +37,9 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                 withRequiredPrincipal {
                     val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                    val modelId = call.parameters["model"]
                     val user = subscription.getOrCreateUserFromPrincipal(it)
-                    context.respond(data.simulationsForUser(user.id, offset, limit))
+                    context.respond(data.simulationsForUser(user.id, modelId, offset, limit))
                 }
             }
         }

@@ -111,7 +111,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         ResultPageController(
             recentSimulationListController,
             { Column(it, size = ColumnSize.Full) },
-            { offset, limit ->  appContext.api.fetchMySimulations(offset, limit) },
+            { offset, limit ->  appContext.api.fetchMySimulations(null, offset, limit) },
             { error(it) }
         ).apply { limit = 6 }
 

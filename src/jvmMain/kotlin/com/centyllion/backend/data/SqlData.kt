@@ -161,11 +161,6 @@ class SqlData(
         .select { DbDescriptionInfos.userId eq userUUID }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun allGrainModelsForUser(userId: String): List<GrainModelDescription> = transaction(database) {
-        val userUUID = UUID.fromString(userId)
-        DbModelDescription.wrapRows(grainModelsForUserQuery(userUUID)).map { it.toModel() }
-    }
-
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         transaction(database) {
             val userUUID = UUID.fromString(userId)
@@ -233,24 +228,28 @@ class SqlData(
             .map { it.toModel() }
     }
 
-    private fun simulationsForUserQuery(userUUID: UUID) = DbSimulationDescriptions
+    private fun simulationsForUserQuery(userUUID: UUID, modelId: UUID?) = DbSimulationDescriptions
         .innerJoin(DbDescriptionInfos)
-        .select { DbDescriptionInfos.userId eq userUUID }
+        .select {
+            val user = DbDescriptionInfos.userId eq userUUID
+            when (modelId) {
+                null -> user
+                else -> user and (DbSimulationDescriptions.modelId eq modelId)
+            }
+        }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun simulationsForUser(userId: String, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+    override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         transaction(database) {
             val userUUID = UUID.fromString(userId)
+            val modelUUID = modelId?.let { UUID.fromString(it) }
             val content = DbSimulationDescription.wrapRows(
-                simulationsForUserQuery(userUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+                simulationsForUserQuery(userUUID, modelUUID)
+                    .limit(limit, offset)
+                    .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
             ).map { it.toModel() }
-            ResultPage(content, offset, simulationsForUserQuery(userUUID).count())
+            ResultPage(content, offset, simulationsForUserQuery(userUUID, modelUUID).count())
         }
-
-    override fun allSimulationsForUser(userId: String)= transaction(database) {
-        val userUUID = UUID.fromString(userId)
-        DbSimulationDescription.wrapRows(simulationsForUserQuery(userUUID)).map { it.toModel() }
-    }
 
     override fun getSimulation(id: String) = transaction(database) {
         DbSimulationDescription.findById(UUID.fromString(id))?.toModel()

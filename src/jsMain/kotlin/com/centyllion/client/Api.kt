@@ -106,9 +106,14 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 .then { json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it) }
         }
 
-    fun fetchMySimulations(offset: Int = 0, limit: Int = 20) =
+    fun fetchMySimulations(modelId: String? = null, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me/simulation?offset=$offset&limit=$limit", bearer)
+            val options = listOfNotNull(
+                if (modelId != null) "model=$modelId" else null,
+                "offset=$offset", "limit=$limit"
+            )
+            val path = "/api/me/simulation?${options.joinToString("&")}"
+            fetch("GET", path, bearer)
                 .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
         }
 

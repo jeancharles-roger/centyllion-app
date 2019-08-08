@@ -32,8 +32,14 @@ fun p(text: String = "", classes: String = "") =
 fun canvas(classes: String? = null, block: CANVAS.() -> Unit = {}) =
     HtmlWrapper(document.create.canvas(classes, block) as HTMLCanvasElement)
 
-class Div(vararg initial: BulmaElement, classes: String = ""): BulmaElement {
+class Div(vararg initial: BulmaElement, classes: String? = null): BulmaElement {
     override val root: HTMLElement = document.create.div(classes)
+
+    var body by bulmaList(initial.toList(), root)
+}
+
+class Span(vararg initial: BulmaElement, classes: String? = null): BulmaElement {
+    override val root: HTMLElement = document.create.span(classes)
 
     var body by bulmaList(initial.toList(), root)
 }

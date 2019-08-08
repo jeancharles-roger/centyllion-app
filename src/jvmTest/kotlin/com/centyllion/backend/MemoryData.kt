@@ -92,19 +92,12 @@ class MemoryData(
     }
 
     override fun deleteGrainModel(modelId: String) {
-        getSimulationForModel(modelId).forEach { deleteSimulation(it.id) }
+        simulations.values.filter { it.modelId == modelId }.forEach { deleteSimulation(it.id) }
         grainModels.remove(modelId)
     }
 
-    override fun publicSimulations(offset: Int, limit: Int) =
-        ResultPage(
-            simulations.values.toList().drop(offset).dropLast(max(0, simulations.size - limit)),
-            offset, simulations.size
-        )
-
-    override fun getSimulationForModel(modelId: String): List<SimulationDescription> = simulations.values.filter {
-        it.modelId == modelId
-    }
+    override fun publicSimulations(modelId: String?, offset: Int, limit: Int) =
+        simulations.values.filter { modelId == null || it.modelId == modelId }.limit(offset, limit)
 
     override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         simulations.values.filter {

@@ -106,7 +106,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         ResultPageController(
             recentListController,
             { Column(it, size = ColumnSize.Full) },
-            { offset, limit ->  appContext.api.fetchPublicSimulations(offset, limit) },
+            { offset, limit ->  appContext.api.fetchPublicSimulations(null, offset, limit) },
             { error(it) }
         )
 

@@ -26,10 +26,9 @@ interface Data {
     fun saveGrainModel(model: GrainModelDescription)
     fun deleteGrainModel(modelId: String)
 
-    fun publicSimulations(offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
-    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
-    fun getSimulationForModel(modelId: String): List<SimulationDescription>
+    fun publicSimulations(modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun simulationsForUser(userId: String, modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
+    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription
     fun saveSimulation(simulation: SimulationDescription)

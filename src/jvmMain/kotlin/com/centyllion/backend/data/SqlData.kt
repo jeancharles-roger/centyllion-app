@@ -210,22 +210,22 @@ class SqlData(
         }
     }
 
-    private fun publicSimulationQuery() = DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select {
-        (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-    }
+    private fun publicSimulationQuery(modelId: UUID?) =
+        DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select {
+            val public = (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
+            when (modelId) {
+                null -> public
+                else -> public and (DbSimulationDescriptions.modelId eq modelId)
+            }
+        }
 
-    override fun publicSimulations(offset: Int, limit: Int) = transaction(database) {
+    override fun publicSimulations(modelId: String?, offset: Int, limit: Int) = transaction(database) {
+        val modelUUID = modelId?.let { UUID.fromString(it) }
         val content = DbSimulationDescription.wrapRows(
-            publicSimulationQuery().limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            publicSimulationQuery(modelUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, publicSimulationQuery().count())
-    }
-
-    override fun getSimulationForModel(modelId: String): List<SimulationDescription> = transaction(database) {
-        DbSimulationDescription
-            .find { DbSimulationDescriptions.modelId eq UUID.fromString(modelId) }
-            .map { it.toModel() }
+        ResultPage(content, offset, publicSimulationQuery(modelUUID).count())
     }
 
     private fun simulationsForUserQuery(userUUID: UUID, modelId: UUID?) = DbSimulationDescriptions

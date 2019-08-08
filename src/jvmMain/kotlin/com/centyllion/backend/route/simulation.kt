@@ -8,6 +8,7 @@ import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
+import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
 import io.ktor.auth.jwt.JWTPrincipal
@@ -34,8 +35,25 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
         get {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-            val simulations = data.publicSimulations(offset, limit)
-            context.respond(simulations)
+            val modelId = call.parameters["model"]
+            context.respond(data.publicSimulations(modelId, offset, limit))
+        }
+
+        // post a new simulation
+        post {
+            withRequiredPrincipal(apprenticeRole) {
+                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val modelId = call.parameters["model"]
+                val model = modelId?.let { data.getGrainModel(it) }
+                val newSimulation = call.receive(Simulation::class)
+                context.respond(
+                    when {
+                        model == null -> HttpStatusCode.NotFound
+                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
+                        else -> data.createSimulation(user.id, modelId, newSimulation)
+                    }
+                )
+            }
         }
 
         get("search") {

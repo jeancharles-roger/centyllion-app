@@ -10,7 +10,6 @@ import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.Simulation
 import io.ktor.application.call
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.principal
@@ -106,50 +105,6 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
                             }
                         }
                     )
-                }
-            }
-
-            route("simulation") {
-                // model's simulations
-                get {
-                    val publicOnly = call.request.queryParameters["public"] != null
-                    val user = call.principal<JWTPrincipal>()?.let {
-                        subscription.getOrCreateUserFromPrincipal(it)
-                    }
-                    val modelId = call.parameters["model"]!!
-                    val model = data.getGrainModel(modelId)
-                    context.respond(
-                        when {
-                            model == null -> HttpStatusCode.NotFound
-                            !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                            else -> {
-                                val simulations = data.getSimulationForModel(modelId)
-                                simulations.filter {
-                                    hasReadAccess(
-                                        it.info,
-                                        if (publicOnly) null else user
-                                    )
-                                }
-                            }
-                        }
-                    )
-                }
-
-                // post a new simulation for model
-                post {
-                    withRequiredPrincipal(apprenticeRole) {
-                        val user = subscription.getOrCreateUserFromPrincipal(it)
-                        val modelId = call.parameters["model"]!!
-                        val model = data.getGrainModel(modelId)
-                        val newSimulation = call.receive(Simulation::class)
-                        context.respond(
-                            when {
-                                model == null -> HttpStatusCode.NotFound
-                                !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
-                                else -> data.createSimulation(user.id, modelId, newSimulation)
-                            }
-                        )
-                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.centyllion.backend.data.Data
 import com.centyllion.common.SubscriptionType
+import com.centyllion.model.ResultPage
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import io.ktor.http.ContentType
@@ -108,6 +109,12 @@ fun <T> TestApplicationEngine.testGet(uri: String, expected: T, serializer: KSer
     val request = handleGet(uri, user)
     checkResult(request, serializer, expected)
 }
+
+fun <T> TestApplicationEngine.testGetPage(uri: String, expected: List<T>, total: Int, serializer: KSerializer<T>, user: User? = null) {
+    val request = handleGet(uri, user)
+    checkResult(request, ResultPage.serializer(serializer), ResultPage(expected, 0, total))
+}
+
 
 fun <T> TestApplicationEngine.get(uri: String, serializer: KSerializer<T>, user: User? = null): T {
     val request = handleGet(uri, user)

@@ -165,10 +165,10 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
             elements = it.content
 
             it.content.forEach { model ->
-                appContext.api.fetchSimulations(model.id, false).then {
+                appContext.api.fetchMySimulations(model.id, limit = 50).then {
                     val index = elements.indexOf(model)
                     val mutable = elements.toMutableList()
-                    mutable.addAll(index + 1, it)
+                    mutable.addAll(index + 1, it.content)
                     elements = mutable
                 }
             }

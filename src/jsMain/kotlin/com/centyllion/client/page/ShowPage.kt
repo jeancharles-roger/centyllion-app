@@ -251,8 +251,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             // if there is a model id, use it to list all simulation and take the first one
             modelId != null && modelId.isNotEmpty() ->
                 appContext.api.fetchGrainModel(modelId).then { model ->
-                    appContext.api.fetchSimulations(model.id, false).then { simulations ->
-                        (simulations.firstOrNull() ?: emptySimulationDescription) to model
+                    appContext.api.fetchMySimulations(model.id).then { simulations ->
+                        (simulations.content.firstOrNull() ?: emptySimulationDescription) to model
                     }
                 }.then { it }
 
@@ -477,9 +477,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteSimulation(simulation).then {
                     message("Simulation ${simulation.label} deleted")
-                    appContext.api.fetchSimulations(model.id, false)
+                    appContext.api.fetchMySimulations(model.id)
                 }.then {
-                    setSimulation(it.firstOrNull() ?: emptySimulationDescription)
+                    setSimulation(it.content.firstOrNull() ?: emptySimulationDescription)
                 }
             },
             textButton("No")
@@ -526,8 +526,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         if (model.id.isNotEmpty()) {
             moreDropdown.items = moreDropdownItems + loadingItem
 
-            appContext.api.fetchSimulations(model.id, false).then {
-                moreDropdown.items = moreDropdownItems + it.map { current ->
+            appContext.api.fetchMySimulations(model.id).then {
+                moreDropdown.items = moreDropdownItems + it.content.map { current ->
                     createMenuItem(current.label, current.icon, disabled = current == simulation) {
                         save {
                             setSimulation(current)

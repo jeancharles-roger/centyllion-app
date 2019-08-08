@@ -2,7 +2,6 @@ package com.centyllion.backend
 
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.ResultPage
 import com.centyllion.model.User
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -11,7 +10,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.contentType
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.list
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -73,10 +71,7 @@ class TestMeApi {
         testUnauthorized( "/api/me/model")
 
         // Test that /api/me/model is protected by the apprentice model
-        testGet("/api/me/model", ResultPage(emptyList(), 0, 0),
-            ResultPage.serializer(GrainModelDescription.serializer()), apprenticeUser
-        )
-        testGet("/api/me/model/all", emptyList(), GrainModelDescription.serializer().list, apprenticeUser)
+        testGetPage("/api/me/model", emptyList(), 0, GrainModelDescription.serializer(), apprenticeUser)
 
         // Test post on /api/model
         testUnauthorized("/api/me/model", HttpMethod.Post)
@@ -84,20 +79,14 @@ class TestMeApi {
         val model2 = postModel(GrainModel("test2"), apprenticeUser)
 
         // Checks that models were posted
-        testGet("/api/me/model", ResultPage(listOf(model1, model2), 0, 2),
-            ResultPage.serializer(GrainModelDescription.serializer()), apprenticeUser
-        )
-        testGet("/api/me/model/all", listOf(model1, model2), GrainModelDescription.serializer().list, apprenticeUser)
+        testGetPage("/api/me/model",listOf(model1, model2), 2, GrainModelDescription.serializer(), apprenticeUser)
 
         // Test delete a model
         testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
         deleteModel(model1, apprenticeUser)
 
         // Checks if delete happened
-        testGet("/api/me/model", ResultPage(listOf(model2), 0, 1),
-            ResultPage.serializer(GrainModelDescription.serializer()), apprenticeUser
-        )
-        testGet("/api/me/model/all", listOf(model2), GrainModelDescription.serializer().list, apprenticeUser)
+        testGetPage("/api/me/model", listOf(model2), 1,GrainModelDescription.serializer(), apprenticeUser)
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
@@ -105,10 +94,7 @@ class TestMeApi {
         patchModel(newModel2, apprenticeUser)
 
         // Checks if patch happened
-        testGet("/api/me/model", ResultPage(listOf(newModel2), 0, 1),
-            ResultPage.serializer(GrainModelDescription.serializer()), apprenticeUser
-        )
-        testGet("/api/me/model/all", listOf(newModel2), GrainModelDescription.serializer().list, apprenticeUser)
+        testGetPage("/api/me/model", listOf(newModel2), 1, GrainModelDescription.serializer(), apprenticeUser)
 
         // Checks that publish is protected by creator role
         val newModel2public = model2.copy(info = model2.info.copy(readAccess = true))

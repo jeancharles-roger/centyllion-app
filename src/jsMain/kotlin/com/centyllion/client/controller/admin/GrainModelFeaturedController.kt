@@ -1,6 +1,17 @@
 package com.centyllion.client.controller.admin
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Controller
+import bulma.Dropdown
+import bulma.DropdownSimpleItem
+import bulma.Icon
+import bulma.Label
+import bulma.Media
+import bulma.Size
+import bulma.SubTitle
+import bulma.TextColor
 import com.centyllion.client.Api
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
@@ -49,8 +60,8 @@ class GrainModelFeaturedController(
 
     val simulationDropDown = Dropdown(text = "Simulations", rounded = true, icon = Icon("play")) { dropdown ->
         dropdown.items = listOf(DropdownSimpleItem("Loading", Icon("sync", spin = true)))
-        api.fetchSimulations(model.id, true).then { simulations ->
-            dropdown.items = simulations.map { simulation ->
+        api.fetchPublicSimulations(model.id, limit = 50).then { simulations ->
+            dropdown.items = simulations.content.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
                     toggleFeature(model, simulation, featured(simulation))
                     dropdown.toggleDropdown()

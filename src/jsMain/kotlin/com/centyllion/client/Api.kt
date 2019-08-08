@@ -157,17 +157,16 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         }
     }
 
-    fun fetchPublicSimulations(offset: Int = 0, limit: Int = 20) =
+    fun fetchPublicSimulations(modelId: String? = null, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/simulation?offset=$offset&limit=$limit", bearer)
-                .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
-        }
+            val options = listOfNotNull(
+                if (modelId != null) "model=$modelId" else null,
+                "offset=$offset", "limit=$limit"
+            )
+            val path = "/api/simulation?${options.joinToString("&")}"
 
-    fun fetchSimulations(modelId: String, public: Boolean) =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            val params = if (public) "?public" else ""
-            fetch("GET", "/api/model/$modelId/simulation$params", bearer)
-                .then { json.parse(SimulationDescription.serializer().list, it) }
+            fetch("GET", path, bearer)
+                .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
         }
 
     fun fetchSimulation(simulationId: String) =

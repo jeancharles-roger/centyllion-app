@@ -432,6 +432,18 @@ paths:
 
 components:
   securitySchemes:
+    OpenId:
+      type: oauth2 
+      description: Keycloak login with client_id=webclient
+      flows:
+        implicit:
+          authorizationUrl: https://login.centyllion.com/auth/realms/Centyllion/openid-connect/auth
+          scopes:  
+            apprentice: Default role
+            creator: Creator role
+      #type: openIdConnect
+      #openIdConnectUrl: https://login.centyllion.com/auth/realms/Centyllion/.well-known/openid-configuration
+
     BearerAuth:
       type: http
       scheme: bearer

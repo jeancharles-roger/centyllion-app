@@ -53,14 +53,12 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         }
 
     val publicModelsController =
-        columnsController<GrainModelDescription, List<FeaturedDescription>, GrainModelFeaturedController>(
-            emptyList(),
-            emptyList()
-        )
+        columnsController(emptyList<GrainModelDescription>(), emptyList<FeaturedDescription>())
         { model, previous ->
-            val controller = previous ?: GrainModelFeaturedController(model, featuredController.data, api)
-            controller.toggleFeature = ::toggleFeatured
-            controller
+            previous ?: GrainModelFeaturedController(model, featuredController.data, api).wrap {
+                it.toggleFeature = ::toggleFeatured
+                Column(it.container, size = ColumnSize.Half)
+            }
         }
 
     val featuredColumns = Columns(

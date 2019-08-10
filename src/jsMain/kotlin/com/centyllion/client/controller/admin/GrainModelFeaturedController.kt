@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.admin
 
+import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -8,7 +9,6 @@ import bulma.Dropdown
 import bulma.DropdownSimpleItem
 import bulma.Icon
 import bulma.Label
-import bulma.Media
 import bulma.Size
 import bulma.SubTitle
 import bulma.TextColor
@@ -20,11 +20,11 @@ import kotlin.properties.Delegates.observable
 
 class GrainModelFeaturedController(
     model: GrainModelDescription, allFeatured: List<FeaturedDescription>,
-    api: Api, size: ColumnSize = ColumnSize.Half,
+    api: Api,
     var toggleFeature: (
         model: GrainModelDescription, simulation: SimulationDescription, featured: FeaturedDescription?
     ) -> Unit = { _, _, _ -> }
-) : Controller<GrainModelDescription, List<FeaturedDescription>, Column> {
+) : Controller<GrainModelDescription, List<FeaturedDescription>, Box> {
 
     override var data by observable(model)
     { _, old, new ->
@@ -70,11 +70,7 @@ class GrainModelFeaturedController(
         }
     }
 
-    val body = Media(center = listOf(name, description, dots, simulationDropDown)).apply {
-        root.classList.add("is-outlined")
-    }
-
-    override val container = Column(body, size = size)
+    override val container = Box(name, description, dots, simulationDropDown)
 
     override fun refresh() {
         dots.columns = dotColumns()

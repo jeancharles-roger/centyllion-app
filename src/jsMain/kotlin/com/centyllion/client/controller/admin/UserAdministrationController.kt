@@ -1,6 +1,6 @@
 package com.centyllion.client.controller.admin
 
-import bulma.BulmaElement
+import bulma.Box
 import bulma.Button
 import bulma.Checkbox
 import bulma.ElementColor
@@ -25,7 +25,7 @@ import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import kotlin.properties.Delegates.observable
 
-class UserAdministrationController(user: User, val page: BulmaPage) : NoContextController<User, BulmaElement>() {
+class UserAdministrationController(user: User, val page: BulmaPage) : NoContextController<User, Box>() {
 
     override var data: User by observable(user) { _, old, new ->
         if (old != new) refresh()
@@ -72,11 +72,11 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
 
     }
 
-    override val container = Media(
+    override val container = Box(Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
         center = listOf(nameController, usernameController, emailController, group),
         right = listOf(createSubscription)
-    )
+    ))
 
     override fun refresh() {
         nameController.text = data.name

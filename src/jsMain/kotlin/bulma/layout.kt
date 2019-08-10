@@ -167,7 +167,7 @@ class TileChild(vararg body: BulmaElement, size: TileSize = TileSize.None, verti
     var vertical by className(vertical, "is-vertical", root)
 }
 
-/** Tile with no class ore Parent */
+/** Tile with no class or Parent */
 interface TileInner : BulmaElement
 
 /** Parent [Tile](https://bulma.io/documentation/layout/tiles) element */
@@ -195,7 +195,7 @@ class Tile(vararg body: TileInner, size: TileSize = TileSize.None, vertical: Boo
 }
 
 /** Ancestor [Tile](https://bulma.io/documentation/layout/tiles) element */
-class TileAncestor(vararg body: TileParent, size: TileSize = TileSize.None, vertical: Boolean = false) : BulmaElement {
+class TileAncestor(vararg body: TileInner, size: TileSize = TileSize.None, vertical: Boolean = false) : BulmaElement {
     override val root: HTMLElement = document.create.div("tile is-ancestor")
 
     var body by bulmaList(body.toList(), root)

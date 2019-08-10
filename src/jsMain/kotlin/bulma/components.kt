@@ -682,16 +682,17 @@ class TabItem(
 ) : BulmaElement {
 
     override val root: HTMLElement = document.create.li {
-        a { +text }
+        a { span { +text } }
         onClickFunction = { onClick(this@TabItem) }
     }
 
+    private val textNode = root.querySelector("span") as HTMLElement
     private val aNode = root.querySelector("a") as HTMLElement
 
     override var text: String
-        get() = aNode.innerText
+        get() = textNode.innerText
         set(value) {
-            aNode.innerText = value
+            textNode.innerText = value
         }
 
     var icon by html(icon, aNode, Position.AfterBegin) {

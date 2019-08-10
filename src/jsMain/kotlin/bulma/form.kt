@@ -178,7 +178,7 @@ interface TextView: ControlElement {
 /** [Input](https://bulma.io/documentation/form/input/) */
 class Input(
     value: String = "", placeholder: String = "",
-    color: ElementColor = ElementColor.None, size: Size = Size.None,
+    color: ElementColor = ElementColor.None, size: Size = Size.None, columns: Int? = null,
     rounded: Boolean = false, loading: Boolean = false,
     readonly: Boolean = false, static: Boolean = false,
     override var onFocus: (Boolean) -> Unit = { },
@@ -187,6 +187,7 @@ class Input(
 
     override val root = document.create.input(InputType.text, classes = "input") {
         this.value = value
+        if (columns != null) this.size = "$columns"
         onInputFunction = {
             val target = it.target
             if (it is InputEvent && target is HTMLInputElement) {

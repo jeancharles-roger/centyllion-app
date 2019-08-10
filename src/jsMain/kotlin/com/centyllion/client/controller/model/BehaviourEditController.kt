@@ -83,7 +83,7 @@ class BehaviourEditController(
             reactionsController.readOnly = new
             fieldPredicatesController.readOnly = new
             fieldInfluencesController.readOnly = new
-            //container.right = if (new) emptyList() else listOf(delete)
+            delete.hidden = new
         }
     }
 

@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.model
 
+import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -11,11 +12,14 @@ import bulma.Help
 import bulma.HorizontalField
 import bulma.Icon
 import bulma.Level
-import bulma.Media
+import bulma.MultipleController
 import bulma.Size
+import bulma.TileAncestor
+import bulma.TileChild
+import bulma.TileParent
+import bulma.TileSize
 import bulma.columnsController
 import bulma.iconButton
-import bulma.wrap
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Behaviour
@@ -23,15 +27,13 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import com.centyllion.model.Reaction
-import com.centyllion.model.extendedDirections
-import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
     initialData: Behaviour, model: GrainModel,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ -> }
-) : Controller<Behaviour, GrainModel, Media> {
+) : Controller<Behaviour, GrainModel, Box> {
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -43,8 +45,8 @@ class BehaviourEditController(
             mainProductController.data = context.indexedGrains[data.mainProductId]
             sourceReactiveController.data = data.sourceReactive
             sourceReactiveController.context = data to context
-            reactionController.data = data.reaction
-            reactionController.context = data to context
+            reactionsController.data = data.reaction
+            reactionsController.context = data to context
             fieldPredicatesController.data = data.fieldPredicates
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
             onUpdate(old, new, this@BehaviourEditController)
@@ -59,7 +61,7 @@ class BehaviourEditController(
             mainProductController.data = context.indexedGrains[data.mainProductId]
             mainProductController.context = new.grains
             sourceReactiveController.context = data to context
-            reactionController.context = data to context
+            reactionsController.context = data to context
             fieldPredicatesController.context = context.fields
             fieldInfluencesController.context = context.fields
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
@@ -78,10 +80,10 @@ class BehaviourEditController(
             mainReactiveController.readOnly = new
             mainProductController.readOnly = new
             sourceReactiveController.readOnly = new
-            reactionController.readOnly = new
+            reactionsController.readOnly = new
             fieldPredicatesController.readOnly = new
             fieldInfluencesController.readOnly = new
-            container.right = if (new) emptyList() else listOf(delete)
+            //container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -110,9 +112,6 @@ class BehaviourEditController(
         this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
     }
 
-    val dummyFirstDirectionController = DirectionSetEditController(firstDirections, emptySet()).apply { invisible = true }
-    val dummyExtendedDirectionController = DirectionSetEditController(extendedDirections, emptySet()).apply { invisible = true }
-
     val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains)
     { _, new, _ ->
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
@@ -129,44 +128,43 @@ class BehaviourEditController(
     }
 
     val reactionHeader = listOf(
-        // Title header
-        Column(
-            Level(
-                left = listOf(Help("Reactive")),
-                center = listOf(Help(""), Help("Product"), Help("Source")),
-                right = listOf(Help("")),
-                mobile = true
-            ), size = ColumnSize.Full
+        // Header
+        TileParent(
+            TileChild(Help("Reactive")),
+            TileChild(Help("Direction")),
+            TileChild(Help("Product")),
+            TileChild(Help("Source")),
+            TileChild()
         ),
-        // Main reactive header
-        Column(
-            Level(
-                left = listOf(mainReactiveController),
-                center = listOf(
-                    dummyFirstDirectionController, dummyExtendedDirectionController,
-                    mainProductController, sourceReactiveController
-                ),
-                right = listOf(addReactionButton),
-                mobile = true
-            ),
-            size = ColumnSize.Full
+        // Main reactive
+        TileParent(
+            TileChild(mainReactiveController),
+            TileChild(),
+            TileChild(mainProductController),
+            TileChild(sourceReactiveController),
+            TileChild(addReactionButton)
         )
     )
 
-    val reactionController =
-        columnsController(
-            data.reaction, data to context, reactionHeader
-        ) { reaction, previous ->
-            previous ?: ReactionEditController(reaction, data, context).wrap { controller ->
-                controller.onUpdate = { old, new, _ ->
+    val reactionsController = MultipleController<Reaction, Pair<Behaviour, GrainModel>, TileAncestor, TileParent, ReactionEditController>(
+        data.reaction, data to context, reactionHeader, emptyList(),
+        TileAncestor( *Array(5) { TileParent(vertical = true) } ),
+        { reaction, previous ->
+            previous ?: ReactionEditController(reaction, data, context).also {
+                it.onUpdate = { old, new, _ ->
                     data = data.updateReaction(old, new)
                 }
-                controller.onDelete = { delete, _ ->
+                it.onDelete = { delete, _ ->
                     data = data.dropReaction(delete)
                 }
-                Column(controller.container, size = ColumnSize.Full)
+            }
+        },
+        { parent, items ->
+            parent.body.forEachIndexed { index, tileInner ->
+                (tileInner as TileParent).body = items.map { it.body[index] }
             }
         }
+    )
 
     val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
 
@@ -197,24 +195,21 @@ class BehaviourEditController(
         Column(Help("Influences"), fieldInfluencesController, size = ColumnSize.S5)
     )
 
-    override val container = Media(
-        center = listOf(
-            Columns(
-                // first line
-                Column(nameController, size = ColumnSize.S7),
-                Column(HorizontalField(Control(Help("Speed")), probabilityController.container), size = ColumnSize.S5),
-                // second line
-                Column(descriptionController, size = ColumnSize.S7),
-                Column(HorizontalField(Control(Help("Age")), agePredicateController.container), size = ColumnSize.S5),
-                multiline = true
+    override val container = Box(
+        TileAncestor(
+            TileParent(
+                TileChild(nameController), TileChild(descriptionController),
+                size = TileSize.S7, vertical = true
             ),
-            reactionController,
-            fieldsConfiguration
+            TileParent(
+                TileChild(HorizontalField(Control(Help("Speed")), probabilityController.container)),
+                TileChild(HorizontalField(Control(Help("Age")), agePredicateController.container)),
+                vertical = true
+            )
         ),
-        right = listOf(delete)
-    ).apply {
-        root.classList.add("is-outlined")
-    }
+        reactionsController,
+        fieldsConfiguration
+    )
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 4
@@ -225,7 +220,7 @@ class BehaviourEditController(
         agePredicateController.refresh()
         mainReactiveController.refresh()
         mainProductController.refresh()
-        reactionController.refresh()
+        reactionsController.refresh()
 
         fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()

@@ -5,6 +5,8 @@ import bulma.ElementColor
 import bulma.Icon
 import bulma.Level
 import bulma.Size
+import bulma.TileChild
+import bulma.TileParent
 import bulma.iconButton
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
@@ -17,7 +19,7 @@ class ReactionEditController(
     reaction: Reaction, behaviour: Behaviour, model: GrainModel,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
-) : Controller<Reaction, Pair<Behaviour, GrainModel>, Level> {
+) : Controller<Reaction, Pair<Behaviour, GrainModel>, TileParent> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
@@ -52,7 +54,7 @@ class ReactionEditController(
             extendedDirectionController.readOnly = new
             productController.readOnly = new
             sourceReactiveController.readOnly = new
-            container.right = if (new) emptyList() else listOf(delete)
+            //container.right = if (new) emptyList() else listOf(delete)
         }
     }
 
@@ -86,11 +88,12 @@ class ReactionEditController(
         onDelete(this.data, this@ReactionEditController)
     }
 
-    override val container  = Level(
-        left = listOf(reactiveController),
-        center = listOf(firstDirectionController, extendedDirectionController, productController, sourceReactiveController),
-        right = listOf(delete),
-        mobile = true
+    override val container  = TileParent(
+        TileChild(reactiveController),
+        TileChild(Level(center = listOf(firstDirectionController, extendedDirectionController))),
+        TileChild(productController),
+        TileChild(sourceReactiveController),
+        TileChild(delete)
     )
 
     override fun refresh() {

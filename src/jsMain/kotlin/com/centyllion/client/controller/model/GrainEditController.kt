@@ -1,14 +1,12 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
+import bulma.Box
 import bulma.Controller
 import bulma.Delete
 import bulma.Div
 import bulma.Help
 import bulma.Level
-import bulma.Media
+import bulma.Size
 import bulma.Slider
 import bulma.TileAncestor
 import bulma.TileChild
@@ -28,7 +26,7 @@ class GrainEditController(
     initialData: Grain, model: GrainModel,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
-) : Controller<Grain, GrainModel, Media> {
+) : Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -72,7 +70,7 @@ class GrainEditController(
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
             fieldProductionsController.readOnly = new
-            container.right = if (new) emptyList() else listOf(delete)
+            delete.hidden = new
         }
     }
 
@@ -84,11 +82,11 @@ class GrainEditController(
         data = data.copy(icon = new)
     }
 
-    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
+    val nameController = EditableStringController(data.name, "Name", columns = 8) { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val sizeSlider = Slider("${data.size}", "0", "5", "0.1") { _, value ->
+    val sizeSlider = Slider("${data.size}", "0", "5", "0.1", size = Size.Small) { _, value ->
         data = data.copy(size = value.toDoubleOrNull() ?: 1.0)
     }
 
@@ -154,37 +152,33 @@ class GrainEditController(
         fieldPermeableController
     )
 
-    override val container = Media(
-        center = listOf(
-            Columns(
-                Column(colorController, size = ColumnSize.S3),
-                Column(iconController, size = ColumnSize.S3),
-                Column(nameController, size = ColumnSize.S6),
-                mobile = true
-            ),
-            Level(
-                center = listOf(Help("Size"), sizeSlider, sizeValue)
-            ),
-            descriptionController,
-            TileAncestor(
-                TileParent(
-                    TileChild(Help("Half life")),
-                    TileChild(halfLifeController),
-                    vertical = true
-                ),
-                TileParent(
-                    TileChild(Help("Speed")),
-                    TileChild(movementProbabilityController),
-                    vertical = true
-                )
-            ),
-            Level(center = listOf(firstDirectionController, extendedDirectionController)),
-            fieldsConfiguration
+    override val container = Box(
+        Level(
+            left = listOf(colorController, iconController),
+            right = listOf(delete),
+            mobile = true
         ),
-        right = listOf(delete)
-    ).apply {
-        root.classList.add("is-outlined")
-    }
+        Level(
+            left = listOf(nameController),
+            center = listOf(Help("Size"), sizeSlider, sizeValue),
+            mobile = true
+        ),
+        descriptionController,
+        TileAncestor(
+            TileParent(
+                TileChild(Help("Half life")),
+                TileChild(halfLifeController),
+                vertical = true
+            ),
+            TileParent(
+                TileChild(Help("Speed")),
+                TileChild(movementProbabilityController),
+                vertical = true
+            )
+        ),
+        Level(center = listOf(firstDirectionController, extendedDirectionController)),
+        fieldsConfiguration
+    ).apply { root.classList.add("is-outlined") }
 
     override fun refresh() {
         colorController.refresh()

@@ -1,9 +1,9 @@
 package com.centyllion.client.controller.model
 
+import bulma.Box
 import bulma.Delete
 import bulma.Help
 import bulma.Level
-import bulma.Media
 import bulma.NoContextController
 import bulma.TileAncestor
 import bulma.TileChild
@@ -20,7 +20,7 @@ class FieldEditController(
     initialData: Field,
     var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> },
     var onDelete: (deleted: Field, controller: FieldEditController) -> Unit = { _, _ -> }
-) : NoContextController<Field, Media>() {
+) : NoContextController<Field, Box>() {
 
     override var data: Field by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -45,7 +45,7 @@ class FieldEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
-            container.right = if (new) emptyList() else listOf(delete)
+            delete.hidden = new
         }
     }
 
@@ -53,7 +53,7 @@ class FieldEditController(
         data = data.copy(color = new)
     }
 
-    val nameController = EditableStringController(data.name, "Name") { _, new, _ ->
+    val nameController = EditableStringController(data.name, "Name", columns = 8) { _, new, _ ->
         data = data.copy(name = new)
     }
 
@@ -81,28 +81,22 @@ class FieldEditController(
 
     val delete = Delete { onDelete(data, this@FieldEditController) }
 
-    override val container = Media(
-        center = listOf(
-            Level(center = listOf(colorController, nameController), mobile = true),
-            descriptionController,
-            TileAncestor(
-                TileParent(
-                    TileChild(Help("Half life")),
-                    TileChild(halfLifeController),
-                    vertical = true
-                ),
-                TileParent(
-                    TileChild(Help("Speed")),
-                    TileChild(speedController),
-                    vertical = true
-                )
+    override val container = Box(
+        Level(center = listOf(colorController, nameController), right = listOf(delete), mobile = true),
+        descriptionController,
+        TileAncestor(
+            TileParent(
+                TileChild(Help("Half life")),
+                TileChild(halfLifeController),
+                vertical = true
             ),
-            Level(center = listOf(firstDirectionController, extendedDirectionController))
-        ),
-        right = listOf(delete)
-    ).apply {
-        root.classList.add("is-outlined")
-    }
+            TileParent(
+                TileChild(Help("Speed")),
+                TileChild(speedController),
+                vertical = true
+            )
+        )
+    ).apply { root.classList.add("is-outlined") }
 
     override fun refresh() {
         colorController.refresh()

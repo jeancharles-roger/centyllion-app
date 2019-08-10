@@ -81,7 +81,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         model = model.copy(model = model.model.copy(name = new))
     }
 
-    val modelDescriptionController = EditableStringController(model.model.description, "Description") { _, new, _ ->
+    val modelDescriptionController = EditableStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
     }
 
@@ -221,9 +221,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     init {
-        // sets input size for description
-        modelDescriptionController.input.root.asDynamic().size = 60
-
         // starts with all readonly
         val modelReadonly = isModelReadOnly
         modelNameController.readOnly = modelReadonly

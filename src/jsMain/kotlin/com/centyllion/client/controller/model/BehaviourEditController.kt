@@ -189,7 +189,6 @@ class BehaviourEditController(
             }
         }
 
-
     val fieldsConfiguration = Columns(
         Column(Level(left= listOf(Help("Predicates")), right = listOf(addFieldPredicateButton)), fieldPredicatesController, size = ColumnSize.S7),
         Column(Help("Influences"), fieldInfluencesController, size = ColumnSize.S5)
@@ -205,11 +204,12 @@ class BehaviourEditController(
                 TileChild(HorizontalField(Control(Help("Speed")), probabilityController.container)),
                 TileChild(HorizontalField(Control(Help("Age")), agePredicateController.container)),
                 vertical = true
-            )
+            ),
+            TileParent(TileChild(delete), size = TileSize.S1)
         ),
         reactionsController,
         fieldsConfiguration
-    )
+    ).apply { root.classList.add("is-outlined") }
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 4

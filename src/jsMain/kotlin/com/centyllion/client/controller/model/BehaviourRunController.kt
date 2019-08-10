@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.model
 
+import bulma.Box
 import bulma.BulmaElement
 import bulma.Button
 import bulma.Controller
@@ -8,7 +9,6 @@ import bulma.ElementColor
 import bulma.Icon
 import bulma.Label
 import bulma.Level
-import bulma.Media
 import bulma.Size
 import bulma.Slider
 import bulma.TextColor
@@ -24,7 +24,7 @@ class BehaviourRunController(
     behaviour: Behaviour, simulator: Simulator,
     var onValidate: (Behaviour, Double) -> Unit = { _, _ -> },
     var onSpeedChange: (Behaviour, Double) -> Unit = { _, _ -> }
-) : Controller<Behaviour, Simulator, Media> {
+) : Controller<Behaviour, Simulator, Box> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
         if (old != new) refresh()
@@ -55,7 +55,6 @@ class BehaviourRunController(
         speedValue.text = probability.toFixed()
         speedValue.disabled = probability == data.probability
         speedValue.color = if (probability == data.probability) ElementColor.Success else ElementColor.Warning
-
     }
 
     val header = Level(
@@ -65,9 +64,7 @@ class BehaviourRunController(
         mobile = true
      )
 
-    override val container = Media(center = listOf(header, grains)).apply {
-        root.classList.add("is-outlined")
-    }
+    override val container = Box(header, grains)
 
     fun toSlider(p: Double) = (10.0.pow(p)).toString()
 

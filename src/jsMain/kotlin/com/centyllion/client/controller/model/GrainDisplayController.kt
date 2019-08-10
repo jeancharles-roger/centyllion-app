@@ -1,18 +1,17 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
+import bulma.Box
 import bulma.Controller
 import bulma.Icon
 import bulma.Label
-import bulma.Media
+import bulma.Level
 import bulma.Span
 import bulma.TextColor
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Column> {
+open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(grain) { _, old, new ->
         if (old != new) refresh()
@@ -34,14 +33,9 @@ open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<G
 
     val status = Span(movingIcon, deathIcon)
 
-    val body = Media(
-        left = listOf(icon),
-        center = listOf(titleLabel, status)
-    ).apply {
-        root.classList.add("is-outlined")
-    }
+    val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
 
-    override val container = Column(body, size = ColumnSize.Full)
+    override val container = Box(body)
 
     override fun refresh() {
         icon.icon = data.icon
@@ -50,6 +44,7 @@ open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<G
         movingIcon.hidden = !data.canMove
         deathIcon.hidden = data.halfLife <= 0
         status.hidden = movingIcon.hidden && deathIcon.hidden
+        movingIcon.root.style.opacity = "${data.movementProbability.coerceAtLeast(0.3)}"
         deathIcon.root.style.opacity = "${(101 - data.halfLife.coerceAtMost(71)) / 100.0}"
     }
 

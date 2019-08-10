@@ -142,12 +142,12 @@ class SimulationRunController(
     val grainsController =
         columnsController<Grain, GrainModel, GrainRunController>(model.grains, model)
         { grain, previous ->
-            val controller = previous ?: GrainRunController(grain, context)
-            controller.body.root.onclick = {
-                simulationViewController.selectedGrainController.data = controller.data
+            val c = previous ?: GrainRunController(grain, context)
+            c.container.root.onclick = {
+                simulationViewController.selectedGrainController.data = c.data
                 Unit
             }
-            controller
+            c
         }
 
     val behaviourController =

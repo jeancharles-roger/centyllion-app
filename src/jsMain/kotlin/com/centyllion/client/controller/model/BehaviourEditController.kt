@@ -6,7 +6,6 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
 import bulma.Controller
-import bulma.Delete
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
@@ -31,8 +30,8 @@ import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
     initialData: Behaviour, model: GrainModel,
-    var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (Behaviour, controller: BehaviourEditController) -> Unit = { _, _ -> }
+    var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit =
+        { _, _, _ -> }
 ) : Controller<Behaviour, GrainModel, Box> {
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
@@ -83,7 +82,6 @@ class BehaviourEditController(
             reactionsController.readOnly = new
             fieldPredicatesController.readOnly = new
             fieldInfluencesController.readOnly = new
-            delete.hidden = new
         }
     }
 
@@ -166,8 +164,6 @@ class BehaviourEditController(
         }
     )
 
-    val delete = Delete { onDelete(this.data, this@BehaviourEditController) }
-
     val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
         val predicate = context.fields.first().id to Predicate(Operator.GreaterThan, 0f)
         this.data = data.copy(fieldPredicates = data.fieldPredicates + predicate)
@@ -204,12 +200,11 @@ class BehaviourEditController(
                 TileChild(HorizontalField(Control(Help("Speed")), probabilityController.container)),
                 TileChild(HorizontalField(Control(Help("Age")), agePredicateController.container)),
                 vertical = true
-            ),
-            TileParent(TileChild(delete), size = TileSize.S1)
+            )
         ),
         reactionsController,
         fieldsConfiguration
-    ).apply { root.classList.add("is-outlined") }
+    ) // .apply { root.classList.add("is-outlined") }
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 4

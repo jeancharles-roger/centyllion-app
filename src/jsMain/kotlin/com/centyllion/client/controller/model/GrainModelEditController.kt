@@ -59,42 +59,74 @@ class GrainModelEditController(
     }
 
     val fieldsController = noContextColumnsController(data.fields) { field, previous ->
-            previous ?: FieldEditController(field).wrap { controller ->
-                controller.onUpdate = { old, new, _ ->
+        previous ?: FieldDisplayController(field).wrap { controller ->
+            /*
+            controller.onUpdate = { old, new, _ ->
+                data = data.updateField(old, new)
+            }
+            controller.onDelete = { _, _ ->
+                data = data.dropField(controller.data)
+            }
+             */
+            Column(controller.container, size = ColumnSize.Full)
+        }
+    }.also {
+        it.onClick = { field, _ ->
+            editorColumn.body = listOf(
+                FieldEditController(field) { old, new, _ ->
                     data = data.updateField(old, new)
                 }
-                controller.onDelete = { _, _ ->
-                    data = data.dropField(controller.data)
-                }
-                Column(controller.container, size = ColumnSize.OneThird)
-            }
+            )
         }
+    }
 
     val grainsController =
         columnsController(data.grains, data) { grain, previous ->
-            previous ?: GrainEditController(grain, data).wrap { controller ->
+            previous ?: GrainDisplayController(grain, data).wrap { controller ->
+                /*
                 controller.onUpdate = { old, new, _ ->
                     data = data.updateGrain(old, new)
                 }
                 controller.onDelete = { delete, _ ->
                     data = data.dropGrain(delete)
                 }
+                 */
                 Column(controller, size = ColumnSize.Full)
+            }
+        }.also {
+            it.onClick = { grain, _ ->
+                editorColumn.body = listOf(
+                    GrainEditController(grain, data) { old, new, _ ->
+                        data = data.updateGrain(old, new)
+                    }
+                )
             }
         }
 
     val behavioursController =
         columnsController(data.behaviours, data) { behaviour, previous ->
-            previous ?: BehaviourEditController(behaviour, data).wrap { controller ->
+            previous ?: BehaviourDisplayController(behaviour, data).wrap { controller ->
+                /*
                 controller.onUpdate = { old, new, _ ->
                     data = data.updateBehaviour(old, new)
                 }
                 controller.onDelete = { delete, _ ->
                     data = data.dropBehaviour(delete)
                 }
+                 */
                 Column(controller.container, size = ColumnSize.Full)
             }
+        }.also {
+            it.onClick = { behaviour, _ ->
+                editorColumn.body = listOf(
+                    BehaviourEditController(behaviour, data) { old, new, _ ->
+                        data = data.updateBehaviour(old, new)
+                    }
+                )
+            }
         }
+
+    val editorColumn = Column(size = ColumnSize.Full)
 
     override val container = Columns(
         Column(
@@ -104,7 +136,7 @@ class GrainModelEditController(
                 mobile = true
             ),
             fieldsController,
-            size = ColumnSize.Full
+            size = ColumnSize.OneQuarter
         ),
         Column(
             Level(
@@ -113,7 +145,7 @@ class GrainModelEditController(
                 mobile = true
             ),
             grainsController,
-            size = ColumnSize.OneThird
+            size = ColumnSize.OneQuarter
         ),
         Column(
             Level(
@@ -124,8 +156,9 @@ class GrainModelEditController(
                 mobile = true
             ),
             behavioursController,
-            size = ColumnSize.TwoThirds
+            size = ColumnSize.Half
         ),
+        editorColumn,
         multiline = true
     )
 

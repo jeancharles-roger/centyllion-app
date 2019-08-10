@@ -1,7 +1,6 @@
 package com.centyllion.client.controller.model
 
 import bulma.Box
-import bulma.Delete
 import bulma.Help
 import bulma.Level
 import bulma.NoContextController
@@ -18,8 +17,7 @@ import kotlin.properties.Delegates.observable
 
 class FieldEditController(
     initialData: Field,
-    var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (deleted: Field, controller: FieldEditController) -> Unit = { _, _ -> }
+    var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Field, Box>() {
 
     override var data: Field by observable(initialData) { _, old, new ->
@@ -45,7 +43,6 @@ class FieldEditController(
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
-            delete.hidden = new
         }
     }
 
@@ -79,10 +76,8 @@ class FieldEditController(
         this.data = this.data.copy(halfLife = new)
     }
 
-    val delete = Delete { onDelete(data, this@FieldEditController) }
-
     override val container = Box(
-        Level(center = listOf(colorController, nameController), right = listOf(delete), mobile = true),
+        Level(center = listOf(colorController, nameController), mobile = true),
         descriptionController,
         TileAncestor(
             TileParent(

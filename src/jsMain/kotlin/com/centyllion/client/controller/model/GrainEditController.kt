@@ -2,7 +2,6 @@ package com.centyllion.client.controller.model
 
 import bulma.Box
 import bulma.Controller
-import bulma.Delete
 import bulma.Div
 import bulma.Help
 import bulma.Level
@@ -24,8 +23,7 @@ import kotlin.properties.Delegates.observable
 
 class GrainEditController(
     initialData: Grain, model: GrainModel,
-    var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (deleted: Grain, controller: GrainEditController) -> Unit = { _, _ -> }
+    var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> }
 ) : Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(initialData) { _, old, new ->
@@ -70,7 +68,6 @@ class GrainEditController(
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
             fieldProductionsController.readOnly = new
-            delete.hidden = new
         }
     }
 
@@ -141,8 +138,6 @@ class GrainEditController(
             }
         }
 
-    val delete = Delete { onDelete(data, this@GrainEditController) }
-
     val fieldsConfiguration = Div(
         Help("Productions"),
         fieldProductionsController,
@@ -155,7 +150,6 @@ class GrainEditController(
     override val container = Box(
         Level(
             left = listOf(colorController, iconController),
-            right = listOf(delete),
             mobile = true
         ),
         Level(

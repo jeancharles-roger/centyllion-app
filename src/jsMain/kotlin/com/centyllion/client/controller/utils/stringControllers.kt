@@ -16,8 +16,8 @@ import kotlin.properties.Delegates.observable
  * Editable string controller.
  */
 class EditableStringController(
-    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false,
-    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = true),
+    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false, columns: Int? = null,
+    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = true, columns = columns),
     validateOnEnter: Boolean = true, var isValid: (value: String) -> String? = { null },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit =
         { _, _, _ -> }
@@ -165,7 +165,7 @@ fun multiLineStringController(
     isValid: (value: String) -> String? = { null },
     onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData, placeHolder, disabled,
+    initialData, placeHolder, disabled, null,
     TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "4"),
     validateOnEnter = false, isValid = isValid, onUpdate = onUpdate
 )

@@ -7,6 +7,7 @@ import bulma.ElementColor
 import bulma.Icon
 import bulma.Level
 import bulma.NoContextController
+import bulma.SubTitle
 import bulma.TextSize
 import bulma.Title
 import bulma.columnsController
@@ -126,7 +127,10 @@ class GrainModelEditController(
             }
         }
 
-    val editorColumn = Column(size = ColumnSize.Full)
+    val emptyEditor = SubTitle("Select a element to edit it")
+        .also { it.root.classList.add("has-text-centered") }
+
+    val editorColumn = Column(emptyEditor, size = ColumnSize.Full)
 
     override val container = Columns(
         Column(

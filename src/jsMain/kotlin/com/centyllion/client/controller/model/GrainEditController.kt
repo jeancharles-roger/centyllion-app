@@ -172,7 +172,7 @@ class GrainEditController(
         ),
         Level(center = listOf(firstDirectionController, extendedDirectionController)),
         fieldsConfiguration
-    ).apply { root.classList.add("is-outlined") }
+    )
 
     override fun refresh() {
         colorController.refresh()

@@ -91,7 +91,7 @@ class FieldEditController(
                 vertical = true
             )
         )
-    ).apply { root.classList.add("is-outlined") }
+    )
 
     override fun refresh() {
         colorController.refresh()

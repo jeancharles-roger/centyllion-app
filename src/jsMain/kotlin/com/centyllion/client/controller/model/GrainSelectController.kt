@@ -1,6 +1,11 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Control
+import bulma.Controller
+import bulma.Dropdown
+import bulma.DropdownSimpleItem
+import bulma.Field
+import bulma.Icon
 import com.centyllion.model.Grain
 import kotlin.properties.Delegates.observable
 
@@ -29,7 +34,7 @@ class GrainSelectController(
         }
     }
 
-    val icon = Icon(data?.icon ?: "circle")
+    val icon = Icon(data?.icon ?: "times-circle").apply { root.style.color = data?.color ?: "" }
 
     val dropdown: Dropdown = Dropdown(text = grain?.label() ?: "none", icon = icon, rounded = true).apply { items = items() }
 

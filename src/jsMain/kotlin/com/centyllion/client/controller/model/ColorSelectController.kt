@@ -1,6 +1,16 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
+import bulma.Control
+import bulma.Dropdown
+import bulma.DropdownContentItem
+import bulma.DropdownSimpleItem
+import bulma.Field
+import bulma.Icon
+import bulma.Input
+import bulma.NoContextController
 import com.centyllion.model.colorNames
 import kotlin.properties.Delegates.observable
 
@@ -22,7 +32,7 @@ class ColorSelectController(
         }
     }
 
-    val icon = Icon("circle")
+    val icon = Icon("circle").apply { root.style.color = color }
 
     val search = Input(placeholder = "Search", rounded = true) { _, _ -> refresh() }
 

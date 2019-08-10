@@ -204,7 +204,7 @@ class BehaviourEditController(
         ),
         reactionsController,
         fieldsConfiguration
-    ) // .apply { root.classList.add("is-outlined") }
+    )
 
     override fun refresh() {
         addReactionButton.disabled = data.reaction.size >= 4

@@ -8,6 +8,7 @@ import bulma.Delete
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Level
+import bulma.MultipleController
 import bulma.NoContextController
 import bulma.SubTitle
 import bulma.TextSize
@@ -64,7 +65,7 @@ class GrainModelEditController(
         this.data = data.copy(behaviours = data.behaviours + Behaviour())
     }
 
-    val fieldsController =
+    val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =
         noContextColumnsController(data.fields, onClick = { field, _ -> edited = field })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
@@ -73,7 +74,7 @@ class GrainModelEditController(
             }
         }
 
-    val grainsController =
+    val grainsController: MultipleController<Grain, GrainModel, Columns, Column, Controller<Grain, GrainModel, Column>> =
         columnsController(data.grains, data, onClick = { d, _ -> edited = d })
         { grain, previous ->
             previous ?: GrainDisplayController(grain, data).wrap { controller ->
@@ -82,7 +83,7 @@ class GrainModelEditController(
             }
         }
 
-    val behavioursController =
+    val behavioursController: MultipleController<Behaviour, GrainModel, Columns, Column, Controller<Behaviour, GrainModel, Column>> =
         columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(behaviour, data).wrap { controller ->
@@ -96,7 +97,13 @@ class GrainModelEditController(
 
     val editorColumn = Column(emptyEditor, size = ColumnSize.Full)
 
-    private var editorController: Controller<dynamic, dynamic, dynamic>? = null
+    private var editorController: Controller<*, dynamic, dynamic>? = null
+
+    private fun MultipleController<*, *, *, *, *>.updateSelection(value: Any?) {
+        this.dataControllers.forEach {
+            it.root.classList.toggle("is-selected", it.data == value)
+        }
+    }
 
     var edited by observable<Any?>(null) { _, previous, current ->
         if (previous != current) {
@@ -112,7 +119,11 @@ class GrainModelEditController(
                 }
                 else -> null
             }
+            editorController?.root?.classList?.add("is-selected")
             editorColumn.body = listOf(editorController ?: emptyEditor)
+            fieldsController.updateSelection(current)
+            grainsController.updateSelection(current)
+            behavioursController.updateSelection(current)
         }
     }
 

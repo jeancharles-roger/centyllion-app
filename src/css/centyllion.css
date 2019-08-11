@@ -19,6 +19,13 @@
   border-radius: 6px;
 }
 
+.is-selected {
+  border-radius: 6px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #011f4b !important;
+}
+
 canvas.cent-simulation {
   border-radius: 6px;
   border-style: solid;

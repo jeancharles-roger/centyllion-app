@@ -119,7 +119,7 @@ class GrainModelEditController(
                 }
                 else -> null
             }
-            editorController?.root?.classList?.add("is-selected")
+            editorController?.root?.classList?.add("is-selected", "animated", "fadeIn", "faster")
             editorColumn.body = listOf(editorController ?: emptyEditor)
             fieldsController.updateSelection(current)
             grainsController.updateSelection(current)

@@ -54,15 +54,21 @@ class GrainModelEditController(
     }
 
     val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        this.data = data.copy(fields = data.fields + data.newField())
+        val field = data.newField()
+        this.data = data.copy(fields = data.fields + field)
+        edited = field
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        this.data = data.copy(grains = data.grains + data.newGrain())
+        val grain = data.newGrain()
+        this.data = data.copy(grains = data.grains + grain)
+        edited = grain
     }
 
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        this.data = data.copy(behaviours = data.behaviours + Behaviour())
+        val behaviour = Behaviour()
+        this.data = data.copy(behaviours = data.behaviours + behaviour)
+        edited = behaviour
     }
 
     val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =

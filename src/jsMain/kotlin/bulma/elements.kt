@@ -76,7 +76,12 @@ class Content(block: DIV.() -> Unit = {}) : BulmaElement {
 /** [Delete](https://bulma.io/documentation/elements/delete) element. */
 class Delete(val onClick: (Delete) -> Unit = {}) : BulmaElement {
     override val root: HTMLElement = document.create.button(classes = "delete") {
-        onClickFunction = { if (!this@Delete.disabled) onClick(this@Delete) }
+        onClickFunction = {
+            if (!this@Delete.disabled) {
+                onClick(this@Delete)
+                it.stopPropagation()
+            }
+        }
     }
 
     var size by className(Size.None, root)

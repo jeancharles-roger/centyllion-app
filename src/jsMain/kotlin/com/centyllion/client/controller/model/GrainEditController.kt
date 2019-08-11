@@ -1,12 +1,16 @@
 package com.centyllion.client.controller.model
 
 import bulma.Box
+import bulma.Control
 import bulma.Controller
 import bulma.Div
 import bulma.Help
+import bulma.HorizontalField
+import bulma.Label
 import bulma.Level
 import bulma.Size
 import bulma.Slider
+import bulma.Tile
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
@@ -32,7 +36,7 @@ class GrainEditController(
             iconController.data = new.icon
             nameController.data = new.name
             descriptionController.data = new.description
-            movementProbabilityController.data = "${new.movementProbability}"
+            speedController.data = "${new.movementProbability}"
             firstDirectionController.data = new.allowedDirection
             extendedDirectionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
@@ -63,7 +67,7 @@ class GrainEditController(
             nameController.readOnly = new
             sizeSlider.disabled = new
             descriptionController.readOnly = new
-            movementProbabilityController.readOnly = new
+            speedController.readOnly = new
             firstDirectionController.readOnly = new
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
@@ -89,7 +93,7 @@ class GrainEditController(
 
     val sizeValue = Value("${data.size}")
 
-    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
+    val descriptionController = EditableStringController(data.description, "Description", columns = 60) { _, new, _ ->
         data = data.copy(description = new)
     }
 
@@ -97,7 +101,7 @@ class GrainEditController(
         data = data.copy(halfLife = new)
     }
 
-    val movementProbabilityController = editableDoubleController(data.movementProbability, "speed", 0.0, 1.0) { _, new, _ ->
+    val speedController = editableDoubleController(data.movementProbability, "speed", 0.0, 1.0) { _, new, _ ->
         data = data.copy(movementProbability = new)
     }
 
@@ -112,7 +116,10 @@ class GrainEditController(
         }
 
     val fieldProductionsController =
-        columnsController(context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }, context.fields) { pair, previous ->
+        columnsController(
+            context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) },
+            context.fields
+        ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
                     this.data = data.updateFieldProduction(new.first, new.second)
@@ -121,7 +128,10 @@ class GrainEditController(
         }
 
     val fieldInfluencesController =
-        columnsController(context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }, context.fields) { pair, previous ->
+        columnsController(
+            context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) },
+            context.fields
+        ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
                     this.data = data.updateFieldInfluence(new.first, new.second)
@@ -130,7 +140,10 @@ class GrainEditController(
         }
 
     val fieldPermeableController =
-        columnsController(context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }, context.fields) { pair, previous ->
+        columnsController(
+            context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) },
+            context.fields
+        ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields, 0f, 1f) { old, new, _ ->
                 if (old != new) {
                     this.data = data.updateFieldPermeable(new.first, new.second)
@@ -138,40 +151,51 @@ class GrainEditController(
             }
         }
 
-    val fieldsConfiguration = Div(
-        Help("Productions"),
-        fieldProductionsController,
-        Help("Influences"),
-        fieldInfluencesController,
-        Help("Permeability"),
-        fieldPermeableController
+    val fieldProductionsTile = TileParent(
+        TileChild(Label("Productions"), fieldProductionsController),
+        vertical = true
+    )
+
+    val fieldInfluencesTile = TileParent(
+        TileChild(Label("Influences"), fieldInfluencesController),
+        vertical = true
+    )
+
+    val fieldPermeabilitiesTile = TileParent(
+        TileChild(Label("Permeability"), fieldPermeableController),
+        vertical = true
     )
 
     override val container = Box(
-        Level(
-            left = listOf(colorController, iconController),
-            mobile = true
-        ),
-        Level(
-            left = listOf(nameController),
-            center = listOf(Help("Size"), sizeSlider, sizeValue),
-            mobile = true
-        ),
-        descriptionController,
         TileAncestor(
-            TileParent(
-                TileChild(Help("Half life")),
-                TileChild(halfLifeController),
-                vertical = true
+            Tile(
+                TileParent(
+                    TileChild(
+                        Level(
+                            center = listOf(
+                                iconController, colorController, nameController,
+                                Div(Help("Size"), sizeSlider, sizeValue)
+                            )
+                        ),
+                        descriptionController,
+                        Level(
+                            center = listOf(
+                                HorizontalField(Control(Help("Half life")), halfLifeController.container),
+                                HorizontalField(Control(Help("Speed")), speedController.container)
+                            )
+                        ),
+                        Level(center = listOf(firstDirectionController, extendedDirectionController))
+                    ),
+                    vertical = true
+                ),
+                fieldProductionsTile
             ),
-            TileParent(
-                TileChild(Help("Speed")),
-                TileChild(movementProbabilityController),
-                vertical = true
-            )
-        ),
-        Level(center = listOf(firstDirectionController, extendedDirectionController)),
-        fieldsConfiguration
+            Tile(
+                fieldInfluencesTile,
+                fieldPermeabilitiesTile
+            ),
+            vertical = true
+        )
     )
 
     override fun refresh() {
@@ -179,7 +203,7 @@ class GrainEditController(
         nameController.refresh()
         descriptionController.refresh()
         halfLifeController.refresh()
-        movementProbabilityController.refresh()
+        speedController.refresh()
         firstDirectionController.refresh()
         extendedDirectionController.refresh()
         fieldProductionsController.refresh()
@@ -189,7 +213,9 @@ class GrainEditController(
         sizeSlider.value = "${data.size}"
         sizeValue.text = "${data.size}"
 
-        fieldsConfiguration.hidden = context.fields.isEmpty()
+        fieldProductionsTile.hidden = context.fields.isEmpty()
+        fieldInfluencesTile.hidden = context.fields.isEmpty()
+        fieldPermeabilitiesTile.hidden = context.fields.isEmpty()
     }
 
 }

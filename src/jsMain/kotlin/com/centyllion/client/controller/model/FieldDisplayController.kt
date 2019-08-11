@@ -28,9 +28,9 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
 
     val status = Span(movingIcon, deathIcon)
 
-    override val container = Box(
-        Level(center = listOf(icon, titleLabel, status))
-    )
+    val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
+
+    override val container = Box(body)
 
     override fun refresh() {
         icon.root.style.color = data.color

@@ -15,7 +15,6 @@ import bulma.textButton
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
-import kotlin.math.pow
 import kotlin.properties.Delegates.observable
 
 class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Controller<Behaviour, GrainModel, Box> {
@@ -46,8 +45,6 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Cont
      )
 
     override val container = Box(header, grains)
-
-    fun toSlider(p: Double) = (10.0.pow(p)).toString()
 
     fun grainIcon(id: Int) = context.indexedGrains[id].let {
         if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")

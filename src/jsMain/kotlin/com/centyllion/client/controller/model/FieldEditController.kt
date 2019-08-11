@@ -1,12 +1,11 @@
 package com.centyllion.client.controller.model
 
 import bulma.Box
+import bulma.Control
 import bulma.Help
+import bulma.HorizontalField
 import bulma.Level
 import bulma.NoContextController
-import bulma.TileAncestor
-import bulma.TileChild
-import bulma.TileParent
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.client.controller.utils.editableIntController
@@ -54,7 +53,7 @@ class FieldEditController(
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description") { _, new, _ ->
+    val descriptionController = EditableStringController(data.description, "Description", columns = 40) { _, new, _ ->
         data = data.copy(description = new)
     }
 
@@ -77,20 +76,14 @@ class FieldEditController(
     }
 
     override val container = Box(
-        Level(center = listOf(colorController, nameController), mobile = true),
-        descriptionController,
-        TileAncestor(
-            TileParent(
-                TileChild(Help("Half life")),
-                TileChild(halfLifeController),
-                vertical = true
-            ),
-            TileParent(
-                TileChild(Help("Speed")),
-                TileChild(speedController),
-                vertical = true
-            )
-        )
+        Level(center = listOf(
+            Level(center = listOf(colorController, nameController), mobile = true),
+            descriptionController
+        )),
+        Level(center = listOf(
+            HorizontalField(Control(Help("Half life")), halfLifeController.container),
+            HorizontalField(Control(Help("Speed")), speedController.container)
+        ))
     )
 
     override fun refresh() {

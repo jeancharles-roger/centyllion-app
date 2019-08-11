@@ -146,7 +146,7 @@ class BehaviourEditController(
 
     val reactionsController = MultipleController<Reaction, Pair<Behaviour, GrainModel>, TileAncestor, TileParent, ReactionEditController>(
         data.reaction, data to context, reactionHeader, emptyList(),
-        TileAncestor( *Array(5) { TileParent(vertical = true) } ),
+        TileAncestor( *Array(5) { TileParent(vertical = true) } ), null,
         { reaction, previous ->
             previous ?: ReactionEditController(reaction, data, context).also {
                 it.onUpdate = { old, new, _ ->

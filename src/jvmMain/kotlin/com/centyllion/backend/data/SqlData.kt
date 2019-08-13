@@ -140,6 +140,10 @@ class SqlData(
         user?.toModel(detailed)
     }
 
+    override fun getUserFromKeycloakId(keycloakId: String, detailed: Boolean): User? = transaction(database) {
+        DbUser.find { DbUsers.keycloak eq keycloakId }.firstOrNull()?.toModel(detailed)
+    }
+
     override fun saveUser(user: User) {
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }
     }

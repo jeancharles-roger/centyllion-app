@@ -38,6 +38,10 @@ fun createGrainModelDescription(userId: String, sent: GrainModel) = rfc1123Forma
     GrainModelDescription(newId(), DescriptionInfo(userId, it, it, false, false), sent)
 }
 
+fun createSimulationDescription(userId: String, modelId: String, sent: Simulation) = rfc1123Format.format(Date()).let {
+    SimulationDescription(newId(),  DescriptionInfo(userId, it, it, false, false), modelId, null, sent)
+}
+
 /** Memory implementation for Data. Only used for tests, not optimal at all */
 class MemoryData(
     val users: LinkedHashMap<String, User> = linkedMapOf(),
@@ -70,16 +74,24 @@ class MemoryData(
             deletedUsers
         ).limit(offset, limit)
 
-    override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
-        users.values.find { it.details?.keycloakId == principal.payload.subject }.let {
-            if (it == null) {
-                val user = createUser(principal, principal.payload.subject)
-                users[user.id] = user
-                deletedUsers.remove(user.id)
-                user
-            } else {
-                it
-            }
+    override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
+        val user =
+            getUserFromKeycloakId(principal.payload.subject, true) ?:
+            backend?.getUserFromKeycloakId(principal.payload.subject, true)
+
+        return if (user == null) {
+            val newUser = createUser(principal, principal.payload.subject)
+            users[newUser.id] = newUser
+            deletedUsers.remove(newUser.id)
+            newUser
+        } else {
+            user
+        }
+    }
+
+    override fun getUserFromKeycloakId(keycloakId: String, detailed: Boolean): User? =
+        users.values.find { it.details?.keycloakId == keycloakId }?.let {
+            if (detailed) it else it.copy(details = null)
         }
 
     override fun getUser(id: String, detailed: Boolean): User? = users[id]?.let {
@@ -138,7 +150,7 @@ class MemoryData(
     override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 
     override fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription {
-        val result = createSimulation(userId, modelId, sent)
+        val result = createSimulationDescription(userId, modelId, sent)
         simulations[result.id] = result
         deletedSimulations.remove(result.id)
         return result

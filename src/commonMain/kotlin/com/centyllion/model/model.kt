@@ -494,9 +494,7 @@ data class Simulation(
     }
 }
 
-interface Description {
-    val id: String
-
+interface Description: Ided {
     val name: String
     val icon: String
 

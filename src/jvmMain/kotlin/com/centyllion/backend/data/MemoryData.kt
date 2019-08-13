@@ -1,12 +1,12 @@
-package com.centyllion.backend
+package com.centyllion.backend.data
 
-import com.centyllion.backend.data.Data
 import com.centyllion.common.SubscriptionType
 import com.centyllion.model.Asset
 import com.centyllion.model.DescriptionInfo
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Ided
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
@@ -46,17 +46,36 @@ class MemoryData(
     val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf(),
     val subscriptions: LinkedHashMap<String, Subscription> = linkedMapOf(),
     val assets: LinkedHashMap<String, Asset> = linkedMapOf(),
-    val assetContents: LinkedHashMap<String, ByteArray> = linkedMapOf()
+    val assetContents: LinkedHashMap<String, ByteArray> = linkedMapOf(),
+    val backend: Data? = null
 ) : Data {
 
+    private val deletedUsers = mutableSetOf<String>()
+    private val deletedModels = mutableSetOf<String>()
+    private val deletedSimulations = mutableSetOf<String>()
+    private val deletedFeatured = mutableSetOf<String>()
+    private val deletedSubscriptions = mutableSetOf<String>()
+    private val deletedAssets = mutableSetOf<String>()
+
+    /** Merges source and local lists */
+    fun <T: Ided> merge(source: List<T>?, local: List<T>, deleted: Set<String>): List<T> =
+        source?.let {
+            local + source.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } }
+        } ?: local
+
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
-        users.values.toList().map { if (detailed) it else it.copy(details = null) }.limit(offset, limit)
+        merge(
+            backend?.getAllUsers(detailed, offset, limit)?.content,
+            users.values.toList().map { if (detailed) it else it.copy(details = null) },
+            deletedUsers
+        ).limit(offset, limit)
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal) =
         users.values.find { it.details?.keycloakId == principal.payload.subject }.let {
             if (it == null) {
                 val user = createUser(principal, principal.payload.subject)
                 users[user.id] = user
+                deletedUsers.remove(user.id)
                 user
             } else {
                 it
@@ -65,7 +84,7 @@ class MemoryData(
 
     override fun getUser(id: String, detailed: Boolean): User? = users[id]?.let {
         if (detailed) it else it.copy(details = null)
-    }
+    } ?: backend?.getUser(id, detailed)
 
     override fun saveUser(user: User) {
         users[user.id] = user
@@ -75,15 +94,18 @@ class MemoryData(
         grainModels.values.toList().limit(offset, limit)
 
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
-        grainModels.values.filter {
-            it.info.userId == userId
-        }.limit(offset, limit)
+        merge(
+            backend?.grainModelsForUser(userId, offset, limit)?.content,
+            grainModels.values.filter { it.info.userId == userId },
+            deletedModels
+        ).limit(offset, limit)
 
-    override fun getGrainModel(id: String) = grainModels[id]
+    override fun getGrainModel(id: String) = grainModels[id] ?: backend?.getGrainModel(id)
 
     override fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription {
         val model = createGrainModelDescription(userId, sent)
         grainModels[model.id] = model
+        deletedModels.remove(model.id)
         return model
     }
 
@@ -94,21 +116,31 @@ class MemoryData(
     override fun deleteGrainModel(modelId: String) {
         simulations.values.filter { it.modelId == modelId }.forEach { deleteSimulation(it.id) }
         grainModels.remove(modelId)
+        deletedModels.add(modelId)
     }
 
     override fun publicSimulations(modelId: String?, offset: Int, limit: Int) =
-        simulations.values.filter { modelId == null || it.modelId == modelId }.limit(offset, limit)
+        merge(
+            backend?.publicSimulations(modelId, offset, limit)?.content,
+            simulations.values.filter { modelId == null || it.modelId == modelId },
+            deletedSimulations
+        ).limit(offset, limit)
 
     override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
-        simulations.values.filter {
-            it.info.userId == userId && (modelId == null || it.modelId == modelId)
-        }.limit(offset, limit)
+        merge(
+            backend?.simulationsForUser(userId, modelId, offset, limit)?.content,
+            simulations.values.filter {
+                it.info.userId == userId && (modelId == null || it.modelId == modelId)
+            },
+            deletedSimulations
+        ).limit(offset, limit)
 
-    override fun getSimulation(id: String) = simulations[id]
+    override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 
     override fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription {
         val result = createSimulation(userId, modelId, sent)
         simulations[result.id] = result
+        deletedSimulations.remove(result.id)
         return result
     }
 
@@ -118,12 +150,17 @@ class MemoryData(
 
     override fun deleteSimulation(simulationId: String) {
         simulations.remove(simulationId)
+        deletedSimulations.add(simulationId)
     }
 
     override fun getAllFeatured(offset: Int, limit: Int) =
-        featured.values.toList().limit(offset, limit)
+        merge(
+            backend?.getAllFeatured(offset, limit)?.content,
+            featured.values.toList(),
+            deletedFeatured
+        ).limit(offset, limit)
 
-    override fun getFeatured(id: String) = featured[id]
+    override fun getFeatured(id: String) = featured[id] ?: backend?.getFeatured(id)
 
     override fun createFeatured(simulationId: String): FeaturedDescription {
         val simulation = getSimulation(simulationId)
@@ -143,26 +180,38 @@ class MemoryData(
             FeaturedDescription(newId(), "", null, "", simulationId, "", "", "", "")
 
         featured[new.id] = new
+        deletedFeatured.remove(new.id)
         return new
     }
 
     override fun deleteFeatured(featuredId: String) {
         // delete the featured
         featured.remove(featuredId)
+        deletedFeatured.add(featuredId)
     }
 
-    override fun searchSimulation(query: String, offset: Int, limit: Int) = simulations.values
-        .filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) }
-        .limit(offset, limit)
+    override fun searchSimulation(query: String, offset: Int, limit: Int) =
+        merge(
+            backend?.searchSimulation(query, offset, limit)?.content,
+            simulations.values.filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) },
+            deletedSimulations
+        ).limit(offset, limit)
 
-    override fun searchModel(query: String, offset: Int, limit: Int) = grainModels.values
-        .filter { it.model.name.contains(query) || it.model.description.contains(query) }
-        .limit(offset, limit)
+    override fun searchModel(query: String, offset: Int, limit: Int) =
+        merge(
+            backend?.searchModel(query, offset, limit)?.content,
+            grainModels.values.filter { it.model.name.contains(query) || it.model.description.contains(query) },
+            deletedModels
+        ).limit(offset, limit)
 
     override fun subscriptionsForUser(userId: String) =
-        subscriptions.values.filter { it.userId == userId }
+        merge(
+            backend?.subscriptionsForUser(userId),
+            subscriptions.values.filter { it.userId == userId },
+            deletedSubscriptions
+        )
 
-    override fun getSubscription(id: String): Subscription? = subscriptions[id]
+    override fun getSubscription(id: String): Subscription? = subscriptions[id] ?: backend?.getSubscription(id)
 
     override fun createSubscription(
         userId: String,
@@ -177,6 +226,7 @@ class MemoryData(
             parameters.subscription, parameters.duration, parameters.amount, parameters.paymentMethod
         )
         subscriptions[new.id] = new
+        deletedSubscriptions.remove(new.id)
         return new
     }
 
@@ -186,27 +236,38 @@ class MemoryData(
 
     override fun deleteSubscription(subscriptionId: String) {
         subscriptions.remove(subscriptionId)
+        deletedSubscriptions.add(subscriptionId)
     }
 
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
-        assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } }.toList().limit(offset, limit)
+        merge(
+            backend?.getAllAssets(offset, limit, extensions)?.content,
+            assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } }.toList(),
+            deletedAssets
+        ).limit(offset, limit)
 
-    override fun assetsForUser(userId: String): List<Asset> = assets.values.filter {
-        it.userId == userId
-    }
+    override fun assetsForUser(userId: String): List<Asset> =
+        merge(
+            backend?.assetsForUser(userId),
+            assets.values.filter { it.userId == userId },
+            deletedAssets
+        )
 
-    override fun getAssetContent(id: String) = assetContents[id]
+    override fun getAssetContent(id: String) = assetContents[id] ?: backend?.getAssetContent(id)
 
     override fun createAsset(name: String, userId: String, data: ByteArray): Asset {
         val id = newId()
         val result = Asset(id, name, userId)
         assets[id] = result
         assetContents[id] = data
+        deletedAssets.remove(id)
         return result
     }
 
     override fun deleteAsset(id: String) {
         assets.remove(id)
+        assetContents.remove(id)
+        deletedAssets.add(id)
     }
 
     private fun <T> List<T>.limit(offset: Int, limit: Int) =

@@ -7,6 +7,10 @@ val emptyUser = User("", "", "", null)
 
 fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
 
+interface Ided {
+    val id: String
+}
+
 @Serializable
 data class ResultPage<T>(
     val content: List<T>,
@@ -15,12 +19,12 @@ data class ResultPage<T>(
 )
 
 @Serializable
-data class User(
-    val id: String,
+data class User (
+    override val id: String,
     val name: String,
     val username: String,
     val details: UserDetails? = null
-)
+): Ided
 
 @Serializable
 data class UserDetails(
@@ -46,7 +50,7 @@ enum class SubscriptionState {
 
 @Serializable
 data class Subscription(
-    val id: String,
+    override val id: String,
 
     val userId: String,
     val sandbox: Boolean,
@@ -64,7 +68,7 @@ data class Subscription(
     val paymentMethod: String,
 
     val state: SubscriptionState = SubscriptionState.Waiting
-) {
+): Ided {
 
     fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)
 
@@ -74,7 +78,7 @@ data class Subscription(
 
 @Serializable
 class Asset(
-    val id: String,
+    override val id: String,
     val name: String,
     val userId: String
-)
+): Ided

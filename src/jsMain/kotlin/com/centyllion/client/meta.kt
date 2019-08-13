@@ -1,5 +1,6 @@
 package com.centyllion.client
 
+import bulma.NavBarImageItem
 import kotlinx.serialization.Serializable
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
@@ -31,6 +32,16 @@ fun showVersion(api: Api) {
             if (versionElement is HTMLElement) versionElement.innerText = it.message ?: "error"
             if (buildElement is HTMLElement) buildElement.innerText = it.message ?: "error"
             if (dateElement is HTMLElement) dateElement.innerText = it.message ?: "error"
+        }
+    }
+}
+
+fun showInfo(context: AppContext) {
+    context.api.fetchInfo().then {
+        if (it.dry) {
+            context.navBar.brand += NavBarImageItem(
+                "https://www.centyllion.com/assets/images/beta-white-2by1.png", "/"
+            ).apply { imgNode.style.maxHeight = "2rem" }
         }
     }
 }

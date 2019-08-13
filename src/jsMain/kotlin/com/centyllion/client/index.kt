@@ -86,6 +86,8 @@ fun index() {
                 .filter { page -> page.header && page.authorized(context) }
                 .map { page -> NavBarLinkItem(page.title, id = page.id) { context.openPage(page) } }
 
+            showInfo(context)
+
             // shows version
             showVersion(context.api)
 

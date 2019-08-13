@@ -4,6 +4,7 @@ import com.centyllion.model.Asset
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Info
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
@@ -42,6 +43,7 @@ class JsonConverter : ContentConverter {
     ) = TextContent(convertForSend(value), contentType.withCharset(context.call.suitableCharset()))
 
     private fun convertForSend(value: Any?): String = when (value) {
+        is Info -> stringify(Info.serializer(), value)
         is User -> stringify(User.serializer(), value)
         is GrainModel -> stringify(GrainModel.serializer(), value)
         is GrainModelDescription -> stringify(GrainModelDescription.serializer(), value)

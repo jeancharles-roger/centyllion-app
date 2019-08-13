@@ -4,6 +4,7 @@ import com.centyllion.model.Asset
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Info
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
@@ -69,6 +70,9 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     fun fetchVersion() =
         fetch("GET", "/version.json").then { json.parse(Version.serializer(), it) }
+
+    fun fetchInfo() =
+        fetch("GET", "/api/info").then { json.parse(Info.serializer(), it) }
 
     fun fetchMe(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->

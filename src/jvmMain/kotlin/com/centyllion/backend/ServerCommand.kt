@@ -42,6 +42,7 @@ private fun certificateKeystore(): KeyStore {
 interface ServerConfig {
 
     val debug: Boolean
+    val dry: Boolean
     val verifier: JWTVerifier?
 
     val authorization: AuthorizationManager
@@ -52,12 +53,13 @@ interface ServerConfig {
 }
 
 data class CliServerConfig(
-    override val debug: Boolean, val dry: Boolean,
+    override val debug: Boolean, override val dry: Boolean,
     val host: String, val port: Int,
     val dbType: String, val dbHost: String, val dbPort: Int,
     val dbName: String, val dbUser: String, val dbPassword: String,
     val stripeKey: String, val keycloakPassword: String,
     override val webroot: String = "webroot"
+
 ): ServerConfig {
 
     override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)

@@ -55,6 +55,7 @@ fun createTextJwtToken(id: String, name: String, email: String, roles: Array<out
 
 class TestConfig: ServerConfig {
     override val debug: Boolean = false
+    override val dry: Boolean = true
 
     override val verifier: JWTVerifier? = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
     override val authorization: AuthorizationManager = MemoryAuthorizationManager()

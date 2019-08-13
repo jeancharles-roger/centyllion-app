@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.centyllion.backend.route.asset
 import com.centyllion.backend.route.featured
+import com.centyllion.backend.route.info
 import com.centyllion.backend.route.me
 import com.centyllion.backend.route.model
 import com.centyllion.backend.route.simulation
@@ -194,6 +195,7 @@ fun Application.centyllion(config: ServerConfig) {
                 model(subscription, config.data)
                 simulation(subscription, config.data)
                 asset(subscription, config.data)
+                info(config)
             }
         }
     }

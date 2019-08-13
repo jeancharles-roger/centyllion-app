@@ -2,6 +2,7 @@ package com.centyllion.backend
 
 import com.auth0.jwt.JWTVerifier
 import com.centyllion.backend.data.Data
+import com.centyllion.backend.data.MemoryData
 import com.centyllion.backend.data.SqlData
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.UsageError
@@ -51,7 +52,7 @@ interface ServerConfig {
 }
 
 data class CliServerConfig(
-    override val debug: Boolean,
+    override val debug: Boolean, val dry: Boolean,
     val host: String, val port: Int,
     val dbType: String, val dbHost: String, val dbPort: Int,
     val dbName: String, val dbUser: String, val dbPassword: String,
@@ -63,7 +64,9 @@ data class CliServerConfig(
 
     override val payment: PaymentManager = StripePaymentManager(stripeKey)
 
-    override val data: Data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword)
+    override val data: Data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword).let {
+        if (dry) MemoryData(backend = it) else it
+    }
 
     override val verifier: JWTVerifier? = null
 
@@ -78,6 +81,7 @@ class ServerCommand : CliktCommand("Start the server") {
     val host by option(help = "Host to listen").default("localhost")
     val port by option(help = "Port to listen").int().default(0)
 
+    val dry by option(help = "The modification are only done in memory").flag(default = false)
 
     val dbType by option("--db-type", help = "Database type")
         .default("postgresql")
@@ -136,17 +140,10 @@ class ServerCommand : CliktCommand("Start the server") {
         val actualStripeKey = stripeKey ?: extractPassword(loadedKeystore, stripeKeyAlias, pwd)
         val actualKeycloakPassword = keycloakPassword ?: extractPassword(loadedKeystore, keycloakPasswordKeyAlias, pwd)
         return CliServerConfig(
-            debug,
-            host,
-            port,
-            dbType,
-            dbHost,
-            dbPort,
-            dbName,
-            dbUser,
-            actualDbPassword,
-            actualStripeKey,
-            actualKeycloakPassword,
+            debug, dry,
+            host, port,
+            dbType, dbHost, dbPort, dbName, dbUser, actualDbPassword,
+            actualStripeKey, actualKeycloakPassword,
             webroot
         )
     }

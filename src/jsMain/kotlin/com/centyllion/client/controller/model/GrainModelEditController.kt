@@ -101,7 +101,7 @@ class GrainModelEditController(
     val emptyEditor = SubTitle("Select a element to edit it")
         .also { it.root.classList.add("has-text-centered") }
 
-    val editorColumn = Column(emptyEditor, size = ColumnSize.Full)
+    val editorColumn = Column(emptyEditor, size = ColumnSize.TwoThirds)
 
     private var editorController: Controller<*, dynamic, dynamic>? = null
 
@@ -142,18 +142,12 @@ class GrainModelEditController(
                 mobile = true
             ),
             fieldsController,
-            size = ColumnSize.OneQuarter
-        ),
-        Column(
             Level(
                 left = listOf(Title("Grains", TextSize.S4)),
                 right = listOf(addGrainButton),
                 mobile = true
             ),
             grainsController,
-            size = ColumnSize.OneQuarter
-        ),
-        Column(
             Level(
                 left = listOf(
                     Title("Behaviours", TextSize.S4)
@@ -162,10 +156,13 @@ class GrainModelEditController(
                 mobile = true
             ),
             behavioursController,
-            size = ColumnSize.Half
-        ),
+            size = ColumnSize.OneThird
+        ).apply {
+            root.style.height = "80vh"
+            root.style.overflowY = "auto"
+        },
         editorColumn,
-        multiline = true
+        multiline = true, vcentered = true
     )
 
     override fun refresh() {

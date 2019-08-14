@@ -3,6 +3,8 @@ package com.centyllion.backend
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.centyllion.backend.authorization.AuthorizationManager
+import com.centyllion.backend.authorization.MemoryAuthorizationManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.data.MemoryData
 import com.centyllion.common.SubscriptionType

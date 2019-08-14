@@ -1,5 +1,7 @@
-package com.centyllion.backend
+package com.centyllion.backend.authorization
 
+import com.centyllion.backend.authBase
+import com.centyllion.backend.authRealm
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.topGroup
 import org.keycloak.admin.client.Keycloak

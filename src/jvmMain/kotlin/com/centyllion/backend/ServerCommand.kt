@@ -1,6 +1,8 @@
 package com.centyllion.backend
 
 import com.auth0.jwt.JWTVerifier
+import com.centyllion.backend.authorization.AuthorizationManager
+import com.centyllion.backend.authorization.KeycloakAuthorizationManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.data.MemoryData
 import com.centyllion.backend.data.SqlData
@@ -62,7 +64,8 @@ data class CliServerConfig(
 
 ): ServerConfig {
 
-    override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
+    override val authorization: AuthorizationManager =
+        KeycloakAuthorizationManager(keycloakPassword)
 
     override val payment: PaymentManager = StripePaymentManager(stripeKey)
 

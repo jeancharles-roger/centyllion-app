@@ -1,13 +1,15 @@
-package com.centyllion.backend
+package com.centyllion.backend.authorization
 
 import com.centyllion.common.SubscriptionType
 import java.util.LinkedHashMap
 
 class MemoryAuthorizationManager(
-    val groups: LinkedHashMap<String, SubscriptionType> = linkedMapOf()
+    val groups: LinkedHashMap<String, SubscriptionType> = linkedMapOf(),
+    val backend: AuthorizationManager? = null
+): AuthorizationManager {
 
-    ): AuthorizationManager {
-    override fun getGroup(id: String): SubscriptionType = groups[id] ?: SubscriptionType.Apprentice
+    override fun getGroup(id: String): SubscriptionType =
+        groups[id] ?: backend?.getGroup(id) ?: SubscriptionType.Apprentice
 
     override fun joinGroup(id: String, group: SubscriptionType) {
         groups[id] = group

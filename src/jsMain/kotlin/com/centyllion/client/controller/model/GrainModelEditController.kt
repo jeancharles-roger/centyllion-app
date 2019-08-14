@@ -75,7 +75,10 @@ class GrainModelEditController(
         noContextColumnsController(data.fields, onClick = { field, _ -> edited = field })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.body.right += Delete { data = data.dropField(controller.data) }
+                controller.body.right += Delete {
+                    if (edited == controller.data) edited = null
+                    data = data.dropField(controller.data)
+                }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }
@@ -84,7 +87,10 @@ class GrainModelEditController(
         columnsController(data.grains, data, onClick = { d, _ -> edited = d })
         { grain, previous ->
             previous ?: GrainDisplayController(grain, data).wrap { controller ->
-                controller.body.right += Delete { data = data.dropGrain(controller.data) }
+                controller.body.right += Delete {
+                    if (edited == controller.data) edited = null
+                    data = data.dropGrain(controller.data)
+                }
                 Column(controller, size = ColumnSize.Full)
             }
         }
@@ -93,7 +99,10 @@ class GrainModelEditController(
         columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(behaviour, data).wrap { controller ->
-                controller.header.right += Delete { data = data.dropBehaviour(controller.data) }
+                controller.header.right += Delete {
+                    if (edited == controller.data) edited = null
+                    data = data.dropBehaviour(controller.data)
+                }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }

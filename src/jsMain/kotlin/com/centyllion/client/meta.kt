@@ -1,6 +1,8 @@
 package com.centyllion.client
 
 import bulma.NavBarImageItem
+import kotlinx.html.dom.create
+import kotlinx.html.js.img
 import kotlinx.serialization.Serializable
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
@@ -38,10 +40,14 @@ fun showVersion(api: Api) {
 
 fun showInfo(context: AppContext) {
     context.api.fetchInfo().then {
-        if (it.dry) {
-            context.navBar.brand += NavBarImageItem(
-                "https://www.centyllion.com/assets/images/beta-white-2by1.png", "/"
-            ).apply { imgNode.style.maxHeight = "2rem" }
+        val brand = context.navBar.brand.firstOrNull()
+        if (it.dry && brand is NavBarImageItem) {
+            val image = document.create.img(
+                src = "https://www.centyllion.com/assets/images/beta-white-2by1.png"
+            )
+            image.style.maxHeight = "1rem"
+            image.style.marginLeft = "0.4rem"
+            brand.root.appendChild(image)
         }
     }
 }

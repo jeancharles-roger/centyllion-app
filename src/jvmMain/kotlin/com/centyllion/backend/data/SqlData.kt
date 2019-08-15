@@ -321,7 +321,8 @@ class SqlData(
     private fun searchSimulationQuery(query: String) = DbSimulationDescriptions
         .innerJoin(DbDescriptionInfos)
         .select {
-            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearch query)
+            val q = if (query.isNotBlank()) "$query:*" else ""
+            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearch q)
         }
 
 
@@ -334,7 +335,8 @@ class SqlData(
     }
 
     private fun searchModelQuery(query: String) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-        (DbDescriptionInfos.readAccess eq true) and (DbModelDescriptions.searchable fullTextSearch query)
+        val q = if (query.isNotBlank()) "$query:*" else ""
+        (DbDescriptionInfos.readAccess eq true) and (DbModelDescriptions.searchable fullTextSearch q)
     }
 
     override fun searchModel(query: String, offset: Int, limit: Int) = transaction {

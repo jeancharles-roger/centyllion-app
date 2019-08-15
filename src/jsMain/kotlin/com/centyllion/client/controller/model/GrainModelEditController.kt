@@ -4,7 +4,6 @@ import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Controller
-import bulma.Delete
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Level
@@ -50,6 +49,7 @@ class GrainModelEditController(
             fieldsController.readOnly = new
             grainsController.readOnly = new
             behavioursController.readOnly = new
+            editorController?.readOnly = new
         }
     }
 
@@ -75,7 +75,7 @@ class GrainModelEditController(
         noContextColumnsController(data.fields, onClick = { field, _ -> edited = field })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.body.right += Delete {
+                controller.onDelete = {
                     if (edited == controller.data) edited = null
                     data = data.dropField(controller.data)
                 }
@@ -87,7 +87,7 @@ class GrainModelEditController(
         columnsController(data.grains, data, onClick = { d, _ -> edited = d })
         { grain, previous ->
             previous ?: GrainDisplayController(grain, data).wrap { controller ->
-                controller.body.right += Delete {
+                controller.onDelete = {
                     if (edited == controller.data) edited = null
                     data = data.dropGrain(controller.data)
                 }
@@ -99,7 +99,7 @@ class GrainModelEditController(
         columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(behaviour, data).wrap { controller ->
-                controller.header.right += Delete {
+                controller.onDelete = {
                     if (edited == controller.data) edited = null
                     data = data.dropBehaviour(controller.data)
                 }
@@ -120,7 +120,7 @@ class GrainModelEditController(
         }
     }
 
-    var edited by observable<Any?>(null) { _, previous, current ->
+    var edited: Any? by observable<Any?>(null) { _, previous, current ->
         if (previous != current) {
             editorController = when (current) {
                 is Field -> FieldEditController(current) { old, new, _ ->
@@ -135,13 +135,13 @@ class GrainModelEditController(
                 else -> null
             }
             editorController?.root?.classList?.add("animated", "fadeIn", "fast")
+            editorController?.readOnly = this.readOnly
             editorColumn.body = listOf(editorController ?: emptyEditor)
             fieldsController.updateSelection(current)
             grainsController.updateSelection(current)
             behavioursController.updateSelection(current)
         }
     }
-
 
     override val container = Columns(
         Column(

@@ -12,6 +12,7 @@ import bulma.Level
 import bulma.Size
 import bulma.TextColor
 import bulma.textButton
+import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
@@ -27,7 +28,17 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Cont
         if (old != new) refresh()
     }
 
-    override var readOnly = false
+    override var readOnly by observable(false) { _, old, new ->
+        if (old != new) {
+            deleteCallbackProperty.readOnly = new
+        }
+    }
+
+    val deleteCallbackProperty = DeleteCallbackProperty(this) { old, new ->
+        old?.let { header.right -= it }
+        new?.let { header.right += it }
+    }
+    var onDelete by deleteCallbackProperty
 
     val titleLabel = Label(behaviour.name)
 

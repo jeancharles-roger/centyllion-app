@@ -7,6 +7,7 @@ import bulma.Level
 import bulma.NoContextController
 import bulma.Span
 import bulma.TextColor
+import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
 
@@ -16,7 +17,9 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
         if (old != new) refresh()
     }
 
-    override var readOnly = false
+    override var readOnly by observable(false) { _, old, new ->
+        if (old != new) deleteCallbackProperty.readOnly = new
+    }
 
     val icon = Icon("square-full").apply {
         root.style.color = data.color
@@ -29,6 +32,12 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
     val status = Span(movingIcon, deathIcon)
 
     val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
+
+    val deleteCallbackProperty = DeleteCallbackProperty(this) { old, new ->
+        old?.let { body.right -= it }
+        new?.let { body.right += it }
+    }
+    var onDelete by deleteCallbackProperty
 
     override val container = Box(body)
 

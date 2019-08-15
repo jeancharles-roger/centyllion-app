@@ -115,13 +115,17 @@ class GrainModelEditController(
     private var editorController: Controller<*, dynamic, dynamic>? = null
 
     private fun MultipleController<*, *, *, *, *>.updateSelection(value: Any?) {
+        val found =
+            this.dataControllers.find { it.data === value } ?:
+            this.dataControllers.find { it.data == value }
+
         this.dataControllers.forEach {
-            it.root.classList.toggle("is-selected", it.data == value)
+            it.root.classList.toggle("is-selected", found == it)
         }
     }
 
     var edited: Any? by observable<Any?>(null) { _, previous, current ->
-        if (previous != current) {
+        if (previous !== current) {
             editorController = when (current) {
                 is Field -> FieldEditController(current) { old, new, _ ->
                     data = data.updateField(old, new)

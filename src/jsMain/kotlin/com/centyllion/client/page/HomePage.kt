@@ -3,8 +3,8 @@ package com.centyllion.client.page
 import bulma.Button
 import bulma.Column
 import bulma.ColumnSize
+import bulma.Columns
 import bulma.Control
-import bulma.Div
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Input
@@ -15,10 +15,6 @@ import bulma.PanelSimpleBlock
 import bulma.PanelTabs
 import bulma.PanelTabsItem
 import bulma.Size
-import bulma.TileAncestor
-import bulma.TileChild
-import bulma.TileParent
-import bulma.TileSize
 import bulma.Title
 import bulma.noContextColumnsController
 import bulma.noContextPanelController
@@ -132,13 +128,13 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         { error(it) }
     ).apply { limit = 6 }
 
-    val container = TileAncestor(
-        TileParent(TileChild(panelController), size = TileSize.S3),
-        TileParent(
-            TileChild(userController),
-            TileChild(Div(Title("My Recent simulation"), recentSimulationResult)),
-            TileChild(Div(Title("Featured models"), featuredResult)),
-            size = TileSize.S9, vertical = true
+    val container = Columns(
+        Column(panelController, size = ColumnSize.OneThird),
+        Column(
+            userController,
+            Title("My Recent simulation"), recentSimulationResult,
+            Title("Featured models"), featuredResult,
+            size = ColumnSize.TwoThirds
         )
     )
 

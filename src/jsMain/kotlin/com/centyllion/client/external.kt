@@ -17,7 +17,7 @@ import kotlin.browser.document
 import kotlin.js.Promise
 
 @JsName("external")
-fun external(baseUrl: String = "https://beta.centyllion.com") {
+fun external(baseUrl: String = "https://app.centyllion.com") {
     console.log("Run centyllion external")
 
     // creates keycloak instance

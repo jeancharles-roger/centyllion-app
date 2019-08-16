@@ -48,7 +48,7 @@ fun index() {
     val root = document.querySelector(contentSelector) as HTMLElement
 
     // creates keycloak instance
-    val keycloak = Keycloak()
+    val keycloak = Keycloak("/keycloak.json")
 
     val api = Api(keycloak)
     api.addCss()

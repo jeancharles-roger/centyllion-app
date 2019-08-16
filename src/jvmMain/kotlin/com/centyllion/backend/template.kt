@@ -23,7 +23,7 @@ import kotlinx.html.title
 fun HTML.centyllionHead(title: String) = head {
     title { +title }
     meta("viewport", "width=device-width, initial-scale=1", "UTF-8")
-    link("css/animate.css", "stylesheet")
+    link("/css/animate.css", "stylesheet")
 
     // Font Awesome
     link("https://use.fontawesome.com/releases/v5.8.1/css/solid.css", "stylesheet") {
@@ -40,17 +40,17 @@ fun HTML.centyllionHead(title: String) = head {
     }
 
     // Javascript
-    script(src = "js/Keycloak-4.8.0/keycloak.js") {}
+    script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
 
-    script(src = "js/threejs-r106/three.min.js") {}
-    script(src = "js/threejs-r106/GLTFLoader.js") {}
-    script(src = "js/threejs-r106/OrbitControls.js") {}
-    script(src = "js/threejs-r106/ColladaLoader.js") {}
+    script(src = "/js/threejs-r106/three.min.js") {}
+    script(src = "/js/threejs-r106/GLTFLoader.js") {}
+    script(src = "/js/threejs-r106/OrbitControls.js") {}
+    script(src = "/js/threejs-r106/ColladaLoader.js") {}
     
     script(src = "https://js.stripe.com/v3/") {}
 
-    script(src = "js/require.js") {}
-    script(src = "js/centyllion/requirejs.config.json") {}
+    script(src = "/js/require.js") {}
+    script(src = "/js/centyllion/requirejs.config.json") {}
 }
 
 @HtmlTagMarker

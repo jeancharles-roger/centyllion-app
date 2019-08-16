@@ -144,7 +144,7 @@ tasks {
     val deploy = rootProject.file("deploy")
 
     val mainFunction = "com.centyllion.client.index()"
-    val centyllionUrl = "https://beta.centyllion.com"
+    val centyllionUrl = "https://app.centyllion.com"
     val externalFunction = "com.centyllion.client.external(\"$centyllionUrl\")"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
@@ -204,7 +204,7 @@ tasks {
             val configFile = file("${jsDir}/requirejs.config.json")
             configFile.writeText(
                 """requirejs.config({
-                    'baseUrl': 'js',
+                    'baseUrl': '/js',
                     paths: {
                         'chartjs': 'Chart.js-2.8.0/Chart',
                         'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',

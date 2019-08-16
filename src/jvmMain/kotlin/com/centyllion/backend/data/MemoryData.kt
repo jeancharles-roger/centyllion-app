@@ -62,6 +62,13 @@ class MemoryData(
     private val deletedAssets = mutableSetOf<String>()
 
     /** Merges source and local lists */
+    fun <T: Ided> merge(source: ResultPage<T>?, local: List<T>, deleted: Set<String>, offset: Int, limit: Int) =
+        source?.let {
+            val all = local + source.content.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } }
+            ResultPage(all.limit(offset, limit).content, offset, it.totalSize)
+        } ?: local.limit(offset, limit)
+
+    /** Merges source and local lists */
     fun <T: Ided> merge(source: List<T>?, local: List<T>, deleted: Set<String>): List<T> =
         source?.let {
             local + source.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } }
@@ -69,10 +76,10 @@ class MemoryData(
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
         merge(
-            backend?.getAllUsers(detailed, offset, limit)?.content,
+            backend?.getAllUsers(detailed, offset, limit),
             users.values.toList().map { if (detailed) it else it.copy(details = null) },
-            deletedUsers
-        ).limit(offset, limit)
+            deletedUsers, offset, limit
+        )
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
         val user =
@@ -107,10 +114,10 @@ class MemoryData(
 
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         merge(
-            backend?.grainModelsForUser(userId, offset, limit)?.content,
+            backend?.grainModelsForUser(userId, offset, limit),
             grainModels.values.filter { it.info.userId == userId },
-            deletedModels
-        ).limit(offset, limit)
+            deletedModels, offset, limit
+        )
 
     override fun getGrainModel(id: String) = grainModels[id] ?: backend?.getGrainModel(id)
 
@@ -133,19 +140,19 @@ class MemoryData(
 
     override fun publicSimulations(modelId: String?, offset: Int, limit: Int) =
         merge(
-            backend?.publicSimulations(modelId, offset, limit)?.content,
+            backend?.publicSimulations(modelId, offset, limit),
             simulations.values.filter { modelId == null || it.modelId == modelId },
-            deletedSimulations
-        ).limit(offset, limit)
+            deletedSimulations, offset, limit
+        )
 
     override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         merge(
-            backend?.simulationsForUser(userId, modelId, offset, limit)?.content,
+            backend?.simulationsForUser(userId, modelId, offset, limit),
             simulations.values.filter {
                 it.info.userId == userId && (modelId == null || it.modelId == modelId)
             },
-            deletedSimulations
-        ).limit(offset, limit)
+            deletedSimulations, offset, limit
+        )
 
     override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 
@@ -167,10 +174,10 @@ class MemoryData(
 
     override fun getAllFeatured(offset: Int, limit: Int) =
         merge(
-            backend?.getAllFeatured(offset, limit)?.content,
+            backend?.getAllFeatured(offset, limit),
             featured.values.toList(),
-            deletedFeatured
-        ).limit(offset, limit)
+            deletedFeatured, offset, limit
+        )
 
     override fun getFeatured(id: String) = featured[id] ?: backend?.getFeatured(id)
 
@@ -204,17 +211,17 @@ class MemoryData(
 
     override fun searchSimulation(query: String, offset: Int, limit: Int) =
         merge(
-            backend?.searchSimulation(query, offset, limit)?.content,
+            backend?.searchSimulation(query, offset, limit),
             simulations.values.filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) },
-            deletedSimulations
-        ).limit(offset, limit)
+            deletedSimulations, offset, limit
+        )
 
     override fun searchModel(query: String, offset: Int, limit: Int) =
         merge(
-            backend?.searchModel(query, offset, limit)?.content,
+            backend?.searchModel(query, offset, limit),
             grainModels.values.filter { it.model.name.contains(query) || it.model.description.contains(query) },
-            deletedModels
-        ).limit(offset, limit)
+            deletedModels, offset, limit
+        )
 
     override fun subscriptionsForUser(userId: String) =
         merge(
@@ -253,10 +260,10 @@ class MemoryData(
 
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
         merge(
-            backend?.getAllAssets(offset, limit, extensions)?.content,
+            backend?.getAllAssets(offset, limit, extensions),
             assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } }.toList(),
-            deletedAssets
-        ).limit(offset, limit)
+            deletedAssets, offset, limit
+        )
 
     override fun assetsForUser(userId: String): List<Asset> =
         merge(

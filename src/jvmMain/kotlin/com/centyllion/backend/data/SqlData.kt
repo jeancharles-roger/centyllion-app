@@ -328,7 +328,9 @@ class SqlData(
 
     override fun searchSimulation(query: String, offset: Int, limit: Int) = transaction {
         val content = DbSimulationDescription.wrapRows(
-            searchSimulationQuery(query).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            searchSimulationQuery(query)
+                .limit(limit, offset)
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
         ResultPage(content, offset, searchSimulationQuery(query).count())
@@ -341,7 +343,9 @@ class SqlData(
 
     override fun searchModel(query: String, offset: Int, limit: Int) = transaction {
         val content = DbModelDescription.wrapRows(
-            searchModelQuery(query).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+            searchModelQuery(query)
+                .limit(limit, offset)
+                .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
         ResultPage(content, offset, searchModelQuery(query).count())

@@ -4,7 +4,6 @@ import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
-import com.centyllion.model.FeaturedDescription
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -27,16 +26,11 @@ fun Route.featured(subscription: SubscriptionManager, data: Data) {
         // post a new featured
         post {
             withRequiredPrincipal(adminRole) {
-                val newFeatured = call.receive(FeaturedDescription::class)
-                val model = data.getGrainModel(newFeatured.modelId)
-                val simulation = data.getSimulation(newFeatured.simulationId)
-                val author = subscription.getUser(newFeatured.authorId, false)
-
+                val simulationId = call.receive(String::class)
                 context.respond(
-                    when {
-                        model == null || simulation == null || author == null -> HttpStatusCode.NotFound
-                        model.info.userId != author.id && simulation.info.userId != author.id -> HttpStatusCode.Unauthorized
-                        else -> data.createFeatured(newFeatured.simulationId)
+                    when (data.getSimulation(simulationId)) {
+                        null -> HttpStatusCode.NotFound
+                        else -> data.createFeatured(simulationId)
                     }
                 )
             }

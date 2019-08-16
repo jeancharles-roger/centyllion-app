@@ -11,7 +11,6 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Subscription
 import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
-import com.centyllion.model.emptyFeatured
 import keycloak.KeycloakInstance
 import kotlinx.html.dom.create
 import kotlinx.html.js.link
@@ -222,10 +221,9 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             }
         }
 
-    fun saveFeatured(modelId: String, simulationId: String, authorId: String) =
+    fun saveFeatured(simulationId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            val featured = emptyFeatured(modelId = modelId, simulationId = simulationId, authorId = authorId)
-            fetch("POST", "/api/featured", bearer, json.stringify(FeaturedDescription.serializer(), featured))
+            fetch("POST", "/api/featured", bearer, simulationId)
                 .then { json.parse(FeaturedDescription.serializer(), it) }
         }
 

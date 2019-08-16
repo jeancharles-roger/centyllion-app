@@ -31,7 +31,6 @@ import com.centyllion.client.controller.navigation.ResultPageController
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 import org.w3c.files.get
@@ -46,7 +45,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
             previous ?: FeaturedController(featured).wrap { ctrl ->
                 ctrl.container.content += CardFooter(CardFooterContentItem(Delete {
                     // forces delete with this toggle
-                    toggleFeatured(emptyGrainModelDescription, emptySimulationDescription, ctrl.data)
+                    toggleFeatured(emptySimulationDescription, ctrl.data)
                 }))
                 Column(ctrl.container, size = ColumnSize.Half)
             }
@@ -141,12 +140,11 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     fun toggleFeatured(
-        model: GrainModelDescription,
         simulation: SimulationDescription,
         featured: FeaturedDescription?
     ) {
         val result = if (featured == null) {
-            api.saveFeatured(model.id, simulation.id, model.info.userId).then {
+            api.saveFeatured(simulation.id).then {
                 featuredController.data + it
             }
         } else {

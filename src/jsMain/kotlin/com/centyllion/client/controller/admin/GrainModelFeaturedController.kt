@@ -22,8 +22,8 @@ class GrainModelFeaturedController(
     model: GrainModelDescription, allFeatured: List<FeaturedDescription>,
     api: Api,
     var toggleFeature: (
-        model: GrainModelDescription, simulation: SimulationDescription, featured: FeaturedDescription?
-    ) -> Unit = { _, _, _ -> }
+        simulation: SimulationDescription, featured: FeaturedDescription?
+    ) -> Unit = { _, _ -> }
 ) : Controller<GrainModelDescription, List<FeaturedDescription>, Box> {
 
     override var data by observable(model)
@@ -63,7 +63,7 @@ class GrainModelFeaturedController(
         api.fetchPublicSimulations(model.id, limit = 50).then { simulations ->
             dropdown.items = simulations.content.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
-                    toggleFeature(model, simulation, featured(simulation))
+                    toggleFeature(simulation, featured(simulation))
                     dropdown.toggleDropdown()
                 }
             }

@@ -36,7 +36,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
             initialList = emptyList<SimulationDescription>(),
             header = listOf(noSimulationResult)
         ) { data, previous ->
-            previous ?: SimulationDisplayController(data).wrap {
+            previous ?: SimulationDisplayController(data, appContext.api).wrap {
                 it.root.style.cursor = "pointer"
                 Column(it.container, size = ColumnSize.OneQuarter)
             }
@@ -110,7 +110,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
     val recentListController =
         noContextColumnsController(emptyList<SimulationDescription>())
         { data, previous ->
-            previous ?: SimulationDisplayController(data).wrap { ctrl ->
+            previous ?: SimulationDisplayController(data, appContext.api).wrap { ctrl ->
                 ctrl.root.style.cursor = "pointer"
                 ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.id)) }
                 Column(ctrl.container, size = ColumnSize.OneQuarter)

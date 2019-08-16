@@ -96,7 +96,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
     val recentSimulationListController =
         noContextColumnsController(emptyList<SimulationDescription>())
         { data, previous ->
-            previous ?: SimulationDisplayController(data).wrap { ctrl ->
+            previous ?: SimulationDisplayController(data, appContext.api).wrap { ctrl ->
                 ctrl.root.style.cursor = "pointer"
                 ctrl.root.onclick = { appContext.openPage(showPage, mapOf("simulation" to ctrl.data.id)) }
                 Column(ctrl.container, size = ColumnSize.OneThird)

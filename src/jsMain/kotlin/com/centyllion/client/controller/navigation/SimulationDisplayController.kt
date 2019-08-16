@@ -8,19 +8,28 @@ import bulma.Image
 import bulma.ImageSize
 import bulma.Label
 import bulma.NoContextController
+import com.centyllion.client.Api
 import com.centyllion.model.SimulationDescription
 import kotlin.properties.Delegates.observable
 
-class SimulationDisplayController(simulationDescription: SimulationDescription) :
-    NoContextController<SimulationDescription, Card>() {
+class SimulationDisplayController(
+    simulationDescription: SimulationDescription, val api: Api
+) : NoContextController<SimulationDescription, Card>() {
 
     override var data by observable(simulationDescription) { _, old, new ->
-        if (old != new)  refresh()
+        if (old != new) refresh()
     }
 
     override var readOnly = false
 
-    val name = Label(data.simulation.name)
+    fun getName(): String {
+        api.fetchGrainModel(data.modelId).then {
+            name.text = "${data.name} / ${it.name}"
+        }
+        return data.name
+    }
+
+    val name = Label(getName())
     val description = Help(data.simulation.description)
     val author = Help(data.info.user?.name?.let {"by $it"} ?: "")
 
@@ -34,7 +43,7 @@ class SimulationDisplayController(simulationDescription: SimulationDescription) 
     }
 
     override fun refresh() {
-        name.text = data.name
+        name.text =getName()
         description.text = data.simulation.description
         author.text = data.info.user?.name?.let {"by $it"} ?: ""
         thumbnail.src = "/api/simulation/${data.id}/thumbnail"

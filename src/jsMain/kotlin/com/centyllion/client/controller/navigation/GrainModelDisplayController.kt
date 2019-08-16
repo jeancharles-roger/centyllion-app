@@ -1,6 +1,10 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.*
+import bulma.Card
+import bulma.CardContent
+import bulma.Help
+import bulma.Label
+import bulma.NoContextController
 import com.centyllion.model.GrainModelDescription
 import kotlin.properties.Delegates.observable
 
@@ -13,11 +17,13 @@ class GrainModelDisplayController(modelDescription: GrainModelDescription) :
 
     override var readOnly = false
 
-    val name = SubTitle(data.model.name)
-    val description = Label(data.model.description)
+    val name = Label(data.model.name)
+    val description = Help(data.model.description)
+    val author = Help(data.info.user?.name?.let {"by $it"} ?: "")
+
 
     override val container = Card(
-        CardContent(name, description)
+        CardContent(name, description, author)
     ).apply {
         root.classList.add("is-outlined")
     }
@@ -25,5 +31,6 @@ class GrainModelDisplayController(modelDescription: GrainModelDescription) :
     override fun refresh() {
         name.text = data.name
         description.text = data.model.description
+        author.text = data.info.user?.name?.let {"by $it"} ?: ""
     }
 }

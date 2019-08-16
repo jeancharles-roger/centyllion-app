@@ -56,7 +56,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val api = appContext.api
 
     val isModelReadOnly
-        get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() && model.info.userId != appContext.me?.id)
+        get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() &&
+                model.info.user?.id != appContext.me?.id)
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
@@ -92,7 +93,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val isSimulationReadOnly
-        get() = !appContext.hasRole(apprenticeRole) || simulation.id.isNotEmpty() && simulation.info.userId != appContext.me?.id
+        get() = !appContext.hasRole(apprenticeRole) || simulation.id.isNotEmpty() &&
+                simulation.info.user?.id != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {

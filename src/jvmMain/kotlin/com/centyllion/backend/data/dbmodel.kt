@@ -79,7 +79,7 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
 }
 
 object DbDescriptionInfos : UUIDTable("infoDescriptions") {
-    val userId = uuid("userId")
+    val userId = uuid("userId").nullable()
     val createdOn = datetime("createdOn")
     val lastModifiedOn = datetime("lastModifiedOn")
     val readAccess = bool("readAccess")
@@ -96,11 +96,13 @@ class DbDescriptionInfo(id: EntityID<UUID>) : UUIDEntity(id) {
     var cloneAccess by DbDescriptionInfos.cloneAccess
 
     fun toModel(): DescriptionInfo = DescriptionInfo(
-        userId.toString(), createdOn.toString(), lastModifiedOn.toString(), readAccess, cloneAccess
+        userId?.let { DbUser.findById(it) }?.toModel(false),
+        createdOn.toString(), lastModifiedOn.toString(),
+        readAccess, cloneAccess
     )
 
     fun fromModel(source: DescriptionInfo) {
-        userId = UUID.fromString(source.userId)
+        userId = source?.user?.id?.let { UUID.fromString(it) }
         createdOn = DateTime.parse(source.createdOn)
         lastModifiedOn = DateTime.parse(source.lastModifiedOn)
         readAccess = source.readAccess
@@ -194,7 +196,7 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
                 val modelModel = model.toModel()
                 FeaturedDescription(
                     id.toString(), simulationModel.info.lastModifiedOn, simulationModel.thumbnailId,
-                    modelModel.id, simulationModel.id, simulationModel.info.userId,
+                    modelModel.id, simulationModel.id, simulationModel.info.user?.id ?: "",
                     listOf(simulationModel.simulation.name, modelModel.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
                     listOf(simulationModel.simulation.description, modelModel.model.description).filter { it.isNotEmpty() }.joinToString("\n"),
                     ""

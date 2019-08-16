@@ -503,7 +503,7 @@ interface Description: Ided {
 
 @Serializable
 data class DescriptionInfo(
-    val userId: String = "",
+    val user: User? = null,
     val createdOn: String = "",
     val lastModifiedOn: String = "",
     val readAccess: Boolean = false,

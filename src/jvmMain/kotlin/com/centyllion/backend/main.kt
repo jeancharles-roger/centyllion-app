@@ -205,7 +205,7 @@ fun Application.centyllion(config: ServerConfig) {
 fun hasReadAccess(info: DescriptionInfo, user: User?) =
     info.readAccess || (user != null && isOwner(info, user))
 
-fun isOwner(info: DescriptionInfo, user: User) = info.userId == user.id
+fun isOwner(info: DescriptionInfo, user: User) = info.user?.id == user.id
 
 /** Checks if [this] JWT has the [role]. */
 fun JWTPrincipal.hasRole(role: String): Boolean {

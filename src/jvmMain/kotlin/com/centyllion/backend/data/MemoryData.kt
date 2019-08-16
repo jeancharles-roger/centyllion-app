@@ -34,12 +34,12 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Apprentice, null))
 }
 
-fun createGrainModelDescription(userId: String, sent: GrainModel) = rfc1123Format.format(Date()).let {
-    GrainModelDescription(newId(), DescriptionInfo(userId, it, it, false, false), sent)
+fun createGrainModelDescription(user: User?, sent: GrainModel) = rfc1123Format.format(Date()).let {
+    GrainModelDescription(newId(), DescriptionInfo(user, it, it, false, false), sent)
 }
 
-fun createSimulationDescription(userId: String, modelId: String, sent: Simulation) = rfc1123Format.format(Date()).let {
-    SimulationDescription(newId(),  DescriptionInfo(userId, it, it, false, false), modelId, null, sent)
+fun createSimulationDescription(user: User?, modelId: String, sent: Simulation) = rfc1123Format.format(Date()).let {
+    SimulationDescription(newId(),  DescriptionInfo(user, it, it, false, false), modelId, null, sent)
 }
 
 /** Memory implementation for Data. Only used for tests, not optimal at all */
@@ -115,14 +115,15 @@ class MemoryData(
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         merge(
             backend?.grainModelsForUser(userId, offset, limit),
-            grainModels.values.filter { it.info.userId == userId },
+            grainModels.values.filter { it.info.user?.id == userId },
             deletedModels, offset, limit
         )
 
     override fun getGrainModel(id: String) = grainModels[id] ?: backend?.getGrainModel(id)
 
     override fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription {
-        val model = createGrainModelDescription(userId, sent)
+        val user = getUser(userId, false)
+        val model = createGrainModelDescription(user, sent)
         grainModels[model.id] = model
         deletedModels.remove(model.id)
         return model
@@ -149,7 +150,7 @@ class MemoryData(
         merge(
             backend?.simulationsForUser(userId, modelId, offset, limit),
             simulations.values.filter {
-                it.info.userId == userId && (modelId == null || it.modelId == modelId)
+                it.info.user?.id == userId && (modelId == null || it.modelId == modelId)
             },
             deletedSimulations, offset, limit
         )
@@ -157,7 +158,8 @@ class MemoryData(
     override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 
     override fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription {
-        val result = createSimulationDescription(userId, modelId, sent)
+        val user = getUser(userId, false)
+        val result = createSimulationDescription(user, modelId, sent)
         simulations[result.id] = result
         deletedSimulations.remove(result.id)
         return result
@@ -187,7 +189,7 @@ class MemoryData(
         val new = if (simulation != null && model != null)
             FeaturedDescription(
                 newId(), simulation.info.lastModifiedOn, simulation.thumbnailId,
-                model.id, simulation.id, simulation.info.userId,
+                model.id, simulation.id, simulation.info.user?.id ?: "",
                 listOf(simulation.simulation.name, model.model.name).filter { it.isNotEmpty() }.joinToString(" / "),
                 listOf(
                     simulation.simulation.description,

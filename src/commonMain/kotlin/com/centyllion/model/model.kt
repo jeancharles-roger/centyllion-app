@@ -563,7 +563,3 @@ data class FeaturedDescription(
     @Transient
     override val icon = "star"
 }
-
-fun emptyFeatured(modelId: String, simulationId: String, authorId: String) = FeaturedDescription(
-    "", "", null, modelId, simulationId, authorId, "", "", ""
-)

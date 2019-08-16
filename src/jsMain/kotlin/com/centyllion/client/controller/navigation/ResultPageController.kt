@@ -27,7 +27,8 @@ class ResultPageController<
     val contentController: MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>,
     val toHeader: (Pagination) -> ItemElement,
     var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
-    var error: (Throwable) -> Unit = {}
+    var error: (Throwable) -> Unit = {},
+    initialLimit: Int = 16
 ) : NoContextController<ResultPage<Data>, ParentElement>() {
 
     override var data: ResultPage<Data> by observable(emptyResultPage()) { _, old, new ->
@@ -39,7 +40,7 @@ class ResultPageController<
 
     override var readOnly: Boolean = true
 
-    var limit: Int by observable(16) { _, old, new ->
+    var limit: Int by observable(initialLimit) { _, old, new ->
         if (old != new) fetch(offset, new).then { data = it }.catch { error(it) }
     }
 

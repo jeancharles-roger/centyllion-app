@@ -42,6 +42,20 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
+    val searchedSimulationResult = ResultPageController(
+        searchedSimulationController,
+        { Column(it, size = ColumnSize.Full) },
+        { offset, limit ->
+            appContext.api.searchSimulation(searchInput.value, offset, limit).then {
+                searchSimulationTabItem.text = "Simulation (${it.totalSize})"
+                noSimulationResult.hidden = it.totalSize > 0
+                it
+            }
+        },
+        { error(it) },
+        initialLimit = 8
+    )
+
     // searched simulations tab title
     val searchSimulationTabItem = TabItem("Simulation", "play")
 
@@ -59,27 +73,28 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
+    val searchedModelResult = ResultPageController(
+        searchedModelController,
+        { Column(it, size = ColumnSize.Full) },
+        { offset, limit ->
+            appContext.api.searchModel(searchInput.value, offset, limit).then {
+                searchModelTabItem.text = "Model (${it.totalSize})"
+                noModelResult.hidden = it.totalSize > 0
+                it
+            }
+        },
+        { error(it) },
+        initialLimit = 8
+    )
     // searched modes tab title
     val searchModelTabItem = TabItem("Models", "boxes")
 
     // search input
-    val searchInput = Input("", "Search", rounded = true) { _, value ->
+    val searchInput: Input = Input("", "Search", rounded = true) { _, value ->
         searchSimulationTabItem.text = "Simulation"
         searchModelTabItem.text = "Model"
-        searchedModelController.data = emptyList()
-        searchedSimulationController.data = emptyList()
-
-        appContext.api.searchSimulation(value).then {
-            searchSimulationTabItem.text = "Simulation (${it.totalSize})"
-            searchedSimulationController.header = if (it.content.isEmpty()) listOf(noSimulationResult) else emptyList()
-            searchedSimulationController.data = it.content
-        }.catch { error(it) }
-
-        appContext.api.searchModel(value).then {
-            searchModelTabItem.text = "Model (${it.totalSize})"
-            searchedModelController.header = if (it.content.isEmpty()) listOf(noModelResult) else emptyList()
-            searchedModelController.data = it.content
-        }.catch { error(it) }
+        searchedSimulationResult.refreshFetch()
+        searchedModelResult.refreshFetch()
     }
 
     val clearSearch = iconButton(Icon("times"), rounded = true) { searchInput.value = "" }
@@ -88,7 +103,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
 
     // tabs for search results
     val searchTabs = TabPages(
-        TabPage(searchSimulationTabItem, searchedSimulationController),
+        TabPage(searchSimulationTabItem, searchedSimulationResult),
         TabPage(searchModelTabItem, searchedModelController)
     )
 

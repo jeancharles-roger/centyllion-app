@@ -118,7 +118,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
 
                     implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
-                    implementation("com.github.markaren:three.kt:v0.88-ALPHA-7")
+
                 }
             }
             compilations["test"].defaultSourceSet {

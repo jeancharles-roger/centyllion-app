@@ -5,8 +5,6 @@ import bulma.NavBar
 import com.centyllion.i18n.Locale
 import com.centyllion.model.User
 import keycloak.KeycloakInstance
-import threejs.extra.core.Font
-import kotlin.js.Promise
 
 data class ClientEvent(
     val date: String,
@@ -30,9 +28,8 @@ interface AppContext {
 
     val stripeKey: String
 
+    //fun getFont(path: String): Promise<Font>
     fun i18n(key: String, vararg parameters: String) = locale.i18n(key, *parameters)
-
-    fun getFont(path: String): Promise<Font>
 
     val events: List<ClientEvent>
 

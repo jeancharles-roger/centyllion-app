@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.model
 
+import babylonjs.Engine
 import bulma.BulmaElement
 import bulma.Control
 import bulma.Div
@@ -16,53 +17,15 @@ import bulma.iconButton
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
-import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
-import com.centyllion.model.minFieldLevel
-import info.laht.threekt.THREE.DoubleSide
-import info.laht.threekt.THREE.FloatType
-import info.laht.threekt.THREE.LuminanceFormat
-import info.laht.threekt.THREE.NearestFilter
-import info.laht.threekt.cameras.PerspectiveCamera
-import info.laht.threekt.core.BufferGeometry
-import info.laht.threekt.external.controls.OrbitControls
-import info.laht.threekt.external.loaders.GLTFLoader
-import info.laht.threekt.geometries.BoxBufferGeometry
-import info.laht.threekt.geometries.CylinderBufferGeometry
-import info.laht.threekt.geometries.PlaneBufferGeometry
-import info.laht.threekt.geometries.WireframeGeometry
-import info.laht.threekt.lights.AmbientLight
-import info.laht.threekt.lights.DirectionalLight
-import info.laht.threekt.materials.LineBasicMaterial
-import info.laht.threekt.materials.Material
-import info.laht.threekt.materials.MeshBasicMaterial
-import info.laht.threekt.materials.MeshPhongMaterial
-import info.laht.threekt.math.ColorConstants
-import info.laht.threekt.math.Vector2
-import info.laht.threekt.math.Vector3
-import info.laht.threekt.objects.Group
-import info.laht.threekt.objects.Mesh
-import info.laht.threekt.renderers.WebGLRenderer
-import info.laht.threekt.renderers.WebGLRendererParams
-import info.laht.threekt.scenes.Scene
-import kotlinx.io.IOException
-import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
-import threejs.core.Raycaster
-import threejs.extra.core.Font
-import threejs.geometries.TextBufferGeometry
-import threejs.geometries.TextGeometryParametersImpl
-import threejs.objects.LineSegments
-import threejs.textures.DataTexture
 import kotlin.browser.window
 import kotlin.js.Promise
-import kotlin.math.PI
 import kotlin.math.absoluteValue
-import kotlin.math.log10
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
@@ -79,6 +42,7 @@ open class Simulator3dViewController(
 
         val height = 6.0
 
+        /*
         fun changePointer(pointer: Group, sourceMaterial: Material?, size: Int) {
             // clear all children
             while (pointer.children.isNotEmpty()) {
@@ -125,18 +89,21 @@ open class Simulator3dViewController(
                 }
             }
         }
+         */
     }
 
     enum class ToolSize(val size: Int) {
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
+    /*
     class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array) {
         fun dispose() {
             alphaTexture.dispose()
             mesh.geometry.dispose()
         }
     }
+    */
 
     override var data: Simulator by observable(simulator) { _, old, new ->
         if (old != new) {
@@ -149,8 +116,8 @@ open class Simulator3dViewController(
 
             // only refresh geometries and material if grains changed
             if (old.model.grains != new.model.grains) {
-                geometries = geometries()
-                materials = materials()
+                //geometries = geometries()
+                //materials = materials()
             }
 
             // only refresh assets if they changed
@@ -213,6 +180,7 @@ open class Simulator3dViewController(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
+    /*
     private var font: Font? = null
 
     val defaultGeometry = BoxBufferGeometry(1, 1, 1)
@@ -281,6 +249,7 @@ open class Simulator3dViewController(
     }
 
     val rayCaster = Raycaster(Vector3(), Vector3(), 0.1, 1000.0)
+    */
 
     // simulation content edition
     private var selectedTool: EditTools = EditTools.Move
@@ -341,7 +310,7 @@ open class Simulator3dViewController(
     }
 
     fun selectPointer() {
-        selectedTool.changePointer(pointer, materials[selectedGrainController.data?.id], selectedSize.size)
+        //selectedTool.changePointer(pointer, materials[selectedGrainController.data?.id], selectedSize.size)
     }
 
     fun selectTool(tool: EditTools) {
@@ -349,7 +318,7 @@ open class Simulator3dViewController(
         toolButtons[tool.ordinal].outlined = true
         selectedTool = tool
 
-        orbitControl.enabled = tool == EditTools.Move
+        //orbitControl.enabled = tool == EditTools.Move
         selectPointer()
     }
 
@@ -410,6 +379,7 @@ open class Simulator3dViewController(
             val x = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1
             val y = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1
 
+            /*
             // updates the picking ray with the camera and mouse position
             rayCaster.setFromCamera(Vector2(x, y), camera)
 
@@ -452,9 +422,11 @@ open class Simulator3dViewController(
                     render()
                 }
             }
+             */
         }
     }
 
+    /*
     private var geometries by observable(geometries()) { _, old, _ ->
         old.values.filterNotNull().forEach { it.dispose() }
     }
@@ -462,8 +434,45 @@ open class Simulator3dViewController(
     private var materials by observable(materials()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
+    */
 
     init {
+        val engine = Engine(simulationCanvas.root, true); // Generate the BABYLON 3D engine
+
+        /******* Add the create scene function ******/
+        val createScene = {
+
+            // Create the scene space
+            var scene = new BABYLON.Scene(engine);
+
+            // Add a camera to the scene and attach it to the canvas
+            var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0,0,5), scene);
+            camera.attachControl(canvas, true);
+
+            // Add lights to the scene
+            var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+            var light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+            // Add and manipulate meshes in the scene
+            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:2}, scene);
+
+            return scene;
+        };
+        /******* End of the create scene function ******/
+
+        var scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+        /*
         page.appContext.getFont("/font/fa-solid-900.json").then {
             font = it
             geometries = geometries()
@@ -488,6 +497,7 @@ open class Simulator3dViewController(
             resizeSimulationCanvas()
             Unit
         }
+         */
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
@@ -496,9 +506,10 @@ open class Simulator3dViewController(
     }
 
     fun resetCamera() {
-        orbitControl.reset()
+        //orbitControl.reset()
     }
 
+    /*
     private fun geometries() = data.model.grains.map { grain ->
         grain.id to font?.let {
             val height = grain.size.coerceAtLeast(0.1)
@@ -540,8 +551,10 @@ open class Simulator3dViewController(
             )
         }
     }
+    */
 
     private fun refreshAssets() {
+        /*
         // clears previous assets
         assetScenes.values.forEach { scene.remove(it) }
         assetScenes.clear()
@@ -569,9 +582,11 @@ open class Simulator3dViewController(
                 render()
             }.catch { page.error(it) }
         }
+         */
 
     }
 
+    /*
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
         // creates mesh
         val material: Material = materials[grainId] ?: defaultMaterial
@@ -591,7 +606,9 @@ open class Simulator3dViewController(
         agentMesh[index] = mesh
         return mesh
     }
+    */
 
+    /*
     fun transformMesh(index: Int, newGrainId: Int) {
         val mesh = agentMesh[index]
         when {
@@ -616,10 +633,11 @@ open class Simulator3dViewController(
             }
         }
     }
+     */
 
     fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {
         // Updates agents
-
+/*
         // applies behaviors
         applied.forEach { one ->
             // applies main reaction
@@ -651,7 +669,7 @@ open class Simulator3dViewController(
             // invalidate texture
             it.value.alphaTexture.needsUpdate = true
         }
-
+*/
         render()
     }
 
@@ -659,10 +677,11 @@ open class Simulator3dViewController(
     }
 
     fun render() {
-        renderer.render(scene, camera)
+        //renderer.render(scene, camera)
     }
 
     override fun refresh() {
+        /*
         // applies transform mesh to all simulation
         for (i in 0 until data.currentAgents.size) {
             transformMesh(i, data.idAtIndex(i))
@@ -703,11 +722,13 @@ open class Simulator3dViewController(
             scene.add(mesh)
             field.id to FieldSupport(mesh, alphaTexture, alpha)
         }.toMap()
+        */
 
         render()
     }
 
     fun dispose() {
+        /*
         orbitControl.dispose()
         materials = emptyMap()
         defaultMaterial.dispose()
@@ -725,6 +746,7 @@ open class Simulator3dViewController(
                 dynamic.geomtry?.dispose()
             }
         }
+         */
     }
 
     private fun resizeSimulationCanvas() {
@@ -743,7 +765,7 @@ open class Simulator3dViewController(
                 canvas.width = availableWidth
                 canvas.height = (availableWidth * ratio).roundToInt()
             }
-            renderer.setSize(canvas.width, canvas.height)
+            //renderer.setSize(canvas.width, canvas.height)
             render()
         }
     }

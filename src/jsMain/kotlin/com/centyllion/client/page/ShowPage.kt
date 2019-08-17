@@ -387,17 +387,21 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         // checks if something needs saving before creating a new simulation
         onExit().then {
             if (it) {
-                // creates cloned model
-                val cloned = emptyGrainModelDescription.copy(
+                // creates cloned model and cloned simulation
+                val clonedModel = emptyGrainModelDescription.copy(
                     model = model.model.copy(name = model.model.name + " cloned")
                 )
-                setModel(cloned)
-                setSimulation(emptySimulationDescription)
+                val clonedSimulation = emptySimulationDescription.copy(
+                    modelId = clonedModel.id,
+                    simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
+                )
+                setModel(clonedModel)
+                setSimulation(clonedSimulation)
 
                 // closes the action
                 moreDropdown.active = false
                 editionTab.selectedPage = modelPage
-                message("Model cloned")
+                message("Model and simulation cloned")
             }
         }
     }

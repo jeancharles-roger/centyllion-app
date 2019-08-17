@@ -13,7 +13,7 @@ DB_PORT=35292
 if [ -e $PWD/port ]
 then
     ACTUAL_PORT=`cat $PWD/port`;
-else if
+else
     ACTUAL_PORT=${PORT:-9300};
 fi
 

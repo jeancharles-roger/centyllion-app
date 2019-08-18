@@ -281,7 +281,7 @@ open external class Node: IBehaviorAware<Node> {
  * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
  * @see [https://doc.babylonjs.com/how_to/transformnode]
  */
-external class TransformNode: Node {
+open external class TransformNode: Node {
     /**
      * Gets or sets the billboard mode. Default is 0.
      *
@@ -322,7 +322,7 @@ external class TransformNode: Node {
      */
     var onAfterWorldMatrixUpdateObservable: Observable<TransformNode>
     
-    fun constructor(name: String, scene: Scene?, isPure: Boolean?)
+    constructor(name: String, scene: Scene?, isPure: Boolean?)
 
     /**
      * Gets or set the node position (default is (0.0, 0.0, 0.0))

@@ -1163,15 +1163,15 @@ external class Vector3 {
         /**
          * Defines the first coordinates (on X axis)
          */
-        x: Number?,
+        x: Number? = definedExternally,
         /**
          * Defines the second coordinates (on Y axis)
          */
-        y: Number?,
+        y: Number? = definedExternally,
         /**
          * Defines the third coordinates (on Z axis)
          */
-        z: Number?)
+        z: Number? = definedExternally)
     /**
      * Gets the class name
      * @returns the String "Vector3"
@@ -2294,7 +2294,7 @@ external class Size: ISize {
      * @param width width of the new size
      * @param height height of the new size
      */
-    fun constructor(width: Number, height: Number)
+    constructor(width: Number, height: Number)
 
     /**
      * "Size"
@@ -2775,7 +2775,7 @@ external class Matrix {
     /**
      * Creates an empty matrix (filled with zeros)
      */
-    fun constructor()
+    constructor()
     /**
      * Check if the current matrix is identity
      * @returns true is the matrix is the identity matrix
@@ -3519,7 +3519,7 @@ external class Plane {
      * @param c c component of the plane
      * @param d d component of the plane
      */
-    fun constructor(a: Number, b: Number, c: Number, d: Number)
+    constructor(a: Number, b: Number, c: Number, d: Number)
     /**
      * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
      */
@@ -3766,7 +3766,7 @@ external class Angle {
      * Creates an Angle object of "radians" radians (float).
      * @param radians the angle in radians
      */
-    fun constructor(radians: Number)
+    constructor(radians: Number)
     /**
      * Get value in degrees
      * @returns the Angle value in degrees (float)
@@ -3857,7 +3857,7 @@ external class Path2 {
      * @param x the starting points x value
      * @param y the starting points y value
      */
-    fun constructor(x: Number, y: Number)
+    constructor(x: Number, y: Number)
     /**
      * Adds a new segment until the given coordinates (x, y) to the current Path2.
      * @param x the added points x value
@@ -4009,7 +4009,7 @@ external class Curve3 {
      * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
      * @param points points which make up the curve
      */
-    fun constructor(points: Array<Vector3>)
+    constructor(points: Array<Vector3>)
     /**
      * @returns the Curve3 stored array of successive Vector3
      */

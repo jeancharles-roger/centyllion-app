@@ -1,9 +1,40 @@
 @file:JsQualifier("BABYLON")
-@file:Suppress("unused")
+@file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals")
 package babylonjs
 
 import kotlin.js.Promise
 import kotlin.js.RegExp
+
+/**
+ * Define an interface for all classes that will hold resources
+ */
+external interface IDisposable {
+    /**
+     * Releases all held resources
+     */
+    fun dispose()
+}
+
+/** Interface defining initialization parameters for Scene class */
+external class SceneOptions {
+    /**
+     * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by uniqueId
+     * It will improve performance when the number of geometries becomes important.
+     */
+    var useGeometryUniqueIdsMap: Boolean?
+    /**
+     * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
+     * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+     */
+    var useMaterialMeshMap: Boolean?
+    /**
+     * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
+     * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
+     */
+    var useClonedMeshhMap: Boolean?
+    /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
+    var virtual: Boolean?
+}
 
 external interface AbstractScene {
     /**
@@ -39,9 +70,9 @@ external class Scene: AbstractScene, IAnimatable {
     /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
      * It should only be one of the following (if not the default embedded one):
-     * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
-     * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
-     * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+     * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : [assets.babylonjs.com/environments/uncorrelatedBRDF.dds]
+     * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : [assets.babylonjs.com/environments/correlatedBRDF.dds]
+     * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : [assets.babylonjs.com/environments/correlatedMSBRDF.dds]
      * The material properties need to be setup according to the type of texture in use.
      */
     var environmentBRDFTexture: BaseTexture
@@ -368,31 +399,31 @@ external class Scene: AbstractScene, IAnimatable {
     var useRightHandedSystem: Boolean
     /**
      * Sets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see [doc.babylonjs.com/babylon101/animations#deterministic-lockstep]
      * @param newStepId defines the step Id
      */
     fun setStepId(newStepId: Number)
     /**
      * Gets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see [doc.babylonjs.com/babylon101/animations#deterministic-lockstep]
      * @returns the step Id
      */
     fun getStepId(): Number
     /**
      * Gets the internal step used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see [doc.babylonjs.com/babylon101/animations#deterministic-lockstep]
      * @returns the internal step
      */
     fun getInternalStep(): Number
     /**
      * Gets or sets a Boolean indicating if fog is enabled on this scene
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * (Default is true)
      */
     var fogEnabled: Boolean
     /**
      * Gets or sets the fog mode to use
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * | mode | value |
      * | --- | --- |
      * | FOGMODE_NONE | 0 |
@@ -403,25 +434,25 @@ external class Scene: AbstractScene, IAnimatable {
     var fogMode: Number
     /**
      * Gets or sets the fog color to use
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * (Default is Color3(0.2, 0.2, 0.3))
      */
     var fogColor: Color3
     /**
      * Gets or sets the fog density to use
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * (Default is 0.1)
      */
     var fogDensity: Number
     /**
      * Gets or sets the fog start distance to use
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * (Default is 0)
      */
     var fogStart: Number
     /**
      * Gets or sets the fog end distance to use
-     * @see http://doc.babylonjs.com/babylon101/environment#fog
+     * @see [doc.babylonjs.com/babylon101/environment#fog]
      * (Default is 1000)
      */
     var fogEnd: Number
@@ -462,12 +493,12 @@ external class Scene: AbstractScene, IAnimatable {
     var lensFlaresEnabled: Boolean
     /**
      * Gets or sets a Boolean indicating if collisions are enabled on this scene
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see [doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity]
      */
     var collisionsEnabled: Boolean
     /**
      * Defines the gravity applied to this scene (used only for collisions)
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see [doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity]
      */
     var gravity: Vector3
     /**
@@ -488,7 +519,7 @@ external class Scene: AbstractScene, IAnimatable {
     var renderTargetsEnabled: Boolean
     /**
      * Gets or sets a Boolean indicating if next render targets must be dumped as image for debugging purposes
-     * We recommend not using it and instead rely on Spector.js: http://spector.babylonjs.com
+     * We recommend not using it and instead rely on Spector.js: [http://spector.babylonjs.com]
      */
     var dumpNextRenderTargets: Boolean
     /**
@@ -510,12 +541,12 @@ external class Scene: AbstractScene, IAnimatable {
     var probesEnabled: Boolean
     /**
      * Gets or sets the current offline provider to use to store scene data
-     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     * @see [doc.babylonjs.com/how_to/caching_resources_in_indexeddb]
      */
     var offlineProvider: IOfflineProvider
     /**
      * Gets or sets the action manager associated with the scene
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     * @see [doc.babylonjs.com/how_to/how_to_use_actions]
      */
     var actionManager: AbstractActionManager
     /**
@@ -525,7 +556,7 @@ external class Scene: AbstractScene, IAnimatable {
 
     /**
      * Gets or sets a general scale for animation speed
-     * @see https://www.babylonjs-playground.com/#IBU2W7#3
+     * @see [www.babylonjs-playground.com/#IBU2W7#3]
      */
     var animationTimeScale: Number
 
@@ -553,7 +584,8 @@ external class Scene: AbstractScene, IAnimatable {
      * @param engine defines the engine to use to render this scene
      * @param options defines the scene options
      */
-    fun constructor(engine: Engine, options: SceneOptions?)
+    constructor(engine: Engine, options: SceneOptions? = definedExternally)
+
     /**
      * Gets a String idenfifying the name of the class
      * @returns "Scene" String
@@ -612,7 +644,7 @@ external class Scene: AbstractScene, IAnimatable {
     fun getTotalVertices(): Number
     /**
      * Gets the performance counter for total vertices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see [doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation]
      */
     val totalVerticesPerfCounter: PerfCounter
     /**
@@ -622,7 +654,7 @@ external class Scene: AbstractScene, IAnimatable {
     fun getActiveIndices(): Number
     /**
      * Gets the performance counter for active indices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see [doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation]
      */
     val totalActiveIndicesPerfCounter: PerfCounter
     /**
@@ -632,7 +664,7 @@ external class Scene: AbstractScene, IAnimatable {
     fun getActiveParticles(): Number
     /**
      * Gets the performance counter for active particles
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see [doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation]
      */
     val activeParticlesPerfCounter: PerfCounter
     /**
@@ -642,7 +674,7 @@ external class Scene: AbstractScene, IAnimatable {
     fun getActiveBones(): Number
     /**
      * Gets the performance counter for active bones
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see [doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation]
      */
     val activeBonesPerfCounter: PerfCounter
     /**
@@ -856,7 +888,7 @@ external class Scene: AbstractScene, IAnimatable {
      * Remove a particle system for the list of scene's particle systems
      * @param toRemove defines the particle system to remove
      * @returns the index where the particle system was in the particle system list
-     */
+     */ 
     fun removeParticleSystem(toRemove: IParticleSystem): Number
     /**
      * Remove a animation for the list of scene's animations
@@ -1292,7 +1324,7 @@ external class Scene: AbstractScene, IAnimatable {
      * @param updateCameras defines a Boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a Boolean indicating if animations should not be executed (false by default)
      */
-    fun render(updateCameras: Boolean?, ignoreAnimations: Boolean?)
+    fun render(updateCameras: Boolean? = definedExternally, ignoreAnimations: Boolean? = definedExternally)
     /**
      * Freeze all materials
      * A frozen material will not be updatable but should be faster to render
@@ -1327,10 +1359,11 @@ external class Scene: AbstractScene, IAnimatable {
      * @param filterPredicate the predicate - which meshes should be included when calculating the world size
      * @returns {{ min: Vector3; max: Vector3 }} min and max vectors
      */
-    fun getWorldExtends(filterPredicate?: (mesh: AbstractMesh) -> Boolean): {
+    fun getWorldExtends(filterPredicate: ((mesh: AbstractMesh) -> Boolean)?): Any
+    /*{
         var min: Vector3
         var max: Vector3
-    }
+    }*/
     /**
      * Creates a ray that can be used to pick in the scene
      * @param x defines the x coordinate of the origin (on-screen)
@@ -1489,17 +1522,16 @@ external class Scene: AbstractScene, IAnimatable {
         val FOGMODE_LINEAR: Number
         /**
          * Gets or sets the minimum deltatime when deterministic lock step is enabled
-         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @see [doc.babylonjs.com/babylon101/animations#deterministic-lockstep]
          */
         var MinDeltaTime: Number
         /**
          * Gets or sets the maximum deltatime when deterministic lock step is enabled
-         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @see [doc.babylonjs.com/babylon101/animations#deterministic-lockstep]
          */
         var MaxDeltaTime: Number
         /**
          * Factory used to create the default material.
-         * @param name The name of the material to create
          * @param scene The scene to create the material for
          * @returns The default material
          */

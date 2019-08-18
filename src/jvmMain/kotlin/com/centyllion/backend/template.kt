@@ -42,11 +42,9 @@ fun HTML.centyllionHead(title: String) = head {
     // Javascript
     script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
 
-    script(src = "/js/threejs-r106/three.min.js") {}
-    script(src = "/js/threejs-r106/GLTFLoader.js") {}
-    script(src = "/js/threejs-r106/OrbitControls.js") {}
-    script(src = "/js/threejs-r106/ColladaLoader.js") {}
-    
+    script(src="https://preview.babylonjs.com/babylon.js") {}
+    script(src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js") {}
+
     script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
 
     script(src = "https://js.stripe.com/v3/") {}

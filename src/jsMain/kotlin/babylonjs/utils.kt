@@ -38,3 +38,9 @@ typealias Immutable<T> = Any // T extends Primitive ? T : T extends Array<infer 
  * Type modifier to make all the properties of an object Readonly recursively
  */
 typealias DeepImmutable<T> = Any //  T extends Primitive ? T : T extends Array<infer U> ? DeepImmutableArray<U> : DeepImmutableObject<T>;
+
+
+/**
+ * Defines how a node can be built from a string name.
+ */
+typealias NodeConstructor = ((name: String, scene: Scene, options: Any?) -> Unit) -> Node

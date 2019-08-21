@@ -11,7 +11,7 @@ class BoxOptions(
     var sideOrientation: Number? = null,
     var frontUVs: Vector4? = null,
     var backUVs: Vector4? = null,
-    var updatable: Boolean?
+    var updatable: Boolean? = null
 )
 
 
@@ -82,7 +82,7 @@ class CylinderOptions(
     var enclose: Boolean? = null,
     var sideOrientation: Number? = null,
     var frontUVs: Vector4? = null,
-    var backUVs: Vector4?
+    var backUVs: Vector4? = null
 )
 
 class TorusOptions(

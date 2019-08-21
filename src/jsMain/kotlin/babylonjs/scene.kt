@@ -31,7 +31,7 @@ external class SceneOptions {
      * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
-    var useClonedMeshhMap: Boolean?
+    var useClonedMeshMap: Boolean?
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     var virtual: Boolean?
 }
@@ -841,14 +841,14 @@ external class Scene: AbstractScene, IAnimatable {
      * @param newMesh defines the mesh to add
      * @param recursive if all child meshes should also be added to the scene
      */
-    fun addMesh(newMesh: AbstractMesh, recursive: Boolean?)
+    fun addMesh(newMesh: AbstractMesh, recursive: Boolean? = definedExternally)
     /**
      * Remove a mesh for the list of scene's meshes
      * @param toRemove defines the mesh to remove
      * @param recursive if all child meshes should also be removed from the scene
      * @returns the index where the mesh was in the mesh list
      */
-    fun removeMesh(toRemove: AbstractMesh, recursive: Boolean?): Number
+    fun removeMesh(toRemove: AbstractMesh, recursive: Boolean? = definedExternally): Number
     /**
      * Add a transform node to the list of scene's transform nodes
      * @param newTransformNode defines the transform node to add

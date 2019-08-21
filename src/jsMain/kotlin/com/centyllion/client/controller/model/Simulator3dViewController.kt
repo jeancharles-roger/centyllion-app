@@ -1,12 +1,18 @@
 package com.centyllion.client.controller.model
 
+import babylonjs.AbstractMesh
 import babylonjs.ArcRotateCamera
+import babylonjs.Axis
+import babylonjs.BoxOptions
+import babylonjs.Color3
+import babylonjs.Color4
+import babylonjs.CylinderOptions
 import babylonjs.Engine
 import babylonjs.HemisphericLight
+import babylonjs.InstancedMesh
 import babylonjs.MeshBuilder
 import babylonjs.PointLight
 import babylonjs.Scene
-import babylonjs.SphereOptions
 import babylonjs.Vector3
 import bulma.BulmaElement
 import bulma.Control
@@ -25,6 +31,7 @@ import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
+import com.centyllion.model.colorNames
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
@@ -124,8 +131,7 @@ open class Simulator3dViewController(
 
             // only refresh geometries and material if grains changed
             if (old.model.grains != new.model.grains) {
-                //geometries = geometries()
-                //materials = materials()
+                sourceMeshes = sourceMeshes()
             }
 
             // only refresh assets if they changed
@@ -188,14 +194,49 @@ open class Simulator3dViewController(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
+    val engine = Engine(simulationCanvas.root, true)
+    val scene = Scene(engine).apply {
+        autoClear = false
+
+        val position = simulator.simulation.width.let { Vector3(1.25 * it, 2 * it, 1.25 * it) }
+        val hemisphericLight = HemisphericLight("light1", position, this)
+        val pointLight = PointLight("light2", position, this)
+
+    }
+
+    /*
+   val scene = Scene().apply {
+       add(AmbientLight(0x444444))
+
+       // adds directional light
+       val directionalLight = DirectionalLight(0xffffff, 1)
+       directionalLight.position.set(
+           1.25 * data.simulation.width,
+           2 * data.simulation.width,
+           1.25 * data.simulation.width
+       )
+       directionalLight.castShadow = true
+       add(directionalLight)
+   }
+   */
+
     /*
     private var font: Font? = null
+    */
+    val defaultMesh =  MeshBuilder.CreateBox(
+        "default",
+        BoxOptions(size = 0.8, faceColors = arrayOf(Color3.Green().toColor4(1))),
+        scene
+    ).apply {
+        isVisible = false
+    }
 
-    val defaultGeometry = BoxBufferGeometry(1, 1, 1)
+    /*
     val defaultMaterial = MeshPhongMaterial().apply { color.set("red") }
+    */
+    val agentMesh: MutableMap<Int, AbstractMesh> = mutableMapOf()
 
-    val agentMesh: MutableMap<Int, Mesh> = mutableMapOf()
-
+    /*
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
@@ -203,26 +244,16 @@ open class Simulator3dViewController(
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
+    */
 
-    val camera = PerspectiveCamera(45, 1.0, 0.1, 1000.0).apply {
-        position.set(0, 1.25 * data.simulation.width, 0.0)
-        lookAt(0, 0, 0)
+    val camera = ArcRotateCamera(
+        "Camera", PI / 2, PI / 2, 2, Vector3(0, 0, 0), scene
+    ).apply {
+        position = Vector3(0, 0.0, 1.25 * simulator.simulation.width)
+        attachControl(simulationCanvas.root, false)
     }
 
-    val scene = Scene().apply {
-        add(AmbientLight(0x444444))
-
-        // adds directional light
-        val directionalLight = DirectionalLight(0xffffff, 1)
-        directionalLight.position.set(
-            1.25 * data.simulation.width,
-            2 * data.simulation.width,
-            1.25 * data.simulation.width
-        )
-        directionalLight.castShadow = true
-        add(directionalLight)
-    }
-
+    /*
     val plane = Mesh(
         BoxBufferGeometry(100, 0.1, 100),
         MeshBasicMaterial().apply { visible = false }
@@ -238,7 +269,9 @@ open class Simulator3dViewController(
         add(wireFrame)
         scene.add(this)
     }
+     */
 
+    /*
     val pointer = Group().apply { scene.add(this) }
 
     val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
@@ -434,48 +467,20 @@ open class Simulator3dViewController(
         }
     }
 
-    /*
-    private var geometries by observable(geometries()) { _, old, _ ->
-        old.values.filterNotNull().forEach { it.dispose() }
+    private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
+        old.values.forEach { it.dispose() }
     }
 
+    /*
     private var materials by observable(materials()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
     */
 
     init {
-        val canvas = simulationCanvas.root
-        val engine = Engine(canvas, true); // Generate the BABYLON 3D engine
-
-        /******* Add the create scene function ******/
-        val createScene = {
-
-            // Create the scene space
-            val scene = Scene(engine)
-
-            // Add a camera to the scene and attach it to the canvas
-            val camera = ArcRotateCamera("Camera", PI / 2, PI / 2, 2, Vector3(0,0,5), scene)
-            camera.attachControl(canvas, true)
-
-            // Add lights to the scene
-            val light1 = HemisphericLight("light1", Vector3(1, 1, 0), scene)
-            val light2 = PointLight("light2", Vector3(0, 1, -1), scene)
-
-            // Add and manipulate meshes in the scene
-            val sphere = MeshBuilder.CreateSphere("sphere", SphereOptions(diameter = 2), scene);
-
-           scene;
-        };
-        /******* End of the create scene function ******/
-
-        val scene = createScene(); //Call the createScene function
 
         // Register a render loop to repeatedly render the scene
-        engine.runRenderLoop { scene.render() }
-
-        // Watch for browser/canvas resize events
-        window.addEventListener("resize",  { engine.resize() })
+        //engine.runRenderLoop { scene.render() }
 
         /*
         page.appContext.getFont("/font/fa-solid-900.json").then {
@@ -498,11 +503,13 @@ open class Simulator3dViewController(
                 render()
             }
         }
+        */
+        engine.runRenderLoop { scene.render() }
+
         window.onresize = {
             resizeSimulationCanvas()
             Unit
         }
-         */
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
@@ -514,33 +521,43 @@ open class Simulator3dViewController(
         //orbitControl.reset()
     }
 
-    /*
-    private fun geometries() = data.model.grains.map { grain ->
-        grain.id to font?.let {
+    private fun sourceMeshes() = data.model.grains.map { grain ->
+        grain.id to /*font?*/null.let {
             val height = grain.size.coerceAtLeast(0.1)
+            val color = colorNames[grain.color]?.let {Color4.FromInts(it.first, it.second, it.third, 1) } ?: Color3.Green().toColor4(1)
             when (grain.icon) {
-                "square" -> BoxBufferGeometry(0.8, height, 0.8)
-                "square-full" -> BoxBufferGeometry(1.0, height, 1.0)
-                "circle" -> CylinderBufferGeometry(0.5, 0.5, height)
-                else -> TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
-                    // moves the geometry into place
-                    rotateX(PI / 2)
-                    rotateY(PI)
-                    translate(0.5, height / 2.0, 0.5)
-                    rotateZ(PI)
-                }
-            }.apply { translate(0.0, height / 2.0, 0.0) }
+                "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 0.8, faceColors = Array(6) {color}), scene)
+                "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
+                "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
+                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = arrayOf(color)), scene)
+                    /*
+                    TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
+                        // moves the geometry into place
+                        rotateX(PI / 2)
+                        rotateY(PI)
+                        translate(0.5, height / 2.0, 0.5)
+                        rotateZ(PI)
+                    }
+                     */
+            }.apply {
+                isVisible = false
+                translate(Axis.Y, height / 2.0)
+                rotate(Axis.X, PI/2)
+            }
         }
     }.toMap()
 
+    /*
     private fun materials() = data.model.grains.map {
         it.id to MeshPhongMaterial().apply {
             color.set(it.color.toLowerCase())
         }
     }.toMap()
+     */
 
     /* TODO there is a problem to solve here when the same asset is loaded twice before the first one succeeded
         need to add a waiting mechanism */
+    /*
     private fun loadAsset(path: String): Promise<Scene> = Promise { resolve, reject ->
         val scene = scenesCache[path]
         if (scene != null) {
@@ -591,41 +608,51 @@ open class Simulator3dViewController(
 
     }
 
-    /*
-    fun createMesh(index: Int, grainId: Int, x: Double, y: Double): Mesh {
+    fun createMesh(index: Int, grainId: Int, x: Double, y: Double): InstancedMesh {
         // creates mesh
-        val material: Material = materials[grainId] ?: defaultMaterial
-        val mesh = Mesh(geometries[grainId] ?: defaultGeometry, material)
-        mesh.receiveShadows = true
-        mesh.castShadow = true
+        //val mesh = MeshBuilder.CreateBox("$index,$grainId", BoxOptions(), scene)
+        val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
+        //mesh.receiveShadows = true
 
         // positions the mesh
-        //val height = data.model.indexedGrains[grainId]?.size ?: 1.0
-        mesh.position.set(x, 0, y)
-
-        mesh.updateMatrix()
-        mesh.matrixAutoUpdate = false
+        mesh.position.set(x,  y, 0)
 
         // adds the mesh to scene and register it
-        scene.add(mesh)
+        scene.addMesh(mesh)
         agentMesh[index] = mesh
         return mesh
     }
-    */
 
-    /*
     fun transformMesh(index: Int, newGrainId: Int) {
         val mesh = agentMesh[index]
+        // deletes the mesh
+        if (mesh != null) {
+            agentMesh.remove(index)
+            scene.removeMesh(mesh, true)
+            mesh.dispose()
+        }
+        if (newGrainId >= 0) {
+            val p = data.simulation.toPosition(index)
+            createMesh(
+                index,
+                newGrainId,
+                p.x - data.simulation.width / 2.0 + 0.5,
+                p.y - data.simulation.height / 2.0 + 0.5
+            )
+        }
+
+        /*
         when {
             mesh != null && newGrainId >= 0 -> {
                 // transform it to new one
-                mesh.geometry = geometries[newGrainId] ?: defaultGeometry
-                mesh.material = materials[newGrainId] ?: defaultMaterial
+                //mesh.geometry = geometries[newGrainId] ?: defaultGeometry
+                //mesh.material = materials[newGrainId] ?: defaultMaterial
             }
             mesh != null && newGrainId < 0 -> {
                 // deletes the mesh
                 agentMesh.remove(index)
-                scene.remove(mesh)
+                scene.removeMesh(mesh, true)
+                mesh.dispose()
             }
             mesh == null && newGrainId >= 0 -> {
                 val p = data.simulation.toPosition(index)
@@ -637,12 +664,11 @@ open class Simulator3dViewController(
                 )
             }
         }
+         */
     }
-     */
 
     fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {
         // Updates agents
-/*
         // applies behaviors
         applied.forEach { one ->
             // applies main reaction
@@ -659,7 +685,7 @@ open class Simulator3dViewController(
 
         // applies deaths
         dead.forEach { transformMesh(it, -1) }
-
+/*
         // updates fields
         fieldSupports.forEach {
             val id = it.key
@@ -682,16 +708,17 @@ open class Simulator3dViewController(
     }
 
     fun render() {
-        //renderer.render(scene, camera)
+        //scene.render()
     }
 
     override fun refresh() {
-        /*
+
         // applies transform mesh to all simulation
         for (i in 0 until data.currentAgents.size) {
             transformMesh(i, data.idAtIndex(i))
         }
 
+        /*
         // clear fields
         fieldSupports.values.forEach { scene.remove(it.mesh) }
 
@@ -733,12 +760,13 @@ open class Simulator3dViewController(
     }
 
     fun dispose() {
+        engine.dispose()
+        sourceMeshes = emptyMap()
+        defaultMesh.dispose()
+        camera.dispose()
+
         /*
         orbitControl.dispose()
-        materials = emptyMap()
-        defaultMaterial.dispose()
-        geometries = emptyMap()
-        defaultGeometry.dispose()
         pointer.traverse {
             val dynamic = it.asDynamic()
             dynamic.material?.dispose()
@@ -770,7 +798,7 @@ open class Simulator3dViewController(
                 canvas.width = availableWidth
                 canvas.height = (availableWidth * ratio).roundToInt()
             }
-            //renderer.setSize(canvas.width, canvas.height)
+            engine.resize()
             render()
         }
     }

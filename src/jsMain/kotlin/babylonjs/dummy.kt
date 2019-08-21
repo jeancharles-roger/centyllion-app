@@ -49,7 +49,6 @@ external class UniformBuffer
 external class Geometry
 
 external class SubMesh
-external class InstancedMesh
 external class MeshLODLevel
 external class LinesMesh
 external class GroundMesh

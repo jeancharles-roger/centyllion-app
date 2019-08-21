@@ -1880,3 +1880,33 @@ external class MeshBuilder {
         fun CreateDecal(name: String, sourceMesh: AbstractMesh, options: DecalOptions): Mesh
     }
 }
+
+/**
+ * Creates an instance based on a source mesh.
+ */
+external class InstancedMesh: AbstractMesh {
+
+    constructor(name: String, source: Mesh)
+
+    /**
+     * The source mesh of the instance
+     */
+    val sourceMesh: Mesh
+
+    /**
+     * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
+     * @param kind kind of verticies to retreive (eg. positons, normals, uvs, etc.)
+     * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+     * @returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
+     */
+    fun getVerticesData(kind: String, copyWhenShared: Boolean?): FloatArray?
+
+    override fun getVerticesData(kind: String, copyWhenShared: Boolean?, forceCopy: Boolean?): FloatArray?
+    override fun getIndices(copyWhenShared: Boolean?, forceCopy: Boolean?): IndicesArray?
+    override fun setVerticesData(kind: String, data: FloatArray, updatable: Boolean)
+    override fun setIndices(indices: IndicesArray, totalVertices: Number?, updatable: Boolean?)
+    override fun isInFrustum(frustumPlanes: Array<Plane>): Boolean
+    override fun isCompletelyInFrustum(frustumPlanes: Array<Plane>): Boolean
+    override fun isVerticesDataPresent(kind: String): Boolean
+    override fun updateVerticesData(kind: String, data: FloatArray, updateExtends: Boolean?, makeItUnique: Boolean?)
+}

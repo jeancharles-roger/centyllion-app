@@ -535,7 +535,7 @@ open external class TransformNode: Node {
      * @param space Space to rotate in (Default: local)
      * @returns the TransformNode.
      */
-    fun rotate(axis: Vector3, amount: Number, space: Space?): TransformNode
+    fun rotate(axis: Vector3, amount: Number, space: Space? = definedExternally): TransformNode
     /**
      * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
      * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
@@ -555,7 +555,7 @@ open external class TransformNode: Node {
      * @param space Space to rotate in (Default: local)
      * @returns the TransformNode.
      */
-    fun translate(axis: Vector3, distance: Number, space: Space?): TransformNode
+    fun translate(axis: Vector3, distance: Number, space: Space? = definedExternally): TransformNode
     /**
      * Adds a rotation step to the mesh current rotation.
      * x, y, z are Euler angles expressed in radians.

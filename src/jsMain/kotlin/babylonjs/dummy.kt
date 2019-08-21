@@ -69,7 +69,6 @@ external class PickingInfo
 
 external class AnimationPropertiesOverride
 external class AnimationGroup
-external interface ICustomAnimationFrameRequester
 
 external class ImageProcessingConfiguration
 external class RenderingGroupInfo

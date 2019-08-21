@@ -44,3 +44,8 @@ typealias DeepImmutable<T> = Any //  T extends Primitive ? T : T extends Array<i
  * Defines how a node can be built from a string name.
  */
 typealias NodeConstructor = ((name: String, scene: Scene, options: Any?) -> Unit) -> Node
+
+interface MinMax {
+    val minimum: Vector3
+    val maximum: Vector3
+}

@@ -13,6 +13,7 @@ import babylonjs.InstancedMesh
 import babylonjs.MeshBuilder
 import babylonjs.PointLight
 import babylonjs.Scene
+import babylonjs.Tools
 import babylonjs.Vector3
 import bulma.BulmaElement
 import bulma.Control
@@ -471,16 +472,7 @@ open class Simulator3dViewController(
         old.values.forEach { it.dispose() }
     }
 
-    /*
-    private var materials by observable(materials()) { _, old, _ ->
-        old.values.forEach { it.dispose() }
-    }
-    */
-
     init {
-
-        // Register a render loop to repeatedly render the scene
-        //engine.runRenderLoop { scene.render() }
 
         /*
         page.appContext.getFont("/font/fa-solid-900.json").then {
@@ -513,8 +505,9 @@ open class Simulator3dViewController(
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
-        render()
-        simulationCanvas.root.toBlob({ if (it != null) resolve(it) else reject(Exception("No content")) })
+        //Tools.CreateScreenshot(engine, camera,600)  {}
+        Tools.ToBlob(simulationCanvas.root, { if (it != null) resolve(it) else reject(Exception("No content")) })
+        //simulationCanvas.root.toBlob({ if (it != null) resolve(it) else reject(Exception("No content")) })
     }
 
     fun resetCamera() {

@@ -770,11 +770,11 @@ external class Scene: AbstractScene, IAnimatable {
     /**
      * The provided function will run before render once and will be disposed afterwards.
      * A timeout delay can be provided so that the function will be executed in N ms.
-     * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+     * The timeout is using the browser's native setTimeout so time precision cannot be guaranteed.
      * @param func The function to be executed.
      * @param timeout optional delay in ms
      */
-    fun executeOnceBeforeRender(func: () -> Unit, timeout: Number?)
+    fun executeOnceBeforeRender(func: () -> Unit, timeout: Number? = definedExternally)
     /**
      * Returns the Number of items waiting to be loaded
      * @returns the Number of items waiting to be loaded

@@ -522,7 +522,7 @@ open class Simulator3dViewController(
     }
 
     fun resetCamera() {
-        camera.alpha = 1.5*PI
+        camera.alpha = 1.5 * PI
         camera.beta = PI
         camera.radius = 1.25 * data.simulation.width
         camera.target = Vector3(0, 0, 0)

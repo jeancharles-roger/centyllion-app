@@ -22,13 +22,12 @@ external class FramingBehavior
 external class AutoRotationBehavior
 
 external class PointerEvent
-external class Texture
-external class BaseTexture
 external class InternalTexture
 external class DepthTextureCreationOptions
 external interface IInternalTextureLoader
 
-external class Material
+external class SphericalPolynomial
+external class ColorCurves
 external class MultiMaterial
 
 external class ClientRect
@@ -48,6 +47,7 @@ external class VertexBuffer
 external class UniformBuffer
 external class Geometry
 
+external class BaseSubMesh
 external class SubMesh
 external class MeshLODLevel
 external class LinesMesh
@@ -70,6 +70,7 @@ external class PickingInfo
 external class AnimationPropertiesOverride
 external class AnimationGroup
 
+external interface IImageProcessingConfigurationDefines
 external class ImageProcessingConfiguration
 external class RenderingGroupInfo
 external interface IRenderingManagerAutoClearSetup

@@ -26,6 +26,7 @@ import bulma.HtmlWrapper
 import bulma.Icon
 import bulma.Level
 import bulma.NoContextController
+import bulma.Slider
 import bulma.canvas
 import bulma.iconButton
 import com.centyllion.client.download
@@ -192,17 +193,23 @@ open class Simulator3dViewController(
     val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton, imageButton))
 
     override val container = Div(
-        Div(simulationCanvas, classes = "has-text-centered"), toolbar
+        Div(simulationCanvas, classes = "has-text-centered"), toolbar,
+        Slider("0", "0", "${2*PI}", "any") { _, v -> camera.alpha = v.toDoubleOrNull() ?: 0.0; println("Alpha: ${camera.alpha}") },
+        Slider("0", "0", "${2*PI}", "any") { _, v -> camera.beta = v.toDoubleOrNull() ?: 0.0; println("Beta: ${camera.beta}") }
     )
 
-    val engine = Engine(simulationCanvas.root, true)
+    val engine = Engine(simulationCanvas.root, true).apply {
+        val width = (window.innerWidth - 40).coerceAtMost(600)
+        val height = simulator.simulation.height * width / simulator.simulation.width
+        setSize(width, height)
+    }
+
     val scene = Scene(engine).apply {
         autoClear = false
 
-        val position = simulator.simulation.width.let { Vector3(1.25 * it, 2 * it, 1.25 * it) }
-        val hemisphericLight = HemisphericLight("light1", position, this)
-        val pointLight = PointLight("light2", position, this)
-
+        val position = simulator.simulation.width.let { Vector3(1.25 * it, -2 * it, 1.25 * it) }
+        HemisphericLight("light1", position, this)
+        PointLight("light2", position, this)
     }
 
     /*
@@ -248,9 +255,15 @@ open class Simulator3dViewController(
     */
 
     val camera = ArcRotateCamera(
-        "Camera", PI / 2, PI / 2, 2, Vector3(0, 0, 0), scene
+        "Camera", 0, 0, 1.25 * simulator.simulation.width, Vector3(0, 0, 0), scene
     ).apply {
-        position = Vector3(0, 0.0, 1.25 * simulator.simulation.width)
+        lowerAlphaLimit = 0
+        upperAlphaLimit = 2*PI
+        alpha = 1.5*PI
+        lowerBetaLimit = -2*PI
+        upperBetaLimit = 2*PI
+        beta = PI
+
         attachControl(simulationCanvas.root, false)
     }
 
@@ -505,13 +518,14 @@ open class Simulator3dViewController(
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
-        //Tools.CreateScreenshot(engine, camera,600)  {}
         Tools.ToBlob(simulationCanvas.root, { if (it != null) resolve(it) else reject(Exception("No content")) })
-        //simulationCanvas.root.toBlob({ if (it != null) resolve(it) else reject(Exception("No content")) })
     }
 
     fun resetCamera() {
-        //orbitControl.reset()
+        camera.alpha = 1.5*PI
+        camera.beta = PI
+        camera.radius = 1.25 * data.simulation.width
+        camera.target = Vector3(0, 0, 0)
     }
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
@@ -603,12 +617,11 @@ open class Simulator3dViewController(
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): InstancedMesh {
         // creates mesh
-        //val mesh = MeshBuilder.CreateBox("$index,$grainId", BoxOptions(), scene)
         val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
         //mesh.receiveShadows = true
 
         // positions the mesh
-        mesh.position.set(x,  y, 0)
+        mesh.position.set(x,  0, y)
 
         // adds the mesh to scene and register it
         scene.addMesh(mesh)

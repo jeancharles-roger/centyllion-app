@@ -14,6 +14,7 @@ import babylonjs.Mesh
 import babylonjs.MeshBuilder
 import babylonjs.PlaneOptions
 import babylonjs.PointLight
+import babylonjs.RawTexture
 import babylonjs.Scene
 import babylonjs.StandardMaterial
 import babylonjs.Texture
@@ -30,7 +31,6 @@ import bulma.HtmlWrapper
 import bulma.Icon
 import bulma.Level
 import bulma.NoContextController
-import bulma.Slider
 import bulma.canvas
 import bulma.iconButton
 import com.centyllion.client.download
@@ -39,7 +39,8 @@ import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
 import com.centyllion.model.minFieldLevel
-import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
@@ -120,9 +121,10 @@ open class Simulator3dViewController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
-    class FieldSupport(val mesh: Mesh, val material: StandardMaterial, val array: Float32Array) {
+    class FieldSupport(val mesh: Mesh, val material: StandardMaterial, val texture: RawTexture) {
         fun dispose() {
             material.dispose()
+            texture.dispose()
             mesh.dispose()
         }
     }
@@ -199,9 +201,7 @@ open class Simulator3dViewController(
     val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton, imageButton))
 
     override val container = Div(
-        Div(simulationCanvas, classes = "has-text-centered"), toolbar,
-        Slider("0", "0", "${2*PI}", "any") { _, v -> camera.alpha = v.toDoubleOrNull() ?: 0.0; println("Alpha: ${camera.alpha}") },
-        Slider("0", "0", "${2*PI}", "any") { _, v -> camera.beta = v.toDoubleOrNull() ?: 0.0; println("Beta: ${camera.beta}") }
+        Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
     val engine = Engine(simulationCanvas.root, true).apply {
@@ -251,6 +251,7 @@ open class Simulator3dViewController(
         upperBetaLimit = 2*PI
         beta = PI
 
+        panningSensibility = 50
         attachControl(simulationCanvas.root, false)
     }
 
@@ -665,20 +666,7 @@ open class Simulator3dViewController(
         // applies deaths
         dead.forEach { transformMesh(it, -1) }
         // updates fields
-        fieldSupports.forEach {
-            val id = it.key
-            // updates alpha
-            it.value.array.set(data.field(id).map {
-                when {
-                    it >= 1f -> 1f
-                    it <= minFieldLevel -> 0f
-                    else -> 1f / (-log10(it)) / 1.6f
-                }
-            }.toTypedArray())
-
-            // invalidate texture
-            //it.value.material.needsUpdate = true
-        }
+        fieldSupports.forEach { it.value.texture.update(data.field(it.key).alpha()) }
         render()
     }
 
@@ -701,46 +689,24 @@ open class Simulator3dViewController(
 
         // adds field meshes
         fieldSupports = data.model.fields.map { field ->
-            val levels = data.fields[field.id]!!
-            val alpha = Float32Array(levels.map {
-                when {
-                    it >= 1f -> 1f
-                    it <= minFieldLevel -> 0f
-                    else -> 1f / (-log10(it)) / 1.6f
-                }
-            }.toTypedArray())
+            val levels = data.field(field.id)
 
-            val texture = Texture(scene = scene, buffer = alpha.buffer, format = Engine.TEXTUREFORMAT_LUMINANCE)
-            texture.getAlphaFromRGB = true
-
-            /*
-            val alphaTexture = DynamicTexture(field.name,
-                alpha, data.simulation.width, data.simulation.height, LuminanceFormat, FloatType
-            ).apply {
-                needsUpdate = true
-                magFilter = NearestFilter
-            }
-            */
-
-            /*
-            val material = MeshBasicMaterial().apply {
-                side = DoubleSide
-                color.set(field.color.toLowerCase())
-                this.alphaMap = alphaTexture
-
-                transparent = true
-            }
-             */
+            val texture = RawTexture.CreateAlphaTexture(
+                levels.alpha(), data.simulation.width, data.simulation.height,
+                scene, false, false, Texture.NEAREST_SAMPLINGMODE
+            )
             val material = StandardMaterial("${field.name} material", scene)
             val color = colorNames[field.color]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
             material.diffuseColor = color
+            //material.emissiveColor = color
+            //material.ambientColor = color
             material.opacityTexture = texture
 
             val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
             mesh.material = material
             mesh.rotate(Axis.X, PI/2)
             scene.addMesh(mesh)
-            field.id to FieldSupport(mesh, material, alpha)
+            field.id to FieldSupport(mesh, material, texture)
         }.toMap()
 
         render()
@@ -787,6 +753,19 @@ open class Simulator3dViewController(
             }
             engine.resize()
             render()
+        }
+    }
+
+    /** Computes alpha value for opacity for each field level in the array */
+    fun FloatArray.alpha() = Uint8Array(this.size).also {
+        for (i in this.indices) {
+            val l = this[i]
+            val a = when {
+                l <= minFieldLevel -> 0
+                l >= 0.1f -> 64 + (80*l - 8).roundToInt()
+                else -> (64 / -log10(l)).roundToInt()
+            }
+            it[i] = a.toByte()
         }
     }
 

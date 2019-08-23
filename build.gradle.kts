@@ -21,8 +21,8 @@ val keycloak_version: String by project
 val stripe_version: String by project
 
 plugins {
-    kotlin("multiplatform") version "1.3.41"
-    id("kotlinx-serialization") version "1.3.41"
+    kotlin("multiplatform") version "1.3.50"
+    id("kotlinx-serialization") version "1.3.50"
 }
 
 repositories {

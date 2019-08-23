@@ -15,7 +15,7 @@ external class Effect
 external class EffectFallbacks
 external class FreeCamera
 external class Ray
-external abstract class AbstractActionManager
+abstract external class AbstractActionManager
 
 external class BouncingBehavior
 external class FramingBehavior

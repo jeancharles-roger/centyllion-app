@@ -414,7 +414,7 @@ open external class Material: IAnimatable {
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to Any mesh
      */
-    fun dispose(forceDisposeEffect: Boolean?, forceDisposeTextures: Boolean?, notBoundToMesh: Boolean?)
+    fun dispose(forceDisposeEffect: Boolean? = definedExternally, forceDisposeTextures: Boolean? = definedExternally, notBoundToMesh: Boolean? = definedExternally)
     /**
      * Serializes this material
      * @returns the serialized material object
@@ -973,14 +973,7 @@ external class StandardMaterial: PushMaterial {
      * Used internally during the effect preparation.
      */
     fun buildUniformLayout()
-   
-    /**
-     * Disposes the material
-     * @param forceDisposeEffect specifies if effects should be forcefully disposed
-     * @param forceDisposeTextures specifies if textures should be forcefully disposed
-     */
-    fun dispose(forceDisposeEffect: Boolean?, forceDisposeTextures: Boolean?)
-    
+
     companion object {
         /**
          * Creates a standard material from parsed material data

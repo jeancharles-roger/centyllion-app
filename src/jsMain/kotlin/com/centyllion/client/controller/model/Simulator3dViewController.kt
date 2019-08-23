@@ -10,9 +10,13 @@ import babylonjs.CylinderOptions
 import babylonjs.Engine
 import babylonjs.HemisphericLight
 import babylonjs.InstancedMesh
+import babylonjs.Mesh
 import babylonjs.MeshBuilder
+import babylonjs.PlaneOptions
 import babylonjs.PointLight
 import babylonjs.Scene
+import babylonjs.StandardMaterial
+import babylonjs.Texture
 import babylonjs.Tools
 import babylonjs.Vector3
 import bulma.BulmaElement
@@ -34,6 +38,8 @@ import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
+import com.centyllion.model.minFieldLevel
+import org.khronos.webgl.Float32Array
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
@@ -43,6 +49,7 @@ import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.math.PI
 import kotlin.math.absoluteValue
+import kotlin.math.log10
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
@@ -113,14 +120,13 @@ open class Simulator3dViewController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
-    /*
-    class FieldSupport(val mesh: Mesh, val alphaTexture: DataTexture, val array: Float32Array) {
+    class FieldSupport(val mesh: Mesh, val material: StandardMaterial, val array: Float32Array) {
         fun dispose() {
-            alphaTexture.dispose()
-            mesh.geometry.dispose()
+            material.dispose()
+            mesh.dispose()
         }
     }
-    */
+
 
     override var data: Simulator by observable(simulator) { _, old, new ->
         if (old != new) {
@@ -213,22 +219,6 @@ open class Simulator3dViewController(
     }
 
     /*
-   val scene = Scene().apply {
-       add(AmbientLight(0x444444))
-
-       // adds directional light
-       val directionalLight = DirectionalLight(0xffffff, 1)
-       directionalLight.position.set(
-           1.25 * data.simulation.width,
-           2 * data.simulation.width,
-           1.25 * data.simulation.width
-       )
-       directionalLight.castShadow = true
-       add(directionalLight)
-   }
-   */
-
-    /*
     private var font: Font? = null
     */
     val defaultMesh =  MeshBuilder.CreateBox(
@@ -239,20 +229,17 @@ open class Simulator3dViewController(
         isVisible = false
     }
 
-    /*
-    val defaultMaterial = MeshPhongMaterial().apply { color.set("red") }
-    */
     val agentMesh: MutableMap<Int, AbstractMesh> = mutableMapOf()
 
     /*
     val scenesCache: MutableMap<String, Scene> = mutableMapOf()
 
     val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
+    */
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
     }
-    */
 
     val camera = ArcRotateCamera(
         "Camera", 0, 0, 1.25 * simulator.simulation.width, Vector3(0, 0, 0), scene
@@ -266,6 +253,7 @@ open class Simulator3dViewController(
 
         attachControl(simulationCanvas.root, false)
     }
+
 
     /*
     val plane = Mesh(
@@ -287,21 +275,6 @@ open class Simulator3dViewController(
 
     /*
     val pointer = Group().apply { scene.add(this) }
-
-    val orbitControl = OrbitControls(camera, simulationCanvas.root).also {
-        it.keys.LEFT = -1
-        it.keys.RIGHT = -1
-        it.keys.UP = -1
-        it.keys.BOTTOM = -1
-        it.saveState()
-        it.asDynamic().addEventListener("change", this::render)
-        it.asDynamic().screenSpacePanning = true
-        Unit
-    }
-
-    val renderer = WebGLRenderer(WebGLRendererParams(simulationCanvas.root, antialias = true)).apply {
-        setClearColor(ColorConstants.white, 1)
-    }
 
     val rayCaster = Raycaster(Vector3(), Vector3(), 0.1, 1000.0)
     */
@@ -691,7 +664,6 @@ open class Simulator3dViewController(
 
         // applies deaths
         dead.forEach { transformMesh(it, -1) }
-/*
         // updates fields
         fieldSupports.forEach {
             val id = it.key
@@ -703,10 +675,10 @@ open class Simulator3dViewController(
                     else -> 1f / (-log10(it)) / 1.6f
                 }
             }.toTypedArray())
+
             // invalidate texture
-            it.value.alphaTexture.needsUpdate = true
+            //it.value.material.needsUpdate = true
         }
-*/
         render()
     }
 
@@ -724,9 +696,8 @@ open class Simulator3dViewController(
             transformMesh(i, data.idAtIndex(i))
         }
 
-        /*
         // clear fields
-        fieldSupports.values.forEach { scene.remove(it.mesh) }
+        fieldSupports.values.forEach { scene.removeMesh(it.mesh) }
 
         // adds field meshes
         fieldSupports = data.model.fields.map { field ->
@@ -739,13 +710,19 @@ open class Simulator3dViewController(
                 }
             }.toTypedArray())
 
-            val alphaTexture = DataTexture(
+            val texture = Texture(scene = scene, buffer = alpha.buffer, format = Engine.TEXTUREFORMAT_LUMINANCE)
+            texture.getAlphaFromRGB = true
+
+            /*
+            val alphaTexture = DynamicTexture(field.name,
                 alpha, data.simulation.width, data.simulation.height, LuminanceFormat, FloatType
             ).apply {
                 needsUpdate = true
                 magFilter = NearestFilter
             }
+            */
 
+            /*
             val material = MeshBasicMaterial().apply {
                 side = DoubleSide
                 color.set(field.color.toLowerCase())
@@ -753,26 +730,30 @@ open class Simulator3dViewController(
 
                 transparent = true
             }
+             */
+            val material = StandardMaterial("${field.name} material", scene)
+            val color = colorNames[field.color]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
+            material.diffuseColor = color
+            material.opacityTexture = texture
 
-            val geometry = PlaneBufferGeometry(100, 100)
-            val mesh = Mesh(geometry, material)
-            mesh.rotateX(PI / 2)
-            scene.add(mesh)
-            field.id to FieldSupport(mesh, alphaTexture, alpha)
+            val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
+            mesh.material = material
+            mesh.rotate(Axis.X, PI/2)
+            scene.addMesh(mesh)
+            field.id to FieldSupport(mesh, material, alpha)
         }.toMap()
-        */
 
         render()
     }
 
     fun dispose() {
-        engine.dispose()
         sourceMeshes = emptyMap()
         defaultMesh.dispose()
+        fieldSupports.values.forEach { it.dispose() }
         camera.dispose()
+        engine.dispose()
 
         /*
-        orbitControl.dispose()
         pointer.traverse {
             val dynamic = it.asDynamic()
             dynamic.material?.dispose()

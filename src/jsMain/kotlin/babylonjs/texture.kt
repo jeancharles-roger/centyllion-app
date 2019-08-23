@@ -398,7 +398,18 @@ open external class Texture: BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: String?, scene: Scene?, noMipmap: Boolean?, invertY: Boolean?, samplingMode: Number?, onLoad: (() -> Unit)?, onError: ((message: String?, exception: Any?) -> Unit)?, buffer: String?, deleteBuffer: Boolean?, format: Number?)
+    constructor(
+        url: String? = definedExternally,
+        scene: Scene? = definedExternally,
+        noMipmap: Boolean? = definedExternally,
+        invertY: Boolean? = definedExternally,
+        samplingMode: Number? = definedExternally,
+        onLoad: (() -> Unit)? = definedExternally,
+        onError: ((message: String?, exception: Any?) -> Unit)? = definedExternally,
+        buffer: String? = definedExternally,
+        deleteBuffer: Boolean? = definedExternally,
+        format: Number? = definedExternally
+    )
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
@@ -414,7 +425,18 @@ open external class Texture: BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: String?, scene: Scene?, noMipmap: Boolean?, invertY: Boolean?, samplingMode: Number?, onLoad: (() -> Unit)?, onError: ((message: String?, exception: Any?) -> Unit)?, buffer: ArrayBuffer?, deleteBuffer: Boolean?, format: Number?)
+    constructor(
+        url: String? = definedExternally,
+        scene: Scene? = definedExternally,
+        noMipmap: Boolean? = definedExternally,
+        invertY: Boolean? = definedExternally,
+        samplingMode: Number? = definedExternally,
+        onLoad: (() -> Unit)? = definedExternally,
+        onError: ((message: String?, exception: Any?) -> Unit)? = definedExternally,
+        buffer: ArrayBuffer? = definedExternally,
+        deleteBuffer: Boolean? = definedExternally,
+        format: Number? = definedExternally
+    )
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
@@ -430,7 +452,18 @@ open external class Texture: BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: String?, scene: Scene?, noMipmap: Boolean?, invertY: Boolean?, samplingMode: Number?, onLoad: (() -> Unit)?, onError: ((message: String?, exception: Any?) -> Unit)?, buffer: HTMLImageElement?, deleteBuffer: Boolean?, format: Number?)
+    constructor(
+        url: String? = definedExternally,
+        scene: Scene? = definedExternally,
+        noMipmap: Boolean? = definedExternally,
+        invertY: Boolean? = definedExternally,
+        samplingMode: Number? = definedExternally,
+        onLoad: (() -> Unit)? = definedExternally,
+        onError: ((message: String?, exception: Any?) -> Unit)? = definedExternally,
+        buffer: HTMLImageElement? = definedExternally,
+        deleteBuffer: Boolean? = definedExternally,
+        format: Number? = definedExternally
+    )
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
@@ -592,7 +625,7 @@ external class DynamicTexture: Texture {
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
      */
-    constructor(name: String, options: Any, scene: Scene?, generateMipMaps: Boolean, samplingMode: Number?, format: Number?)
+    constructor(name: String, options: TextureOptions?, scene: Scene?, generateMipMaps: Boolean = definedExternally, samplingMode: Number? = definedExternally, format: Number? = definedExternally)
 
     /**
      * Resizes the texture

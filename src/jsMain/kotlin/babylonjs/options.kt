@@ -186,7 +186,7 @@ class PlaneOptions(
     var frontUVs: Vector4? = null,
     var backUVs: Vector4? = null,
     var updatable: Boolean? = null,
-    var sourcePlane: Plane?
+    var sourcePlane: Plane? = null
 )
 
 class GroundOptions(
@@ -270,4 +270,9 @@ class DecalOptions(
     var normal: Vector3? = null,
     var size: Vector3? = null,
     var angle: Number?
+)
+
+class TextureOptions(
+    var width: Number? = null,
+    var height: Number? = null
 )

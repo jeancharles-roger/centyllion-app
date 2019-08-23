@@ -496,10 +496,10 @@ open class Simulator3dViewController(
     }
 
     fun resetCamera() {
+        camera.target = Vector3(0, 0, 0)
         camera.alpha = 1.5 * PI
         camera.beta = PI
         camera.radius = 1.25 * data.simulation.width
-        camera.target = Vector3(0, 0, 0)
     }
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
@@ -510,7 +510,7 @@ open class Simulator3dViewController(
                 "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 0.8, faceColors = Array(6) {color}), scene)
                 "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
                 "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
-                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = arrayOf(color)), scene)
+                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
                     /*
                     TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
                         // moves the geometry into place

@@ -1411,7 +1411,7 @@ external class Scene: AbstractScene, IAnimatable {
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    fun pick(x: Number, y: Number, predicate: ((mesh: AbstractMesh) -> Boolean)?, fastCheck: Boolean?, camera: Camera?, trianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3) -> Boolean)?): PickingInfo?
+    fun pick(x: Number, y: Number, predicate: ((mesh: AbstractMesh) -> Boolean)? = definedExternally, fastCheck: Boolean? = definedExternally, camera: Camera? = definedExternally, trianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3) -> Boolean)? = definedExternally): PickingInfo?
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true

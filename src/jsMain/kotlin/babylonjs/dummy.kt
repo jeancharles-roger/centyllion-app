@@ -7,8 +7,12 @@ external class SmartArray<T>
 
 external class CameraInputsManager<T>
 
-external class InstancingAttributeInfo
 external class RenderTargetTexture
+external class CubeTexture: BaseTexture
+external class HDRCubeTexture: BaseTexture
+external class EquiRectangularCubeTexture: BaseTexture
+
+external class InstancingAttributeInfo
 external class PostProcess
 external class PostProcessManager
 external class Effect

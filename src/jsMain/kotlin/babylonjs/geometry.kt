@@ -1,5 +1,5 @@
 @file:JsQualifier("BABYLON")
-@file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals")
+@file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals", "FunctionName")
 package babylonjs
 
 import org.khronos.webgl.Float32Array

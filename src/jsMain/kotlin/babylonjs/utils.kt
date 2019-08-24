@@ -49,3 +49,8 @@ interface MinMax {
     val minimum: Vector3
     val maximum: Vector3
 }
+
+interface ErrorObject {
+    val message: String?
+    val exception: Any?
+}

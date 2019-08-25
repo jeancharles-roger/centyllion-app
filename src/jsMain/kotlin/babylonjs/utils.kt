@@ -54,3 +54,14 @@ interface ErrorObject {
     val message: String?
     val exception: Any?
 }
+
+interface ExtensionDescription {
+    val isBinary: Boolean
+}
+
+interface ImportedMesh {
+    val meshes: Array<AbstractMesh>
+    val particleSystems: Array<IParticleSystem>
+    val skeletons: Array<Skeleton>
+    val animationGroups: Array<AnimationGroup>
+}

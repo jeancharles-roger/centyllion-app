@@ -653,3 +653,45 @@ external class AssetsManager {
      */
     fun loadAsync(): Promise<Unit>
 }
+
+/**
+ * Set of assets to keep when moving a scene into an asset container.
+ */
+external class KeepAssets: AbstractScene
+
+/**
+ * Container with a set of assets that can be added or removed from a scene.
+ */
+external class AssetContainer: AbstractScene {
+    /**
+     * The scene the AssetContainer belongs to.
+     */
+    var scene: Scene
+    /**
+     * Instantiates an AssetContainer.
+     * @param scene The scene the AssetContainer belongs to.
+     */
+    constructor(scene: Scene)
+    /**
+     * Adds all the assets from the container to the scene.
+     */
+    fun addAllToScene()
+    /**
+     * Removes all the assets in the container from the scene
+     */
+    fun removeAllFromScene()
+    /**
+     * Disposes all the assets in the container
+     */
+    fun dispose()
+    /**
+     * Removes all the assets contained in the scene and adds them to the container.
+     * @param keepAssets Set of assets to keep in the scene. (default: empty)
+     */
+    fun moveAllFromScene(keepAssets: KeepAssets?)
+    /**
+     * Adds all meshes in the asset container to a root mesh that can be used to position all the contained meshes. The root mesh is then added to the front of the meshes in the assetContainer.
+     * @returns the root mesh
+     */
+    fun createRootMesh(): Mesh
+}

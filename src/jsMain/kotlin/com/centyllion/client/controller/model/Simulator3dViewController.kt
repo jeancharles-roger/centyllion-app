@@ -2,6 +2,7 @@ package com.centyllion.client.controller.model
 
 import babylonjs.AbstractMesh
 import babylonjs.ArcRotateCamera
+import babylonjs.AssetsManager
 import babylonjs.Axis
 import babylonjs.BoxOptions
 import babylonjs.Color3
@@ -36,6 +37,7 @@ import bulma.iconButton
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
+import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
 import com.centyllion.model.minFieldLevel
@@ -128,7 +130,6 @@ open class Simulator3dViewController(
             mesh.dispose()
         }
     }
-
 
     override var data: Simulator by observable(simulator) { _, old, new ->
         if (old != new) {
@@ -231,11 +232,8 @@ open class Simulator3dViewController(
 
     val agentMesh: MutableMap<Int, AbstractMesh> = mutableMapOf()
 
-    /*
-    val scenesCache: MutableMap<String, Scene> = mutableMapOf()
-
-    val assetScenes: MutableMap<Asset3d, Scene> = mutableMapOf()
-    */
+    val assetsManager = AssetsManager(scene)
+    val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
 
     var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -557,36 +555,44 @@ open class Simulator3dViewController(
     */
 
     private fun refreshAssets() {
-        /*
         // clears previous assets
-        assetScenes.values.forEach { scene.remove(it) }
+        assetScenes.values.forEach { scene.removeMesh(it, true) }
         assetScenes.clear()
 
         // sets new assets
         data.simulation.assets.map { asset ->
-            loadAsset(asset.url).then { loaded ->
-                // clone scene to allow multiple occurrences of the same asset
-                val cloned = loaded.clone(true) as Scene
-                cloned.position.set(asset.x, asset.y, asset.z)
-                cloned.scale.set(asset.xScale, asset.yScale, asset.zScale)
-                cloned.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
-                if (asset.opacity < 1.0) {
-                    cloned.traverse {
-                        val dynamic = it.asDynamic()
-                        if (dynamic.material != null) {
-                            dynamic.material = dynamic.material.clone()
-                            dynamic.material.opacity = asset.opacity
-                            dynamic.material.transparent = true
+            console.log("Loading asset ${asset.url}")
+            val task = assetsManager.addMeshTask("Loading ${asset.url}", "", asset.url, "")
+            task.runTask(scene,
+                {
+                    console.log("Success loading of asset ${asset.url}")
+                    val mesh = task.loadedMeshes[0]
+                    // clone scene to allow multiple occurrences of the same asset
+                    val cloned = mesh
+                    cloned.position.set(asset.x, asset.y, asset.z)
+                    cloned.scaling.set(asset.xScale, asset.yScale, asset.zScale)
+                    cloned.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
+                    /*
+                    if (asset.opacity < 1.0) {
+                        cloned.traverse {
+                            val dynamic = it.asDynamic()
+                            if (dynamic.material != null) {
+                                dynamic.material = dynamic.material.clone()
+                                dynamic.material.opacity = asset.opacity
+                                dynamic.material.transparent = true
+                            }
                         }
                     }
+                     */
+                    scene.addMesh(cloned)
+                    assetScenes[asset] = cloned
+                    render()
+                },
+                {m, _ ->
+                    page.error("Error loading asset: $m")
                 }
-                scene.add(cloned)
-                assetScenes[asset] = cloned
-                render()
-            }.catch { page.error(it) }
+            )
         }
-         */
-
     }
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): InstancedMesh {

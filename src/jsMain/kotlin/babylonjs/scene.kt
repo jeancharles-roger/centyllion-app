@@ -36,7 +36,7 @@ external class SceneOptions {
     var virtual: Boolean?
 }
 
-external interface AbstractScene {
+open external class AbstractScene {
     /**
      * The list of sounds used in the scene.
      */
@@ -44,8 +44,6 @@ external interface AbstractScene {
 }
 
 external class Scene: AbstractScene, IAnimatable {
-
-    override var sounds: Array<Sound>?
 
     override var animations: Array<Animation>?
 

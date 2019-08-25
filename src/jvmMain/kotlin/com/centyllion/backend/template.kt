@@ -44,6 +44,7 @@ fun HTML.centyllionHead(title: String) = head {
 
     script(src="https://preview.babylonjs.com/babylon.js") {}
     script(src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js") {}
+    script(src="https://preview.babylonjs.com/loaders/babylon.glTFFileLoader.js") {}
 
     script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
 

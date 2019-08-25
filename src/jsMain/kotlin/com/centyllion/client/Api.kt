@@ -284,6 +284,13 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             }
         }
 
+    fun fetchAssets(id: String) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/asset/$id", bearer).then {
+                json.parse(Asset.serializer(), it)
+            }
+        }
+
     fun createAsset(name: String, file: File) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val data = FormData()

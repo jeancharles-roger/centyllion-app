@@ -2,7 +2,6 @@
 @file:Suppress("unused", "ConvertSecondaryConstructorToPrimary")
 package babylonjs
 
-import org.w3c.dom.Node
 import kotlin.js.Promise
 
 /**
@@ -603,7 +602,13 @@ external class Animation {
          * @param onAnimationEnd defines the callback to call when animation end
          * @returns the animatable created for this animation
          */
-        fun CreateAndStartAnimation(name: String, node: Node, targetProperty: String, framePerSecond: Number, totalFrame: Number, from: Any, to: Any, loopMode: Number?, easingFunction: EasingFunction?, onAnimationEnd: (() -> Unit)?): Animatable?
+        fun CreateAndStartAnimation(
+            name: String, node: Node, targetProperty: String,
+            framePerSecond: Number, totalFrame: Number,
+            from: Any, to: Any,
+            loopMode: Number? = definedExternally, easingFunction: EasingFunction? = definedExternally,
+            onAnimationEnd: (() -> Unit)? = definedExternally
+        ): Animatable?
         /**
          * Create and start an animation on a node and its descendants
          * @param name defines the name of the global animation that will be run on all nodes

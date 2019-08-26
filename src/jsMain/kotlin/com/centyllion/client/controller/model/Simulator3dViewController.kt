@@ -1,6 +1,7 @@
 package com.centyllion.client.controller.model
 
 import babylonjs.AbstractMesh
+import babylonjs.Animation
 import babylonjs.ArcRotateCamera
 import babylonjs.AssetsManager
 import babylonjs.Axis
@@ -15,6 +16,7 @@ import babylonjs.Mesh
 import babylonjs.MeshBuilder
 import babylonjs.PlaneOptions
 import babylonjs.PointLight
+import babylonjs.Quaternion
 import babylonjs.RawTexture
 import babylonjs.Scene
 import babylonjs.StandardMaterial
@@ -467,10 +469,6 @@ open class Simulator3dViewController(
         }
         materials = materials()
 
-        refreshAssets()
-
-        toolbar.hidden = readOnly
-
         simulationCanvas.root.apply {
             onmouseup = { mouseChange(it) }
             onmousedown = { mouseChange(it) }
@@ -494,10 +492,10 @@ open class Simulator3dViewController(
     }
 
     fun resetCamera() {
-        camera.target = Vector3(0, 0, 0)
-        camera.alpha = 1.5 * PI
-        camera.beta = PI
-        camera.radius = 1.25 * data.simulation.width
+        Animation.CreateAndStartAnimation("Reset camera target", camera, "target", 25, 25, camera.target, Vector3(0, 0, 0), 0)
+        Animation.CreateAndStartAnimation("Reset camera radius", camera, "radius", 25, 25, camera.radius, 1.25 * data.simulation.width, 0)
+        Animation.CreateAndStartAnimation("Reset camera alpha", camera, "alpha", 25, 25, camera.alpha, 1.5 * PI, 0)
+        Animation.CreateAndStartAnimation("Reset camera beta", camera, "beta", 25, 25, camera.beta, PI, 0)
     }
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
@@ -526,34 +524,6 @@ open class Simulator3dViewController(
         }
     }.toMap()
 
-    /*
-    private fun materials() = data.model.grains.map {
-        it.id to MeshPhongMaterial().apply {
-            color.set(it.color.toLowerCase())
-        }
-    }.toMap()
-     */
-
-    /* TODO there is a problem to solve here when the same asset is loaded twice before the first one succeeded
-        need to add a waiting mechanism */
-    /*
-    private fun loadAsset(path: String): Promise<Scene> = Promise { resolve, reject ->
-        val scene = scenesCache[path]
-        if (scene != null) {
-            resolve(scene)
-        } else {
-            println("Loading ${page.appContext.api.url(path)}..")
-            GLTFLoader().load(page.appContext.api.url(path),
-                {
-                    println("Asset $path loaded.")
-                    scenesCache[path] = it.scene
-                    resolve(it.scene)
-                }, {}, { reject(IOException(it.toString())) }
-            )
-        }
-    }
-    */
-
     private fun refreshAssets() {
         // clears previous assets
         assetScenes.values.forEach { scene.removeMesh(it, true) }
@@ -571,19 +541,13 @@ open class Simulator3dViewController(
                     val cloned = mesh
                     cloned.position.set(asset.x, asset.y, asset.z)
                     cloned.scaling.set(asset.xScale, asset.yScale, asset.zScale)
-                    cloned.rotation.set(asset.xRotation, asset.yRotation, asset.zRotation)
-                    /*
-                    if (asset.opacity < 1.0) {
-                        cloned.traverse {
-                            val dynamic = it.asDynamic()
-                            if (dynamic.material != null) {
-                                dynamic.material = dynamic.material.clone()
-                                dynamic.material.opacity = asset.opacity
-                                dynamic.material.transparent = true
-                            }
-                        }
+                    if (asset.xRotation != 0.0 || asset.yRotation != 0.0 || asset.zRotation != 0.0) {
+                        cloned.rotationQuaternion = Quaternion.FromEulerAngles(asset.xRotation, asset.yRotation, asset.zRotation)
                     }
-                     */
+                    if (asset.opacity < 1.0) {
+                        cloned.visibility = asset.opacity
+                        cloned.getChildMeshes().forEach { it.visibility = asset.opacity }
+                    }
                     scene.addMesh(cloned)
                     assetScenes[asset] = cloned
                     render()

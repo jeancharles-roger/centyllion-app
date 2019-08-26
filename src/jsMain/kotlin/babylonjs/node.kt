@@ -173,7 +173,7 @@ open external class Node: IBehaviorAware<Node> {
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      * @returns an array of AbstractMesh
      */
-    fun getChildMeshes(directDescendantsOnly: Boolean?, predicate: ((node: Node) -> Boolean)?): Array<AbstractMesh>
+    fun getChildMeshes(directDescendantsOnly: Boolean? = definedExternally, predicate: ((node: Node) -> Boolean)? = definedExternally): Array<AbstractMesh>
     /**
      * Get all direct children of this node
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
@@ -606,7 +606,7 @@ open external class TransformNode: Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    fun clone(name: String, newParent: Node, doNotCloneChildren: Boolean?): TransformNode?
+    fun clone(name: String, newParent: Node, doNotCloneChildren: Boolean? = definedExternally): TransformNode?
     /**
      * Serializes the objects information.
      * @param currentSerializationObject defines the object to serialize in

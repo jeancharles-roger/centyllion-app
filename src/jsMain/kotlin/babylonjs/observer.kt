@@ -131,7 +131,7 @@ external class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    fun add(callback: (eventData: T, eventState: EventState) -> Unit, mask: Number?, insertFirst: Boolean?, scope: Any?, unregisterOnFirstCall: Boolean?): Observer<T>?
+    fun add(callback: (eventData: T, eventState: EventState) -> Unit, mask: Number? = definedExternally, insertFirst: Boolean? = definedExternally, scope: Any? = definedExternally, unregisterOnFirstCall: Boolean? = definedExternally): Observer<T>?
     /**
      * Create a new Observer with the specified callback and unregisters after the next notification
      * @param callback the callback that will be executed for that Observer

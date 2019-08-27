@@ -15,27 +15,6 @@ external interface IDisposable {
     fun dispose()
 }
 
-/** Interface defining initialization parameters for Scene class */
-external class SceneOptions {
-    /**
-     * Defines that scene should keep up-to-date a map of geometry to enable fast look-up by uniqueId
-     * It will improve performance when the number of geometries becomes important.
-     */
-    var useGeometryUniqueIdsMap: Boolean?
-    /**
-     * Defines that each material of the scene should keep up-to-date a map of referencing meshes for fast diposing
-     * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
-     */
-    var useMaterialMeshMap: Boolean?
-    /**
-     * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
-     * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
-     */
-    var useClonedMeshMap: Boolean?
-    /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
-    var virtual: Boolean?
-}
-
 open external class AbstractScene {
     /**
      * The list of sounds used in the scene.

@@ -329,6 +329,7 @@ class SimulationRunController(
     fun step() {
         if (!running) {
             executeStep(true)
+            simulationViewController.render()
             refreshButtons()
         }
     }

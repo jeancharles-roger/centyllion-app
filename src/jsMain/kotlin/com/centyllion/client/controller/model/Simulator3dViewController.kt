@@ -127,9 +127,8 @@ open class Simulator3dViewController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
-    class FieldSupport(val mesh: Mesh, val material: StandardMaterial, val texture: RawTexture) {
+    class FieldSupport(val mesh: Mesh, val texture: RawTexture) {
         fun dispose() {
-            material.dispose()
             texture.dispose()
             mesh.dispose()
         }
@@ -152,6 +151,10 @@ open class Simulator3dViewController(
             // only refresh assets if they changed
             if (old.simulation.assets != new.simulation.assets) {
                 refreshAssets()
+            }
+
+            if (old.fields != new.fields) {
+                fieldSupports = fieldSupports()
             }
 
             refresh()
@@ -246,8 +249,14 @@ open class Simulator3dViewController(
     val assetsManager = AssetsManager(scene)
     val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
 
-    var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, _ ->
-        old.values.forEach { it.dispose() }
+    var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
+        old.values.forEach {
+            scene.removeMesh(it.mesh)
+            it.dispose()
+        }
+        new.values.forEach {
+            scene.addMesh(it.mesh)
+        }
     }
 
     val camera = ArcRotateCamera(
@@ -555,6 +564,28 @@ open class Simulator3dViewController(
         }
     }.toMap()
 
+    private fun fieldSupports() = data.model.fields.map { field ->
+        val levels = data.field(field.id)
+
+        val texture = RawTexture.CreateAlphaTexture(
+            levels.alpha(), data.simulation.width, data.simulation.height,
+            scene, false, false, Texture.NEAREST_SAMPLINGMODE
+        )
+        val material = StandardMaterial("${field.name} material", scene)
+        val color = colorNames[field.color]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
+        material.diffuseColor = color
+        //material.emissiveColor = color
+        //material.ambientColor = color
+        material.opacityTexture = texture
+
+        val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
+        mesh.material = material
+        mesh.rotate(Axis.X, PI/2)
+        scene.addMesh(mesh)
+        field.id to FieldSupport(mesh, texture)
+    }.toMap()
+
+
     private fun refreshAssets() {
         // clears previous assets
         assetScenes.values.forEach { scene.removeMesh(it, true) }
@@ -666,9 +697,9 @@ open class Simulator3dViewController(
 
         // applies deaths
         dead.forEach { transformMesh(it, -1) }
+
         // updates fields
         fieldSupports.forEach { it.value.texture.update(data.field(it.key).alpha()) }
-        render()
     }
 
     fun render() {
@@ -676,44 +707,19 @@ open class Simulator3dViewController(
     }
 
     override fun refresh() {
-
         // applies transform mesh to all simulation
-        for (i in 0 until data.currentAgents.size) {
+        for (i in data.currentAgents.indices) {
             transformMesh(i, data.idAtIndex(i))
         }
 
-        // clear fields
-        fieldSupports.values.forEach { scene.removeMesh(it.mesh) }
-
-        // adds field meshes
-        fieldSupports = data.model.fields.map { field ->
-            val levels = data.field(field.id)
-
-            val texture = RawTexture.CreateAlphaTexture(
-                levels.alpha(), data.simulation.width, data.simulation.height,
-                scene, false, false, Texture.NEAREST_SAMPLINGMODE
-            )
-            val material = StandardMaterial("${field.name} material", scene)
-            val color = colorNames[field.color]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
-            material.diffuseColor = color
-            //material.emissiveColor = color
-            //material.ambientColor = color
-            material.opacityTexture = texture
-
-            val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
-            mesh.material = material
-            mesh.rotate(Axis.X, PI/2)
-            scene.addMesh(mesh)
-            field.id to FieldSupport(mesh, material, texture)
-        }.toMap()
-
+        fieldSupports.forEach { it.value.texture.update(data.field(it.key).alpha()) }
         render()
     }
 
     fun dispose() {
         sourceMeshes = emptyMap()
         defaultMesh.dispose()
-        fieldSupports.values.forEach { it.dispose() }
+        fieldSupports = emptyMap()
         camera.dispose()
         engine.dispose()
         assetsManager.reset()

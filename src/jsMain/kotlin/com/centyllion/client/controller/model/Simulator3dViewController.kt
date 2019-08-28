@@ -19,6 +19,7 @@ import babylonjs.PointLight
 import babylonjs.Quaternion
 import babylonjs.RawTexture
 import babylonjs.Scene
+import babylonjs.SceneOptions
 import babylonjs.StandardMaterial
 import babylonjs.Texture
 import babylonjs.Tools
@@ -53,6 +54,7 @@ import org.w3c.files.Blob
 import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.log10
 import kotlin.math.roundToInt
@@ -213,8 +215,15 @@ open class Simulator3dViewController(
         setSize(width, height)
     }
 
-    val scene = Scene(engine).apply {
+    var running = false
+
+    private var animated = false
+
+    val sceneOptions = SceneOptions(true, true, true)
+    val scene = Scene(engine, sceneOptions).apply {
         autoClear = false
+        autoClearDepthAndStencil = false
+        blockfreeActiveMeshesAndRenderingGroups = true
 
         val position = simulator.simulation.width.let { Vector3(1.25 * it, -2 * it, 1.25 * it) }
         HemisphericLight("light1", position, this)
@@ -252,6 +261,7 @@ open class Simulator3dViewController(
         beta = PI
 
         panningSensibility = 50
+
         attachControl(simulationCanvas.root, false)
     }
 
@@ -467,7 +477,6 @@ open class Simulator3dViewController(
             geometries = geometries()
             refresh()
         }
-        materials = materials()
 
         simulationCanvas.root.apply {
             onmouseup = { mouseChange(it) }
@@ -479,7 +488,16 @@ open class Simulator3dViewController(
             }
         }
         */
-        engine.runRenderLoop { scene.render() }
+        engine.runRenderLoop {
+            if (
+                animated || running ||
+                abs(camera.inertialAlphaOffset.toDouble()) > 0 ||
+                abs(camera.inertialBetaOffset.toDouble()) > 0 ||
+                abs(camera.inertialRadiusOffset.toDouble()) > 0
+            ) {
+                scene.render()
+            }
+        }
 
         window.onresize = {
             resizeSimulationCanvas()
@@ -492,10 +510,23 @@ open class Simulator3dViewController(
     }
 
     fun resetCamera() {
-        Animation.CreateAndStartAnimation("Reset camera target", camera, "target", 25, 25, camera.target, Vector3(0, 0, 0), 0)
-        Animation.CreateAndStartAnimation("Reset camera radius", camera, "radius", 25, 25, camera.radius, 1.25 * data.simulation.width, 0)
-        Animation.CreateAndStartAnimation("Reset camera alpha", camera, "alpha", 25, 25, camera.alpha, 1.5 * PI, 0)
-        Animation.CreateAndStartAnimation("Reset camera beta", camera, "beta", 25, 25, camera.beta, PI, 0)
+        animated = true
+        Animation.CreateAndStartAnimation(
+            "Reset camera radius", camera, "radius", 25, 25,
+            camera.radius, 1.25 * data.simulation.width, 0
+        )
+        Animation.CreateAndStartAnimation(
+            "Reset camera alpha", camera, "alpha", 25, 25,
+            camera.alpha, 1.5 * PI, 0
+        )
+        Animation.CreateAndStartAnimation(
+            "Reset camera beta", camera, "beta", 25, 25,
+            camera.beta, PI, 0
+        )
+        Animation.CreateAndStartAnimation(
+            "Reset camera target", camera, "target", 26, 26,
+            camera.target, Vector3(0, 0, 0), 0, onAnimationEnd = { animated = false }
+        )
     }
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
@@ -640,11 +671,8 @@ open class Simulator3dViewController(
         render()
     }
 
-    fun animate() {
-    }
-
     fun render() {
-        //scene.render()
+        scene.render()
     }
 
     override fun refresh() {
@@ -688,6 +716,7 @@ open class Simulator3dViewController(
         fieldSupports.values.forEach { it.dispose() }
         camera.dispose()
         engine.dispose()
+        assetsManager.reset()
 
         /*
         pointer.traverse {
@@ -695,14 +724,7 @@ open class Simulator3dViewController(
             dynamic.material?.dispose()
             dynamic.geomtry?.dispose()
         }
-        scenesCache.values.forEach {
-            it.traverse {
-                val dynamic = it.asDynamic()
-                dynamic.material?.dispose()
-                dynamic.geomtry?.dispose()
-            }
-        }
-         */
+        */
     }
 
     private fun resizeSimulationCanvas() {

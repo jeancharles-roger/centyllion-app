@@ -97,8 +97,19 @@ class SimulationRunController(
 
     private var simulator = Simulator(context, data)
 
-    private var animating = true
-    private var running = false
+    private var running: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            simulationViewController.running = new
+            if (new) {
+                window.requestAnimationFrame(this::animationCallback)
+                refreshButtons()
+            } else {
+                lastStepTimestamp = 0.0
+                refresh()
+            }
+        }
+    }
+
     private var fps = 50.0
     private var lastStepTimestamp = 0.0
     private var lastRequestSkipped = true
@@ -286,10 +297,7 @@ class SimulationRunController(
     }
 
     fun run() {
-        if (!running) {
-            running = true
-            refreshButtons()
-        }
+        running = true
     }
 
     fun animationCallback(timestamp: Double) {
@@ -311,11 +319,6 @@ class SimulationRunController(
 
             }
             lastRequestSkipped = refresh
-
-        }
-
-        if (animating) {
-            simulationViewController.animate()
             window.requestAnimationFrame(this::animationCallback)
         }
 
@@ -331,11 +334,7 @@ class SimulationRunController(
     }
 
     fun stop() {
-        if (running) {
-            running = false
-            lastStepTimestamp = 0.0
-            refresh()
-        }
+        running = false
     }
 
     fun reset() {
@@ -436,6 +435,5 @@ class SimulationRunController(
     fun dispose() {
         stop()
         simulationViewController.dispose()
-        animating = false
     }
 }

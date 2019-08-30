@@ -49,7 +49,6 @@ import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
-import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
@@ -76,40 +75,37 @@ class Simulator3dViewController(
         val height = 6.0
 
         fun changePointer(pointer: Mesh, color: Color3?, size: Int) {
-            /*
             // clear all children
-            while (pointer.children.isNotEmpty()) {
-                pointer.remove(pointer.children.first())
+            while (pointer.getChildMeshes().isNotEmpty()) {
+                val mesh = pointer.getChildMeshes().first()
+                pointer.removeChild(mesh)
+                pointer.getScene().removeMesh(mesh)
             }
-            if (this != Move) {
-                val radius = 0.5 * size * factor
-                val geometry = CylinderBufferGeometry(radius, radius, height, 16)
-                geometry.translate(0.5, height / 2.0, 0.5)
-                val material = sourceMaterial?.clone() ?: MeshPhongMaterial().apply { color.set("#ff0000") }
-                val mesh = Mesh(geometry, material).apply {
-                    renderOrder = 5
-                    material.opacity = when (this@EditTools) {
-                        Eraser -> 0.0
-                        Spray -> 0.4
-                        else -> 0.7
-                    }
-                    material.transparent = true
-                }
 
-                val wireMaterial = LineBasicMaterial().apply {
-                    color.set("grey")
-                    transparent = true
-                    opacity = 0.4
+            if (this != Move) {
+                val diameter = size * factor
+                val color4 = (color ?: Color3.Green()).toColor4(1)
+                val child = MeshBuilder.CreateCylinder(
+                    "inner pointer",
+                    CylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
+                    null
+                )
+                child.visibility = when (this@EditTools) {
+                    Eraser -> 0.1
+                    Spray -> 0.4
+                    else -> 0.7
                 }
-                mesh.add(LineSegments(WireframeGeometry(geometry), wireMaterial))
-                pointer.add(mesh)
+                child.position.set(pointer.position.x, pointer.position.y, pointer.position.z)
+                pointer.addChild(child)
             }
-            */
+        }
+
+        fun pointerVisibility(pointer: Mesh, visible: Boolean) {
+            pointer.getChildMeshes().forEach { it.isVisible = visible }
         }
 
         fun positionPointer(pointer: Mesh, x: Number, y: Number) {
             pointer.position.set(x, 0.0, y)
-            //pointer.children.firstOrNull()?.position?.set(x, 0.0, y)
         }
 
         fun updatePointer(pointer: Mesh, step: Int) {
@@ -431,7 +427,7 @@ class Simulator3dViewController(
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            pointer.isVisible = info.hit
+            selectedTool.pointerVisibility(pointer, info.hit)
             if (info.hit && info.pickedMesh == plane) {
                 drawStep = 0
 
@@ -442,6 +438,7 @@ class Simulator3dViewController(
                 simulationY = y + 50
                 simulationSourceX = simulationX
                 simulationSourceY = simulationY
+                selectedTool.updatePointer(pointer, drawStep)
                 drawOnSimulation()
                 drawStep += 1
             }
@@ -452,7 +449,7 @@ class Simulator3dViewController(
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            pointer.isVisible = info.hit
+            selectedTool.pointerVisibility(pointer, info.hit)
             if (info.hit && info.pickedMesh == plane) {
                 val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
                 val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
@@ -461,6 +458,7 @@ class Simulator3dViewController(
                 if (drawStep > 0) {
                     simulationX = x + 50
                     simulationY = y + 50
+                    selectedTool.updatePointer(pointer, drawStep)
                     drawOnSimulation()
                     drawStep += 1
                 }
@@ -472,78 +470,20 @@ class Simulator3dViewController(
         val ray = pickInfo?.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            pointer.isVisible = info.pickedMesh == plane
+            selectedTool.pointerVisibility(pointer, info.hit)
             if (info.hit && info.pickedMesh != null) {
                 val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
                 val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
                 simulationX = x + 50
                 simulationY = y + 50
                 drawStep = -1
+                selectedTool.updatePointer(pointer, drawStep)
                 drawOnSimulation()
                 simulationSourceX = -1
                 simulationSourceY = -1
                 simulationX = -1
                 simulationY = -1
             }
-        }
-    }
-
-    private fun mouseChange(event: MouseEvent) {
-        // only update if there a tool
-        if (selectedTool != EditTools.Move) {
-            val rectangle = simulationCanvas.root.getBoundingClientRect()
-            val x = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1
-            val y = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1
-
-            val picked = scene.pick(x, y, { it == plane }, true, camera)
-            if (picked != null) {
-                pointer.isVisible = true
-
-            }
-            /*
-            // updates the picking ray with the camera and mouse position
-            rayCaster.setFromCamera(Vector2(x, y), camera)
-
-            // calculates objects intersecting the picking ray
-            val intersect = rayCaster.intersectObject(plane, false).firstOrNull()
-            if (intersect != null) {
-                pointer.visible = true
-
-                val planeX = (intersect.point.x - 0.5).roundToInt()
-                val planeY = (intersect.point.z - 0.5).roundToInt()
-
-                selectedTool.positionPointer(pointer, planeX, planeY)
-
-                val clicked = event.buttons.toInt() == 1
-                val newStep = when {
-                    clicked && drawStep >= 0 -> drawStep + 1
-                    clicked -> 0
-                    drawStep >= 0 -> -1
-                    else -> null
-                }
-
-                simulationX = planeX + 50
-                simulationY = planeY + 50
-
-                if (newStep != null) {
-                    if (newStep == 0) {
-                        simulationSourceX = simulationX
-                        simulationSourceY = simulationY
-                    }
-                    drawStep = newStep
-
-                    selectedTool.updatePointer(pointer, drawStep)
-                    drawOnSimulation(drawStep)
-                }
-
-                render()
-            } else {
-                if (pointer.visible) {
-                    pointer.visible = false
-                    render()
-                }
-            }
-             */
         }
     }
 
@@ -638,8 +578,6 @@ class Simulator3dViewController(
                      */
             }.apply {
                 isVisible = false
-                //translate(Axis.Y, height / 2.0)
-                //rotate(Axis.X, PI/2)
             }
         }
     }.toMap()
@@ -704,11 +642,9 @@ class Simulator3dViewController(
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double): InstancedMesh {
         // creates mesh
         val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
+        mesh.metadata = grainId
         //mesh.receiveShadows = true
 
-        if (grainId == 0) {
-            console.log("Grain pos: $x x $y")
-        }
         // positions the mesh
         mesh.position.set(x,  0, y)
 
@@ -718,48 +654,50 @@ class Simulator3dViewController(
         return mesh
     }
 
-    fun transformMesh(index: Int, newGrainId: Int) {
+    fun  transformMesh(index: Int, newGrainId: Int) {
         val mesh = agentMesh[index]
-        // deletes the mesh
-        if (mesh != null) {
-            agentMesh.remove(index)
-            scene.removeMesh(mesh, true)
-            mesh.dispose()
-        }
-        if (newGrainId >= 0) {
-            val p = data.simulation.toPosition(index)
-            createMesh(
-                index,
-                newGrainId,
-                p.x - data.simulation.width / 2.0,
-                p.y - data.simulation.height / 2.0
-            )
-        }
-
-        /*
-        when {
-            mesh != null && newGrainId >= 0 -> {
-                // transform it to new one
-                //mesh.geometry = geometries[newGrainId] ?: defaultGeometry
-                //mesh.material = materials[newGrainId] ?: defaultMaterial
-            }
-            mesh != null && newGrainId < 0 -> {
-                // deletes the mesh
+        if (newGrainId != mesh?.metadata) {
+            // deletes the mesh
+            if (mesh != null) {
                 agentMesh.remove(index)
                 scene.removeMesh(mesh, true)
                 mesh.dispose()
             }
-            mesh == null && newGrainId >= 0 -> {
+            if (newGrainId >= 0) {
                 val p = data.simulation.toPosition(index)
                 createMesh(
                     index,
                     newGrainId,
-                    p.x - data.simulation.width / 2.0 + 0.5,
-                    p.y - data.simulation.height / 2.0 + 0.5
+                    p.x - data.simulation.width / 2.0,
+                    p.y - data.simulation.height / 2.0
                 )
             }
+
+            /*
+            when {
+                mesh != null && newGrainId >= 0 -> {
+                    // transform it to new one
+                    //mesh.geometry = geometries[newGrainId] ?: defaultGeometry
+                    //mesh.material = materials[newGrainId] ?: defaultMaterial
+                }
+                mesh != null && newGrainId < 0 -> {
+                    // deletes the mesh
+                    agentMesh.remove(index)
+                    scene.removeMesh(mesh, true)
+                    mesh.dispose()
+                }
+                mesh == null && newGrainId >= 0 -> {
+                    val p = data.simulation.toPosition(index)
+                    createMesh(
+                        index,
+                        newGrainId,
+                        p.x - data.simulation.width / 2.0 + 0.5,
+                        p.y - data.simulation.height / 2.0 + 0.5
+                    )
+                }
+            }
+             */
         }
-         */
     }
 
     fun oneStep(applied: Collection<ApplicableBehavior>, dead: Collection<Int>) {

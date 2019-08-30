@@ -1,5 +1,5 @@
 @file:JsQualifier("BABYLON")
-@file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals")
+@file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals", "FunctionName")
 package babylonjs
 
 /**
@@ -26,9 +26,8 @@ external interface ICullable {
  * Info for a bounding data of a mesh
  */
 external class BoundingInfo: ICullable {
-    override fun isInFrustum(frustumPlanes: Array<Plane>): Boolean
-
     override fun isCompletelyInFrustum(frustumPlanes: Array<Plane>): Boolean
+    override fun isInFrustum(frustumPlanes: Array<Plane>): Boolean
 
     /**
      * Bounding box for the mesh
@@ -44,14 +43,14 @@ external class BoundingInfo: ICullable {
      * @param maximum max vector of the bounding box/sphere
      * @param worldMatrix defines the new world matrix
      */
-    constructor(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    constructor(minimum: Vector3, maximum: Vector3, worldMatrix: Matrix?)
     /**
      * Recreates the entire bounding info from scratch as if we call the constructor in place
      * @param min defines the new minimum vector (in local space)
      * @param max defines the new maximum vector (in local space)
      * @param worldMatrix defines the new world matrix
      */
-    fun reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    fun reConstruct(min: Vector3, max: Vector3, worldMatrix: Matrix?)
     /**
      * min vector of the bounding box/sphere
      */
@@ -68,14 +67,14 @@ external class BoundingInfo: ICullable {
      * Updates the bounding sphere and box
      * @param world world matrix to be used to update
      */
-    fun update(world: DeepImmutable<Matrix>)
+    fun update(world: Matrix)
     /**
      * Recreate the bounding info to be centered around a specific point given a specific extend.
      * @param center New center of the bounding info
      * @param extend New extend of the bounding info
      * @returns the current bounding info
      */
-    fun centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo
+    fun centerOn(center: Vector3, extend: Vector3): BoundingInfo
     /**
      * Scale the current bounding info by applying a scale factor
      * @param factor defines the scale factor to apply
@@ -88,25 +87,18 @@ external class BoundingInfo: ICullable {
      * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
      * @returns true if the bounding info is in the frustum planes
      */
-    fun isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: Number?): Boolean
+    fun isInFrustum(frustumPlanes: Array<Plane>, strategy: Number?): Boolean
     /**
      * Gets the world distance between the min and max points of the bounding box
      */
     val diagonalLength: Number
-    /**
-     * Checks if a cullable object (mesh...) is in the camera frustum
-     * Unlike isInFrustum this cheks the full bounding box
-     * @param frustumPlanes Camera near/planes
-     * @returns true if the object is in frustum otherwise false
-     */
-    fun isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
     /**
      * Checks if a point is inside the bounding box and bounding sphere or the mesh
      * @see [https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh]
      * @param point the point to check intersection with
      * @returns if the point intersects
      */
-    fun intersectsPoint(point: DeepImmutable<Vector3>): Boolean
+    fun intersectsPoint(point: Vector3): Boolean
     /**
      * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
      * @see [https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh]
@@ -114,7 +106,7 @@ external class BoundingInfo: ICullable {
      * @param precise if the intersection should be done using OBB
      * @returns if the bounding info intersects
      */
-    fun intersects(boundingInfo: DeepImmutable<BoundingInfo>, precise: Boolean): Boolean
+    fun intersects(boundingInfo: BoundingInfo, precise: Boolean): Boolean
 }
 
 /**
@@ -175,14 +167,14 @@ external class BoundingBox: ICullable {
      * @param max defines the maximum vector (in local space)
      * @param worldMatrix defines the new world matrix
      */
-    constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    constructor(min: Vector3, max: Vector3, worldMatrix: Matrix?)
     /**
      * Recreates the entire bounding box from scratch as if we call the constructor in place
      * @param min defines the new minimum vector (in local space)
      * @param max defines the new maximum vector (in local space)
      * @param worldMatrix defines the new world matrix
      */
-    fun reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    fun reConstruct(min: Vector3, max: Vector3, worldMatrix: Matrix?)
     /**
      * Scale the current bounding box by applying a scale factor
      * @param factor defines the scale factor to apply
@@ -193,38 +185,26 @@ external class BoundingBox: ICullable {
      * Gets the world matrix of the bounding box
      * @returns a matrix
      */
-    fun getWorldMatrix(): DeepImmutable<Matrix>
-    /**
-     * Tests if the bounding box is intersecting the frustum planes
-     * @param frustumPlanes defines the frustum planes to test
-     * @returns true if there is an intersection
-     */
-    fun isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
-    /**
-     * Tests if the bounding box is entirely inside the frustum planes
-     * @param frustumPlanes defines the frustum planes to test
-     * @returns true if there is an inclusion
-     */
-    fun isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
+    fun getWorldMatrix(): Matrix
     /**
      * Tests if a point is inside the bounding box
      * @param point defines the point to test
      * @returns true if the point is inside the bounding box
      */
-    fun intersectsPoint(point: DeepImmutable<Vector3>): Boolean
+    fun intersectsPoint(point: Vector3): Boolean
     /**
      * Tests if the bounding box intersects with a bounding sphere
      * @param sphere defines the sphere to test
      * @returns true if there is an intersection
      */
-    fun intersectsSphere(sphere: DeepImmutable<BoundingSphere>): Boolean
+    fun intersectsSphere(sphere: BoundingSphere): Boolean
     /**
      * Tests if the bounding box intersects with a box defined by a min and max vectors
      * @param min defines the min vector to use
      * @param max defines the max vector to use
      * @returns true if there is an intersection
      */
-    fun intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Boolean
+    fun intersectsMinMax(min: Vector3, max: Vector3): Boolean
     
     companion object {
         /**
@@ -233,7 +213,7 @@ external class BoundingBox: ICullable {
          * @param box1 defines the second box to test
          * @returns true if there is an intersection
          */
-        fun Intersects(box0: DeepImmutable<BoundingBox>, box1: DeepImmutable<BoundingBox>): Boolean
+        fun Intersects(box0: BoundingBox, box1: BoundingBox): Boolean
         /**
          * Tests if a bounding box defines by a min/max vectors intersects a sphere
          * @param minPoint defines the minimum vector of the bounding box
@@ -242,21 +222,21 @@ external class BoundingBox: ICullable {
          * @param sphereRadius defines the sphere radius
          * @returns true if there is an intersection
          */
-        fun IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: Number): Boolean
+        fun IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: Number): Boolean
         /**
          * Tests if a bounding box defined with 8 vectors is entirely inside frustum planes
          * @param boundingVectors defines an array of 8 vectors representing a bounding box
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an inclusion
          */
-        fun IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
+        fun IsCompletelyInFrustum(boundingVectors: Array<Vector3>, frustumPlanes: Array<Plane>): Boolean
         /**
          * Tests if a bounding box defined with 8 vectors intersects frustum planes
          * @param boundingVectors defines an array of 8 vectors representing a bounding box
          * @param frustumPlanes defines the frustum planes to test
          * @return true if there is an intersection
          */
-        fun IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
+        fun IsInFrustum(boundingVectors: Array<Vector3>, frustumPlanes: Array<Plane>): Boolean
     }
 }
 
@@ -294,14 +274,14 @@ external class BoundingSphere {
      * @param max defines the maximum vector (in local space)
      * @param worldMatrix defines the new world matrix
      */
-    constructor(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    constructor(min: Vector3, max: Vector3, worldMatrix: Matrix?)
     /**
      * Recreates the entire bounding sphere from scratch as if we call the constructor in place
      * @param min defines the new minimum vector (in local space)
      * @param max defines the new maximum vector (in local space)
      * @param worldMatrix defines the new world matrix
      */
-    fun reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix: DeepImmutable<Matrix>?)
+    fun reConstruct(min: Vector3, max: Vector3, worldMatrix: Matrix?)
     /**
      * Scale the current bounding sphere by applying a scale factor
      * @param factor defines the scale factor to apply
@@ -312,26 +292,26 @@ external class BoundingSphere {
      * Gets the world matrix of the bounding box
      * @returns a matrix
      */
-    fun getWorldMatrix(): DeepImmutable<Matrix>
+    fun getWorldMatrix(): Matrix
     /**
      * Tests if the bounding sphere is intersecting the frustum planes
      * @param frustumPlanes defines the frustum planes to test
      * @returns true if there is an intersection
      */
-    fun isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
+    fun isInFrustum(frustumPlanes: Array<Plane>): Boolean
     /**
      * Tests if the bounding sphere center is in between the frustum planes.
      * Used for optimistic fast inclusion.
      * @param frustumPlanes defines the frustum planes to test
      * @returns true if the sphere center is in between the frustum planes
      */
-    fun isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): Boolean
+    fun isCenterInFrustum(frustumPlanes: Array<Plane>): Boolean
     /**
      * Tests if a point is inside the bounding sphere
      * @param point defines the point to test
      * @returns true if the point is inside the bounding sphere
      */
-    fun intersectsPoint(point: DeepImmutable<Vector3>): Boolean
+    fun intersectsPoint(point: Vector3): Boolean
     
     companion object {
         /**
@@ -340,6 +320,6 @@ external class BoundingSphere {
          * @param sphere1 sphere 1
          * @returns true if the speres intersect
          */
-        fun Intersects(sphere0: DeepImmutable<BoundingSphere>, sphere1: DeepImmutable<BoundingSphere>): Boolean
+        fun Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): Boolean
     }
 }

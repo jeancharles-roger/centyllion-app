@@ -30,20 +30,17 @@ typealias DataArray = Array<Number> /*| ArrayBuffer | ArrayBufferView*/
  * @ignorenaming
  */
 //type Primitive = undefined | null | boolean | string | number | Function;
-/**
- * Type modifier to make all the properties of an object Readonly
- */
-typealias Immutable<T> = Any // T extends Primitive ? T : T extends Array<infer U> ? ReadonlyArray<U> : DeepImmutable<T>;
-/**
- * Type modifier to make all the properties of an object Readonly recursively
- */
-typealias DeepImmutable<T> = Any //  T extends Primitive ? T : T extends Array<infer U> ? DeepImmutableArray<U> : DeepImmutableObject<T>;
-
 
 /**
  * Defines how a node can be built from a string name.
  */
 typealias NodeConstructor = ((name: String, scene: Scene, options: Any?) -> Unit) -> Node
+
+/**
+ * Type used to define predicate used to select faces when a mesh intersection is detected
+ */
+typealias TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) -> Boolean
+
 
 interface MinMax {
     val minimum: Vector3
@@ -64,4 +61,17 @@ interface ImportedMesh {
     val particleSystems: Array<IParticleSystem>
     val skeletons: Array<Skeleton>
     val animationGroups: Array<AnimationGroup>
+}
+
+interface DragStatus {
+    val delta: Vector3
+    val dragPlanePoint: Vector3
+    val dragPlaneNormal: Vector3
+    val dragDistance: Number
+    val pointerId: Number
+}
+
+interface DragStartEnd {
+    val dragPlanePoint: Vector3
+    val pointerId: Number
 }

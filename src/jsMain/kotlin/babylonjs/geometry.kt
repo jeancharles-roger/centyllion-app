@@ -285,20 +285,20 @@ external class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3 object
      */
-    fun multiply(otherColor: DeepImmutable<Color3>): Color3
+    fun multiply(otherColor: Color3): Color3
     /**
      * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
      * @param otherColor defines the second operand
      * @param result defines the Color3 object where to store the result
      * @returns the current Color3
      */
-    fun multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3
+    fun multiplyToRef(otherColor: Color3, result: Color3): Color3
     /**
      * Determines equality between Color3 objects
      * @param otherColor defines the second operand
      * @returns true if the rgb values are equal to the given ones
      */
-    fun equals(otherColor: DeepImmutable<Color3>): Boolean
+    fun equals(otherColor: Color3): Boolean
     /**
      * Determines equality between the current Color3 object and a set of r,b,g values
      * @param r defines the red component to check
@@ -340,27 +340,27 @@ external class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    fun add(otherColor: DeepImmutable<Color3>): Color3
+    fun add(otherColor: Color3): Color3
     /**
      * Stores the result of the addition of the current Color3 and given one rgb values into "result"
      * @param otherColor defines the second operand
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    fun addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3
+    fun addToRef(otherColor: Color3, result: Color3): Color3
     /**
      * Returns a new Color3 set with the subtracted values of the given one from the current Color3
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    fun subtract(otherColor: DeepImmutable<Color3>): Color3
+    fun subtract(otherColor: Color3): Color3
     /**
      * Stores the result of the subtraction of given one from the current Color3 rgb values into "result"
      * @param otherColor defines the second operand
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    fun subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3
+    fun subtractToRef(otherColor: Color3, result: Color3): Color3
     /**
      * Copy the current object
      * @returns a new Color3 copied the current one
@@ -371,7 +371,7 @@ external class Color3 {
      * @param source defines the source Color3 object
      * @returns the updated Color3 object
      */
-    fun copyFrom(source: DeepImmutable<Color3>): Color3
+    fun copyFrom(source: Color3): Color3
     /**
      * Updates the Color3 rgb values from the given floats
      * @param r defines the red component to read from
@@ -429,7 +429,7 @@ external class Color3 {
          * @param offset defines an offset in the source array
          * @returns a new Color3 object
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Color3
+        fun FromArray(array: Collection<Number>, offset: Number?): Color3
         /**
          * Creates a new Color3 from integer values (< 256)
          * @param r defines the red component to read from (value between 0 and 255)
@@ -445,7 +445,7 @@ external class Color3 {
          * @param amount defines the gradient value between start and end
          * @returns a new Color3 object
          */
-        fun Lerp(start: DeepImmutable<Color3>, end: DeepImmutable<Color3>, amount: Number): Color3
+        fun Lerp(start: Color3, end: Color3, amount: Number): Color3
         /**
          * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
          * @param left defines the start value
@@ -453,7 +453,7 @@ external class Color3 {
          * @param amount defines the gradient factor
          * @param result defines the Color3 object where to store the result
          */
-        fun LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: Number, result: Color3)
+        fun LerpToRef(left: Color3, right: Color3, amount: Number, result: Color3)
         /**
          * Returns a Color3 value containing a red color
          * @returns a new Color3 object
@@ -477,7 +477,7 @@ external class Color3 {
         /**
          * Gets a Color3 value containing a black color that must not be updated
          */
-        val BlackReadOnly: DeepImmutable<Color3>
+        val BlackReadOnly: Color3
         /**
          * Returns a Color3 value containing a white color
          * @returns a new Color3 object
@@ -564,7 +564,7 @@ external class Color4 {
      * @param right defines the second operand
      * @returns the current updated Color4 object
      */
-    fun addInPlace(right: DeepImmutable<Color4>): Color4
+    fun addInPlace(right: Color4): Color4
     /**
      * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
      * @returns the new array
@@ -582,26 +582,26 @@ external class Color4 {
      * @param otherColor defines the second operand
      * @returns true if the rgba values are equal to the given ones
      */
-    fun equals(otherColor: DeepImmutable<Color4>): Boolean
+    fun equals(otherColor: Color4): Boolean
     /**
      * Creates a new Color4 set with the added values of the current Color4 and of the given one
      * @param right defines the second operand
      * @returns a new Color4 object
      */
-    fun add(right: DeepImmutable<Color4>): Color4
+    fun add(right: Color4): Color4
     /**
      * Creates a new Color4 set with the subtracted values of the given one from the current Color4
      * @param right defines the second operand
      * @returns a new Color4 object
      */
-    fun subtract(right: DeepImmutable<Color4>): Color4
+    fun subtract(right: Color4): Color4
     /**
      * Subtracts the given ones from the current Color4 values and stores the results in "result"
      * @param right defines the second operand
      * @param result defines the Color4 object where to store the result
      * @returns the current Color4 object
      */
-    fun subtractToRef(right: DeepImmutable<Color4>, result: Color4): Color4
+    fun subtractToRef(right: Color4, result: Color4): Color4
     /**
      * Creates a new Color4 with the current Color4 values multiplied by scale
      * @param scale defines the scaling factor to apply
@@ -724,7 +724,7 @@ external class Color4 {
          * @param amount defines the gradient factor
          * @returns a new Color4 object
          */
-        fun Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: Number): Color4
+        fun Lerp(left: Color4, right: Color4, amount: Number): Color4
         /**
          * Set the given "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
          * @param left defines the start value
@@ -732,21 +732,21 @@ external class Color4 {
          * @param amount defines the gradient factor
          * @param result defines the Color4 object where to store data
          */
-        fun LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: Number, result: Color4)
+        fun LerpToRef(left: Color4, right: Color4, amount: Number, result: Color4)
         /**
          * Creates a new Color4 from a Color3 and an alpha value
          * @param color3 defines the source Color3 to read from
          * @param alpha defines the alpha component (1.0 by default)
          * @returns a new Color4 object
          */
-        fun FromColor3(color3: DeepImmutable<Color3>, alpha: Number?): Color4
+        fun FromColor3(color3: Color3, alpha: Number?): Color4
         /**
          * Creates a new Color4 from the starting index element of the given array
          * @param array defines the source array to read from
          * @param offset defines the offset in the source array
          * @returns a new Color4 object
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Color4
+        fun FromArray(array: Collection<Number>, offset: Number?): Color4
         /**
          * Creates a new Color3 from integer values (< 256)
          * @param r defines the red component to read from (value between 0 and 255)
@@ -811,7 +811,7 @@ external class Vector2 {
      * @param source defines the source Vector2
      * @returns the current updated Vector2
      */
-    fun copyFrom(source: DeepImmutable<Vector2>): Vector2
+    fun copyFrom(source: Vector2): Vector2
     /**
      * Sets the Vector2 coordinates with the given floats
      * @param x defines the first coordinate
@@ -831,20 +831,20 @@ external class Vector2 {
      * @param otherVector defines the other vector
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
-    fun add(otherVector: DeepImmutable<Vector2>): Vector2
+    fun add(otherVector: Vector2): Vector2
     /**
      * Sets the "result" coordinates with the addition of the current Vector2 and the given one coordinates
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
      */
-    fun addToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2
+    fun addToRef(otherVector: Vector2, result: Vector2): Vector2
     /**
      * Set the Vector2 coordinates by adding the given Vector2 coordinates
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    fun addInPlace(otherVector: DeepImmutable<Vector2>): Vector2
+    fun addInPlace(otherVector: Vector2): Vector2
     /**
      * Gets a new Vector2 by adding the current Vector2 coordinates to the given Vector3 x, y coordinates
      * @param otherVector defines the other vector
@@ -863,32 +863,32 @@ external class Vector2 {
      * @param result defines the target vector
      * @returns the unmodified current Vector2
      */
-    fun subtractToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2
+    fun subtractToRef(otherVector: Vector2, result: Vector2): Vector2
     /**
      * Sets the current Vector2 coordinates by subtracting from it the given one coordinates
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    fun subtractInPlace(otherVector: DeepImmutable<Vector2>): Vector2
+    fun subtractInPlace(otherVector: Vector2): Vector2
     /**
      * Multiplies in place the current Vector2 coordinates by the given ones
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    fun multiplyInPlace(otherVector: DeepImmutable<Vector2>): Vector2
+    fun multiplyInPlace(otherVector: Vector2): Vector2
     /**
      * Returns a new Vector2 set with the multiplication of the current Vector2 and the given one coordinates
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    fun multiply(otherVector: DeepImmutable<Vector2>): Vector2
+    fun multiply(otherVector: Vector2): Vector2
     /**
      * Sets "result" coordinates with the multiplication of the current Vector2 and the given one coordinates
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
      */
-    fun multiplyToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2
+    fun multiplyToRef(otherVector: Vector2, result: Vector2): Vector2
     /**
      * Gets a new Vector2 set with the Vector2 coordinates multiplied by the given floats
      * @param x defines the first coordinate
@@ -908,13 +908,13 @@ external class Vector2 {
      * @param result defines the target vector
      * @returns the unmodified current Vector2
      */
-    fun divideToRef(otherVector: DeepImmutable<Vector2>, result: Vector2): Vector2
+    fun divideToRef(otherVector: Vector2, result: Vector2): Vector2
     /**
      * Divides the current Vector2 coordinates by the given ones
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    fun divideInPlace(otherVector: DeepImmutable<Vector2>): Vector2
+    fun divideInPlace(otherVector: Vector2): Vector2
     /**
      * Gets a new Vector2 with current Vector2 negated coordinates
      * @returns a new Vector2
@@ -951,14 +951,14 @@ external class Vector2 {
      * @param otherVector defines the other vector
      * @returns true if the given vector coordinates strictly equal the current Vector2 ones
      */
-    fun equals(otherVector: DeepImmutable<Vector2>): Boolean
+    fun equals(otherVector: Vector2): Boolean
     /**
      * Gets a Boolean if two vectors are equals (using an epsilon value)
      * @param otherVector defines the other vector
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
      */
-    fun equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon: Number?): Boolean
+    fun equalsWithEpsilon(otherVector: Vector2, epsilon: Number?): Boolean
     /**
      * Gets a new Vector2 from current Vector2 floored values
      * @returns a new Vector2
@@ -1007,14 +1007,14 @@ external class Vector2 {
         `     * @param offset defines the offset in the data source
          * @returns a new Vector2
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Vector2
+        fun FromArray(array: Collection<Number>, offset: Number?): Vector2
         /**
          * Sets "result" from the given index element of the given array
          * @param array defines the data source
          * @param offset defines the offset in the data source
          * @param result defines the target vector
          */
-        fun FromArrayToRef(array: DeepImmutable<Collection<Number>>, offset: Number, result: Vector2)
+        fun FromArrayToRef(array: Collection<Number>, offset: Number, result: Vector2)
         /**
          * Gets a new Vector2 located for "amount" (float) on the CatmullRom spline defined by the given four Vector2
          * @param value1 defines 1st point of control
@@ -1024,7 +1024,7 @@ external class Vector2 {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        fun CatmullRom(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, value3: DeepImmutable<Vector2>, value4: DeepImmutable<Vector2>, amount: Number): Vector2
+        fun CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: Number): Vector2
         /**
          * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
          * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
@@ -1034,7 +1034,7 @@ external class Vector2 {
          * @param max defines the upper limit
          * @returns a new Vector2
          */
-        fun Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2
+        fun Clamp(value: Vector2, min: Vector2, max: Vector2): Vector2
         /**
          * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value3", "tangent1", "tangent2"
          * @param value1 defines the 1st control point
@@ -1044,7 +1044,7 @@ external class Vector2 {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        fun Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: Number): Vector2
+        fun Hermite(value1: Vector2, tangent1: Vector2, value2: Vector2, tangent2: Vector2, amount: Number): Vector2
         /**
          * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
          * @param start defines the start vector
@@ -1052,48 +1052,48 @@ external class Vector2 {
          * @param amount defines the interpolation factor
          * @returns a new Vector2
          */
-        fun Lerp(start: DeepImmutable<Vector2>, end: DeepImmutable<Vector2>, amount: Number): Vector2
+        fun Lerp(start: Vector2, end: Vector2, amount: Number): Vector2
         /**
          * Gets the dot product of the vector "left" and the vector "right"
          * @param left defines first vector
          * @param right defines second vector
          * @returns the dot product (float)
          */
-        fun Dot(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Number
+        fun Dot(left: Vector2, right: Vector2): Number
         /**
          * Returns a new Vector2 equal to the normalized given vector
          * @param vector defines the vector to normalize
          * @returns a new Vector2
          */
-        fun Normalize(vector: DeepImmutable<Vector2>): Vector2
+        fun Normalize(vector: Vector2): Vector2
         /**
          * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
          * @param right defines 2nd vector
          * @returns a new Vector2
          */
-        fun Minimize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2
+        fun Minimize(left: Vector2, right: Vector2): Vector2
         /**
          * Gets a new Vecto2 set with the maximal coordinate values from the "left" and "right" vectors
          * @param left defines 1st vector
          * @param right defines 2nd vector
          * @returns a new Vector2
          */
-        fun Maximize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2
+        fun Maximize(left: Vector2, right: Vector2): Vector2
         /**
          * Gets a new Vector2 set with the transformed coordinates of the given vector by the given transformation matrix
          * @param vector defines the vector to transform
          * @param transformation defines the matrix to apply
          * @returns a new Vector2
          */
-        fun Transform(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>): Vector2
+        fun Transform(vector: Vector2, transformation: Matrix): Vector2
         /**
          * Transforms the given vector coordinates by the given transformation matrix and stores the result in the vector "result" coordinates
          * @param vector defines the vector to transform
          * @param transformation defines the matrix to apply
          * @param result defines the target vector
          */
-        fun TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2)
+        fun TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2)
         /**
          * Determines if a given vector is included in a triangle
          * @param p defines the vector to test
@@ -1102,28 +1102,28 @@ external class Vector2 {
          * @param p2 defines 3rd triangle point
          * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
          */
-        fun PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>): Boolean
+        fun PointInTriangle(p: Vector2, p0: Vector2, p1: Vector2, p2: Vector2): Boolean
         /**
          * Gets the distance between the vectors "value1" and "value2"
          * @param value1 defines first vector
          * @param value2 defines second vector
          * @returns the distance between vectors
          */
-        fun Distance(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Number
+        fun Distance(value1: Vector2, value2: Vector2): Number
         /**
          * Returns the squared distance between the vectors "value1" and "value2"
          * @param value1 defines first vector
          * @param value2 defines second vector
          * @returns the squared distance between vectors
          */
-        fun DistanceSquared(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Number
+        fun DistanceSquared(value1: Vector2, value2: Vector2): Number
         /**
          * Gets a new Vector2 located at the center of the vectors "value1" and "value2"
          * @param value1 defines first vector
          * @param value2 defines second vector
          * @returns a new Vector2
          */
-        fun Center(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): Vector2
+        fun Center(value1: Vector2, value2: Vector2): Vector2
         /**
          * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
          * @param p defines the middle point
@@ -1131,7 +1131,7 @@ external class Vector2 {
          * @param segB defines the other point of the segment
          * @returns the shortest distance
          */
-        fun DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): Number
+        fun DistanceOfPointFromSegment(p: Vector2, segA: Vector2, segB: Vector2): Number
     }
 }
 /**
@@ -1204,7 +1204,7 @@ external class Vector3 {
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    fun addInPlace(otherVector: DeepImmutable<Vector3>): Vector3
+    fun addInPlace(otherVector: Vector3): Vector3
     /**
      * Adds the given coordinates to the current Vector3
      * @param x defines the x coordinate of the operand
@@ -1218,33 +1218,33 @@ external class Vector3 {
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    fun add(otherVector: DeepImmutable<Vector3>): Vector3
+    fun add(otherVector: Vector3): Vector3
     /**
      * Adds the current Vector3 to the given one and stores the result in the vector "result"
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
      */
-    fun addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3
+    fun addToRef(otherVector: Vector3, result: Vector3): Vector3
     /**
      * Subtract the given vector from the current Vector3
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    fun subtractInPlace(otherVector: DeepImmutable<Vector3>): Vector3
+    fun subtractInPlace(otherVector: Vector3): Vector3
     /**
      * Returns a new Vector3, result of the subtraction of the given vector from the current Vector3
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    fun subtract(otherVector: DeepImmutable<Vector3>): Vector3
+    fun subtract(otherVector: Vector3): Vector3
     /**
      * Subtracts the given vector from the current Vector3 and stores the result in the vector "result".
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
      */
-    fun subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3
+    fun subtractToRef(otherVector: Vector3, result: Vector3): Vector3
     /**
      * Returns a new Vector3 set with the subtraction of the given floats from the current Vector3 coordinates
      * @param x defines the x coordinate of the operand
@@ -1298,14 +1298,14 @@ external class Vector3 {
      * @param otherVector defines the second operand
      * @returns true if both vectors are equals
      */
-    fun equals(otherVector: DeepImmutable<Vector3>): Boolean
+    fun equals(otherVector: Vector3): Boolean
     /**
      * Returns true if the current Vector3 and the given vector coordinates are distant less than epsilon
      * @param otherVector defines the second operand
      * @param epsilon defines the minimal distance to define values as equals
      * @returns true if both vectors are distant less than epsilon
      */
-    fun equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: Number?): Boolean
+    fun equalsWithEpsilon(otherVector: Vector3, epsilon: Number?): Boolean
     /**
      * Returns true if the current Vector3 coordinates equals the given floats
      * @param x defines the x coordinate of the operand
@@ -1319,20 +1319,20 @@ external class Vector3 {
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    fun multiplyInPlace(otherVector: DeepImmutable<Vector3>): Vector3
+    fun multiplyInPlace(otherVector: Vector3): Vector3
     /**
      * Returns a new Vector3, result of the multiplication of the current Vector3 by the given vector
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    fun multiply(otherVector: DeepImmutable<Vector3>): Vector3
+    fun multiply(otherVector: Vector3): Vector3
     /**
      * Multiplies the current Vector3 by the given one and stores the result in the given vector "result"
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
      */
-    fun multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3
+    fun multiplyToRef(otherVector: Vector3, result: Vector3): Vector3
     /**
      * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the given floats
      * @param x defines the x coordinate of the operand
@@ -1346,14 +1346,14 @@ external class Vector3 {
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    fun divide(otherVector: DeepImmutable<Vector3>): Vector3
+    fun divide(otherVector: Vector3): Vector3
     /**
      * Divides the current Vector3 coordinates by the given ones and stores the result in the given vector "result"
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
      * @returns the current Vector3
      */
-    fun divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3
+    fun divideToRef(otherVector: Vector3, result: Vector3): Vector3
     /**
      * Divides the current Vector3 coordinates by the given ones.
      * @param otherVector defines the second operand
@@ -1365,13 +1365,13 @@ external class Vector3 {
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    fun minimizeInPlace(other: DeepImmutable<Vector3>): Vector3
+    fun minimizeInPlace(other: Vector3): Vector3
     /**
      * Updates the current Vector3 with the maximal coordinate values between its and the given vector ones.
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    fun maximizeInPlace(other: DeepImmutable<Vector3>): Vector3
+    fun maximizeInPlace(other: Vector3): Vector3
     /**
      * Updates the current Vector3 with the minimal coordinate values between its and the given coordinates
      * @param x defines the x coordinate of the operand
@@ -1463,7 +1463,7 @@ external class Vector3 {
      * @param reference define the Vector3 to update
      * @returns the updated Vector3
      */
-    fun normalizeToRef(reference: DeepImmutable<Vector3>): Vector3
+    fun normalizeToRef(reference: Vector3): Vector3
     /**
      * Creates a new Vector3 copied from the current Vector3
      * @returns the new Vector3
@@ -1474,7 +1474,7 @@ external class Vector3 {
      * @param source defines the source Vector3
      * @returns the current updated Vector3
      */
-    fun copyFrom(source: DeepImmutable<Vector3>): Vector3
+    fun copyFrom(source: Vector3): Vector3
     /**
      * Copies the given floats to the current Vector3 coordinates
      * @param x defines the x coordinate of the operand
@@ -1507,7 +1507,7 @@ external class Vector3 {
          * @param size defines the size along the axis
          * @returns the clip factor
          */
-        fun GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: Number): Number
+        fun GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: Number): Number
         /**
          * Get angle between two vectors
          * @param vector0 angle between vector0 and vector1
@@ -1515,14 +1515,14 @@ external class Vector3 {
          * @param normal direction of the normal
          * @return the angle between vector0 and vector1
          */
-        fun GetAngleBetweenVectors(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Number
+        fun GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): Number
         /**
          * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Vector3
+        fun FromArray(array: Collection<Number>, offset: Number?): Vector3
         /**
          * Returns a new Vector3 set from the index "offset" of the given Float32Array
          * This function is deprecated. Use FromArray instead
@@ -1530,14 +1530,14 @@ external class Vector3 {
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
-        fun FromFloatArray(array: DeepImmutable<Float32Array>, offset: Number?): Vector3
+        fun FromFloatArray(array: Float32Array, offset: Number?): Vector3
         /**
          * Sets the given vector "result" with the element values from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
          */
-        fun FromArrayToRef(array: DeepImmutable<Collection<Number>>, offset: Number, result: Vector3)
+        fun FromArrayToRef(array: Collection<Number>, offset: Number, result: Vector3)
         /**
          * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
          * This function is deprecated.  Use FromArrayToRef instead.
@@ -1545,7 +1545,7 @@ external class Vector3 {
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
          */
-        fun FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: Number, result: Vector3)
+        fun FromFloatArrayToRef(array: Float32Array, offset: Number, result: Vector3)
         /**
          * Sets the given vector "result" with the given floats.
          * @param x defines the x coordinate of the source
@@ -1572,7 +1572,7 @@ external class Vector3 {
         /**
          * Gets a up Vector3 that must not be updated
          */
-        val UpReadOnly: DeepImmutable<Vector3>
+        val UpReadOnly: Vector3
         /**
          * Returns a new Vector3 set to (0.0, -1.0, 0.0)
          * @returns a new down Vector3
@@ -1605,7 +1605,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @returns the transformed Vector3
          */
-        fun TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3
+        fun TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3
         /**
          * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
          * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
@@ -1613,7 +1613,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        fun TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3)
+        fun TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3)
         /**
          * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
          * This method computes tranformed coordinates only, not transformed direction vectors
@@ -1623,7 +1623,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        fun TransformCoordinatesFromFloatsToRef(x: Number, y: Number, z: Number, transformation: DeepImmutable<Matrix>, result: Vector3)
+        fun TransformCoordinatesFromFloatsToRef(x: Number, y: Number, z: Number, transformation: Matrix, result: Vector3)
         /**
          * Returns a new Vector3 set with the result of the normal transformation by the given matrix of the given vector
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
@@ -1631,7 +1631,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @returns the new Vector3
          */
-        fun TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3
+        fun TransformNormal(vector: Vector3, transformation: Matrix): Vector3
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given vector
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
@@ -1639,7 +1639,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        fun TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3)
+        fun TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3)
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given floats (x, y, z)
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
@@ -1649,7 +1649,7 @@ external class Vector3 {
          * @param transformation defines the transformation matrix
          * @param result defines the Vector3 where to store the result
          */
-        fun TransformNormalFromFloatsToRef(x: Number, y: Number, z: Number, transformation: DeepImmutable<Matrix>, result: Vector3)
+        fun TransformNormalFromFloatsToRef(x: Number, y: Number, z: Number, transformation: Matrix, result: Vector3)
         /**
          * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4"
          * @param value1 defines the first control point
@@ -1659,7 +1659,7 @@ external class Vector3 {
          * @param amount defines the amount on the spline to use
          * @returns the new Vector3
          */
-        fun CatmullRom(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, value3: DeepImmutable<Vector3>, value4: DeepImmutable<Vector3>, amount: Number): Vector3
+        fun CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: Number): Vector3
         /**
          * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
          * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
@@ -1669,7 +1669,7 @@ external class Vector3 {
          * @param max defines the upper range value
          * @returns the new Vector3
          */
-        fun Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3
+        fun Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3
         /**
          * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
          * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
@@ -1679,7 +1679,7 @@ external class Vector3 {
          * @param max defines the upper range value
          * @param result defines the Vector3 where to store the result
          */
-        fun ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3)
+        fun ClampToRef(value: Vector3, min: Vector3, max: Vector3, result: Vector3)
         /**
          * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
          * @param value1 defines the first control point
@@ -1689,7 +1689,7 @@ external class Vector3 {
          * @param amount defines the amount on the interpolation spline (between 0 and 1)
          * @returns the new Vector3
          */
-        fun Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: Number): Vector3
+        fun Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: Number): Vector3
         /**
          * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
          * @param start defines the start value
@@ -1697,7 +1697,7 @@ external class Vector3 {
          * @param amount max defines amount between both (between 0 and 1)
          * @returns the new Vector3
          */
-        fun Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: Number): Vector3
+        fun Lerp(start: Vector3, end: Vector3, amount: Number): Vector3
         /**
          * Sets the given vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
          * @param start defines the start value
@@ -1705,14 +1705,14 @@ external class Vector3 {
          * @param amount max defines amount between both (between 0 and 1)
          * @param result defines the Vector3 where to store the result
          */
-        fun LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: Number, result: Vector3)
+        fun LerpToRef(start: Vector3, end: Vector3, amount: Number, result: Vector3)
         /**
          * Returns the dot product (float) between the vectors "left" and "right"
          * @param left defines the left operand
          * @param right defines the right operand
          * @returns the dot product
          */
-        fun Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Number
+        fun Dot(left: Vector3, right: Vector3): Number
         /**
          * Returns a new Vector3 as the cross product of the vectors "left" and "right"
          * The cross product is then orthogonal to both "left" and "right"
@@ -1720,7 +1720,7 @@ external class Vector3 {
          * @param right defines the right operand
          * @returns the cross product
          */
-        fun Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3
+        fun Cross(left: Vector3, right: Vector3): Vector3
         /**
          * Sets the given vector "result" with the cross product of "left" and "right"
          * The cross product is then orthogonal to both "left" and "right"
@@ -1734,13 +1734,13 @@ external class Vector3 {
          * @param vector defines the Vector3 to normalize
          * @returns the new Vector3
          */
-        fun Normalize(vector: DeepImmutable<Vector3>): Vector3
+        fun Normalize(vector: Vector3): Vector3
         /**
          * Sets the given vector "result" with the normalization of the given first vector
          * @param vector defines the Vector3 to normalize
          * @param result defines the Vector3 where to store the result
          */
-        fun NormalizeToRef(vector: DeepImmutable<Vector3>, result: Vector3)
+        fun NormalizeToRef(vector: Vector3, result: Vector3)
         /**
          * Project a Vector3 onto screen space
          * @param vector defines the Vector3 to project
@@ -1749,7 +1749,7 @@ external class Vector3 {
          * @param viewport defines the screen viewport to use
          * @returns the new Vector3
          */
-        fun Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3
+        fun Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3
         /**
          * Unproject from screen space to object space
          * @param source defines the screen space Vector3 to use
@@ -1759,7 +1759,7 @@ external class Vector3 {
          * @param transform defines the transform (view x projection) matrix to use
          * @returns the new Vector3
          */
-        fun UnprojectFromTransform(source: Vector3, viewportWidth: Number, viewportHeight: Number, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>): Vector3
+        fun UnprojectFromTransform(source: Vector3, viewportWidth: Number, viewportHeight: Number, world: Matrix, transform: Matrix): Vector3
         /**
          * Unproject from screen space to object space
          * @param source defines the screen space Vector3 to use
@@ -1770,7 +1770,7 @@ external class Vector3 {
          * @param projection defines the projection matrix to use
          * @returns the new Vector3
          */
-        fun Unproject(source: DeepImmutable<Vector3>, viewportWidth: Number, viewportHeight: Number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Vector3
+        fun Unproject(source: Vector3, viewportWidth: Number, viewportHeight: Number, world: Matrix, view: Matrix, projection: Matrix): Vector3
         /**
          * Unproject from screen space to object space
          * @param source defines the screen space Vector3 to use
@@ -1781,7 +1781,7 @@ external class Vector3 {
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        fun UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: Number, viewportHeight: Number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3)
+        fun UnprojectToRef(source: Vector3, viewportWidth: Number, viewportHeight: Number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3)
         /**
          * Unproject from screen space to object space
          * @param sourceX defines the screen space x coordinate to use
@@ -1794,42 +1794,42 @@ external class Vector3 {
          * @param projection defines the projection matrix to use
          * @param result defines the Vector3 where to store the result
          */
-        fun UnprojectFloatsToRef(sourceX: Float, sourceY: Float, sourceZ: Float, viewportWidth: Number, viewportHeight: Number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3)
+        fun UnprojectFloatsToRef(sourceX: Float, sourceY: Float, sourceZ: Float, viewportWidth: Number, viewportHeight: Number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3)
         /**
          * Gets the minimal coordinate values between two Vector3
          * @param left defines the first operand
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        fun Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3
+        fun Minimize(left: Vector3, right: Vector3): Vector3
         /**
          * Gets the maximal coordinate values between two Vector3
          * @param left defines the first operand
          * @param right defines the second operand
          * @returns the new Vector3
          */
-        fun Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3
+        fun Maximize(left: Vector3, right: Vector3): Vector3
         /**
          * Returns the distance between the vectors "value1" and "value2"
          * @param value1 defines the first operand
          * @param value2 defines the second operand
          * @returns the distance
          */
-        fun Distance(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Number
+        fun Distance(value1: Vector3, value2: Vector3): Number
         /**
          * Returns the squared distance between the vectors "value1" and "value2"
          * @param value1 defines the first operand
          * @param value2 defines the second operand
          * @returns the squared distance
          */
-        fun DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Number
+        fun DistanceSquared(value1: Vector3, value2: Vector3): Number
         /**
          * Returns a new Vector3 located at the center between "value1" and "value2"
          * @param value1 defines the first operand
          * @param value2 defines the second operand
          * @returns the new Vector3
          */
-        fun Center(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): Vector3
+        fun Center(value1: Vector3, value2: Vector3): Vector3
         /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
@@ -1840,7 +1840,7 @@ external class Vector3 {
          * @param axis3 defines the third axis
          * @returns a new Vector3
          */
-        fun RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3
+        fun RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3
         /**
          * The same than RotationFromAxis but updates the given ref Vector3 parameter instead of returning a new Vector3
          * @param axis1 defines the first axis
@@ -1848,7 +1848,7 @@ external class Vector3 {
          * @param axis3 defines the third axis
          * @param ref defines the Vector3 where to store the result
          */
-        fun RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3)
+        fun RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3)
     }
 }
 /**
@@ -1907,39 +1907,39 @@ external class Vector4 {
      * @param otherVector the vector to add
      * @returns the updated Vector4.
      */
-    fun addInPlace(otherVector: DeepImmutable<Vector4>): Vector4
+    fun addInPlace(otherVector: Vector4): Vector4
     /**
      * Returns a new Vector4 as the result of the addition of the current Vector4 and the given one.
      * @param otherVector the vector to add
      * @returns the resulting vector
      */
-    fun add(otherVector: DeepImmutable<Vector4>): Vector4
+    fun add(otherVector: Vector4): Vector4
     /**
      * Updates the given vector "result" with the result of the addition of the current Vector4 and the given one.
      * @param otherVector the vector to add
      * @param result the vector to store the result
      * @returns the current Vector4.
      */
-    fun addToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4
+    fun addToRef(otherVector: Vector4, result: Vector4): Vector4
     /**
      * Subtract in place the given vector from the current Vector4.
      * @param otherVector the vector to subtract
      * @returns the updated Vector4.
      */
-    fun subtractInPlace(otherVector: DeepImmutable<Vector4>): Vector4
+    fun subtractInPlace(otherVector: Vector4): Vector4
     /**
      * Returns a new Vector4 with the result of the subtraction of the given vector from the current Vector4.
      * @param otherVector the vector to add
      * @returns the new vector with the result
      */
-    fun subtract(otherVector: DeepImmutable<Vector4>): Vector4
+    fun subtract(otherVector: Vector4): Vector4
     /**
      * Sets the given vector "result" with the result of the subtraction of the given vector from the current Vector4.
      * @param otherVector the vector to subtract
      * @param result the vector to store the result
      * @returns the current Vector4.
      */
-    fun subtractToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4
+    fun subtractToRef(otherVector: Vector4, result: Vector4): Vector4
     /**
      * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
      */
@@ -1998,14 +1998,14 @@ external class Vector4 {
      * @param otherVector the vector to compare against
      * @returns true if they are equal
      */
-    fun equals(otherVector: DeepImmutable<Vector4>): Boolean
+    fun equals(otherVector: Vector4): Boolean
     /**
      * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the given vector ones.
      * @param otherVector vector to compare against
      * @param epsilon (Default: very small Number)
      * @returns true if they are equal
      */
-    fun equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: Number?): Boolean
+    fun equalsWithEpsilon(otherVector: Vector4, epsilon: Number?): Boolean
     /**
      * Boolean : True if the given floats are strictly equal to the current Vector4 coordinates.
      * @param x x value to compare against
@@ -2026,14 +2026,14 @@ external class Vector4 {
      * @param otherVector vector to multiple with
      * @returns resulting new vector
      */
-    fun multiply(otherVector: DeepImmutable<Vector4>): Vector4
+    fun multiply(otherVector: Vector4): Vector4
     /**
      * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
      * @param otherVector vector to multiple with
      * @param result vector to store the result
      * @returns the current Vector4.
      */
-    fun multiplyToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4
+    fun multiplyToRef(otherVector: Vector4, result: Vector4): Vector4
     /**
      * Returns a new Vector4 set with the multiplication result of the given floats and the current Vector4 coordinates.
      * @param x x value multiply with
@@ -2048,32 +2048,32 @@ external class Vector4 {
      * @param otherVector vector to devide with
      * @returns resulting new vector
      */
-    fun divide(otherVector: DeepImmutable<Vector4>): Vector4
+    fun divide(otherVector: Vector4): Vector4
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
      * @param otherVector vector to devide with
      * @param result vector to store the result
      * @returns the current Vector4.
      */
-    fun divideToRef(otherVector: DeepImmutable<Vector4>, result: Vector4): Vector4
+    fun divideToRef(otherVector: Vector4, result: Vector4): Vector4
     /**
      * Divides the current Vector3 coordinates by the given ones.
      * @param otherVector vector to devide with
      * @returns the updated Vector3.
      */
-    fun divideInPlace(otherVector: DeepImmutable<Vector4>): Vector4
+    fun divideInPlace(otherVector: Vector4): Vector4
     /**
      * Updates the Vector4 coordinates with the minimum values between its own and the given vector ones
      * @param other defines the second operand
      * @returns the current updated Vector4
      */
-    fun minimizeInPlace(other: DeepImmutable<Vector4>): Vector4
+    fun minimizeInPlace(other: Vector4): Vector4
     /**
      * Updates the Vector4 coordinates with the maximum values between its own and the given vector ones
      * @param other defines the second operand
      * @returns the current updated Vector4
      */
-    fun maximizeInPlace(other: DeepImmutable<Vector4>): Vector4
+    fun maximizeInPlace(other: Vector4): Vector4
     /**
      * Gets a new Vector4 from current Vector4 floored values
      * @returns a new Vector4
@@ -2114,7 +2114,7 @@ external class Vector4 {
      * @param source the source vector to copy from
      * @returns the updated Vector4.
      */
-    fun copyFrom(source: DeepImmutable<Vector4>): Vector4
+    fun copyFrom(source: Vector4): Vector4
     /**
      * Updates the current Vector4 coordinates with the given floats.
      * @param x float to copy from
@@ -2147,21 +2147,21 @@ external class Vector4 {
          * @param offset the offset into the array to start at
          * @returns the new vector
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Vector4
+        fun FromArray(array: Collection<Number>, offset: Number?): Vector4
         /**
          * Updates the given vector "result" from the starting index of the given array.
          * @param array the array to pull values from
          * @param offset the offset into the array to start at
          * @param result the vector to store the result in
          */
-        fun FromArrayToRef(array: DeepImmutable<Collection<Number>>, offset: Number, result: Vector4)
+        fun FromArrayToRef(array: Collection<Number>, offset: Number, result: Vector4)
         /**
          * Updates the given vector "result" from the starting index of the given Float32Array.
          * @param array the array to pull values from
          * @param offset the offset into the array to start at
          * @param result the vector to store the result in
          */
-        fun FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: Number, result: Vector4)
+        fun FromFloatArrayToRef(array: Float32Array, offset: Number, result: Vector4)
         /**
          * Updates the given vector "result" coordinates from the given floats.
          * @param x float to set from
@@ -2186,48 +2186,48 @@ external class Vector4 {
          * @param vector the vector to normalize
          * @returns the vector
          */
-        fun Normalize(vector: DeepImmutable<Vector4>): Vector4
+        fun Normalize(vector: Vector4): Vector4
         /**
          * Updates the given vector "result" from the normalization of the given one.
          * @param vector the vector to normalize
          * @param result the vector to store the result in
          */
-        fun NormalizeToRef(vector: DeepImmutable<Vector4>, result: Vector4)
+        fun NormalizeToRef(vector: Vector4, result: Vector4)
         /**
          * Returns a vector with the minimum values from the left and right vectors
          * @param left left vector to minimize
          * @param right right vector to minimize
          * @returns a new vector with the minimum of the left and right vector values
          */
-        fun Minimize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4
+        fun Minimize(left: Vector4, right: Vector4): Vector4
         /**
          * Returns a vector with the maximum values from the left and right vectors
          * @param left left vector to maximize
          * @param right right vector to maximize
          * @returns a new vector with the maximum of the left and right vector values
          */
-        fun Maximize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4
+        fun Maximize(left: Vector4, right: Vector4): Vector4
         /**
          * Returns the distance (float) between the vectors "value1" and "value2".
          * @param value1 value to calulate the distance between
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors
          */
-        fun Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Number
+        fun Distance(value1: Vector4, value2: Vector4): Number
         /**
          * Returns the squared distance (float) between the vectors "value1" and "value2".
          * @param value1 value to calulate the distance between
          * @param value2 value to calulate the distance between
          * @return the distance between the two vectors squared
          */
-        fun DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Number
+        fun DistanceSquared(value1: Vector4, value2: Vector4): Number
         /**
          * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
          * @param value1 value to calulate the center between
          * @param value2 value to calulate the center between
          * @return the center between the two vectors
          */
-        fun Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4
+        fun Center(value1: Vector4, value2: Vector4): Vector4
         /**
          * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -2235,7 +2235,7 @@ external class Vector4 {
          * @param transformation the transformation matrix to apply
          * @returns the new vector
          */
-        fun TransformNormal(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>): Vector4
+        fun TransformNormal(vector: Vector4, transformation: Matrix): Vector4
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
@@ -2243,7 +2243,7 @@ external class Vector4 {
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the result in
          */
-        fun TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4)
+        fun TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4)
         /**
          * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given floats (x, y, z, w).
          * This methods computes transformed normalized direction vectors only.
@@ -2254,7 +2254,7 @@ external class Vector4 {
          * @param transformation the transformation matrix to apply
          * @param result the vector to store the results in
          */
-        fun TransformNormalFromFloatsToRef(x: Number, y: Number, z: Number, w: Number, transformation: DeepImmutable<Matrix>, result: Vector4)
+        fun TransformNormalFromFloatsToRef(x: Number, y: Number, z: Number, w: Number, transformation: Matrix, result: Vector4)
         /**
          * Creates a new Vector4 from a Vector3
          * @param source defines the source data
@@ -2429,7 +2429,7 @@ external class Quaternion {
      * @param otherQuaternion defines the second operand
      * @return true if the current quaternion and the given one coordinates are strictly equals
      */
-    fun equals(otherQuaternion: DeepImmutable<Quaternion>): Boolean
+    fun equals(otherQuaternion: Quaternion): Boolean
     /**
      * Clone the current quaternion
      * @returns a new quaternion copied from the current one
@@ -2440,7 +2440,7 @@ external class Quaternion {
      * @param other defines the other quaternion
      * @returns the updated current quaternion
      */
-    fun copyFrom(other: DeepImmutable<Quaternion>): Quaternion
+    fun copyFrom(other: Quaternion): Quaternion
     /**
      * Updates the current quaternion with the given float coordinates
      * @param x defines the x coordinate
@@ -2464,13 +2464,13 @@ external class Quaternion {
      * @param other defines the second operand
      * @returns a new quaternion as the addition result of the given one and the current quaternion
      */
-    fun add(other: DeepImmutable<Quaternion>): Quaternion
+    fun add(other: Quaternion): Quaternion
     /**
      * Add a quaternion to the current one
      * @param other defines the quaternion to add
      * @returns the current quaternion
      */
-    fun addInPlace(other: DeepImmutable<Quaternion>): Quaternion
+    fun addInPlace(other: Quaternion): Quaternion
     /**
      * Subtract two quaternions
      * @param other defines the second operand
@@ -2508,20 +2508,20 @@ external class Quaternion {
      * @param q1 defines the second operand
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
-    fun multiply(q1: DeepImmutable<Quaternion>): Quaternion
+    fun multiply(q1: Quaternion): Quaternion
     /**
      * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
      * @param q1 defines the second operand
      * @param result defines the target quaternion
      * @returns the current quaternion
      */
-    fun multiplyToRef(q1: DeepImmutable<Quaternion>, result: Quaternion): Quaternion
+    fun multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion
     /**
      * Updates the current quaternion with the multiplication of itself with the given one "q1"
      * @param q1 defines the second operand
      * @returns the currentupdated quaternion
      */
-    fun multiplyInPlace(q1: DeepImmutable<Quaternion>): Quaternion
+    fun multiplyInPlace(q1: Quaternion): Quaternion
     /**
      * Conjugates (1-q) the current quaternion and stores the result in the given quaternion
      * @param ref defines the target quaternion
@@ -2572,7 +2572,7 @@ external class Quaternion {
      * @param matrix defines the source matrix
      * @returns the current updated quaternion
      */
-    fun fromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion
+    fun fromRotationMatrix(matrix: Matrix): Quaternion
 
     companion object {
         /**
@@ -2580,27 +2580,27 @@ external class Quaternion {
          * @param matrix defines the source matrix
          * @returns a new quaternion created from the given rotation matrix values
          */
-        fun FromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion
+        fun FromRotationMatrix(matrix: Matrix): Quaternion
         /**
          * Updates the given quaternion with the given rotation matrix values
          * @param matrix defines the source matrix
          * @param result defines the target quaternion
          */
-        fun FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion)
+        fun FromRotationMatrixToRef(matrix: Matrix, result: Quaternion)
         /**
          * Returns the dot product (float) between the quaternions "left" and "right"
          * @param left defines the left operand
          * @param right defines the right operand
          * @returns the dot product
          */
-        fun Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): Number
+        fun Dot(left: Quaternion, right: Quaternion): Number
         /**
          * Checks if the two quaternions are close to each other
          * @param quat0 defines the first quaternion to check
          * @param quat1 defines the second quaternion to check
          * @returns true if the two quaternions are close to each other
          */
-        fun AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): Boolean
+        fun AreClose(quat0: Quaternion, quat1: Quaternion): Boolean
         /**
          * Creates an empty quaternion
          * @returns a new quaternion set to (0.0, 0.0, 0.0)
@@ -2611,7 +2611,7 @@ external class Quaternion {
          * @param q defines the source quaternion
          * @returns a new quaternion as the inverted current quaternion
          */
-        fun Inverse(q: DeepImmutable<Quaternion>): Quaternion
+        fun Inverse(q: Quaternion): Quaternion
         /**
          * Inverse a given quaternion
          * @param q defines the source quaternion
@@ -2629,14 +2629,14 @@ external class Quaternion {
          * @param quaternion defines the quaternion to check
          * @returns true if the quaternion is identity
          */
-        fun IsIdentity(quaternion: DeepImmutable<Quaternion>): Boolean
+        fun IsIdentity(quaternion: Quaternion): Boolean
         /**
          * Creates a quaternion from a rotation around an axis
          * @param axis defines the axis to use
          * @param angle defines the angle to use
          * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
          */
-        fun RotationAxis(axis: DeepImmutable<Vector3>, angle: Number): Quaternion
+        fun RotationAxis(axis: Vector3, angle: Number): Quaternion
         /**
          * Creates a rotation around an axis and stores it into the given quaternion
          * @param axis defines the axis to use
@@ -2644,14 +2644,14 @@ external class Quaternion {
          * @param result defines the target quaternion
          * @returns the target quaternion
          */
-        fun RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: Number, result: Quaternion): Quaternion
+        fun RotationAxisToRef(axis: Vector3, angle: Number, result: Quaternion): Quaternion
         /**
          * Creates a new quaternion from data stored into an array
          * @param array defines the data source
          * @param offset defines the offset in the source array where the data starts
          * @returns a new quaternion
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Quaternion
+        fun FromArray(array: Collection<Number>, offset: Number?): Quaternion
         /**
          * Create a quaternion from Euler rotation angles
          * @param x Pitch
@@ -2674,14 +2674,14 @@ external class Quaternion {
          * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
          * @returns the new Quaternion
          */
-        fun FromEulerVector(vec: DeepImmutable<Vector3>): Quaternion
+        fun FromEulerVector(vec: Vector3): Quaternion
         /**
          * Updates a quaternion from Euler rotation vector
          * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
          * @param result the quaternion to store the result
          * @returns the updated quaternion
          */
-        fun FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion
+        fun FromEulerVectorToRef(vec: Vector3, result: Quaternion): Quaternion
         /**
          * Creates a new quaternion from the given Euler float angles (y, x, z)
          * @param yaw defines the rotation around Y axis
@@ -2721,7 +2721,7 @@ external class Quaternion {
          * @param axis3 defines the third axis
          * @returns the new quaternion
          */
-        fun RotationQuaternionFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Quaternion
+        fun RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Quaternion
         /**
          * Creates a rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system (axis1, axis2 and axis3 are normalized during this operation) and stores it in the target quaternion
          * @param axis1 defines the first axis
@@ -2729,7 +2729,7 @@ external class Quaternion {
          * @param axis3 defines the third axis
          * @param ref defines the target quaternion
          */
-        fun RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion)
+        fun RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion)
         /**
          * Interpolates between two quaternions
          * @param left defines first quaternion
@@ -2737,7 +2737,7 @@ external class Quaternion {
          * @param amount defines the gradient to use
          * @returns the new interpolated quaternion
          */
-        fun Slerp(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: Number): Quaternion
+        fun Slerp(left: Quaternion, right: Quaternion, amount: Number): Quaternion
         /**
          * Interpolates between two quaternions and stores it into a target quaternion
          * @param left defines first quaternion
@@ -2745,7 +2745,7 @@ external class Quaternion {
          * @param amount defines the gradient to use
          * @param result defines the target quaternion
          */
-        fun SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: Number, result: Quaternion)
+        fun SlerpToRef(left: Quaternion, right: Quaternion, amount: Number, result: Quaternion)
         /**
          * Interpolate between two quaternions using Hermite interpolation
          * @param value1 defines first quaternion
@@ -2755,7 +2755,7 @@ external class Quaternion {
          * @param amount defines the target quaternion
          * @returns the new interpolated quaternion
          */
-        fun Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: Number): Quaternion
+        fun Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: Number): Quaternion
     }
 }
 /**
@@ -2771,7 +2771,7 @@ external class Matrix {
     /**
      * Gets the internal data of the matrix
      */
-    val m: DeepImmutable<Float32Array>
+    val m: Float32Array
     /**
      * Creates an empty matrix (filled with zeros)
      */
@@ -2795,12 +2795,12 @@ external class Matrix {
      * Returns the matrix as a Float32Array
      * @returns the matrix underlying array
      */
-    fun toArray(): DeepImmutable<Float32Array>
+    fun toArray(): Float32Array
     /**
      * Returns the matrix as a Float32Array
      * @returns the matrix underlying array.
      */
-    fun asArray(): DeepImmutable<Float32Array>
+    fun asArray(): Float32Array
     /**
      * Inverts the current matrix in place
      * @returns the current inverted matrix
@@ -2816,20 +2816,20 @@ external class Matrix {
      * @param other defines the matrix to add
      * @returns a new matrix as the addition of the current matrix and the given one
      */
-    fun add(other: DeepImmutable<Matrix>): Matrix
+    fun add(other: Matrix): Matrix
     /**
      * Sets the given matrix "result" to the addition of the current matrix and the given one
      * @param other defines the matrix to add
      * @param result defines the target matrix
      * @returns the current matrix
      */
-    fun addToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix
+    fun addToRef(other: Matrix, result: Matrix): Matrix
     /**
      * Adds in place the given matrix to the current matrix
      * @param other defines the second operand
      * @returns the current updated matrix
      */
-    fun addToSelf(other: DeepImmutable<Matrix>): Matrix
+    fun addToSelf(other: Matrix): Matrix
     /**
      * Sets the given matrix to the current inverted Matrix
      * @param other defines the target matrix
@@ -2871,7 +2871,7 @@ external class Matrix {
      * @param vector3 defines the translation to insert
      * @returns the current updated matrix
      */
-    fun setTranslation(vector3: DeepImmutable<Vector3>): Matrix
+    fun setTranslation(vector3: Vector3): Matrix
     /**
      * Gets the translation value of the current matrix
      * @returns a new Vector3 as the extracted translation from the matrix
@@ -2893,13 +2893,13 @@ external class Matrix {
      * @param other defines the second operand
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
      */
-    fun multiply(other: DeepImmutable<Matrix>): Matrix
+    fun multiply(other: Matrix): Matrix
     /**
      * Copy the current matrix from the given one
      * @param other defines the source matrix
      * @returns the current updated matrix
      */
-    fun copyFrom(other: DeepImmutable<Matrix>): Matrix
+    fun copyFrom(other: Matrix): Matrix
     /**
      * Populates the given array from the starting index with the current matrix values
      * @param array defines the target array
@@ -2913,7 +2913,7 @@ external class Matrix {
      * @param result defines the matrix where to store the multiplication
      * @returns the current matrix
      */
-    fun multiplyToRef(other: DeepImmutable<Matrix>, result: Matrix): Matrix
+    fun multiplyToRef(other: Matrix, result: Matrix): Matrix
     /**
      * Sets the Float32Array "result" from the given index "offset" with the multiplication of the current matrix and the given one
      * @param other defines the second operand
@@ -2921,13 +2921,13 @@ external class Matrix {
      * @param offset defines the offset in the target array where to start storing values
      * @returns the current matrix
      */
-    fun multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: Number): Matrix
+    fun multiplyToArray(other: Matrix, result: Float32Array, offset: Number): Matrix
     /**
      * Check equality between this matrix and a second one
      * @param value defines the second matrix to compare
      * @returns true is the current matrix and the given one values are strictly equal
      */
-    fun equals(value: DeepImmutable<Matrix>): Boolean
+    fun equals(value: Matrix): Boolean
     /**
      * Clone the current matrix
      * @returns a new matrix from the current matrix
@@ -3037,14 +3037,14 @@ external class Matrix {
          * @param offset defines an offset in the source array
          * @returns a new Matrix set from the starting index of the given array
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>, offset: Number?): Matrix
+        fun FromArray(array: Collection<Number>, offset: Number?): Matrix
         /**
          * Copy the content of an array into a given matrix
          * @param array defines the source array
          * @param offset defines an offset in the source array
          * @param result defines the target matrix
          */
-        fun FromArrayToRef(array: DeepImmutable<Collection<Number>>, offset: Number, result: Matrix)
+        fun FromArrayToRef(array: Collection<Number>, offset: Number, result: Matrix)
         /**
          * Stores an array into a matrix after having multiplied each component by a given factor
          * @param array defines the source array
@@ -3052,11 +3052,11 @@ external class Matrix {
          * @param scale defines the scaling factor
          * @param result defines the target matrix
          */
-        fun FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array>, offset: Number, scale: Number, result: Matrix)
+        fun FromFloat32ArrayToRefScaled(array: Float32Array, offset: Number, scale: Number, result: Matrix)
         /**
          * Gets an identity matrix that must not be updated
          */
-        val IdentityReadOnly: DeepImmutable<Matrix>
+        val IdentityReadOnly: Matrix
         /**
          * Stores a list of values (16) inside a given matrix
          * @param initialM11 defines 1st value of 1st row
@@ -3106,7 +3106,7 @@ external class Matrix {
          * @param translation defines the translation vector3
          * @returns a new matrix
          */
-        fun Compose(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>): Matrix
+        fun Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix
         /**
          * Sets a matrix to a value composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
          * @param scale defines the scale vector3
@@ -3114,7 +3114,7 @@ external class Matrix {
          * @param translation defines the translation vector3
          * @param result defines the target matrix
          */
-        fun ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix)
+        fun ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix)
         /**
          * Creates a new identity matrix
          * @returns a new identity matrix
@@ -3141,7 +3141,7 @@ external class Matrix {
          * @param source defines the source matrix
          * @returns the new matrix
          */
-        fun Invert(source: DeepImmutable<Matrix>): Matrix
+        fun Invert(source: Matrix): Matrix
         /**
          * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
          * @param angle defines the angle (in radians) to use
@@ -3178,14 +3178,14 @@ external class Matrix {
          * @param angle defines the angle (in radians) to use
          * @return the new matrix
          */
-        fun RotationAxis(axis: DeepImmutable<Vector3>, angle: Number): Matrix
+        fun RotationAxis(axis: Vector3, angle: Number): Matrix
         /**
          * Creates a new rotation matrix for "angle" radians around the given axis and stores it in a given matrix
          * @param axis defines the axis to use
          * @param angle defines the angle (in radians) to use
          * @param result defines the target matrix
          */
-        fun RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: Number, result: Matrix)
+        fun RotationAxisToRef(axis: Vector3, angle: Number, result: Matrix)
         /**
          * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
          * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
@@ -3193,7 +3193,7 @@ external class Matrix {
          * @param to defines the vector to align to
          * @param result defines the target matrix
          */
-        fun RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix)
+        fun RotationAlignToRef(from: Vector3, to: Vector3, result: Matrix)
         /**
          * Creates a rotation matrix
          * @param yaw defines the yaw angle in radians (Y axis)
@@ -3249,7 +3249,7 @@ external class Matrix {
          * @param gradient defines the gradient factor
          * @returns the new matrix
          */
-        fun Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: Number): Matrix
+        fun Lerp(startValue: Matrix, endValue: Matrix, gradient: Number): Matrix
         /**
          * Set the given matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
          * @param startValue defines the start value
@@ -3257,7 +3257,7 @@ external class Matrix {
          * @param gradient defines the gradient factor
          * @param result defines the Matrix object where to store data
          */
-        fun LerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: Number, result: Matrix)
+        fun LerpToRef(startValue: Matrix, endValue: Matrix, gradient: Number, result: Matrix)
         /**
          * Builds a new matrix whose values are computed by:
          * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
@@ -3268,7 +3268,7 @@ external class Matrix {
          * @param gradient defines the gradient between the two matrices
          * @returns the new matrix
          */
-        fun DecomposeLerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: Number): Matrix
+        fun DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: Number): Matrix
         /**
          * Update a matrix to values which are computed by:
          * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
@@ -3279,7 +3279,7 @@ external class Matrix {
          * @param gradient defines the gradient between the two matrices
          * @param result defines the target matrix
          */
-        fun DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: Number, result: Matrix)
+        fun DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: Number, result: Matrix)
         /**
          * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
          * This function works in left handed mode
@@ -3288,7 +3288,7 @@ external class Matrix {
          * @param up defines the up vector for the entity
          * @returns the new matrix
          */
-        fun LookAtLH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix
+        fun LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix
         /**
          * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
          * This function works in left handed mode
@@ -3297,7 +3297,7 @@ external class Matrix {
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        fun LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix)
+        fun LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix)
         /**
          * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
          * This function works in right handed mode
@@ -3306,7 +3306,7 @@ external class Matrix {
          * @param up defines the up vector for the entity
          * @returns the new matrix
          */
-        fun LookAtRH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix
+        fun LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix
         /**
          * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
          * This function works in right handed mode
@@ -3315,7 +3315,7 @@ external class Matrix {
          * @param up defines the up vector for the entity
          * @param result defines the target matrix
          */
-        fun LookAtRHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix)
+        fun LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix)
         /**
          * Create a left-handed orthographic projection matrix
          * @param width defines the viewport width
@@ -3447,43 +3447,43 @@ external class Matrix {
          * @param zmax defines the far clip plane
          * @returns the transformation matrix
          */
-        fun GetFinalMatrix(viewport: DeepImmutable<Viewport>, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, zmin: Number, zmax: Number): Matrix
+        fun GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: Number, zmax: Number): Matrix
         /**
          * Extracts a 2x2 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
-        fun GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array
+        fun GetAsMatrix2x2(matrix: Matrix): Float32Array
         /**
          * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
-        fun GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array
+        fun GetAsMatrix3x3(matrix: Matrix): Float32Array
         /**
          * Compute the transpose of a given matrix
          * @param matrix defines the matrix to transpose
          * @returns the new matrix
          */
-        fun Transpose(matrix: DeepImmutable<Matrix>): Matrix
+        fun Transpose(matrix: Matrix): Matrix
         /**
          * Compute the transpose of a matrix and store it in a target matrix
          * @param matrix defines the matrix to transpose
          * @param result defines the target matrix
          */
-        fun TransposeToRef(matrix: DeepImmutable<Matrix>, result: Matrix)
+        fun TransposeToRef(matrix: Matrix, result: Matrix)
         /**
          * Computes a reflection matrix from a plane
          * @param plane defines the reflection plane
          * @returns a new matrix
          */
-        fun Reflection(plane: DeepImmutable<Plane>): Matrix
+        fun Reflection(plane: Plane): Matrix
         /**
          * Computes a reflection matrix from a plane
          * @param plane defines the reflection plane
          * @param result defines the target matrix
          */
-        fun ReflectionToRef(plane: DeepImmutable<Plane>, result: Matrix)
+        fun ReflectionToRef(plane: Plane, result: Matrix)
         /**
          * Sets the given matrix as a rotation matrix composed from the 3 left handed axes
          * @param xaxis defines the value of the 1st axis
@@ -3491,17 +3491,17 @@ external class Matrix {
          * @param zaxis defines the value of the 3rd axis
          * @param result defines the target matrix
          */
-        fun FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix)
+        fun FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix)
         /**
          * Creates a rotation matrix from a quaternion and stores it in a target matrix
          * @param quat defines the quaternion to use
          * @param result defines the target matrix
          */
-        fun FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix)
+        fun FromQuaternionToRef(quat: Quaternion, result: Matrix)
     }
 }
 /**
- * Represens a plane by the equation ax + by + cz + d = 0
+ * Represents a plane by the equation ax + by + cz + d = 0
  */
 external class Plane {
     /**
@@ -3546,13 +3546,13 @@ external class Plane {
      * @param transformation the transformation matrix to be applied to the plane
      * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
      */
-    fun transform(transformation: DeepImmutable<Matrix>): Plane
+    fun transform(transformation: Matrix): Plane
     /**
      * Calcualtte the dot product between the point and the plane normal
      * @param point point to calculate the dot product with
      * @returns the dot product (float) of the point coordinates and the plane normal.
      */
-    fun dotCoordinate(point: DeepImmutable<Vector3>): Number
+    fun dotCoordinate(point: Vector3): Number
     /**
      * Updates the current Plane from the plane defined by the three given points.
      * @param point1 one of the points used to contruct the plane
@@ -3560,20 +3560,20 @@ external class Plane {
      * @param point3 one of the points used to contruct the plane
      * @returns the updated Plane.
      */
-    fun copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane
+    fun copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane
     /**
      * Checks if the plane is facing a given direction
      * @param direction the direction to check if the plane is facing
      * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
      * @returns True is the vector "direction"  is the same side than the plane normal.
      */
-    fun isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: Number): Boolean
+    fun isFrontFacingTo(direction: Vector3, epsilon: Number): Boolean
     /**
      * Calculates the distance to a point
      * @param point point to calculate distance to
      * @returns the signed distance (float) from the given point to the Plane.
      */
-    fun signedDistanceTo(point: DeepImmutable<Vector3>): Number
+    fun signedDistanceTo(point: Vector3): Number
 
     companion object {
         /**
@@ -3581,7 +3581,7 @@ external class Plane {
          * @param array the array to create a plane from
          * @returns a new Plane from the given array.
          */
-        fun FromArray(array: DeepImmutable<Collection<Number>>): Plane
+        fun FromArray(array: Collection<Number>): Plane
         /**
          * Creates a plane from three points
          * @param point1 point used to create the plane
@@ -3589,7 +3589,7 @@ external class Plane {
          * @param point3 point used to create the plane
          * @returns a new Plane defined by the three given points.
          */
-        fun FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane
+        fun FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane
         /**
          * Creates a plane from an origin point and a normal
          * @param origin origin of the plane to be constructed
@@ -3597,7 +3597,7 @@ external class Plane {
          * @returns a new Plane the normal vector to this plane at the given origin point.
          * Note : the vector "normal" is updated because normalized.
          */
-        fun FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane
+        fun FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane
         /**
          * Calculates the distance from a plane and a point
          * @param origin origin of the plane to be constructed
@@ -3605,7 +3605,7 @@ external class Plane {
          * @param point point to calculate distance to
          * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
          */
-        fun SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): Number
+        fun SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): Number
     }
 }
 /**
@@ -3667,49 +3667,49 @@ external class Frustum {
          * @param transform matrix to be applied to the returned planes
          * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
          */
-        fun GetPlanes(transform: DeepImmutable<Matrix>): Array<Plane>
+        fun GetPlanes(transform: Matrix): Array<Plane>
         /**
          * Gets the near frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Gets the far frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Gets the left frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Gets the right frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Gets the top frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Gets the bottom frustum plane transformed by the transform matrix
          * @param transform transformation matrix to be applied to the resulting frustum plane
          * @param frustumPlane the resuling frustum plane
          */
-        fun GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane)
+        fun GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane)
         /**
          * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
          * @param transform transformation matrix to be applied to the resulting frustum planes
          * @param frustumPlanes the resuling frustum planes
          */
-        fun GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Array<Plane>)
+        fun GetPlanesToRef(transform: Matrix, frustumPlanes: Array<Plane>)
     }
 }
 /** Defines supported spaces */
@@ -3785,7 +3785,7 @@ external class Angle {
          * @param b defines second vector
          * @returns a new Angle
          */
-        fun BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle
+        fun BetweenTwoPoints(a: Vector2, b: Vector2): Angle
         /**
          * Gets a new Angle object from the given float in radians
          * @param radians defines the angle value in radians
@@ -3973,7 +3973,7 @@ external class Curve3 {
          * @param nbPoints (integer) the wanted Number of points in the curve
          * @returns the created Curve3
          */
-        fun CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: Number): Curve3
+        fun CreateQuadraticBezier(v0: Vector3, v1: Vector3, v2: Vector3, nbPoints: Number): Curve3
         /**
          * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
          * @param v0 (Vector3) the origin point of the Cubic Bezier
@@ -3983,7 +3983,7 @@ external class Curve3 {
          * @param nbPoints (integer) the wanted Number of points in the curve
          * @returns the created Curve3
          */
-        fun CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: Number): Curve3
+        fun CreateCubicBezier(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nbPoints: Number): Curve3
         /**
          * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
          * @param p1 (Vector3) the origin point of the Hermite Spline
@@ -3993,7 +3993,7 @@ external class Curve3 {
          * @param nbPoints (integer) the wanted Number of points in the curve
          * @returns the created Curve3
          */
-        fun CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: Number): Curve3
+        fun CreateHermiteSpline(p1: Vector3, t1: Vector3, p2: Vector3, t2: Vector3, nbPoints: Number): Curve3
         /**
          * Returns a Curve3 object along a CatmullRom Spline curve :
          * @param points (array of Vector3) the points the spline must pass through. At least, four points required
@@ -4001,7 +4001,7 @@ external class Curve3 {
          * @param closed (Boolean) optional with default false, when true forms a closed loop from the points
          * @returns the created Curve3
          */
-        fun CreateCatmullRomSpline(points: DeepImmutable<Array<Vector3>>, nbPoints: Number, closed: Boolean?): Curve3
+        fun CreateCatmullRomSpline(points: Array<Vector3>, nbPoints: Number, closed: Boolean?): Curve3
     }
     /**
      * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
@@ -4025,7 +4025,7 @@ external class Curve3 {
      * @param curve the curve to continue from this curve
      * @returns the newly constructed curve
      */
-    fun `continue`(curve: DeepImmutable<Curve3>): Curve3
+    fun `continue`(curve: Curve3): Curve3
 }
 /**
  * Contains position and normal vectors for a vertex

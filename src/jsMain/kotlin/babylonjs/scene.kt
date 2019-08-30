@@ -2,6 +2,7 @@
 @file:Suppress("unused", "ConvertSecondaryConstructorToPrimary", "CovariantEquals")
 package babylonjs
 
+import org.w3c.dom.pointerevents.PointerEvent
 import kotlin.js.Promise
 import kotlin.js.RegExp
 
@@ -349,7 +350,7 @@ external class Scene: AbstractScene, IAnimatable {
     /** Callback called when a pointer pick is detected */
     var onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) -> Unit
     /**
-     * This observable event is triggered when Any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
+     * This observable event is triggered when Any pointer event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
      * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
      */
     fun onPrePointerObservable(obs: Observable<PointerInfoPre>)

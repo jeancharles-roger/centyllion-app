@@ -691,7 +691,7 @@ external class Mesh: AbstractMesh, IGetSetVerticesData {
      *                  This will make creation of children, recursive.
      * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
      */
-    constructor(name: String, scene: Scene?, parent: Node?, source: Mesh?, doNotCloneChildren: Boolean?, clonePhysicsImpostor: Boolean?)
+    constructor(name: String, scene: Scene? = definedExternally, parent: Node? = definedExternally, source: Mesh? = definedExternally, doNotCloneChildren: Boolean? = definedExternally, clonePhysicsImpostor: Boolean? = definedExternally)
     /**
      * Gets a Boolean indicating if this mesh has LOD
      */

@@ -97,7 +97,7 @@ open external class Node: IBehaviorAware<Node> {
      * @param behavior defines the behavior to attach
      * @returns the current Node
      */
-    override fun addBehavior(behavior: Behavior<Node>/*, attachImmediately: Boolean? = definedExternally*/): Node
+    //override fun addBehavior(behavior: Behavior<Node>/*, attachImmediately: Boolean? = definedExternally*/): Node
     /**
      * Attach a behavior to the node
      * @see [http://doc.babylonjs.com/features/behaviour]
@@ -105,7 +105,7 @@ open external class Node: IBehaviorAware<Node> {
      * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
      * @returns the current Node
      */
-    fun addBehavior(behavior: Behavior<Node>, attachImmediately: Boolean? = definedExternally): Node
+    override fun addBehavior(behavior: Behavior<Node>, attachImmediately: Boolean?): Node
     /**
      * Remove an attached behavior
      * @see [http://doc.babylonjs.com/features/behaviour]
@@ -388,7 +388,7 @@ open external class TransformNode: Node {
      * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
      * @returns the current TransformNode
      */
-    fun setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix: Boolean?): TransformNode
+    fun setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix: Boolean?): TransformNode
     /**
      * Returns the mesh pivot matrix.
      * Default : Identity.

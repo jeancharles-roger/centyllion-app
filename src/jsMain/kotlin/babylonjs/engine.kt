@@ -16,6 +16,7 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.HTMLVideoElement
+import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.files.Blob
 import org.w3c.media.WebGLPipelineContext
 import org.w3c.media.WebGLVertexArrayObject

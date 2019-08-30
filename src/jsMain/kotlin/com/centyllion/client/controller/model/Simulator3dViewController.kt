@@ -7,15 +7,16 @@ import babylonjs.AssetsManager
 import babylonjs.Axis
 import babylonjs.BoxOptions
 import babylonjs.Color3
-import babylonjs.Color4
 import babylonjs.CylinderOptions
 import babylonjs.Engine
 import babylonjs.HemisphericLight
 import babylonjs.InstancedMesh
 import babylonjs.Mesh
 import babylonjs.MeshBuilder
+import babylonjs.PickingInfo
 import babylonjs.PlaneOptions
 import babylonjs.PointLight
+import babylonjs.PointerEventTypes
 import babylonjs.Quaternion
 import babylonjs.RawTexture
 import babylonjs.Scene
@@ -39,6 +40,7 @@ import bulma.canvas
 import bulma.iconButton
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.toFixed
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
@@ -49,6 +51,7 @@ import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.browser.window
@@ -57,11 +60,12 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.log10
+import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
-open class Simulator3dViewController(
+class Simulator3dViewController(
     simulator: Simulator, val page: BulmaPage, readOnly: Boolean = true,
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
@@ -73,8 +77,8 @@ open class Simulator3dViewController(
 
         val height = 6.0
 
-        /*
-        fun changePointer(pointer: Group, sourceMaterial: Material?, size: Int) {
+        fun changePointer(pointer: Mesh, color: Color3?, size: Int) {
+            /*
             // clear all children
             while (pointer.children.isNotEmpty()) {
                 pointer.remove(pointer.children.first())
@@ -102,13 +106,16 @@ open class Simulator3dViewController(
                 mesh.add(LineSegments(WireframeGeometry(geometry), wireMaterial))
                 pointer.add(mesh)
             }
+            */
         }
 
-        fun positionPointer(pointer: Group, x: Int, y: Int) {
-            pointer.children.firstOrNull()?.position?.set(x, 0.0, y)
+        fun positionPointer(pointer: Mesh, x: Number, y: Number) {
+            pointer.position.set(x, 0.0, y)
+            //pointer.children.firstOrNull()?.position?.set(x, 0.0, y)
         }
 
-        fun updatePointer(pointer: Group, step: Int) {
+        fun updatePointer(pointer: Mesh, step: Int) {
+            /*
             val mesh = pointer.children.firstOrNull()
             if (mesh != null && this == Line) {
                 if (step == 0) {
@@ -119,8 +126,8 @@ open class Simulator3dViewController(
                     pointer.remove(pointer.children.last())
                 }
             }
+             */
         }
-         */
     }
 
     enum class ToolSize(val size: Int) {
@@ -249,7 +256,12 @@ open class Simulator3dViewController(
     val assetsManager = AssetsManager(scene)
     val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
 
-    var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
+
+    private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
+        old.values.forEach { it.dispose() }
+    }
+
+    private var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
         old.values.forEach {
             scene.removeMesh(it.mesh)
             it.dispose()
@@ -274,30 +286,17 @@ open class Simulator3dViewController(
         attachControl(simulationCanvas.root, false)
     }
 
+    val plane = MeshBuilder.CreatePlane("plane", PlaneOptions(size = 100), scene).apply {
+        rotate(Axis.X, PI/2)
 
-    /*
-    val plane = Mesh(
-        BoxBufferGeometry(100, 0.1, 100),
-        MeshBasicMaterial().apply { visible = false }
-    ).apply {
-        val wireFrame = LineSegments(
-            WireframeGeometry(geometry as BufferGeometry),
-            LineBasicMaterial().apply {
-                color.set("grey")
-                transparent = true
-                opacity = 0.4
-            }
-        )
-        add(wireFrame)
-        scene.add(this)
+        val material = StandardMaterial("plane material", scene)
+        material.emissiveColor = Color3.Black()
+        material.wireframe = true
+        this.material = material
     }
-     */
 
-    /*
-    val pointer = Group().apply { scene.add(this) }
-
-    val rayCaster = Raycaster(Vector3(), Vector3(), 0.1, 1000.0)
-    */
+    //val pointer = Mesh("pointer", scene)
+    val pointer = MeshBuilder.CreateBox("pointer", BoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene)
 
     // simulation content edition
     private var selectedTool: EditTools = EditTools.Move
@@ -358,7 +357,8 @@ open class Simulator3dViewController(
     }
 
     fun selectPointer() {
-        //selectedTool.changePointer(pointer, materials[selectedGrainController.data?.id], selectedSize.size)
+        val color = colorFromName(selectedGrainController.data?.color ?: "Green")
+        selectedTool.changePointer(pointer, color, selectedSize.size)
     }
 
     fun selectTool(tool: EditTools) {
@@ -366,7 +366,12 @@ open class Simulator3dViewController(
         toolButtons[tool.ordinal].outlined = true
         selectedTool = tool
 
-        //orbitControl.enabled = tool == EditTools.Move
+        //planeBehaviour.enabled = tool != EditTools.Move
+        if (tool == EditTools.Move) {
+            camera.attachControl(simulationCanvas.root, false)
+        } else {
+            camera.detachControl(simulationCanvas.root)
+        }
         selectPointer()
     }
 
@@ -420,6 +425,38 @@ open class Simulator3dViewController(
         refresh()
     }
 
+    private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
+        val info = pickInfo.ray?.intersectsMesh(plane, true)
+        if (selectedTool != EditTools.Move && info?.hit == true && info.pickedMesh == plane) {
+            drawStep = 0
+
+        }
+    }
+
+    private fun onPointerMove(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
+        val ray = pickInfo.ray
+        if (ray != null && selectedTool != EditTools.Move) {
+            val info = ray.intersectsMesh(plane, true)
+            if (info.pickedMesh != null) {
+                val x = round(info.pickedPoint?.x?.toDouble() ?: 0.0)
+                val y = round(info.pickedPoint?.z?.toDouble() ?: 0.0)
+
+                //simulationX = x + 50
+                //simulationY = y + 50
+
+                console.log("${info.pickedPoint?.x} x ${info.pickedPoint?.z} -> ${x.toFixed(2)} x ${y.toFixed(2)}")
+                selectedTool.positionPointer(pointer, x, y)
+                if (drawStep >= 0) {
+                    drawStep += 1
+                }
+            }
+
+        }
+    }
+    private fun onPointerUp(evt: PointerEvent, pickInfo: PickingInfo?, type: PointerEventTypes) {
+        drawStep = -1
+    }
+
     private fun mouseChange(event: MouseEvent) {
         // only update if there a tool
         if (selectedTool != EditTools.Move) {
@@ -427,6 +464,11 @@ open class Simulator3dViewController(
             val x = ((event.clientX - rectangle.left) / rectangle.width) * 2 - 1
             val y = -((event.clientY - rectangle.top) / rectangle.height) * 2 + 1
 
+            val picked = scene.pick(x, y, { it == plane }, true, camera)
+            if (picked != null) {
+                pointer.isVisible = true
+
+            }
             /*
             // updates the picking ray with the camera and mouse position
             rayCaster.setFromCamera(Vector2(x, y), camera)
@@ -474,10 +516,6 @@ open class Simulator3dViewController(
         }
     }
 
-    private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
-        old.values.forEach { it.dispose() }
-    }
-
     init {
 
         /*
@@ -486,7 +524,6 @@ open class Simulator3dViewController(
             geometries = geometries()
             refresh()
         }
-
         simulationCanvas.root.apply {
             onmouseup = { mouseChange(it) }
             onmousedown = { mouseChange(it) }
@@ -497,8 +534,16 @@ open class Simulator3dViewController(
             }
         }
         */
+
+        scene.onPointerMove = this::onPointerMove
+        scene.onPointerDown = this::onPointerDown
+        scene.onPointerUp = this::onPointerUp
+
+        simulationCanvas.root.onmouseenter = { animated = true; Unit }
+        simulationCanvas.root.onmouseleave = { animated = false; Unit }
+
         engine.runRenderLoop {
-            if (
+             if (
                 animated || running ||
                 abs(camera.inertialAlphaOffset.toDouble()) > 0 ||
                 abs(camera.inertialBetaOffset.toDouble()) > 0 ||
@@ -515,6 +560,7 @@ open class Simulator3dViewController(
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
+        render()
         Tools.ToBlob(simulationCanvas.root, { if (it != null) resolve(it) else reject(Exception("No content")) })
     }
 
@@ -538,10 +584,13 @@ open class Simulator3dViewController(
         )
     }
 
+    fun colorFromName(name: String) =
+        colorNames[name]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
+
     private fun sourceMeshes() = data.model.grains.map { grain ->
         grain.id to /*font?*/null.let {
             val height = grain.size.coerceAtLeast(0.1)
-            val color = colorNames[grain.color]?.let {Color4.FromInts(it.first, it.second, it.third, 1) } ?: Color3.Green().toColor4(1)
+            val color = colorFromName(grain.color).toColor4(1)
             when (grain.icon) {
                 "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 0.8, faceColors = Array(6) {color}), scene)
                 "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
@@ -558,8 +607,8 @@ open class Simulator3dViewController(
                      */
             }.apply {
                 isVisible = false
-                translate(Axis.Y, height / 2.0)
-                rotate(Axis.X, PI/2)
+                //translate(Axis.Y, height / 2.0)
+                //rotate(Axis.X, PI/2)
             }
         }
     }.toMap()
@@ -572,7 +621,7 @@ open class Simulator3dViewController(
             scene, false, false, Texture.NEAREST_SAMPLINGMODE
         )
         val material = StandardMaterial("${field.name} material", scene)
-        val color = colorNames[field.color]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
+        val color = colorFromName(field.color)
         material.diffuseColor = color
         //material.emissiveColor = color
         //material.ambientColor = color
@@ -626,6 +675,9 @@ open class Simulator3dViewController(
         val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
         //mesh.receiveShadows = true
 
+        if (grainId == 0) {
+            console.log("Grain pos: $x x $y")
+        }
         // positions the mesh
         mesh.position.set(x,  0, y)
 
@@ -648,8 +700,8 @@ open class Simulator3dViewController(
             createMesh(
                 index,
                 newGrainId,
-                p.x - data.simulation.width / 2.0 + 0.5,
-                p.y - data.simulation.height / 2.0 + 0.5
+                p.x - data.simulation.width / 2.0,
+                p.y - data.simulation.height / 2.0
             )
         }
 
@@ -720,17 +772,11 @@ open class Simulator3dViewController(
         sourceMeshes = emptyMap()
         defaultMesh.dispose()
         fieldSupports = emptyMap()
+        camera.detachControl(simulationCanvas.root)
         camera.dispose()
         engine.dispose()
         assetsManager.reset()
-
-        /*
-        pointer.traverse {
-            val dynamic = it.asDynamic()
-            dynamic.material?.dispose()
-            dynamic.geomtry?.dispose()
-        }
-        */
+        pointer.dispose()
     }
 
     private fun resizeSimulationCanvas() {

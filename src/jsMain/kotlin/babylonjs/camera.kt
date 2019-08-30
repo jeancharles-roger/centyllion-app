@@ -442,12 +442,6 @@ open external class TargetCamera : Camera {
      */
     fun getFrontPosition(distance: Number): Vector3
     /**
-     * Restored camera state. You must call storeState() first
-     * @returns whether it was successful or not
-     * @hidden
-     */
-    fun _restoreStateValues(): Boolean
-    /**
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
      * @param target Defines the new target as a Vector or a mesh

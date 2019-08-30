@@ -22,6 +22,7 @@ fun runWithStripe(key: String, block: (Stripe) -> Unit) =
 // TODO Couldn't make it work with a val, recreate the renderer each time.
 fun markdownToHtml(source: String) = window.asDynamic().markdownit().render(source) as String
 
+fun Number.toFixed(size: Int = 3): String = toDouble().toFixed(size)
 fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String
 
 @JsName("dependencies")

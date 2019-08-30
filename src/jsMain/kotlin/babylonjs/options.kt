@@ -298,3 +298,8 @@ class TextureOptions(
     var width: Number? = null,
     var height: Number? = null
 )
+
+class DragBehaviorOptions(
+    var dragAxis: Vector3? = null,
+    var dragPlaneNormal: Vector3? = null
+)

@@ -40,7 +40,6 @@ import bulma.canvas
 import bulma.iconButton
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
-import com.centyllion.client.toFixed
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
@@ -60,7 +59,6 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.log10
-import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
@@ -296,7 +294,11 @@ class Simulator3dViewController(
     }
 
     //val pointer = Mesh("pointer", scene)
-    val pointer = MeshBuilder.CreateBox("pointer", BoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene)
+    val pointer = MeshBuilder.CreateBox(
+        "pointer", BoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
+    ).apply {
+        isVisible = false
+    }
 
     // simulation content edition
     private var selectedTool: EditTools = EditTools.Move
@@ -375,10 +377,10 @@ class Simulator3dViewController(
         selectPointer()
     }
 
-    fun drawOnSimulation(step: Int) {
+    fun drawOnSimulation() {
         when (selectedTool) {
             EditTools.Pen -> {
-                if (step >= 0) {
+                if (drawStep >= 0) {
                     selectedGrainController.data?.id?.let { idToSet ->
                         circle(simulationX, simulationY) { i, j ->
                             data.setIdAtIndex(
@@ -391,7 +393,7 @@ class Simulator3dViewController(
             }
             EditTools.Line -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-                    if (step == -1) {
+                    if (drawStep == -1) {
                         // draw the line
                         line(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
                             data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
@@ -402,7 +404,7 @@ class Simulator3dViewController(
             }
             EditTools.Spray -> {
                 selectedGrainController.data?.id?.let { idToSet ->
-                    if (step >= 0) {
+                    if (drawStep >= 0) {
                         val sprayDensity = 0.005
                         circle(simulationX, simulationY) { i, j ->
                             if (Random.nextDouble() < sprayDensity) {
@@ -421,15 +423,28 @@ class Simulator3dViewController(
             }
         }
 
-        onUpdate(step == -1, data, this)
+        onUpdate(drawStep == -1, data, this)
         refresh()
     }
 
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
-        val info = pickInfo.ray?.intersectsMesh(plane, true)
-        if (selectedTool != EditTools.Move && info?.hit == true && info.pickedMesh == plane) {
-            drawStep = 0
+        val ray = pickInfo.ray
+        if (ray != null && selectedTool != EditTools.Move) {
+            val info = ray.intersectsMesh(plane, true)
+            pointer.isVisible = info.hit
+            if (info.hit && info.pickedMesh == plane) {
+                drawStep = 0
 
+                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
+                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
+
+                simulationX = x + 50
+                simulationY = y + 50
+                simulationSourceX = simulationX
+                simulationSourceY = simulationY
+                drawOnSimulation()
+                drawStep += 1
+            }
         }
     }
 
@@ -437,16 +452,16 @@ class Simulator3dViewController(
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            if (info.pickedMesh != null) {
-                val x = round(info.pickedPoint?.x?.toDouble() ?: 0.0)
-                val y = round(info.pickedPoint?.z?.toDouble() ?: 0.0)
+            pointer.isVisible = info.hit
+            if (info.hit && info.pickedMesh == plane) {
+                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
+                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
 
-                //simulationX = x + 50
-                //simulationY = y + 50
-
-                console.log("${info.pickedPoint?.x} x ${info.pickedPoint?.z} -> ${x.toFixed(2)} x ${y.toFixed(2)}")
-                selectedTool.positionPointer(pointer, x, y)
-                if (drawStep >= 0) {
+                selectedTool.positionPointer(pointer,   x, y)
+                if (drawStep > 0) {
+                    simulationX = x + 50
+                    simulationY = y + 50
+                    drawOnSimulation()
                     drawStep += 1
                 }
             }
@@ -454,7 +469,23 @@ class Simulator3dViewController(
         }
     }
     private fun onPointerUp(evt: PointerEvent, pickInfo: PickingInfo?, type: PointerEventTypes) {
-        drawStep = -1
+        val ray = pickInfo?.ray
+        if (ray != null && selectedTool != EditTools.Move) {
+            val info = ray.intersectsMesh(plane, true)
+            pointer.isVisible = info.pickedMesh == plane
+            if (info.hit && info.pickedMesh != null) {
+                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
+                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
+                simulationX = x + 50
+                simulationY = y + 50
+                drawStep = -1
+                drawOnSimulation()
+                simulationSourceX = -1
+                simulationSourceY = -1
+                simulationX = -1
+                simulationY = -1
+            }
+        }
     }
 
     private fun mouseChange(event: MouseEvent) {

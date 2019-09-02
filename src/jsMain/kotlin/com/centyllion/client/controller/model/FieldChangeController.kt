@@ -62,7 +62,7 @@ class FieldChangeController(
     val valueField = BField(Control(Help(help(min))), Control(valueSlider), Control(Help(help(max))), grouped = true)
 
     override val container = Column(
-        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueField)), size = ColumnSize.Full
+        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueField), mobile = true), size = ColumnSize.Full
     ).apply {
         root.style.paddingTop = "0.2rem"
         root.style.paddingBottom = "0.1rem"

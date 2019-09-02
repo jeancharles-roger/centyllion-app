@@ -161,11 +161,12 @@ fun editableIntController(
 )
 
 fun multiLineStringController(
-    initialData: String = "", placeHolder: String = "", disabled: Boolean = false,
+    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false,
+    rows: Int = 4, columns: Int? = null,
     isValid: (value: String) -> String? = { null },
     onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
-    initialData, placeHolder, disabled, null,
-    TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "4"),
+    initialData, placeHolder, readOnly, columns,
+    TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "$rows"),
     validateOnEnter = false, isValid = isValid, onUpdate = onUpdate
 )

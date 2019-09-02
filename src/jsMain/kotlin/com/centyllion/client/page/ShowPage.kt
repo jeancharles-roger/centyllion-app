@@ -26,6 +26,7 @@ import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
+import com.centyllion.client.controller.utils.multiLineStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.signInPage
@@ -82,7 +83,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         model = model.copy(model = model.model.copy(name = new))
     }
 
-    val modelDescriptionController = EditableStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
+    val modelDescriptionController = multiLineStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
     }
 
@@ -210,12 +211,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val container: BulmaElement = Columns(
         Column(
             Level(
-                left = listOf(modelNameController, modelDescriptionController),
+                left = listOf(modelNameController),
                 center = listOf(cloneButton),
                 right = listOf(tools)
             ),
             size = ColumnSize.Full
         ),
+        Column(modelDescriptionController, size = ColumnSize.Full),
         Column(editionTab, size = ColumnSize.Full),
         multiline = true
     )

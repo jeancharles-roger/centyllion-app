@@ -3,7 +3,6 @@ package com.centyllion.client.controller.model
 import bulma.Box
 import bulma.Control
 import bulma.Controller
-import bulma.Div
 import bulma.Help
 import bulma.HorizontalField
 import bulma.Label
@@ -172,25 +171,27 @@ class GrainEditController(
                 TileParent(
                     TileChild(
                         Level(
-                            center = listOf(
-                                iconController, colorController, nameController,
-                                Div(Help("Size"), sizeSlider, sizeValue)
-                            )
+                            left = listOf(iconController, colorController),
+                            right = listOf(nameController),
+                            mobile = true
                         ),
-                        descriptionController,
+                        Level(
+                            left = listOf(Level(center = listOf(Help("Size"), sizeValue, sizeSlider))),
+                            right = listOf(descriptionController)
+                        ),
                         Level(
                             center = listOf(
                                 HorizontalField(Control(Help("Half life")), halfLifeController.container),
                                 HorizontalField(Control(Help("Speed")), speedController.container)
                             )
                         ),
-                        Level(center = listOf(firstDirectionController, extendedDirectionController))
+                        Level(center = listOf(firstDirectionController, extendedDirectionController), mobile = true)
                     ),
                     vertical = true
-                ),
-                fieldProductionsTile
+                )
             ),
             Tile(
+                fieldProductionsTile,
                 fieldInfluencesTile,
                 fieldPermeabilitiesTile
             ),

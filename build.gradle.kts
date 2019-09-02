@@ -29,6 +29,7 @@ repositories {
     jcenter()
     maven("https://kotlin.bintray.com/kotlinx")
     maven("https://jitpack.io")
+    maven("https://dl.bintray.com/centyllion/Libraries")
     mavenCentral()
 }
 
@@ -115,6 +116,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
                     implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
 
+                    implementation("com.centyllion:bulma-kotlin:master")
                     implementation("com.github.markaren:three.kt:v0.88-ALPHA-7")
                 }
             }

@@ -1,6 +1,9 @@
 package com.centyllion.client.controller.model
 
 import bulma.Box
+import bulma.Column
+import bulma.ColumnSize
+import bulma.Columns
 import bulma.Control
 import bulma.Controller
 import bulma.Div
@@ -11,10 +14,6 @@ import bulma.Label
 import bulma.Size
 import bulma.Slider
 import bulma.Tag
-import bulma.Tile
-import bulma.TileAncestor
-import bulma.TileChild
-import bulma.TileParent
 import bulma.Value
 import bulma.columnsController
 import com.centyllion.client.controller.utils.EditableStringController
@@ -153,61 +152,48 @@ class GrainEditController(
             }
         }
 
-    val fieldProductionsTile = TileParent(
-        TileChild(Label("Productions"), fieldProductionsController),
-        vertical = true
-    )
-
-    val fieldInfluencesTile = TileParent(
-        TileChild(Label("Influences"), fieldInfluencesController),
-        vertical = true
-    )
-
-    val fieldPermeabilitiesTile = TileParent(
-        TileChild(Label("Permeability"), fieldPermeableController),
-        vertical = true
+    val fieldControls = Columns(
+        Column(
+            Label("Productions"), fieldProductionsController,
+            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+        ),
+        Column(
+            Label("Influences"), fieldInfluencesController,
+            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+        ),
+        Column(
+            Label("Permeability"), fieldPermeableController,
+            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+        ),
+        multiline = true
     )
 
     override val container = Div(
         Tag("Grain", ElementColor.Primary, Size.Large),
         Box(
-            TileAncestor(
-                Tile(
-                    TileParent(
-                        TileChild(
-                            HorizontalField(
-                                Label("Display"),
-                                nameController.container,
-                                BField(
-                                    Control(iconController.container),
-                                    Control(colorController.container),
-                                    addons = true
-                                ),
-                                BField(
-                                    Control(Help("Size")),
-                                    Control(sizeValue),
-                                    Control(sizeSlider),
-                                    grouped = true
-                                )
-                            ),
-                            HorizontalField(Label("Description"), descriptionController.container),
-                            HorizontalField(Label("Half-life"), halfLifeController.container),
-                            HorizontalField(Label("Movement"),
-                                BField(Control(Help("Speed")), speedController.container, grouped = true),
-                                firstDirectionController.container,
-                                extendedDirectionController.container
-                            )
-                        ),
-                        vertical = true
-                    )
+            HorizontalField(
+                Label("Display"),
+                nameController.container,
+                BField(
+                    Control(iconController.container),
+                    Control(colorController.container),
+                    addons = true
                 ),
-                Tile(
-                    fieldProductionsTile,
-                    fieldInfluencesTile,
-                    fieldPermeabilitiesTile
-                ),
-                vertical = true
-            )
+                BField(
+                    Control(Help("Size")),
+                    Control(sizeValue),
+                    Control(sizeSlider),
+                    grouped = true
+                )
+            ),
+            HorizontalField(Label("Description"), descriptionController.container),
+            HorizontalField(Label("Half-life"), halfLifeController.container),
+            HorizontalField(Label("Movement"),
+                BField(Control(Help("Speed")), speedController.container, grouped = true),
+                firstDirectionController.container,
+                extendedDirectionController.container
+            ),
+            fieldControls
         )
     )
 
@@ -226,9 +212,7 @@ class GrainEditController(
         sizeSlider.value = "${data.size}"
         sizeValue.text = "${data.size}"
 
-        fieldProductionsTile.hidden = context.fields.isEmpty()
-        fieldInfluencesTile.hidden = context.fields.isEmpty()
-        fieldPermeabilitiesTile.hidden = context.fields.isEmpty()
+        fieldControls.hidden = context.fields.isEmpty()
     }
 
 }

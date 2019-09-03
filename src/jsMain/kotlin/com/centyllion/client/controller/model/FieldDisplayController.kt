@@ -27,7 +27,7 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
 
     val titleLabel = Label(field.name)
     val movingIcon = Icon("walking", color = TextColor.Primary)
-    val deathIcon = Icon("dizzy", color = TextColor.Primary)
+    val deathIcon = Icon("skull-crossbones", color = TextColor.Primary)
 
     val status = Span(movingIcon, deathIcon)
 

@@ -32,7 +32,7 @@ open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<G
 
     val titleLabel = Label(grain.name)
     val movingIcon = Icon("walking", color = TextColor.Primary)
-    val deathIcon = Icon("dizzy", color = TextColor.Primary)
+    val deathIcon = Icon("skull-crossbones", color = TextColor.Primary)
 
     val status = Span(movingIcon, deathIcon)
 

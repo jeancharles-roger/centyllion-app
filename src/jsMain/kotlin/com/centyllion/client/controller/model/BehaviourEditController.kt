@@ -6,6 +6,7 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
 import bulma.Controller
+import bulma.Div
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
@@ -14,6 +15,7 @@ import bulma.Label
 import bulma.Level
 import bulma.MultipleController
 import bulma.Size
+import bulma.Tag
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
@@ -32,7 +34,7 @@ class BehaviourEditController(
     initialData: Behaviour, model: GrainModel,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit =
         { _, _, _ -> }
-) : Controller<Behaviour, GrainModel, Box> {
+) : Controller<Behaviour, GrainModel, Div> {
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -196,16 +198,19 @@ class BehaviourEditController(
         Column(Label("Influences"), fieldInfluencesController, size = ColumnSize.S5)
     )
 
-    override val container = Box(
-        HorizontalField(Label("Display"), nameController.container),
-        HorizontalField(Label("Description"), descriptionController.container),
-        HorizontalField(
-            Label("Properties"),
-            bulma.Field(Control(Help("Speed")), probabilityController.container, grouped = true),
-            bulma.Field(Control(Help("Age")), agePredicateController.container, grouped = true)
-        ),
-        Label("Reactions"), reactionsController,
-        fieldsConfiguration
+    override val container = Div(
+        Tag("Behaviour", ElementColor.Primary, Size.Large),
+        Box(
+            HorizontalField(Label("Display"), nameController.container),
+            HorizontalField(Label("Description"), descriptionController.container),
+            HorizontalField(
+                Label("Properties"),
+                bulma.Field(Control(Help("Speed")), probabilityController.container, grouped = true),
+                bulma.Field(Control(Help("Age")), agePredicateController.container, grouped = true)
+            ),
+            Label("Reactions"), reactionsController,
+            fieldsConfiguration
+        )
     )
 
     override fun refresh() {

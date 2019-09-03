@@ -2,10 +2,14 @@ package com.centyllion.client.controller.model
 
 import bulma.Box
 import bulma.Control
+import bulma.Div
+import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
 import bulma.Label
 import bulma.NoContextController
+import bulma.Size
+import bulma.Tag
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.client.controller.utils.editableIntController
@@ -15,10 +19,10 @@ import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
-class FieldEditController(
+class FieldEditController (
     initialData: Field,
     var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> }
-) : NoContextController<Field, Box>() {
+) : NoContextController<Field, Div>() {
 
     override var data: Field by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -76,21 +80,24 @@ class FieldEditController(
         this.data = this.data.copy(halfLife = new)
     }
 
-    override val container = Box(
-        HorizontalField(
-            Label("Display"),
-            nameController.container,
-            bulma.Field(
-                Control(colorController.container),
-                addons = true
+    override val container = Div(
+            Tag("Field", ElementColor.Primary, Size.Large),
+            Box(
+            HorizontalField(
+                Label("Display"),
+                nameController.container,
+                bulma.Field(
+                    Control(colorController.container),
+                    addons = true
+                )
+            ),
+            HorizontalField(Label("Description"), descriptionController.container),
+            HorizontalField(Label("Half-life"), halfLifeController.container),
+            HorizontalField(Label("Movement"),
+                BField(Control(Help("Speed")), speedController.container, grouped = true),
+                firstDirectionController.container,
+                extendedDirectionController.container
             )
-        ),
-        HorizontalField(Label("Description"), descriptionController.container),
-        HorizontalField(Label("Half-life"), halfLifeController.container),
-        HorizontalField(Label("Movement"),
-            BField(Control(Help("Speed")), speedController.container, grouped = true),
-            firstDirectionController.container,
-            extendedDirectionController.container
         )
     )
 

@@ -3,11 +3,14 @@ package com.centyllion.client.controller.model
 import bulma.Box
 import bulma.Control
 import bulma.Controller
+import bulma.Div
+import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
 import bulma.Label
 import bulma.Size
 import bulma.Slider
+import bulma.Tag
 import bulma.Tile
 import bulma.TileAncestor
 import bulma.TileChild
@@ -27,7 +30,7 @@ import bulma.Field as BField
 class GrainEditController(
     initialData: Grain, model: GrainModel,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> }
-) : Controller<Grain, GrainModel, Box> {
+) : Controller<Grain, GrainModel, Div> {
 
     override var data: Grain by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -165,43 +168,46 @@ class GrainEditController(
         vertical = true
     )
 
-    override val container = Box(
-        TileAncestor(
-            Tile(
-                TileParent(
-                    TileChild(
-                        HorizontalField(
-                            Label("Display"),
-                            nameController.container,
-                            BField(
-                                Control(iconController.container),
-                                Control(colorController.container),
-                                addons = true
+    override val container = Div(
+        Tag("Grain", ElementColor.Primary, Size.Large),
+        Box(
+            TileAncestor(
+                Tile(
+                    TileParent(
+                        TileChild(
+                            HorizontalField(
+                                Label("Display"),
+                                nameController.container,
+                                BField(
+                                    Control(iconController.container),
+                                    Control(colorController.container),
+                                    addons = true
+                                ),
+                                BField(
+                                    Control(Help("Size")),
+                                    Control(sizeValue),
+                                    Control(sizeSlider),
+                                    grouped = true
+                                )
                             ),
-                            BField(
-                                Control(Help("Size")),
-                                Control(sizeValue),
-                                Control(sizeSlider),
-                                grouped = true
+                            HorizontalField(Label("Description"), descriptionController.container),
+                            HorizontalField(Label("Half-life"), halfLifeController.container),
+                            HorizontalField(Label("Movement"),
+                                BField(Control(Help("Speed")), speedController.container, grouped = true),
+                                firstDirectionController.container,
+                                extendedDirectionController.container
                             )
                         ),
-                        HorizontalField(Label("Description"), descriptionController.container),
-                        HorizontalField(Label("Half-life"), halfLifeController.container),
-                        HorizontalField(Label("Movement"),
-                            BField(Control(Help("Speed")), speedController.container, grouped = true),
-                            firstDirectionController.container,
-                            extendedDirectionController.container
-                        )
-                    ),
-                    vertical = true
-                )
-            ),
-            Tile(
-                fieldProductionsTile,
-                fieldInfluencesTile,
-                fieldPermeabilitiesTile
-            ),
-            vertical = true
+                        vertical = true
+                    )
+                ),
+                Tile(
+                    fieldProductionsTile,
+                    fieldInfluencesTile,
+                    fieldPermeabilitiesTile
+                ),
+                vertical = true
+            )
         )
     )
 

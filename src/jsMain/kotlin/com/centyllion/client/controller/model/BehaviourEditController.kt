@@ -10,13 +10,13 @@ import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
 import bulma.Icon
+import bulma.Label
 import bulma.Level
 import bulma.MultipleController
 import bulma.Size
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
-import bulma.TileSize
 import bulma.columnsController
 import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
@@ -186,23 +186,25 @@ class BehaviourEditController(
         }
 
     val fieldsConfiguration = Columns(
-        Column(Level(left= listOf(Help("Predicates")), right = listOf(addFieldPredicateButton)), fieldPredicatesController, size = ColumnSize.S7),
-        Column(Help("Influences"), fieldInfluencesController, size = ColumnSize.S5)
+        Column(
+            Level(
+                left= listOf(Label("Predicates")),
+                right = listOf(addFieldPredicateButton)
+            ),
+            fieldPredicatesController, size = ColumnSize.S7
+        ),
+        Column(Label("Influences"), fieldInfluencesController, size = ColumnSize.S5)
     )
 
     override val container = Box(
-        TileAncestor(
-            TileParent(
-                TileChild(nameController), TileChild(descriptionController),
-                size = TileSize.S7, vertical = true
-            ),
-            TileParent(
-                TileChild(HorizontalField(Control(Help("Speed")), probabilityController.container)),
-                TileChild(HorizontalField(Control(Help("Age")), agePredicateController.container)),
-                vertical = true
-            )
+        HorizontalField(Label("Display"), nameController.container),
+        HorizontalField(Label("Description"), descriptionController.container),
+        HorizontalField(
+            Label("Properties"),
+            bulma.Field(Control(Help("Speed")), probabilityController.container, grouped = true),
+            bulma.Field(Control(Help("Age")), agePredicateController.container, grouped = true)
         ),
-        reactionsController,
+        Label("Reactions"), reactionsController,
         fieldsConfiguration
     )
 

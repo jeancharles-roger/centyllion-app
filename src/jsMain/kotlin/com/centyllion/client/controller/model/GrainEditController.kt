@@ -6,7 +6,6 @@ import bulma.Controller
 import bulma.Help
 import bulma.HorizontalField
 import bulma.Label
-import bulma.Level
 import bulma.Size
 import bulma.Slider
 import bulma.Tile
@@ -23,6 +22,7 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
+import bulma.Field as BField
 
 class GrainEditController(
     initialData: Grain, model: GrainModel,
@@ -170,22 +170,28 @@ class GrainEditController(
             Tile(
                 TileParent(
                     TileChild(
-                        Level(
-                            left = listOf(iconController, colorController),
-                            right = listOf(nameController),
-                            mobile = true
-                        ),
-                        Level(
-                            left = listOf(Level(center = listOf(Help("Size"), sizeValue, sizeSlider))),
-                            right = listOf(descriptionController)
-                        ),
-                        Level(
-                            center = listOf(
-                                HorizontalField(Control(Help("Half life")), halfLifeController.container),
-                                HorizontalField(Control(Help("Speed")), speedController.container)
+                        HorizontalField(
+                            Label("Display"),
+                            nameController.container,
+                            BField(
+                                Control(iconController.container),
+                                Control(colorController.container),
+                                addons = true
+                            ),
+                            BField(
+                                Control(Help("Size")),
+                                Control(sizeValue),
+                                Control(sizeSlider),
+                                grouped = true
                             )
                         ),
-                        Level(center = listOf(firstDirectionController, extendedDirectionController), mobile = true)
+                        HorizontalField(Label("Description"), descriptionController.container),
+                        HorizontalField(Label("Half-life"), halfLifeController.container),
+                        HorizontalField(Label("Movement"),
+                            BField(Control(Help("Speed")), speedController.container, grouped = true),
+                            firstDirectionController.container,
+                            extendedDirectionController.container
+                        )
                     ),
                     vertical = true
                 )

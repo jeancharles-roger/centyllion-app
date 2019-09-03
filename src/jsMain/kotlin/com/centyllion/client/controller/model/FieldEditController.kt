@@ -4,7 +4,7 @@ import bulma.Box
 import bulma.Control
 import bulma.Help
 import bulma.HorizontalField
-import bulma.Level
+import bulma.Label
 import bulma.NoContextController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
@@ -13,6 +13,7 @@ import com.centyllion.model.Field
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
+import bulma.Field as BField
 
 class FieldEditController(
     initialData: Field,
@@ -76,14 +77,21 @@ class FieldEditController(
     }
 
     override val container = Box(
-        Level(center = listOf(
-            Level(center = listOf(colorController, nameController), mobile = true),
-            descriptionController
-        )),
-        Level(center = listOf(
-            HorizontalField(Control(Help("Half life")), halfLifeController.container),
-            HorizontalField(Control(Help("Speed")), speedController.container)
-        ))
+        HorizontalField(
+            Label("Display"),
+            nameController.container,
+            bulma.Field(
+                Control(colorController.container),
+                addons = true
+            )
+        ),
+        HorizontalField(Label("Description"), descriptionController.container),
+        HorizontalField(Label("Half-life"), halfLifeController.container),
+        HorizontalField(Label("Movement"),
+            BField(Control(Help("Speed")), speedController.container, grouped = true),
+            firstDirectionController.container,
+            extendedDirectionController.container
+        )
     )
 
     override fun refresh() {

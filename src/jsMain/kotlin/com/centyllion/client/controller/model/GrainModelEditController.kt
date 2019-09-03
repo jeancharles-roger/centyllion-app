@@ -138,7 +138,7 @@ class GrainModelEditController(
                 }
                 else -> null
             }
-            editorController?.root?.classList?.add("animated", "fadeIn", "fast")
+            editorController?.root?.classList?.add("animated", "fadeIn", "faster")
             editorController?.readOnly = this.readOnly
             editorColumn.body = listOf(editorController ?: emptyEditor)
             fieldsController.updateSelection(current)

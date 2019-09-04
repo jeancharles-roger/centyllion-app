@@ -11,6 +11,7 @@ import bulma.Dropdown
 import bulma.ElementColor
 import bulma.FaFlip
 import bulma.Field
+import bulma.Help
 import bulma.Icon
 import bulma.Level
 import bulma.TabItem
@@ -69,6 +70,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelController.data = new.model
             modelNameController.readOnly = readonly
             modelNameController.data = new.model.name
+            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else "me" } ?: "me"
+            userLabel.text = "by $user"
+
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
             simulationController.context = new.model
@@ -82,6 +86,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
     }
+
+    val userLabel = Help()
 
     val modelDescriptionController = multiLineStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
@@ -211,7 +217,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val container: BulmaElement = Columns(
         Column(
             Level(
-                left = listOf(modelNameController),
+                left = listOf(modelNameController, userLabel),
                 center = listOf(cloneButton),
                 right = listOf(tools)
             ),

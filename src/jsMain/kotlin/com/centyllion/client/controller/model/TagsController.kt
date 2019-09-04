@@ -33,6 +33,7 @@ class TagsController(
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             addTagField.hidden = new
+            tagsContainer.tags = createTags(data)
         }
     }
 

@@ -77,6 +77,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
 
+            tagsController.readOnly = readonly
             tagsController.data = new.tags
 
             simulationController.context = new.model

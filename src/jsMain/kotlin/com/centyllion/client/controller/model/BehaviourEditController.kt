@@ -195,7 +195,9 @@ class BehaviourEditController(
             fieldPredicatesController, size = ColumnSize.S7
         ),
         Column(Label("Field influences"), fieldInfluencesController, size = ColumnSize.S5)
-    )
+    ).apply {
+        hidden = context.fields.isEmpty()
+    }
 
     override val container = Div(
         Tag("Behaviour", ElementColor.Primary, Size.Large),

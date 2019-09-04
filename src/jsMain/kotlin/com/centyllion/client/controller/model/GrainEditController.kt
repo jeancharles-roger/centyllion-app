@@ -166,7 +166,7 @@ class GrainEditController(
             desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
         ),
         multiline = true
-    )
+    ).apply { hidden = context.fields.isEmpty() }
 
     override val container = Div(
         Tag("Grain", ElementColor.Primary, Size.Large),

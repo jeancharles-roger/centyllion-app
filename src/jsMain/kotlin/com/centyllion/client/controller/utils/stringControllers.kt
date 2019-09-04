@@ -130,8 +130,8 @@ fun <T : Comparable<T>> isNumberIn(placeholder: String, number: T?, min: T, max:
 fun editableFloatController(
     initialData: Float = 0f,
     placeHolder: String = "",
-    minValue: Float = Float.MIN_VALUE,
-    maxValue: Float = Float.MAX_VALUE,
+    minValue: Float = Float.NEGATIVE_INFINITY,
+    maxValue: Float = Float.POSITIVE_INFINITY,
     onUpdate: (old: Float, new: Float, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
@@ -142,8 +142,8 @@ fun editableFloatController(
 fun editableDoubleController(
     initialData: Double = 0.0,
     placeHolder: String = "",
-    minValue: Double = Double.MIN_VALUE,
-    maxValue: Double = Double.MAX_VALUE,
+    minValue: Double = Double.NEGATIVE_INFINITY,
+    maxValue: Double = Double.POSITIVE_INFINITY,
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,

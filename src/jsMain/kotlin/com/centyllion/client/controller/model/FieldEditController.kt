@@ -84,7 +84,7 @@ class FieldEditController (
             Tag("Field", ElementColor.Primary, Size.Large),
             Box(
             HorizontalField(
-                Label("Display"),
+                Label("Name"),
                 nameController.container,
                 bulma.Field(
                     Control(colorController.container),

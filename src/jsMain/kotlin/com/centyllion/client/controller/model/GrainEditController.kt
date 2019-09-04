@@ -172,7 +172,7 @@ class GrainEditController(
         Tag("Grain", ElementColor.Primary, Size.Large),
         Box(
             HorizontalField(
-                Label("Display"),
+                Label("Name"),
                 nameController.container,
                 BField(
                     Control(iconController.container),
@@ -180,9 +180,9 @@ class GrainEditController(
                     addons = true
                 ),
                 BField(
-                    Control(Help("Size")),
-                    Control(sizeValue),
+                    Control(Label("Size")),
                     Control(sizeSlider),
+                    Control(sizeValue),
                     grouped = true
                 )
             ),

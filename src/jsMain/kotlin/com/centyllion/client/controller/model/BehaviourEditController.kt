@@ -4,7 +4,6 @@ import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
-import bulma.Control
 import bulma.Controller
 import bulma.Div
 import bulma.ElementColor
@@ -131,7 +130,7 @@ class BehaviourEditController(
         // Header
         TileParent(
             TileChild(Help("Reactive")),
-            TileChild(Help("Direction")),
+            TileChild(Help("Directions")),
             TileChild(Help("Product")),
             TileChild(Help("Source")),
             TileChild()
@@ -190,24 +189,21 @@ class BehaviourEditController(
     val fieldsConfiguration = Columns(
         Column(
             Level(
-                left= listOf(Label("Predicates")),
+                left= listOf(Label("Field thresholds")),
                 right = listOf(addFieldPredicateButton)
             ),
             fieldPredicatesController, size = ColumnSize.S7
         ),
-        Column(Label("Influences"), fieldInfluencesController, size = ColumnSize.S5)
+        Column(Label("Field influences"), fieldInfluencesController, size = ColumnSize.S5)
     )
 
     override val container = Div(
         Tag("Behaviour", ElementColor.Primary, Size.Large),
         Box(
-            HorizontalField(Label("Display"), nameController.container),
+            HorizontalField(Label("Name"), nameController.container),
             HorizontalField(Label("Description"), descriptionController.container),
-            HorizontalField(
-                Label("Properties"),
-                bulma.Field(Control(Help("Speed")), probabilityController.container, grouped = true),
-                bulma.Field(Control(Help("Age")), agePredicateController.container, grouped = true)
-            ),
+            HorizontalField(Label("Speed"), probabilityController.container),
+            HorizontalField(Label("When age"), agePredicateController.container),
             Label("Reactions"), reactionsController,
             fieldsConfiguration
         )

@@ -81,7 +81,7 @@ class EditableStringController(
             input.root.focus()
         } else {
             container.body = listOfNotNull(inputControl)
-            inputControl.rightIcon = if (this.readOnly) null else penIcon
+            inputControl.rightIcon = if (readOnly) null else penIcon
         }
     }
 

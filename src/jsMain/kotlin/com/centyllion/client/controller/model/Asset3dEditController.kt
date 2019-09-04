@@ -36,6 +36,7 @@ class Asset3dEditController(
         if (old != new) {
             assetSelectController.readOnly = new
             urlController.readOnly = new
+            opacitySlider.disabled = new
             xController.readOnly = new
             yController.readOnly = new
             zController.readOnly = new

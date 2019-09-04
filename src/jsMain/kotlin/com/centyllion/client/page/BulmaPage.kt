@@ -2,15 +2,20 @@ package com.centyllion.client.page
 
 import bulma.BulmaElement
 import bulma.Button
+import bulma.ControlElement
 import bulma.DropdownDivider
 import bulma.DropdownItem
 import bulma.ElementColor
 import bulma.Icon
 import bulma.ModalCard
+import bulma.Position
 import bulma.Size
 import bulma.TextColor
+import bulma.booleanAttribute
+import bulma.bulma
 import bulma.bulmaList
 import bulma.className
+import bulma.html
 import bulma.span
 import bulmatoast.ToastAnimation
 import bulmatoast.ToastOptions
@@ -20,8 +25,10 @@ import com.centyllion.client.ClientEvent
 import com.centyllion.common.SubscriptionType
 import com.centyllion.common.roleIcons
 import kotlinx.html.a
+import kotlinx.html.button
 import kotlinx.html.dom.create
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.span
 import org.w3c.dom.HTMLElement
 import kotlin.browser.document
 import kotlin.js.Date
@@ -123,6 +130,49 @@ class MenuItem(
     }
 
     private var internalDisabled by className(disabled || !hasRole, "is-disabled", root)
+
+    init {
+        // If the role isn't included in the biggest subscription it must be hidden when not matched
+        hidden = role != null && !SubscriptionType.Master.roles.contains(role) && !hasRole
+    }
+}
+
+class ButtonWithRole(
+    title: String? = null, icon: Icon? = null,
+    val role: String? = null, hasRole: Boolean = role == null,
+    color: ElementColor = ElementColor.None, rounded: Boolean = false, outlined: Boolean = false,
+    inverted: Boolean = false, size: Size = Size.None,
+    disabled: Boolean = false, var onClick: (ButtonWithRole) -> Unit = {}
+) : ControlElement {
+
+    override val root: HTMLElement = document.create.button(classes = "button") {
+        onClickFunction = { if (!this@ButtonWithRole.disabled) onClick(this@ButtonWithRole) }
+    }
+
+    var title by html(title, root, Position.AfterBegin) { document.create.span { +it } }
+
+    var icon by bulma(icon, root, Position.AfterBegin)
+
+    val roleIcon by html(roleIcons[role], root) { Icon(it, Size.Small, TextColor.GreyLight).root }
+
+    var rounded by className(rounded, "is-rounded", root)
+
+    var outlined by className(outlined, "is-outlined", root)
+
+    var inverted by className(inverted, "is-inverted", root)
+
+    var loading by className(false, "is-loading", root)
+
+    var color by className(color, root)
+
+    var size by className(size, root)
+
+
+    var disabled by Delegates.observable(disabled) { _, _, new ->
+        internalDisabled = new || !hasRole
+    }
+
+    private var internalDisabled by booleanAttribute(disabled || !hasRole, "disabled", root)
 
     init {
         // If the role isn't included in the biggest subscription it must be hidden when not matched

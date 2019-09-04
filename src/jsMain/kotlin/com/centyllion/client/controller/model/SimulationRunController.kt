@@ -32,8 +32,10 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.page.ButtonWithRole
 import com.centyllion.client.stringHref
 import com.centyllion.client.toggleElementToFullScreen
+import com.centyllion.common.creatorRole
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Grain
@@ -85,7 +87,7 @@ class SimulationRunController(
             nameController.readOnly = new
             descriptionController.readOnly = new
             simulationViewController.readOnly = new
-            asset3dController.readOnly = new
+            asset3dController.readOnly = new || !page.appContext.hasRole(creatorRole)
             assetsColumn.hidden = new
         }
     }
@@ -187,7 +189,11 @@ class SimulationRunController(
 
     val simulationView = Column(simulationViewController.container, size = ColumnSize.Full)
 
-    val addAsset3dButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+    val addAsset3dButton = ButtonWithRole(
+        null, Icon("plus"),
+        creatorRole, page.appContext.hasRole(creatorRole),
+        ElementColor.Primary, true
+    ) {
         this.data = data.copy(assets = data.assets + Asset3d(""))
     }
 

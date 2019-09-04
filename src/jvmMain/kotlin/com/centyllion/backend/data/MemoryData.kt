@@ -35,7 +35,7 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
 }
 
 fun createGrainModelDescription(user: User?, sent: GrainModel) = rfc1123Format.format(Date()).let {
-    GrainModelDescription(newId(), DescriptionInfo(user, it, it, false, false), sent)
+    GrainModelDescription(newId(), DescriptionInfo(user, it, it, false, false), "", sent)
 }
 
 fun createSimulationDescription(user: User?, modelId: String, sent: Simulation) = rfc1123Format.format(Date()).let {

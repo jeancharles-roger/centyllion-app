@@ -15,7 +15,7 @@ val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.R
 
 val emptyModel = GrainModel("")
 val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, model = emptyModel)
+val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, tags = "", model = emptyModel)
 val emptySimulation = createSimulation("")
 val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
@@ -515,6 +515,7 @@ data class DescriptionInfo(
 data class GrainModelDescription(
     override val id: String,
     val info: DescriptionInfo,
+    val tags: String,
     val model: GrainModel
 ) : Description {
 

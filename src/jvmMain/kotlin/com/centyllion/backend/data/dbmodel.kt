@@ -114,6 +114,7 @@ enum class DbModelType { Grain }
 
 object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val info = reference("info", DbDescriptionInfos)
+    val tags = text("tags").default("")
     val model = text("model")
     val type = text("type")
     val version = integer("version")
@@ -124,6 +125,7 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<DbModelDescription>(DbModelDescriptions)
 
     var info by DbDescriptionInfo referencedOn DbModelDescriptions.info
+    var tags by DbModelDescriptions.tags
     var model by DbModelDescriptions.model
     var type by DbModelDescriptions.type
     var version by DbModelDescriptions.version
@@ -132,12 +134,13 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     fun toModel(): GrainModelDescription {
         // TODO handle migrations
         val model = Json.parse(GrainModel.serializer(), model)
-        return GrainModelDescription(id.toString(), info.toModel(), model)
+        return GrainModelDescription(id.toString(), info.toModel(), tags, model)
     }
 
     fun fromModel(source: GrainModelDescription) {
-        // TODO handle migrations
         info.fromModel(source.info)
+        tags = source.tags
+        // TODO handle migrations
         model = Json.stringify(GrainModel.serializer(), source.model)
     }
 }

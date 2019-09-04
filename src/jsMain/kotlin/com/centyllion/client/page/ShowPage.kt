@@ -25,6 +25,7 @@ import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.model.Simulator3dViewController
+import com.centyllion.client.controller.model.TagsController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.controller.utils.multiLineStringController
@@ -75,13 +76,19 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
+
+            tagsController.data = new.tags
+
             simulationController.context = new.model
             refreshButtons()
         }
     }
 
     private val modelUndoRedo = UndoRedoSupport(model)
-    { modelController.data = it.model }
+    {
+        //modelController.data = it.model
+        model = it
+    }
 
     val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
@@ -92,6 +99,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val modelDescriptionController = multiLineStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
     }
+
+    val tagsController = TagsController(model.tags) { old, new, _ -> if (old != new) model = model.copy( tags = new) }
 
     val modelController = GrainModelEditController(model.model) { old, new, _ ->
         if (old != new) {
@@ -224,8 +233,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             size = ColumnSize.Full
         ),
         Column(modelDescriptionController, size = ColumnSize.Full),
+        Column(tagsController,size = ColumnSize.FourFifths),
         Column(editionTab, size = ColumnSize.Full),
-        multiline = true
+        multiline = true, centered = true
     )
 
     override val root: HTMLElement = container.root

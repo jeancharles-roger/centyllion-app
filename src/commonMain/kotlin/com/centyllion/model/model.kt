@@ -415,7 +415,6 @@ data class Simulation(
     @Transient
     val dataSize = levelSize * depth
 
-    @Transient
     val valid
         get() = width > 0 && height > 0 && depth > 0
 

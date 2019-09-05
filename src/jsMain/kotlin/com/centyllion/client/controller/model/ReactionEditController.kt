@@ -54,7 +54,7 @@ class ReactionEditController(
             extendedDirectionController.readOnly = new
             productController.readOnly = new
             sourceReactiveController.readOnly = new
-            //container.right = if (new) emptyList() else listOf(delete)
+            delete.hidden = new
         }
     }
 

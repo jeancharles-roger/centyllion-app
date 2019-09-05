@@ -10,7 +10,8 @@ private fun Transaction.createIndex(
     dictionnary: String = "pg_catalog.english"
 ) {
     // adds simulation description tsvector column
-    exec("alter table ${sourceTable.tableName} add column $searchableTextColumnName tsvector")
+    //exec("alter table ${sourceTable.tableName} add column $searchableTextColumnName tsvector")
+
     // updates existing simulation searches
     exec("update ${sourceTable.tableName} set $searchableTextColumnName = to_tsvector('$dictionnary', ${searchedField.name})")
     // creates index table

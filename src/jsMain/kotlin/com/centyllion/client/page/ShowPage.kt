@@ -77,6 +77,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
 
+            tagsController.hidden = !new.info.public
             tagsController.readOnly = readonly
             tagsController.data = new.tags
 
@@ -85,11 +86,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    private val modelUndoRedo = UndoRedoSupport(model)
-    {
-        //modelController.data = it.model
-        model = it
-    }
+    private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
     val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
@@ -122,8 +119,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    private val simulationUndoRedo = UndoRedoSupport(simulation)
-    { simulationController.data = it.simulation }
+    private val simulationUndoRedo = UndoRedoSupport(simulation) { simulation = it }
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
@@ -249,6 +245,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         modelController.readOnly = modelReadonly
         simulationController.readOnly = isSimulationReadOnly
         tools.hidden = true
+        tagsController.hidden = true
 
         // retrieves model and simulation to load
         val params = URLSearchParams(window.location.search)

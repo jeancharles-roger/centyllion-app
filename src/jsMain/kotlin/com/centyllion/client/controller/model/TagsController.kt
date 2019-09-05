@@ -37,8 +37,10 @@ class TagsController(
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            addTagField.hidden = new
             tagsContainer.tags = createTags(data)
+            addTagField.hidden = new
+            popularLabel.hidden = new
+            popularTags.hidden = new
         }
     }
 
@@ -59,7 +61,9 @@ class TagsController(
         addons = true
     )
 
-    val existingTags = Tags().apply {
+    val popularLabel = Help("Popular")
+
+    val popularTags = Tags().apply {
         api.modelTags().then {
             this.tags = it.content.take(5)
                 .map { tag ->
@@ -72,12 +76,8 @@ class TagsController(
     }
 
     override val container = Level(
-        center = listOf(Label("Tags"), tagsContainer, addTagField, Help("Popular"), existingTags)
+        center = listOf(Label("Tags"), tagsContainer, addTagField, popularLabel, popularTags)
     )
-        /*Columns(
-        Column(Label("Tags")), Column(tagsContainer), Column(addTagField),
-        Column(Help("Popular")), Column(existingTags)
-    )*/
 
     override fun refresh() {
     }
@@ -85,8 +85,9 @@ class TagsController(
     fun createTags(source: String) = source
         .split(" ").filter { it.isNotBlank() }
         .map { tag ->
-            Tag(tag, rounded = true, delete = Delete {
-                data = data.replace(tag, "").trim()
-            })
+            Tag(
+                tag, rounded = true,
+                delete = if (!readOnly) Delete { data = data.replace(tag, "").trim() } else null
+            )
         }
 }

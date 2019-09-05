@@ -101,7 +101,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         model = model.copy(model = model.model.copy(description = new))
     }
 
-    val tagsController = TagsController(model.tags) { old, new, _ -> if (old != new) model = model.copy( tags = new) }
+    val tagsController = TagsController(model.tags, appContext.api) { old, new, _ -> if (old != new) model = model.copy( tags = new) }
 
     val modelController = GrainModelEditController(model.model) { old, new, _ ->
         if (old != new) {

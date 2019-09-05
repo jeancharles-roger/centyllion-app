@@ -17,6 +17,7 @@ import kotlinx.html.js.link
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
+import kotlinx.serialization.serializer
 import org.w3c.files.Blob
 import org.w3c.files.File
 import org.w3c.xhr.FormData
@@ -152,6 +153,11 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 json.stringify(GrainModelDescription.serializer(), model)
             )
         }
+
+    fun modelTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/model/tags?offset=$offset&limit=$limit", bearer)
+            .then { json.parse(ResultPage.serializer(String.serializer()), it) }
+    }
 
     fun searchModel(query: String = "", tags: List<String> = emptyList(), offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         val q = encodeURIComponent(query)

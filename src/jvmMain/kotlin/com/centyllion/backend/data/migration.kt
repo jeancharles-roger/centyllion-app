@@ -6,19 +6,20 @@ import org.jetbrains.exposed.sql.Transaction
 
 private fun Transaction.createIndex(
     indexName: String, sourceTable: Table,
-    searchedField: Column<*>, searchableTextColumnName: String = "searchable"
+    searchedField: Column<*>, searchableTextColumnName: String = "searchable",
+    dictionnary: String = "pg_catalog.english"
 ) {
     // adds simulation description tsvector column
     exec("alter table ${sourceTable.tableName} add column $searchableTextColumnName tsvector")
     // updates existing simulation searches
-    exec("update ${sourceTable.tableName} set $searchableTextColumnName = to_tsvector('english', ${searchedField.name})")
+    exec("update ${sourceTable.tableName} set $searchableTextColumnName = to_tsvector('$dictionnary', ${searchedField.name})")
     // creates index table
     exec("create index $indexName on ${sourceTable.tableName} using gin ($searchableTextColumnName)")
     // creates trigger to update searchable
     exec("""
         create trigger ${indexName}update before insert or update
         on ${sourceTable.tableName} for each row execute procedure
-        tsvector_update_trigger($searchableTextColumnName, 'pg_catalog.english', ${searchedField.name})
+        tsvector_update_trigger($searchableTextColumnName, '$dictionnary', ${searchedField.name})
     """)
 }
 
@@ -46,7 +47,8 @@ val migrations = listOf(
             "modelDescription_tagIndex",
             DbModelDescriptions,
             DbModelDescriptions.tags,
-            "tags_searchable"
+            "tags_searchable",
+            "pg_catalog.simple"
         )
     }
 )

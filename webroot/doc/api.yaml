@@ -136,6 +136,24 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/GrainModelDescription'
+  /model/tags:
+    get:
+      summary: Tags used in models
+      tags:
+        - models
+      parameters:
+        - in: query
+          name: offset
+          description: Offset in the result list from the overwhole list
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: limit
+          description: Limit of model in the result list
+          schema:
+            type: integer
+            default: 50
   /model/search:
     get:
       summary: Full text search in models

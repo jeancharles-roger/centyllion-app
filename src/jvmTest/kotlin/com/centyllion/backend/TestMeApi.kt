@@ -26,7 +26,7 @@ class TestMeApi {
         val result = request.response.content
         assertNotNull(result)
 
-        val retrieved = Json.parse(GrainModelDescription.serializer(), result)
+        val retrieved = Json. parse(GrainModelDescription.serializer(), result)
         assertEquals(model, retrieved.model)
         return retrieved
     }

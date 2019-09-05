@@ -218,6 +218,15 @@ class MemoryData(
             deletedSimulations, offset, limit
         )
 
+    override fun modelTags(offset: Int, limit: Int): ResultPage<String> {
+        val words = grainModels.values
+            .map { it.tags.split(" ").filter(String::isNotBlank).map(String::trim) }
+            .flatten()
+        val counts = mutableMapOf<String, Int>()
+        words.forEach { counts[it] = 1 + (counts[it] ?: 0) }
+        return counts.keys.toList().sortedByDescending { counts[it] ?: 0 }.limit(offset, limit)
+    }
+
     override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) =
         merge(
             backend?.searchModel(query, tags, offset, limit),

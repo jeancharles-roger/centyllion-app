@@ -3,22 +3,25 @@ package com.centyllion.client.controller.model
 
 import bulma.BulmaElement
 import bulma.Button
-import bulma.Column
-import bulma.Columns
 import bulma.Control
 import bulma.Delete
+import bulma.ElementColor
 import bulma.Field
+import bulma.Help
 import bulma.Icon
 import bulma.Input
 import bulma.Label
+import bulma.Level
 import bulma.NoContextController
 import bulma.Tag
 import bulma.Tags
+import bulma.TagsSize
 import bulma.iconButton
+import com.centyllion.client.Api
 import kotlin.properties.Delegates.observable
 
 class TagsController(
-    tags: String,
+    tags: String, api: Api,
     var onUpdate: (old: String, new: String, controller: TagsController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, BulmaElement>() {
 
@@ -39,7 +42,7 @@ class TagsController(
         }
     }
 
-    val tagsContainer = Tags()
+    val tagsContainer = Tags(size = TagsSize.Normal)
 
     val input: Input = Input(value = "", placeholder = "New tag", rounded = true) { _, value ->
         addTagButton.disabled = value.isBlank() || data.matches("\\b${value.trim()}\\b")
@@ -56,9 +59,25 @@ class TagsController(
         addons = true
     )
 
-    override val container = Columns(
-        Column(Label("Tags")), Column(tagsContainer), Column(addTagField)
+    val existingTags = Tags().apply {
+        api.modelTags().then {
+            this.tags = it.content.take(5)
+                .map { tag ->
+                    Tag(tag, rounded = true, color = ElementColor.Info).apply {
+                        root.style.cursor = "pointer"
+                        root.onclick = { if (!data.contains(tag)) data += " ${tag.trim()}" }
+                    }
+                }
+        }
+    }
+
+    override val container = Level(
+        center = listOf(Label("Tags"), tagsContainer, addTagField, Help("Popular"), existingTags)
     )
+        /*Columns(
+        Column(Label("Tags")), Column(tagsContainer), Column(addTagField),
+        Column(Help("Popular")), Column(existingTags)
+    )*/
 
     override fun refresh() {
     }

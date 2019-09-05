@@ -337,7 +337,7 @@ class SqlData(
     }
 
     override fun modelTags(offset: Int, limit: Int): ResultPage<String> = transaction {
-        // SELECT word from ts_stat('select tags_searchable from modeldescriptions') order by ndoc desc limit 10
+        // TODO only select public model for tags
         exec("SELECT word FROM ts_stat('SELECT tags_searchable from modeldescriptions') ORDER BY ndoc DESC LIMIT $limit OFFSET $offset") {
             val result = mutableListOf<String>()
             while (it.next()) { result.add(it.getString(1)) }

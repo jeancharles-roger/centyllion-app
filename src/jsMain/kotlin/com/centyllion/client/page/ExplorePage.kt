@@ -17,6 +17,7 @@ import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
 import com.centyllion.client.AppContext
+import com.centyllion.client.controller.model.TagsController
 import com.centyllion.client.controller.navigation.FeaturedController
 import com.centyllion.client.controller.navigation.GrainModelDisplayController
 import com.centyllion.client.controller.navigation.ResultPageController
@@ -77,7 +78,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         searchedModelController,
         { Column(it, size = ColumnSize.Full) },
         { offset, limit ->
-            appContext.api.searchModel(searchInput.value, offset, limit).then {
+            appContext.api.searchModel(searchInput.value, tagsController.tags, offset, limit).then {
                 searchModelTabItem.text = "Model (${it.totalSize})"
                 noModelResult.hidden = it.totalSize > 0
                 it
@@ -100,6 +101,10 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
     val clearSearch = iconButton(Icon("times"), rounded = true) { searchInput.value = "" }
 
     val search = Field(Control(searchInput, Icon("search"), expanded = true), Control(clearSearch), addons = true)
+
+    val tagsController: TagsController = TagsController("") { old, new, _ ->
+        if (old != new) searchedModelResult.refreshFetch()
+    }
 
     // tabs for search results
     val searchTabs = TabPages(
@@ -143,7 +148,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
     )
 
     val container = Div(
-        Title("Search"), Box(search, searchTabs),
+        Title("Search"), Box(search, tagsController, searchTabs),
         Title("Recent simulations"), Box(recentResult),
         Title("Featured"), Box(featuredResult)
     )

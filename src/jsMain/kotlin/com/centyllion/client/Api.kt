@@ -153,9 +153,14 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             )
         }
 
-    fun searchModel(query: String, offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun searchModel(query: String = "", tags: List<String> = emptyList(), offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         val q = encodeURIComponent(query)
-        fetch("GET", "/api/model/search?q=$q&offset=$offset&limit=$limit", bearer).then {
+        val options = listOfNotNull(
+            if (q.isNotBlank()) "q=$query" else null,
+            if (tags.isNotEmpty()) "tags=${tags.joinToString(",")}" else null,
+            "offset=$offset", "limit=$limit"
+        )
+        fetch("GET", "/api/model/search?${options.joinToString("&")}", bearer).then {
             json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it)
         }
     }

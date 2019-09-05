@@ -4,9 +4,10 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Transaction
 
-private fun Transaction.createIndex(indexName: String, sourceTable: Table, searchedField: Column<*>) {
-    val searchableTextColumnName = "searchable"
-
+private fun Transaction.createIndex(
+    indexName: String, sourceTable: Table,
+    searchedField: Column<*>, searchableTextColumnName: String = "searchable"
+) {
     // adds simulation description tsvector column
     exec("alter table ${sourceTable.tableName} add column $searchableTextColumnName tsvector")
     // updates existing simulation searches
@@ -38,6 +39,14 @@ val migrations = listOf(
             "modelDescription_textIndex",
             DbModelDescriptions,
             DbModelDescriptions.model
+        )
+    },
+    Migration(1, 2) {
+        createIndex(
+            "modelDescription_tagIndex",
+            DbModelDescriptions,
+            DbModelDescriptions.tags,
+            "tags_searchable"
         )
     }
 )

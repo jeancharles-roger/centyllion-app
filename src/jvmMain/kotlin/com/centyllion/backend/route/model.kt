@@ -37,8 +37,9 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
+            val tags = call.parameters["tags"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
             val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")
-            context.respond(data.searchModel(tsquery, offset, limit))
+            context.respond(data.searchModel(tsquery, tags, offset, limit))
         }
 
         // post a new model

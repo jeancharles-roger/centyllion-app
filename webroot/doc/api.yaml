@@ -3,7 +3,7 @@ info:
   version: "1.0"
   title: API to interface with Centyllion simulations
 servers:
-  - url: https://app.centyllion.com/api
+  - url: /api
 
 paths:
   /me:
@@ -145,8 +145,12 @@ paths:
         - in: query
           name: q
           description: Search query
-          required: true
-          schema: 
+          schema:
+            type: string
+        - in: query
+          name: tags
+          description: Tags where to search (coma separated list)
+          schema:
             type: string
         - in: query
           name: offset

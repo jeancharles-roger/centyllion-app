@@ -115,6 +115,7 @@ enum class DbModelType { Grain }
 object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val info = reference("info", DbDescriptionInfos)
     val tags = text("tags").default("")
+    val tags_searchable = registerColumn<Any>("tags_searchable", TsVectorColumnType())
     val model = text("model")
     val type = text("type")
     val version = integer("version")
@@ -129,7 +130,6 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var model by DbModelDescriptions.model
     var type by DbModelDescriptions.type
     var version by DbModelDescriptions.version
-    val searchable = DbModelDescriptions.searchable
 
     fun toModel(): GrainModelDescription {
         // TODO handle migrations
@@ -164,7 +164,6 @@ class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
     var simulation by DbSimulationDescriptions.simulation
     var type by DbSimulationDescriptions.type
     var version by DbSimulationDescriptions.version
-    var searchable by DbSimulationDescriptions.searchable
 
     fun toModel(): SimulationDescription {
         // TODO handle migrations

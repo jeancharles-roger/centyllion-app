@@ -218,10 +218,14 @@ class MemoryData(
             deletedSimulations, offset, limit
         )
 
-    override fun searchModel(query: String, offset: Int, limit: Int) =
+    override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) =
         merge(
-            backend?.searchModel(query, offset, limit),
-            grainModels.values.filter { it.model.name.contains(query) || it.model.description.contains(query) },
+            backend?.searchModel(query, tags, offset, limit),
+            grainModels.values.filter {
+                it.info.public &&
+                tags.all { tag -> it.tags.contains(tag) }        &&
+                (it.model.name.contains(query) || it.model.description.contains(query))
+            },
             deletedModels, offset, limit
         )
 

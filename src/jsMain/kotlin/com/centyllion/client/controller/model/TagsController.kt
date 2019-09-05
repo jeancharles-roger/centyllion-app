@@ -30,6 +30,8 @@ class TagsController(
         }
     }
 
+    val tags get() = data.split(" ").filter { it.isNotBlank() }.map(String::trim)
+
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             addTagField.hidden = new

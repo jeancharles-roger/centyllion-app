@@ -20,7 +20,7 @@ interface Data {
     fun saveUser(user: User)
 
     fun publicGrainModels(offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
-    fun searchModel(query: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
+    fun searchModel(query: String, tags: List<String>, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun grainModelsForUser(userId: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun getGrainModel(id: String): GrainModelDescription?
     fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription

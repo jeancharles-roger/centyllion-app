@@ -336,19 +336,21 @@ class SqlData(
         ResultPage(content, offset, searchSimulationQuery(query).count())
     }
 
-    private fun searchModelQuery(query: String) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-        val q = if (query.isNotBlank()) "$query:*" else ""
-        (DbDescriptionInfos.readAccess eq true) and (DbModelDescriptions.searchable fullTextSearch q)
+    private fun searchModelQuery(query: String, tags: List<String>) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
+        val op = if (query.isNotBlank()) DbModelDescriptions.searchable fullTextSearch "$query:*" else null
+        (tags.map { DbModelDescriptions.tags_searchable fullTextSearch it } + op)
+            .filterNotNull()
+            .fold(DbDescriptionInfos.readAccess eq true) {a, c -> a and c }
     }
 
-    override fun searchModel(query: String, offset: Int, limit: Int) = transaction {
+    override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) = transaction {
         val content = DbModelDescription.wrapRows(
-            searchModelQuery(query)
+            searchModelQuery(query, tags)
                 .limit(limit, offset)
                 .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
         ).map { it.toModel() }
 
-        ResultPage(content, offset, searchModelQuery(query).count())
+        ResultPage(content, offset, searchModelQuery(query, tags).count())
     }
 
     override fun subscriptionsForUser(userId: String) =

@@ -63,9 +63,9 @@ class TagsController(
 
     fun createTags(source: String) = source
         .split(" ").filter { it.isNotBlank() }
-        .map {
-            Tag(it, rounded = true).apply {
-                if (!readOnly) root.appendChild(Delete { data = data.replace(text, "").trim() }.root)
-            }
+        .map { tag ->
+            Tag(tag, rounded = true, delete = Delete {
+                data = data.replace(tag, "").trim()
+            })
         }
 }

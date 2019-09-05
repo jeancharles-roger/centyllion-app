@@ -115,7 +115,7 @@ enum class DbModelType { Grain }
 object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val info = reference("info", DbDescriptionInfos)
     val tags = text("tags").default("")
-    val tags_searchable = registerColumn<Any>("tags_searchable", TsVectorColumnType())
+    val tags_searchable = registerColumn<Any>("tags_searchable", TsVectorColumnType()).default("")
     val model = text("model")
     val type = text("type")
     val version = integer("version")

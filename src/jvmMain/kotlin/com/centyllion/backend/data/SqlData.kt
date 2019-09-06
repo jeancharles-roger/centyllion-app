@@ -44,7 +44,7 @@ infix fun ExpressionWithColumnType<Any>.fullTextSearch(t: String): Op<Boolean> {
 }
 
 class ToTsQuery<T : String?>(val expr: Expression<T>) : Function<T>(VarCharColumnType()) {
-    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery(${expr.toSQL(queryBuilder)})"
+    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery('pg_catalog.simple', ${expr.toSQL(queryBuilder)})"
 }
 
 class SqlData(

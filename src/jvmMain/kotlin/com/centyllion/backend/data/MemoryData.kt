@@ -225,6 +225,15 @@ class MemoryData(
         val counts = mutableMapOf<String, Int>()
         words.forEach { counts[it] = 1 + (counts[it] ?: 0) }
         return counts.keys.toList().sortedByDescending { counts[it] ?: 0 }.limit(offset, limit)
+
+        // TODO tags needs merging
+        /*
+        return merge(
+            backend?.modelTags(offset, limit),
+            counts.keys.toList().sortedByDescending { counts[it] ?: 0 },
+            emptySet(), offset, limit
+        )
+         */
     }
 
     override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) =

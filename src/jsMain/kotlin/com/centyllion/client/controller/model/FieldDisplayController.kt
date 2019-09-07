@@ -33,7 +33,7 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
 
     val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
 
-    val deleteCallbackProperty = DeleteCallbackProperty(this) { old, new ->
+    val deleteCallbackProperty = DeleteCallbackProperty(null, this) { old, new ->
         old?.let { body.right -= it }
         new?.let { body.right += it }
     }

@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.navigation
 
+import bulma.Box
 import bulma.Control
 import bulma.ElementColor
 import bulma.Field
@@ -22,7 +23,7 @@ import com.centyllion.model.User
 import com.centyllion.model.emptyUser
 import kotlin.properties.Delegates.observable
 
-class MeController(val appContext: AppContext) : NoContextController<User, Media>() {
+class MeController(val appContext: AppContext) : NoContextController<User, Box>() {
 
     override var data: User by observable(appContext.me ?: emptyUser) { _, _, _ ->
         newData = data
@@ -60,13 +61,13 @@ class MeController(val appContext: AppContext) : NoContextController<User, Media
 
     val roles = Field(grouped = true).apply { body = roleButtons() }
 
-    override val container = Media(
+    override val container = Box(Media(
         left = listOf(Image("https://bulma.io/images/placeholders/128x128.png", ImageSize.S128)),
         center = listOf(
             Level(left = listOf(group, usernameController), right = listOf(roles)),
             nameController, emailController
         )
-    )
+    ))
 
     override fun refresh() {
         nameController.text = newData.name

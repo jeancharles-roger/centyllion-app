@@ -34,7 +34,7 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Cont
         }
     }
 
-    val deleteCallbackProperty = DeleteCallbackProperty(this) { old, new ->
+    val deleteCallbackProperty = DeleteCallbackProperty(null, this) { old, new ->
         old?.let { header.right -= it }
         new?.let { header.right += it }
     }

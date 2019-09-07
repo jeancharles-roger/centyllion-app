@@ -12,7 +12,7 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
+class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(grain) { _, old, new ->
         if (old != new) refresh()
@@ -38,7 +38,7 @@ open class GrainDisplayController(grain: Grain, model: GrainModel): Controller<G
 
     val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
 
-    val deleteCallbackProperty = DeleteCallbackProperty(this) { old, new ->
+    val deleteCallbackProperty = DeleteCallbackProperty(null,this) { old, new ->
         old?.let { body.right -= it }
         new?.let { body.right += it }
     }

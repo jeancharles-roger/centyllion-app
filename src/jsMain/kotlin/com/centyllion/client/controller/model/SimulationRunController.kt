@@ -1,5 +1,6 @@
 package com.centyllion.client.controller.model
 
+import bulma.Box
 import bulma.BulmaElement
 import bulma.Button
 import bulma.Column
@@ -13,9 +14,11 @@ import bulma.Field
 import bulma.Icon
 import bulma.Label
 import bulma.Level
+import bulma.MultipleController
 import bulma.Slider
 import bulma.TextSize
 import bulma.Title
+import bulma.WrappedController
 import bulma.canvas
 import bulma.columnsController
 import bulma.iconButton
@@ -141,15 +144,16 @@ class SimulationRunController(
         toggleElementToFullScreen(simulationColumn.root)
     }
 
-    val grainsController =
-        columnsController<Grain, GrainModel, GrainRunController>(model.grains, model)
+    val grainsController: MultipleController<Grain, GrainModel, Columns, Column, WrappedController<Grain, GrainModel, Box, Column>> =
+        columnsController(model.grains, model)
         { grain, previous ->
-            val c = previous ?: GrainRunController(grain, context)
-            c.container.root.onclick = {
-                simulationViewController.selectedGrainController.data = c.data
-                Unit
+            previous ?: GrainRunController(grain, context).wrap {
+                it.container.root.onclick = { _ ->
+                    simulationViewController.selectedGrainController.data = it.data
+                    Unit
+                }
+                Column(it.container, size = ColumnSize.Full)
             }
-            c
         }
 
     val behaviourController =
@@ -203,9 +207,7 @@ class SimulationRunController(
                 controller.onUpdate = { old, new, _ ->
                     if (old != new) data = data.updateAsset(old, new)
                 }
-                controller.onDelete = { delete, _ ->
-                    data = data.dropAsset(delete)
-                }
+                controller.onDelete = { data = data.dropAsset(it) }
                 Column(controller, size = ColumnSize.Half)
             }
         }
@@ -386,7 +388,10 @@ class SimulationRunController(
 
         // refreshes grain counts
         val counts = simulator.lastGrainsCount().values
-        grainsController.dataControllers.zip(counts) { controller, count -> controller.count = count }
+        grainsController.dataControllers.zip(counts) { controller, count ->
+            val source = controller.source
+            if (source is GrainRunController) source.count = count
+        }
     }
 
     override fun refresh() {

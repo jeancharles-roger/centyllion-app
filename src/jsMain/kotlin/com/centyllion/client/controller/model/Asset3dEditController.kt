@@ -1,17 +1,18 @@
 package com.centyllion.client.controller.model
 
+import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
-import bulma.Delete
 import bulma.Field
 import bulma.Help
 import bulma.Label
-import bulma.Media
+import bulma.Level
 import bulma.NoContextController
 import bulma.Slider
 import com.centyllion.client.Api
+import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.model.Asset3d
@@ -20,8 +21,8 @@ import kotlin.properties.Delegates.observable
 class Asset3dEditController(
     initialData: Asset3d, readOnly: Boolean = false, api: Api,
     var onUpdate: (old: Asset3d, new: Asset3d, controller: Asset3dEditController) -> Unit = { _, _, _ -> },
-    var onDelete: (Asset3d, controller: Asset3dEditController) -> Unit = { _, _ -> }
-) : NoContextController<Asset3d, Media>() {
+    onDelete: ((Asset3d) -> Unit)? = null
+) : NoContextController<Asset3d, Box>() {
 
     override var data: Asset3d by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -46,7 +47,7 @@ class Asset3dEditController(
             xRotationController.readOnly = new
             yRotationController.readOnly = new
             zRotationController.readOnly = new
-            container.right = if (new) emptyList() else listOf(delete)
+            deleteCallbackProperty.readOnly = new
         }
     }
 
@@ -95,13 +96,20 @@ class Asset3dEditController(
     val zRotationController = editableDoubleController(data.zRotation)
     { _, new, _ -> data = data.copy(zRotation = new) }
 
-    val delete = Delete { onDelete(this.data, this@Asset3dEditController) }
+    val deleteCallbackProperty = DeleteCallbackProperty(onDelete, this) { old, new ->
+        old?.let { header.right -= it }
+        new?.let { header.right += it }
+    }
+    var onDelete by deleteCallbackProperty
 
-    override val container = Media(
-        center = listOf(
+    val header = Level(
+        left = listOf(assetSelectController), mobile = true
+    )
+
+    override val container = Box(
             Columns(
                 // first line
-                Column(assetSelectController, size = ColumnSize.Full),
+                Column(header, size = ColumnSize.Full),
                 Column(opacityField, size = ColumnSize.Full),
                 Column(Label("Position (x,y,z)"), size = ColumnSize.Full),
                 Column(xController, size = ColumnSize.OneThird),
@@ -117,11 +125,7 @@ class Asset3dEditController(
                 Column(zRotationController, size = ColumnSize.OneThird),
                 multiline = true
             )
-        ),
-        right = listOf(delete)
-    ).apply {
-        root.classList.add("is-outlined")
-    }
+        )
 
     override fun refresh() {
         urlController.refresh()

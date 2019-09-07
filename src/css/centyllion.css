@@ -15,15 +15,11 @@
   margin: 2rem;
 }
 
-.card {
+.card.is-outlined, .media.is-outlined, .box.is-outlined {
   border-radius: 6px;
-}
-
-.is-selected {
-  border-radius: 6px;
+  border-color: #011f4b;
   border-style: solid;
-  border-width: 2px;
-  border-color: #011f4b !important;
+  border-width: 1px;
 }
 
 canvas.cent-simulation {

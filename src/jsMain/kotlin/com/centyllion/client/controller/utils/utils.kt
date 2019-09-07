@@ -10,11 +10,11 @@ fun <T> Array<T>.push(e: T): Int = asDynamic().push(e) as Int
 fun <T> Array<T>.pop(): T = asDynamic().pop() as T
 
 class DeleteCallbackProperty<T>(
+    var callback: ((T) -> Unit)? = null,
     val controller: Controller<T, *, *>,
     val deleteSetter: (old: Delete?, new: Delete?) -> Unit
 ): ReadWriteProperty<Any, ((T) -> Unit)?> {
 
-    private var callback: ((T) -> Unit)? = null
     private var delete: Delete? = null
 
     var readOnly by Delegates.observable(false) { _, old, new ->

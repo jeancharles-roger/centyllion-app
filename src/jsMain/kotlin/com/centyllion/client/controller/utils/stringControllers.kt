@@ -2,9 +2,9 @@ package com.centyllion.client.controller.utils
 
 import bulma.Button
 import bulma.Control
+import bulma.ControlElement
 import bulma.ElementColor
 import bulma.Field
-import bulma.FieldElement
 import bulma.Icon
 import bulma.Input
 import bulma.NoContextController
@@ -182,14 +182,16 @@ class EditableMarkdownController(
 
     override var data by observable(initialData) { _, old, new ->
         if (old != new) {
-            html.root.innerHTML = transform(new)
             onUpdate(old, new, this@EditableMarkdownController)
             refresh()
         }
     }
 
     override var readOnly: Boolean by observable(readOnly) { _, old, new ->
-        if (old != new) edit(false)
+        if (old != new) {
+            htmlControl.rightIcon = if (new) null else penIcon
+            edit(false)
+        }
     }
 
     val okButton: Button = iconButton(Icon("check"), ElementColor.Success) { validate() }
@@ -198,19 +200,21 @@ class EditableMarkdownController(
     val okControl = Control(okButton)
     val cancelControl = Control(cancelButton)
 
-    val penIcon = Icon("pen")
 
     val input = TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "$rows")
 
-    val inputControl = Control(this.input, expanded = true, rightIcon = if (readOnly) null else penIcon)
+    val inputControl = Control(this.input, expanded = true)
 
-    val html = object: FieldElement {
+    val html = object: ControlElement {
         override val root = document.createElement("div") as HTMLDivElement
 
         init { root.innerHTML = transform(initialData) }
     }
 
-    override val container: Field = Field(html)
+    val penIcon = Icon("pen")
+    val htmlControl = Control(html, rightIcon = if (readOnly) null else penIcon)
+
+    override val container: Field = Field(htmlControl)
 
     init {
         html.root.onclick = { edit(true) }
@@ -236,17 +240,19 @@ class EditableMarkdownController(
         input.readonly = !start
         container.addons = start
         if (start) {
-            container.body = listOfNotNull(inputControl, okControl, cancelControl)
+            input.value = this.data
+            container.body = listOf(inputControl, okControl, cancelControl)
             inputControl.rightIcon = null
             input.root.focus()
         } else {
-            container.body = listOfNotNull(html)
-            inputControl.rightIcon = if (readOnly) null else penIcon
+            html.root.innerHTML = transform(data)
+            container.body = listOf(htmlControl)
         }
     }
 
     override fun refresh() {
         input.value = data
+        html.root.innerHTML = transform(data)
     }
 
     fun validate() {
@@ -255,12 +261,11 @@ class EditableMarkdownController(
     }
 
     fun cancel() {
-        input.value = this.data
         edit(false)
     }
 
     // TODO Couldn't make it work with a field, recreate the renderer each time.
     fun transform(source: String) =
         if (source.isNotBlank()) window.asDynamic().markdownit().render(source) as String
-        else "<span class='has-text-grey-lighter'>$placeHolder</span>"
+        else "<div class='has-text-grey-lighter'>$placeHolder</div>"
 }

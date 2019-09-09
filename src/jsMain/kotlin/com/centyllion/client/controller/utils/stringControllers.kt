@@ -175,7 +175,7 @@ fun multiLineStringController(
 )
 
 class EditableMarkdownController(
-    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false, rows: Int = 4,
+    initialData: String = "", val placeHolder: String = "", readOnly: Boolean = false, rows: Int = 4,
     var onUpdate: (old: String, new: String, controller: EditableMarkdownController) -> Unit =
         { _, _, _ -> }
 ): NoContextController<String, Field>() {
@@ -260,5 +260,7 @@ class EditableMarkdownController(
     }
 
     // TODO Couldn't make it work with a field, recreate the renderer each time.
-    fun transform(source: String) = window.asDynamic().markdownit().render(source) as String
+    fun transform(source: String) =
+        if (source.isNotBlank()) window.asDynamic().markdownit().render(source) as String
+        else "<span class='has-text-grey-lighter'>$placeHolder</span>"
 }

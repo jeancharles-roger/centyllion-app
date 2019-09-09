@@ -26,9 +26,9 @@ import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.controller.model.TagsController
+import com.centyllion.client.controller.utils.EditableMarkdownController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
-import com.centyllion.client.controller.utils.multiLineStringController
 import com.centyllion.client.download
 import com.centyllion.client.homePage
 import com.centyllion.client.signInPage
@@ -94,7 +94,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val userLabel = Help()
 
-    val modelDescriptionController = multiLineStringController(model.model.description, "Description", columns = 60) { _, new, _ ->
+    val modelDescriptionController = EditableMarkdownController(model.model.description, "Description") { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
     }
 

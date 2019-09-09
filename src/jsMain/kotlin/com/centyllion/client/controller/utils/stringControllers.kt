@@ -4,12 +4,16 @@ import bulma.Button
 import bulma.Control
 import bulma.ElementColor
 import bulma.Field
+import bulma.FieldElement
 import bulma.Icon
 import bulma.Input
 import bulma.NoContextController
 import bulma.TextArea
 import bulma.TextView
 import bulma.iconButton
+import org.w3c.dom.HTMLDivElement
+import kotlin.browser.document
+import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
 /**
@@ -86,7 +90,6 @@ class EditableStringController(
     }
 
     override val container: Field = Field(inputControl)
-
 
     init {
         input.apply {
@@ -170,3 +173,92 @@ fun multiLineStringController(
     TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "$rows"),
     validateOnEnter = false, isValid = isValid, onUpdate = onUpdate
 )
+
+class EditableMarkdownController(
+    initialData: String = "", placeHolder: String = "", readOnly: Boolean = false, rows: Int = 4,
+    var onUpdate: (old: String, new: String, controller: EditableMarkdownController) -> Unit =
+        { _, _, _ -> }
+): NoContextController<String, Field>() {
+
+    override var data by observable(initialData) { _, old, new ->
+        if (old != new) {
+            html.root.innerHTML = transform(new)
+            onUpdate(old, new, this@EditableMarkdownController)
+            refresh()
+        }
+    }
+
+    override var readOnly: Boolean by observable(readOnly) { _, old, new ->
+        if (old != new) edit(false)
+    }
+
+    val okButton: Button = iconButton(Icon("check"), ElementColor.Success) { validate() }
+    val cancelButton: Button = iconButton(Icon("times"), ElementColor.Danger, rounded = true) { cancel() }
+
+    val okControl = Control(okButton)
+    val cancelControl = Control(cancelButton)
+
+    val penIcon = Icon("pen")
+
+    val input = TextArea(value = initialData, placeholder = placeHolder, readonly = true, static = true, rows = "$rows")
+
+    val inputControl = Control(this.input, expanded = true, rightIcon = if (readOnly) null else penIcon)
+
+    val html = object: FieldElement {
+        override val root = document.createElement("div") as HTMLDivElement
+
+        init { root.innerHTML = transform(initialData) }
+    }
+
+    override val container: Field = Field(html)
+
+    init {
+        html.root.onclick = { edit(true) }
+        input.apply {
+            root.onkeyup = {
+                if (!readonly) {
+                    when (it.key) {
+                        "Esc", "Escape" -> cancel()
+                    }
+                }
+            }
+            //onChange = { _, value ->  }
+            onFocus = { if (it) edit(true) else validate() }
+        }
+
+    }
+
+    fun edit(start: Boolean) {
+        // don't edit if readonly
+        if (start && readOnly) return
+
+        input.static = !start
+        input.readonly = !start
+        container.addons = start
+        if (start) {
+            container.body = listOfNotNull(inputControl, okControl, cancelControl)
+            inputControl.rightIcon = null
+            input.root.focus()
+        } else {
+            container.body = listOfNotNull(html)
+            inputControl.rightIcon = if (readOnly) null else penIcon
+        }
+    }
+
+    override fun refresh() {
+        input.value = data
+    }
+
+    fun validate() {
+        this.data = input.value
+        edit(false)
+    }
+
+    fun cancel() {
+        input.value = this.data
+        edit(false)
+    }
+
+    // TODO Couldn't make it work with a field, recreate the renderer each time.
+    fun transform(source: String) = window.asDynamic().markdownit().render(source) as String
+}

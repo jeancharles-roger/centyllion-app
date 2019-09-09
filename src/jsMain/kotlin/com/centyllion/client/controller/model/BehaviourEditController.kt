@@ -18,6 +18,7 @@ import bulma.Tag
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
+import bulma.TileSize
 import bulma.columnsController
 import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
@@ -147,7 +148,7 @@ class BehaviourEditController(
         )
     )
 
-    val reactionEditTile = TileParent(vertical = true)
+    val reactionEditTile = TileParent(size = TileSize.S1, vertical = true)
 
     val reactionsController = MultipleController<Reaction, Pair<Behaviour, GrainModel>, TileAncestor, TileParent, ReactionEditController>(
         data.reaction, data to context, reactionHeader, emptyList(),

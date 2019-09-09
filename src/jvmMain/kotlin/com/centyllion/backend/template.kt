@@ -47,6 +47,8 @@ fun HTML.centyllionHead(title: String) = head {
     script(src = "/js/threejs-r106/OrbitControls.js") {}
     script(src = "/js/threejs-r106/ColladaLoader.js") {}
     
+    script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
+
     script(src = "https://js.stripe.com/v3/") {}
 
     script(src = "/js/require.js") {}

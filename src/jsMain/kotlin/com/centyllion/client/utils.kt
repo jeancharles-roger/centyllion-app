@@ -13,6 +13,8 @@ external fun encodeURIComponent(parameter: String): String
 
 external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
 
+external fun <T, O> require(dependency: String): (O) -> T
+
 fun runWithStripe(key: String, block: (Stripe) -> Unit) =
     require<(String) -> Stripe>(arrayOf("stripe")) { block(it(key)) }
 

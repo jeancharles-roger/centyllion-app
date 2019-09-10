@@ -188,15 +188,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 simulationPage -> cloneSimulation()
             }
         } else {
-            // no user logged, propose to log in or sign in
+            // no user logged, propose to log in or register in
             val modal = modalDialog(
                 "Join Centyllion",
                 Div(p("To clone a model or a simulation, you need to be connected.")),
-                textButton("Log-In", ElementColor.Primary) {
+                textButton("Log In", ElementColor.Primary) {
                     // forces to login
                     window.location.href = appContext.keycloak.createLoginUrl()
                 },
-                textButton("Sign-In", ElementColor.Success) { appContext.openPage(signInPage) },
+                textButton("Register", ElementColor.Success) { appContext.openPage(signInPage) },
                 textButton("No, thank you")
             )
             modal.active = true

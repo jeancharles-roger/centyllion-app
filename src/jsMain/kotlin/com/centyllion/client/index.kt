@@ -72,7 +72,7 @@ fun index() {
                 )
                 navBar.end += NavBarLinkItem("Logout", keycloak.createLogoutUrl())
             } else {
-                navBar.end += NavBarLinkItem("Sign In", keycloak.createRegisterUrl())
+                navBar.end += NavBarLinkItem("Register", keycloak.createRegisterUrl())
                 navBar.end += NavBarLinkItem("Log In", keycloak.createLoginUrl())
             }
 

@@ -25,7 +25,7 @@ const val contentSelector = "section.cent-main"
 val explorePage = Page("Explore", "/", false, null, true, ::ExplorePage)
 val homePage = Page("Home", "/home", true, null, true, ::HomePage)
 val showPage = Page("Show", "/show", false, null, false, ::ShowPage)
-val signInPage = Page("Sign-In", "/signin", false, null, false, ::SignInPage)
+val signInPage = Page("Register", "/register", false, null, false, ::SignInPage)
 val subscribePage = Page("Subscribe", "/subscribe", true, null, false, ::SubscriptionPage)
 val administrationPage = Page("Administration", "/administration", true, adminRole, true, ::AdministrationPage)
 

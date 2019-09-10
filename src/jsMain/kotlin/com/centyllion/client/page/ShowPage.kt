@@ -266,7 +266,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             // if there is a model id, use it to list all simulation and take the first one
             modelId != null && modelId.isNotEmpty() ->
                 appContext.api.fetchGrainModel(modelId).then { model ->
-                    appContext.api.fetchMySimulations(model.id).then { simulations ->
+                    fetchSimulations(model.id).then { simulations ->
                         (simulations.content.firstOrNull() ?: emptySimulationDescription) to model
                     }
                 }.then { it }
@@ -294,6 +294,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         this.simulation = cleaned
         refreshButtons()
     }
+
+    fun fetchSimulations(modelId: String, limit: Int = 50) =
+        if (appContext.me != null) appContext.api.fetchMySimulations(modelId, limit = limit)
+        else appContext.api.fetchPublicSimulations(modelId, limit = limit)
 
     fun saveInitThumbnail() {
         // creates a new simulator 3d view to create an init view
@@ -496,7 +500,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteSimulation(simulation).then {
                     message("Simulation ${simulation.label} deleted")
-                    appContext.api.fetchMySimulations(model.id)
+                    fetchSimulations(model.id)
                 }.then {
                     setSimulation(it.content.firstOrNull() ?: emptySimulationDescription)
                 }
@@ -545,7 +549,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         if (model.id.isNotEmpty()) {
             moreDropdown.items = moreDropdownItems + loadingItem
 
-            appContext.api.fetchMySimulations(model.id).then {
+            fetchSimulations(model.id).then {
                 moreDropdown.items = moreDropdownItems + it.content.map { current ->
                     createMenuItem(current.label, current.icon, disabled = current == simulation) {
                         save {

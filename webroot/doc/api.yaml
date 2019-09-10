@@ -267,6 +267,12 @@ paths:
         - simulations
       parameters:
         - in: query
+          name: model
+          description: Selects only simulation for this model id
+          schema:
+            type: string
+            default: none
+        - in: query
           name: offset
           description: Offset in the result list from the overwhole list
           schema: 

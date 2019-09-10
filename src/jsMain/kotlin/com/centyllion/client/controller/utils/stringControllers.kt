@@ -11,9 +11,9 @@ import bulma.NoContextController
 import bulma.TextArea
 import bulma.TextView
 import bulma.iconButton
+import com.centyllion.client.markdownToHtml
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
-import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
 /**
@@ -264,8 +264,7 @@ class EditableMarkdownController(
         edit(false)
     }
 
-    // TODO Couldn't make it work with a field, recreate the renderer each time.
     fun transform(source: String) =
-        if (source.isNotBlank()) window.asDynamic().markdownit().render(source) as String
+        if (source.isNotBlank()) markdownToHtml(source)
         else "<div class='has-text-grey-lighter'>$placeHolder</div>"
 }

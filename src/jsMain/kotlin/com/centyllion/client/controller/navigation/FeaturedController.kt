@@ -1,6 +1,15 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.*
+import bulma.Card
+import bulma.CardContent
+import bulma.CardImage
+import bulma.Div
+import bulma.Image
+import bulma.ImageSize
+import bulma.Label
+import bulma.NoContextController
+import bulma.SubTitle
+import com.centyllion.client.markdownToHtml
 import com.centyllion.model.FeaturedDescription
 import kotlin.properties.Delegates.observable
 
@@ -13,7 +22,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
     override var readOnly = false
 
     val name = SubTitle(data.name)
-    val description = Label(data.description)
+    val description = Div().apply { root.innerHTML = markdownToHtml(data.description) }
 
     val author = Label(data.authorName)
 
@@ -31,7 +40,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
 
     override fun refresh() {
         name.text = data.name
-        description.text = data.description
+        description.root.innerHTML = markdownToHtml(data.description)
         author.text = data.authorName
         thumbnail.src = if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png"
     }

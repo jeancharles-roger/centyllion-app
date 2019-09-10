@@ -5,14 +5,15 @@ import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
 import bulma.Controller
+import bulma.Div
 import bulma.Dropdown
 import bulma.DropdownSimpleItem
 import bulma.Icon
-import bulma.Label
 import bulma.Size
 import bulma.SubTitle
 import bulma.TextColor
 import com.centyllion.client.Api
+import com.centyllion.client.markdownToHtml
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
@@ -43,7 +44,7 @@ class GrainModelFeaturedController(
     val dots = Columns(multiline = true, mobile = true).apply { columns = dotColumns() }
 
     val name = SubTitle(data.model.name)
-    val description = Label(data.model.description)
+    val description = Div().apply { root.innerHTML = markdownToHtml(model.model.description) }
 
     fun featured(simulation: SimulationDescription) = context.find {
         it.modelId == data.id && it.simulationId == simulation.id
@@ -75,6 +76,6 @@ class GrainModelFeaturedController(
     override fun refresh() {
         dots.columns = dotColumns()
         name.text = data.model.name
-        description.text = data.model.description
+        description.root.innerHTML = markdownToHtml(data.model.description)
     }
 }

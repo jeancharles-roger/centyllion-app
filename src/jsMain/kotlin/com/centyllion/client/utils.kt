@@ -8,6 +8,7 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import stripe.Stripe
 import kotlin.browser.document
+import kotlin.browser.window
 
 external fun encodeURIComponent(parameter: String): String
 
@@ -17,6 +18,9 @@ external fun <T, O> require(dependency: String): (O) -> T
 
 fun runWithStripe(key: String, block: (Stripe) -> Unit) =
     require<(String) -> Stripe>(arrayOf("stripe")) { block(it(key)) }
+
+// TODO Couldn't make it work with a val, recreate the renderer each time.
+fun markdownToHtml(source: String) = window.asDynamic().markdownit().render(source) as String
 
 fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String
 

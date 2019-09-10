@@ -43,8 +43,12 @@ infix fun ExpressionWithColumnType<Any>.fullTextSearch(t: String): Op<Boolean> {
     return FullTextSearchOp(this, ToTsQuery(wrap(t)))
 }
 
-class ToTsQuery<T : String?>(val expr: Expression<T>) : Function<T>(VarCharColumnType()) {
-    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery('pg_catalog.simple', ${expr.toSQL(queryBuilder)})"
+infix fun ExpressionWithColumnType<Any>.fullTextSearchEnglish(t: String): Op<Boolean> {
+    return FullTextSearchOp(this, ToTsQuery(wrap(t), "pg_catalog.english"))
+}
+
+class ToTsQuery<T : String?>(val expr: Expression<T>, val dictionary: String = "pg_catalog.simple") : Function<T>(VarCharColumnType()) {
+    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery('$dictionary', ${expr.toSQL(queryBuilder)})"
 }
 
 class SqlData(
@@ -322,7 +326,7 @@ class SqlData(
         .innerJoin(DbDescriptionInfos)
         .select {
             val q = if (query.isNotBlank()) "$query:*" else ""
-            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearch q)
+            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearchEnglish q)
         }
 
 
@@ -346,7 +350,7 @@ class SqlData(
     }
 
     private fun searchModelQuery(query: String, tags: List<String>) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-        val op = if (query.isNotBlank()) DbModelDescriptions.searchable fullTextSearch "$query:*" else null
+        val op = if (query.isNotBlank()) DbModelDescriptions.searchable fullTextSearchEnglish "$query:*" else null
         (tags.map { DbModelDescriptions.tags_searchable fullTextSearch it } + op)
             .filterNotNull()
             .fold(DbDescriptionInfos.readAccess eq true) {a, c -> a and c }

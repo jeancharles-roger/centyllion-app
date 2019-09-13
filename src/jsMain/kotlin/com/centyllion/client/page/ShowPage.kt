@@ -31,7 +31,7 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.homePage
-import com.centyllion.client.signInPage
+import com.centyllion.client.register
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.common.adminRole
@@ -196,7 +196,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     // forces to login
                     window.location.href = appContext.keycloak.createLoginUrl()
                 },
-                textButton("Register", ElementColor.Success) { appContext.openPage(signInPage) },
+                textButton("Register", ElementColor.Success) { appContext.openPage(register) },
                 textButton("No, thank you")
             )
             modal.active = true

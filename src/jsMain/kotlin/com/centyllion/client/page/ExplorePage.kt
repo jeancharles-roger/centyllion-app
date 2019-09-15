@@ -102,7 +102,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
 
     val search = Field(Control(searchInput, Icon("search"), expanded = true), Control(clearSearch), addons = true)
 
-    val tagsController: TagsController = TagsController("", appContext.api) { old, new, _ ->
+    val tagsController: TagsController = TagsController("", appContext) { old, new, _ ->
         if (old != new) searchedModelResult.refreshFetch()
     }
 

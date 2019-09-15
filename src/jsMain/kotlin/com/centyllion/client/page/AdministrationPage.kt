@@ -61,11 +61,11 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         }
 
     val featuredColumns = Columns(
-        Column(SubTitle("Featured models"), featuredController, size = ColumnSize.Half),
-        Column(SubTitle("Public models"), publicModelsController, size = ColumnSize.Half)
+        Column(SubTitle(i18n("Featured models")), featuredController, size = ColumnSize.Half),
+        Column(SubTitle(i18n("Public models")), publicModelsController, size = ColumnSize.Half)
     )
 
-    val featuredPage = TabPage(TabItem("Featured", "star"), featuredColumns)
+    val featuredPage = TabPage(TabItem(i18n("Featured"), "star"), featuredColumns)
 
     val usersPageController = ResultPageController(
         noContextColumnsController(emptyList()) { data, previous ->
@@ -75,9 +75,9 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )
 
-    val userPage = TabPage(TabItem("Users", "user"), usersPageController)
+    val userPage = TabPage(TabItem(i18n("Users"), "user"), usersPageController)
 
-    val assetInput: FileInput = FileInput("Asset") { input, files ->
+    val assetInput: FileInput = FileInput(i18n("Asset")) { input, files ->
         val file = files?.get(0)
         input.fileName = file?.name ?: ""
         assetSend.disabled = file == null
@@ -85,7 +85,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val assetSend = Button(
-        "Send", Icon("upload"), ElementColor.Primary, rounded = true, disabled = true
+        i18n("Send"), Icon("upload"), ElementColor.Primary, rounded = true, disabled = true
     ) { button ->
         button.disabled = true
         button.loading = true
@@ -94,7 +94,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
                 .then {
                     button.loading = false
                     assetsPageController.refreshFetch()
-                    assetSendResult.text = "Asset created with id $it."
+                    assetSendResult.text = i18n("Asset created with id %0.", it)
                 }
                 .catch {
                     button.loading = false
@@ -115,7 +115,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     )
 
     val assetPage = TabPage(
-        TabItem("Assets", "file-code"),
+        TabItem(i18n("Assets"), "file-code"),
         Div(Level(center = listOf(assetInput, assetSend, assetSendResult)), assetsPageController)
     )
 

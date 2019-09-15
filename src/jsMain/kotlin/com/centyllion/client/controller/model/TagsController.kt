@@ -17,11 +17,11 @@ import bulma.Tag
 import bulma.Tags
 import bulma.TagsSize
 import bulma.iconButton
-import com.centyllion.client.Api
+import com.centyllion.client.AppContext
 import kotlin.properties.Delegates.observable
 
 class TagsController(
-    tags: String, api: Api,
+    tags: String, appContext: AppContext,
     var onUpdate: (old: String, new: String, controller: TagsController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, BulmaElement>() {
 
@@ -46,7 +46,7 @@ class TagsController(
 
     val tagsContainer = Tags(size = TagsSize.Normal)
 
-    val input: Input = Input(value = "", placeholder = "New tag", rounded = true) { _, value ->
+    val input: Input = Input(value = "", placeholder = appContext.i18n("New tag"), rounded = true) { _, value ->
         addTagButton.disabled = value.isBlank() || data.matches("\\b${value.trim()}\\b")
     }
 
@@ -61,10 +61,10 @@ class TagsController(
         addons = true
     )
 
-    val popularLabel = Help("Popular")
+    val popularLabel = Help(appContext.i18n("Popular"))
 
     val popularTags = Tags().apply {
-        api.modelTags().then {
+        appContext.api.modelTags().then {
             this.tags = it.content.take(5)
                 .map { tag ->
                     Tag(tag, rounded = true, color = ElementColor.Info).apply {
@@ -76,7 +76,7 @@ class TagsController(
     }
 
     override val container = Level(
-        center = listOf(Label("Tags"), tagsContainer, addTagField, popularLabel, popularTags)
+        center = listOf(Label(appContext.i18n("Tags")), tagsContainer, addTagField, popularLabel, popularTags)
     )
 
     override fun refresh() {

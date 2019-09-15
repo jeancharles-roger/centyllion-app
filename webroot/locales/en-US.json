@@ -1,6 +1,7 @@
 {
   "name": "en-US",
   "translations": {
+
     "by %0": "by %0",
     "by me": "by me",
     "Model": "Model",
@@ -42,6 +43,22 @@
     "You're about to quit the page and some modifications haven't been saved.": "You're about to quit the page and some modifications haven't been saved.",
     "Don't save": "Don't save",
     "Stay here": "Stay here",
+
+    "My models and simulations": "My models and simulations",
+    "My Recent simulation": "My Recent simulation",
+
+    "Featured models": "Featured models",
+    "Public models": "Public models",
+    "Featured": "Featured",
+    "Users": "Users",
+    "Asset": "Asset",
+    "Assets": "Assets",
+    "Send": "Send",
+    "Asset created with id %0.": "Asset created with id %0.",
+
+    "New tag": "New tag",
+    "Tags": "Tags",
+    "Popular": "Popular",
 
     "Subscription %0 created": "Subscription %0 created"
   }

@@ -63,11 +63,11 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
 
     val userController = MeController(appContext)
 
-    val searchInput = Input("", "Search", size = Size.Small) { _, _ ->
+    val searchInput = Input("", i18n("Search"), size = Size.Small) { _, _ ->
         updateElements()
     }
 
-    val newModelButton = Button("Model", Icon("plus"), ElementColor.Link, size = Size.Small) {
+    val newModelButton = Button(i18n("Model"), Icon("plus"), ElementColor.Link, size = Size.Small) {
         appContext.openPage(showPage)
     }
 
@@ -85,7 +85,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
     }
 
     val panelController = noContextPanelController(
-        Panel("My models and simulations"), emptyList<Description>(),
+        Panel(i18n("My models and simulations")), emptyList<Description>(),
         header = listOfNotNull(
             PanelContentBlock(Control(newModelButton)),
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
@@ -132,8 +132,8 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         Column(panelController, size = ColumnSize.OneThird),
         Column(
             userController,
-            Title("My Recent simulation"), recentSimulationResult,
-            Title("Featured models"), featuredResult,
+            Title(i18n("My Recent simulation")), recentSimulationResult,
+            Title(i18n("Featured models")), featuredResult,
             size = ColumnSize.TwoThirds
         )
     )

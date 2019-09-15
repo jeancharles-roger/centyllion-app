@@ -1,0 +1,24 @@
+{
+  "name": "en-US",
+  "translations": {
+    "by %0": "by %0",
+    "by me": "by me",
+    "Model": "Model",
+    "Simulation": "Simulation",
+    "Model Name": "Model Name",
+    "Simulation Name": "Simulation Name",
+    "Description": "Description",
+    "Clone": "Clone",
+    "Save": "Save",
+    "Publish Model": "Publish Model",
+    "Un-Publish Model": "Publish Model",
+    "Publish Simulation": "Publish Simulation",
+    "Un-Publish Simulation": "Publish Simulation",
+    "Delete Model": "Delete Model",
+    "Delete Simulation": "Delete Simulation",
+    "New Simulation": "New Simulation",
+    "Save state as Thumbnail": "Save state as Thumbnail",
+    "Download Model": "Download Model",
+    "Download Simulation": "Download Simulation"
+  }
+}

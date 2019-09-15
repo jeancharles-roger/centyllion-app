@@ -10,6 +10,7 @@ import bulma.NavBarLinkItem
 import bulma.Position
 import bulma.span
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.i18n.Locale
 import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
@@ -28,23 +29,78 @@ interface CssFile {
     val files: Array<String>
 }
 
+fun createNavBar() = NavBar(
+    brand = listOf(
+        NavBarImageItem(
+            "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
+        ).apply { imgNode.style.maxHeight = "2rem" }
+    ),
+    end = listOf(
+        NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),
+        NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")
+    ),
+    transparent = true, color = ElementColor.Primary
+)
+
+fun startApp(page: Page?, context: AppContext) {
+    val keycloak = context.keycloak
+    val navBar = context.navBar
+
+    // updates login link
+    if (keycloak.tokenParsed != null) {
+        val token = keycloak.tokenParsed.asDynamic()
+        navBar.end += NavBarLinkItem(
+            token.name as String? ?: token.preferred_username as String ?: "Not named",
+            keycloak.createAccountUrl()
+        )
+        navBar.end += NavBarLinkItem("Logout", keycloak.createLogoutUrl())
+    } else {
+        navBar.end += NavBarLinkItem("Register", keycloak.createRegisterUrl())
+        navBar.end += NavBarLinkItem("Log In", keycloak.createLoginUrl())
+    }
+
+    // listens to pop state
+    window.addEventListener("popstate", {
+        findPageInUrl()?.let { context.openPage(it, register = false) }
+    })
+
+    // adds menu
+    context.navBar.start = pages
+        .filter { it.header && it.authorized(context) }
+        .map { NavBarLinkItem(it.title, id = it.id) { _ -> context.openPage(it) } }
+
+    showInfo(context)
+
+    // shows version
+    showVersion(context.api)
+
+    console.log("Starting function")
+
+    val selectedPage = page ?: if (context.me != null) homePage else explorePage
+    context.openPage(selectedPage, register = false)
+}
+
+fun appendErrorMessage(root: HTMLElement, throwable: Throwable) {
+    fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
+    findCause(throwable).let {
+        appendErrorMessage(root, it.message ?: "")
+        console.error(it.asDynamic().stack)
+    }
+}
+
+fun appendErrorMessage(root: HTMLElement, message: String) {
+    root.appendChild(
+        Message(
+            listOf(span("Error")),
+            listOf(span(message)),
+            color = ElementColor.Danger
+        ).root
+    )
+    console.error("Error: $message")
+}
+
 @JsName("index")
 fun index() {
-    // creates nav bar and adds it to body
-    val navBar = NavBar(
-        brand = listOf(
-            NavBarImageItem(
-                "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
-            ).apply { imgNode.style.maxHeight = "2rem" }
-        ),
-        end = listOf(
-            NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),
-            NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")
-        ),
-        transparent = true, color = ElementColor.Primary
-    )
-    document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
-
     val root = document.querySelector(contentSelector) as HTMLElement
 
     // creates keycloak instance
@@ -53,62 +109,30 @@ fun index() {
     val api = Api(keycloak)
     api.addCss()
 
-    val page = findPageInUrl()
-    val options = KeycloakInitOptions(
-        promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
-    )
-    keycloak.init(options)
-        .then { _ -> api.fetchMe() }
-        .then { user ->
-            // creates context
-            val context = BrowserContext(navBar, keycloak, user, api)
+    api.fetchLocales().then {
+        val localeName = it.resolve(window.navigator.language)
+        console.log("Loading locale $localeName for ${window.navigator.language}")
+        api.fetchLocale(localeName).then { locale ->
 
-            // updates login link
-            if (keycloak.tokenParsed != null) {
-                val token = keycloak.tokenParsed.asDynamic()
-                navBar.end += NavBarLinkItem(
-                    token.name as String? ?: token.preferred_username as String ?: "Not named",
-                    keycloak.createAccountUrl()
-                )
-                navBar.end += NavBarLinkItem("Logout", keycloak.createLogoutUrl())
-            } else {
-                navBar.end += NavBarLinkItem("Register", keycloak.createRegisterUrl())
-                navBar.end += NavBarLinkItem("Log In", keycloak.createLoginUrl())
-            }
+            val navBar = createNavBar()
+            document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
-            // listens to pop state
-            window.addEventListener("popstate", {
-                findPageInUrl()?.let { context.openPage(it, register = false) }
-            })
+            val page = findPageInUrl()
+            val options = KeycloakInitOptions(
+                promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
+            )
+            keycloak.init(options)
+                .then { _ -> api.fetchMe() }
+                .then { user ->
+                    // creates context
+                    val context = BrowserContext(locale, navBar, keycloak, user, api)
+                    startApp(page, context)
 
-            // adds menu
-            context.navBar.start = pages
-                .filter { page -> page.header && page.authorized(context) }
-                .map { page -> NavBarLinkItem(page.title, id = page.id) { context.openPage(page) } }
+                }.catch { appendErrorMessage(root, it) }
 
-            showInfo(context)
+        }.catch { appendErrorMessage(root, "Locale file for $localeName couldn't be loaded") }
 
-            // shows version
-            showVersion(context.api)
-
-            console.log("Starting function")
-
-            val selectedPage = page ?: if (user != null) homePage else explorePage
-            context.openPage(selectedPage, register = false)
-        }.catch {
-            fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
-            findCause(it).let {
-                root.appendChild(Message(
-                    listOf(span("Error")),
-                    listOf(span(it.message ?: "")),
-                    color = ElementColor.Danger
-                ).root)
-                console.error("Error on initialize")
-                console.error(it.asDynamic().stack)
-            }
-
-
-        }
+    }.catch {appendErrorMessage(root, "Locales file couldn't be loaded") }
 }
 
 /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
@@ -117,7 +141,7 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters
         // sets parameters
         val params = URLSearchParams(if (clearParameters) "" else location.search)
         parameters.forEach { params.set(it.key, it.value) }
-        val currentPage = if (page != null) page else pages.find { it.id == location.pathname }
+        val currentPage = page ?: pages.find { it.id == location.pathname }
 
         // registers page to history if needed
         if (register) {
@@ -131,6 +155,7 @@ fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters
 fun findPageInUrl(): Page? = pages.find { it.id == window.location.pathname }
 
 class BrowserContext(
+    override val locale: Locale,
     override val navBar: NavBar,
     override val keycloak: KeycloakInstance,
     override val me: User?,
@@ -148,7 +173,9 @@ class BrowserContext(
 
     override val events: List<ClientEvent> get() = storedEvents
 
-    override fun notify(event: ClientEvent) { storedEvents.add(event) }
+    override fun notify(event: ClientEvent) {
+        storedEvents.add(event)
+    }
 
     /** Open the given [page] */
     override fun openPage(page: Page, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
@@ -185,11 +212,13 @@ class BrowserContext(
                         root.appendChild(it.root)
                     }
                 } else {
-                    root.appendChild(Message(
-                        listOf(span("Error")),
-                        listOf(span("You are not authorized to access this page")),
-                        color = ElementColor.Danger
-                    ).root)
+                    root.appendChild(
+                        Message(
+                            listOf(span("Error")),
+                            listOf(span("You are not authorized to access this page")),
+                            color = ElementColor.Danger
+                        ).root
+                    )
                 }
             }
         }

@@ -2,6 +2,7 @@ package com.centyllion.client
 
 import bulma.ElementColor
 import bulma.NavBar
+import com.centyllion.i18n.Locale
 import com.centyllion.model.User
 import keycloak.KeycloakInstance
 import threejs.extra.core.Font
@@ -15,6 +16,8 @@ data class ClientEvent(
 
 interface AppContext {
 
+    val locale: Locale
+
     val navBar: NavBar
 
     val keycloak: KeycloakInstance
@@ -26,6 +29,8 @@ interface AppContext {
     val api: Api
 
     val stripeKey: String
+
+    fun localize(key: String, vararg parameters: String) = locale.localize(key, *parameters)
 
     fun getFont(path: String): Promise<Font>
 

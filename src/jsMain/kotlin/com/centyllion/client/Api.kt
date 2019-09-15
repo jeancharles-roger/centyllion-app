@@ -1,5 +1,7 @@
 package com.centyllion.client
 
+import com.centyllion.i18n.Locale
+import com.centyllion.i18n.Locales
 import com.centyllion.model.Asset
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
@@ -28,6 +30,24 @@ import kotlin.js.Promise
 const val finalState: Short = 4
 const val successStatus: Short = 200
 
+fun fetchUrl(method: String, url: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
+    Promise { resolve, reject ->
+        val request = XMLHttpRequest()
+        request.open(method, url, true)
+        bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
+        contentType?.let { request.setRequestHeader("Content-Type", it) }
+        request.onreadystatechange = {
+            if (request.readyState == finalState) {
+                if (request.status == successStatus) {
+                    resolve(request.responseText)
+                } else {
+                    reject(Throwable("Can't $method '$url': (${request.status}) ${request.statusText}"))
+                }
+            }
+        }
+        request.send(content)
+    }
+
 class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     val json = Json(JsonConfiguration.Companion.Stable)
@@ -43,8 +63,10 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     fun url(path: String) = "$baseUrl$path"
 
-    fun fetch(method: String, path: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
-        Promise { resolve, reject ->
+    fun fetch(
+        method: String, path: String, bearer: String? = null,
+        content: dynamic = null, contentType: String? = "application/json"
+    ): Promise<String> = Promise { resolve, reject ->
             val request = XMLHttpRequest()
             request.open(method, url(path), true)
             bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
@@ -73,6 +95,12 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     fun fetchInfo() =
         fetch("GET", "/api/info").then { json.parse(Info.serializer(), it) }
+
+    fun fetchLocales() =
+        fetch("GET", "/locales/locales.json").then { json.parse(Locales.serializer(), it) }
+
+    fun fetchLocale(locale: String) =
+        fetch("GET", "/locales/$locale.json").then { json.parse(Locale.serializer(), it) }
 
     fun fetchMe(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->

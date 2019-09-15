@@ -14,6 +14,7 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.asList
 import org.w3c.dom.get
 import kotlin.browser.document
+import kotlin.browser.window
 import kotlin.js.Promise
 
 @JsName("external")
@@ -24,7 +25,6 @@ fun external(baseUrl: String = "https://app.centyllion.com") {
     val keycloak = Keycloak()
     val api = Api(keycloak, baseUrl)
     api.addCss()
-
 
     // TODO Keycloak isn't initialized yet
     // val options = KeycloakInitOptions(promiseType = "native", onLoad = "check-sso", timeSkew = 10)
@@ -44,14 +44,22 @@ fun external(baseUrl: String = "https://app.centyllion.com") {
                 else -> Promise.resolve(emptySimulationDescription to emptyGrainModelDescription)
             }
 
+            val locale = api.fetchLocales().then {
+                val localeName = it.resolve(window.navigator.language)
+                console.log("Loading locale $localeName")
+                api.fetchLocale(localeName)
+            }.then { it }
+
             result.then {
-                // creates context
-                val page = object : BulmaPage {
-                    override val appContext = BrowserContext(NavBar(), keycloak, null, api)
-                    override val root: HTMLElement = container
+                locale.then {locale ->
+                    // creates context
+                    val page = object : BulmaPage {
+                        override val appContext = BrowserContext(locale, NavBar(), keycloak, null, api)
+                        override val root: HTMLElement = container
+                    }
+                    val simulatorView = SimulationRunController(it.first.simulation, it.second.model, page, true)
+                    container.append(simulatorView.root)
                 }
-                val simulatorView = SimulationRunController(it.first.simulation, it.second.model, page, true)
-                container.append(simulatorView.root)
             }.catch {
                 val message = Message(
                     header = listOf(Title("Error")),

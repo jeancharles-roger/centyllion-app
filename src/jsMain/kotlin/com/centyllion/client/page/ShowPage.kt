@@ -71,8 +71,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelController.data = new.model
             modelNameController.readOnly = readonly
             modelNameController.data = new.model.name
-            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else "me" } ?: "me"
-            userLabel.text = "by $user"
+            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
+            userLabel.text = user?.let { appContext.localize("by %0", it) } ?: appContext.localize("by me")
 
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description

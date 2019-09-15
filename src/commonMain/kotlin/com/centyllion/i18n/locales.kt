@@ -1,6 +1,7 @@
 package com.centyllion.i18n
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class Locales(
@@ -20,7 +21,15 @@ class Locale(
     val name: String,
     private val translations: Map<String, String>
 ) {
+    @Transient
+    val parameterRegex = Regex("%([0-9]+)")
 
-    fun localize(key: String, vararg parameters: String) = translations[key] ?: key
+    fun i18n(key: String, vararg parameters: Any): String {
+        val result = translations[key]
+        if (result == null) println("Translation missing for '$key' in $name")
+        return parameterRegex.replace(result ?: key) {
+            it.groups[1]?.value?.toIntOrNull()?.let { parameters[it].toString() } ?: "%$it"
+        }
+    }
 
 }

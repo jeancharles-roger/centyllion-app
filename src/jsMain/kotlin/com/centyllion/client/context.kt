@@ -30,7 +30,7 @@ interface AppContext {
 
     val stripeKey: String
 
-    fun localize(key: String, vararg parameters: String) = locale.localize(key, *parameters)
+    fun i18n(key: String, vararg parameters: String) = locale.i18n(key, *parameters)
 
     fun getFont(path: String): Promise<Font>
 

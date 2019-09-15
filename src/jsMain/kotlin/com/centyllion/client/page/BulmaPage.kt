@@ -40,6 +40,8 @@ interface BulmaPage : BulmaElement {
 
     fun onExit(): Promise<Boolean> = Promise.resolve(true)
 
+    fun i18n(key: String, vararg parameters: Any) = appContext.locale.i18n(key, *parameters)
+
     fun error(throwable: Throwable) {
         fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
         findCause(throwable).let {
@@ -48,11 +50,11 @@ interface BulmaPage : BulmaElement {
         }
     }
 
-    fun error(content: String) = event(content, ElementColor.Danger)
+    fun error(content: String, vararg parameters: Any) = event(appContext.locale.i18n(content, *parameters), ElementColor.Danger)
 
-    fun warning(content: String) = event(content, ElementColor.Warning)
+    fun warning(content: String, vararg parameters: Any) = event(appContext.locale.i18n(content, *parameters), ElementColor.Warning)
 
-    fun message(content: String) = event(content, ElementColor.Info)
+    fun message(content: String, vararg parameters: Any) = event(appContext.locale.i18n(content, *parameters), ElementColor.Info)
 
     private fun event(content: String, color: ElementColor) {
         val date = Date().toISOString()

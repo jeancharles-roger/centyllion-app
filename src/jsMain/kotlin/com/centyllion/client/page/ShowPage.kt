@@ -72,7 +72,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelNameController.readOnly = readonly
             modelNameController.data = new.model.name
             val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
-            userLabel.text = user?.let { appContext.localize("by %0", it) } ?: appContext.localize("by me")
+            userLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
 
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
@@ -88,13 +88,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
-    val modelNameController = EditableStringController(model.model.name, "Model Name") { _, new, _ ->
+    val modelNameController = EditableStringController(model.model.name, i18n("Model Name")) { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
     }
 
     val userLabel = Help()
 
-    val modelDescriptionController = EditableMarkdownController(model.model.description, "Description") { _, new, _ ->
+    val modelDescriptionController = EditableMarkdownController(model.model.description, i18n("Description")) { _, new, _ ->
         model = model.copy(model = model.model.copy(description = new))
     }
 
@@ -123,48 +123,48 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
-            message("Updates speed for ${behaviour.name} to ${speed.toFixed()}")
+            message("Updates speed for %0 to %1", behaviour.name, speed.toFixed())
             val newBehaviour = behaviour.copy(probability = speed)
             model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
         },
         { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
     )
 
-    val saveButton = Button("Save", Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
+    val saveButton = Button(i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
 
     val publishModelItem = createMenuItem(
-        "Publish Model", "share-square", TextColor.Success, creatorRole
+        i18n("Publish Model"), "share-square", TextColor.Success, creatorRole
     ) { toggleModelPublication() }
 
     val publishSimulationItem = createMenuItem(
-        "Publish Simulation", "share-square", TextColor.Success, creatorRole
+        i18n("Publish Simulation"), "share-square", TextColor.Success, creatorRole
     ) { toggleSimulationPublication() }
 
     val deleteModelItem = createMenuItem(
-        "Delete Model", "trash", TextColor.Danger
+        i18n("Delete Model"), "trash", TextColor.Danger
     ) { deleteModel() }
 
     val deleteSimulationItem = createMenuItem(
-        "Delete Simulation", "trash", TextColor.Danger
+        i18n("Delete Simulation"), "trash", TextColor.Danger
     ) { deleteSimulation() }
 
     val downloadModelItem = createMenuItem(
-        "Download Model", "download", TextColor.Primary, adminRole
+        i18n("Download Model"), "download", TextColor.Primary, adminRole
     ) { downloadModel() }
 
     val newSimulationItem = createMenuItem(
-        "New Simulation", "plus", TextColor.Primary
+        i18n("New Simulation"), "plus", TextColor.Primary
     ) { newSimulation() }
 
     val saveThumbnailItem = createMenuItem(
-        "Save state as thumbnail", "image", TextColor.Primary, creatorRole
+        i18n("Save state as thumbnail"), "image", TextColor.Primary, creatorRole
     ) { saveCurrentThumbnail() }
 
     val downloadSimulationItem = createMenuItem(
-        "Download Simulation", "download", TextColor.Primary, adminRole
+        i18n("Download Simulation"), "download", TextColor.Primary, adminRole
     ) { downloadSimulation() }
 
-    val loadingItem = createMenuItem("Loading simulations", "spinner").apply { itemIcon.spin = true }
+    val loadingItem = createMenuItem(i18n("Loading simulations"), "spinner").apply { itemIcon.spin = true }
 
     val moreDropdownItems = listOfNotNull(
         publishModelItem, publishSimulationItem, createMenuDivider(),
@@ -178,7 +178,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { refreshMoreButtons() }
 
     val cloneButton = Button(
-        "Clone", Icon("clone"), ElementColor.Primary,
+        i18n("Clone"), Icon("clone"), ElementColor.Primary,
         rounded = true, outlined = true
     ) {
         if (appContext.me != null) {
@@ -203,8 +203,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    val modelPage = TabPage(TabItem("Model", "boxes"), modelController)
-    val simulationPage = TabPage(TabItem("Simulation", "play"), simulationController)
+    val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
+    val simulationPage = TabPage(TabItem(i18n("Simulation"), "play"), simulationController)
 
     val undoControl = Control(modelUndoRedo.undoButton)
     val redoControl = Control(modelUndoRedo.redoButton)
@@ -328,7 +328,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 }.then { newSimulation ->
                     setSimulation(newSimulation)
                     saveInitThumbnail()
-                    message("Model ${model.model.name} and simulation ${simulation.simulation.name} saved")
+                    message("Model %0 and simulation %1 saved", model.model.name, simulation.simulation.name)
                     after()
                     Unit
                 }.catch {
@@ -341,7 +341,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             if (needModelSave) {
                 api.updateGrainModel(model).then {
                     setModel(model)
-                    message("Model ${model.model.name} saved")
+                    message("Model %0 saved", model.model.name)
                     Unit
                 }.catch {
                     this.error(it)
@@ -356,7 +356,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
                         setSimulation(newSimulation)
                         saveInitThumbnail()
-                        message("Simulation ${simulation.simulation.name} saved")
+                        message("Simulation %0 saved", simulation.simulation.name)
                         after()
                         Unit
                     }.catch {
@@ -369,7 +369,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         setSimulation(simulation)
                         saveInitThumbnail()
                         refreshButtons()
-                        message("Simulation ${simulation.simulation.name} saved")
+                        message("Simulation %0 saved", simulation.simulation.name)
                         after()
                         Unit
                     }.catch {
@@ -471,15 +471,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown.active = false
 
         val modal = modalDialog(
-            "Delete model, Are you sure ?",
+            i18n("Delete model, Are you sure ?"),
             Div(
-                p("You're about to delete the model '${model.label}' and its simulations."),
-                p("This action can't be undone.", "has-text-weight-bold")
+                p(i18n("You're about to delete the model '%0' and its simulations.", model.label)),
+                p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteGrainModel(model).then {
                     appContext.openPage(homePage)
-                    message("Model ${model.label} deleted")
+                    message("Model %0 deleted", model.label)
                 }
             },
             textButton("No")
@@ -492,14 +492,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown.active = false
 
         val modal = modalDialog(
-            "Delete simulation, Are you sure ?",
+            i18n("Delete simulation, Are you sure ?"),
             Div(
-                p("You're about to delete the simulation '${simulation.label}'."),
-                p("This action can't be undone.", "has-text-weight-bold")
+                p(i18n("You're about to delete the simulation '%0'.)", simulation.label)),
+                p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
             textButton("Yes", ElementColor.Danger) {
                 appContext.api.deleteSimulation(simulation).then {
-                    message("Simulation ${simulation.label} deleted")
+                    message("Simulation %0 deleted", simulation.label)
                     fetchSimulations(model.id)
                 }.then {
                     setSimulation(it.content.firstOrNull() ?: emptySimulationDescription)
@@ -567,13 +567,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     override fun onExit() = Promise<Boolean> { resolve, _ ->
         if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
-            val model = modalDialog("Modifications not saved, Do you wan't to save ?",
-                p("You're about to quit the page and some modifications haven't been saved."),
-                textButton("Save", ElementColor.Success) {
+            val model = modalDialog(i18n("Modifications not saved, Do you wan't to save ?"),
+                p(i18n("You're about to quit the page and some modifications haven't been saved.")),
+                textButton(i18n("Save"), ElementColor.Success) {
                     save { resolve(true) }
                 },
-                textButton("Don't save", ElementColor.Danger) { resolve(true) },
-                textButton("Stay here") { resolve(false) }
+                textButton(i18n("Don't save"), ElementColor.Danger) { resolve(true) },
+                textButton(i18n("Stay here")) { resolve(false) }
             )
             model.active = true
         } else {

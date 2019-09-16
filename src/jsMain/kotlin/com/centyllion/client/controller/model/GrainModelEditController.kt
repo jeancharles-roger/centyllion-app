@@ -55,19 +55,19 @@ class GrainModelEditController(
     }
 
     val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        val field = data.newField()
+        val field = data.newField(page.i18n("Field"))
         this.data = data.copy(fields = data.fields + field)
         edited = field
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        val grain = data.newGrain()
+        val grain = data.newGrain(page.i18n("Grain"))
         this.data = data.copy(grains = data.grains + grain)
         edited = grain
     }
 
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
-        val behaviour = Behaviour()
+        val behaviour = data.newBehaviour(page.i18n("Behaviour"))
         this.data = data.copy(behaviours = data.behaviours + behaviour)
         edited = behaviour
     }

@@ -262,7 +262,7 @@ data class GrainModel(
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
-    fun availableGrainName(prefix: String = "grain"): String = availableName(grains.map(Grain::name), prefix)
+    fun availableGrainName(prefix: String = "Grain"): String = availableName(grains.map(Grain::name), prefix)
 
     fun availableGrainId(): Int = availableId(grains.map(Grain::id))
 
@@ -270,7 +270,7 @@ data class GrainModel(
 
     fun grainIndex(grain: Grain) = grains.identityFirstIndexOf(grain)
 
-    fun newGrain() = Grain(availableGrainId(), availableGrainName(), availableColor())
+    fun newGrain(prefix: String = "Grain") = Grain(availableGrainId(), availableGrainName(prefix), availableColor())
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
         val grainIndex = grainIndex(old)
@@ -310,9 +310,9 @@ data class GrainModel(
 
     fun availableFieldId(): Int = availableId(fields.map(Field::id))
 
-    fun availableFieldName(prefix: String = "field"): String = availableName(fields.map(Field::name), prefix)
+    fun availableFieldName(prefix: String = "Field"): String = availableName(fields.map(Field::name), prefix)
 
-    fun newField() = Field(availableFieldId(), availableFieldName(), availableColor())
+    fun newField(prefix: String = "Field") = Field(availableFieldId(), availableFieldName(prefix), availableColor())
 
     fun fieldIndex(field: Field) = fields.identityFirstIndexOf(field)
 
@@ -347,6 +347,10 @@ data class GrainModel(
 
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
+
+    fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(fields.map(Field::name), prefix)
+
+    fun newBehaviour(prefix: String = "Behaviour") = Behaviour(availableBehaviourName(prefix))
 
     fun behaviourIndex(behaviour: Behaviour) = behaviours.identityFirstIndexOf(behaviour)
 

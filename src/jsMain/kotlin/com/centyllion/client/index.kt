@@ -15,12 +15,9 @@ import com.centyllion.model.User
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
-import kotlinx.io.IOException
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
-import threejs.extra.core.Font
-import threejs.loaders.FontLoader
 import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.Promise
@@ -147,8 +144,6 @@ class BrowserContext(
 
     override val stripeKey = "pk_test_aPFW9HKhSHLmczJtGWW0Avdh00m1Ki47LU"
 
-    private val fontCache: MutableMap<String, Font> = mutableMapOf()
-
     private var content: BulmaPage? = null
     private var currentPage: Page? = null
 
@@ -224,14 +219,4 @@ class BrowserContext(
         }
     }
 
-    override fun getFont(path: String): Promise<Font> = Promise { resolve, reject ->
-        val font = fontCache[path]
-        if (font != null) resolve(font)
-
-        FontLoader().load(api.url(path),
-            { fontCache[path] = it; resolve(it) },
-            {},
-            { reject(IOException("${it.message}: ${it.filename}")) }
-        )
-    }
 }

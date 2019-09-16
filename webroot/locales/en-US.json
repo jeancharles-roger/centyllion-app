@@ -87,6 +87,30 @@
     "Tags": "Tags",
     "Popular": "Popular",
 
+    "Select a element to edit it": "Select a element to edit it",
+    "Field": "Field",
+    "Fields": "Fields",
+    "Grain": "Grain",
+    "Grains": "Grains",
+    "Behaviour": "Behaviour",
+    "Behaviours": "Behaviours",
+    "Name": "Name",
+    "Speed": "Speed",
+    "Half-life": "Half-life",
+    "Movement": "Movement",
+    "Productions": "Productions",
+    "Influences": "Influences",
+    "Permeability": "Permeability",
+    "Size": "Size",
+    "Reactives": "Reactives",
+    "Directions": "Directions",
+    "Products": "Products",
+    "Sources": "Sources",
+    "Field thresholds": "Field thresholds",
+    "Field influences": "Field influences",
+    "When age": "When age",
+    "Reactions": "Reactions",
+
     "Subscription %0 created.": "Subscription %0 created."
   }
 }

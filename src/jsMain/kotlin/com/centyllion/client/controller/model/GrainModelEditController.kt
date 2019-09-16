@@ -16,6 +16,7 @@ import bulma.columnsController
 import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
@@ -23,7 +24,7 @@ import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
-    model: GrainModel,
+    model: GrainModel, val page: BulmaPage,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
@@ -107,7 +108,7 @@ class GrainModelEditController(
             }
         }
 
-    val emptyEditor = SubTitle("Select a element to edit it")
+    val emptyEditor = SubTitle(page.i18n("Select a element to edit it"))
         .also { it.root.classList.add("has-text-centered") }
 
     val editorColumn = Column(emptyEditor, size = ColumnSize.TwoThirds)
@@ -127,13 +128,13 @@ class GrainModelEditController(
     var edited: Any? by observable<Any?>(null) { _, previous, current ->
         if (previous !== current) {
             editorController = when (current) {
-                is Field -> FieldEditController(current) { old, new, _ ->
+                is Field -> FieldEditController(current, page) { old, new, _ ->
                     data = data.updateField(old, new)
                 }
-                is Grain -> GrainEditController(current, data) { old, new, _ ->
+                is Grain -> GrainEditController(current, data, page) { old, new, _ ->
                     data = data.updateGrain(old, new)
                 }
-                is Behaviour -> BehaviourEditController(current, data) { old, new, _ ->
+                is Behaviour -> BehaviourEditController(current, data, page) { old, new, _ ->
                     data = data.updateBehaviour(old, new)
                 }
                 else -> null
@@ -150,20 +151,20 @@ class GrainModelEditController(
     override val container = Columns(
         Column(
             Level(
-                left = listOf(Title("Fields", TextSize.S4)),
+                left = listOf(Title(page.i18n("Fields"), TextSize.S4)),
                 right = listOf(addFieldButton),
                 mobile = true
             ),
             fieldsController,
             Level(
-                left = listOf(Title("Grains", TextSize.S4)),
+                left = listOf(Title(page.i18n("Grains"), TextSize.S4)),
                 right = listOf(addGrainButton),
                 mobile = true
             ),
             grainsController,
             Level(
                 left = listOf(
-                    Title("Behaviours", TextSize.S4)
+                    Title(page.i18n("Behaviours"), TextSize.S4)
                 ),
                 right = listOf(addBehaviourButton),
                 mobile = true

@@ -13,6 +13,7 @@ import bulma.Tag
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.client.controller.utils.editableIntController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Field
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
@@ -20,7 +21,7 @@ import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
 class FieldEditController (
-    initialData: Field,
+    initialData: Field, val page: BulmaPage,
     var onUpdate: (old: Field, new: Field, controller: FieldEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Field, Div>() {
 
@@ -54,15 +55,15 @@ class FieldEditController (
         data = data.copy(color = new)
     }
 
-    val nameController = EditableStringController(data.name, "Name", columns = 8) { _, new, _ ->
+    val nameController = EditableStringController(data.name, page.i18n("Name"), columns = 8) { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description", columns = 40) { _, new, _ ->
+    val descriptionController = EditableStringController(data.description, page.i18n("Description"), columns = 40) { _, new, _ ->
         data = data.copy(description = new)
     }
 
-    val speedController = editableFloatController(data.speed, "speed", 0f, 1f) { _, new, _ ->
+    val speedController = editableFloatController(data.speed, page.i18n("Speed"), 0f, 1f) { _, new, _ ->
         this.data = this.data.copy(speed = new)
     }
 
@@ -76,25 +77,25 @@ class FieldEditController (
             this.data = this.data.copy(allowedDirection = new)
         }
 
-    val halfLifeController = editableIntController(data.halfLife, "half life", 0) { _, new, _ ->
+    val halfLifeController = editableIntController(data.halfLife, page.i18n("Half-life"), 0) { _, new, _ ->
         this.data = this.data.copy(halfLife = new)
     }
 
     override val container = Div(
-            Tag("Field", ElementColor.Primary, Size.Large),
+            Tag(page.i18n("Field"), ElementColor.Primary, Size.Large),
             Box(
             HorizontalField(
-                Label("Name"),
+                Label(page.i18n("Name")),
                 nameController.container,
                 bulma.Field(
                     Control(colorController.container),
                     addons = true
                 )
             ),
-            HorizontalField(Label("Description"), descriptionController.container),
-            HorizontalField(Label("Half-life"), halfLifeController.container),
-            HorizontalField(Label("Movement"),
-                BField(Control(Help("Speed")), speedController.container, grouped = true),
+            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+            HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
+            HorizontalField(Label(page.i18n("Movement")),
+                BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
                 firstDirectionController.container,
                 extendedDirectionController.container
             )

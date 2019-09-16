@@ -87,6 +87,31 @@
     "Tags": "Tags",
     "Popular": "Populaires",
 
+
+    "Select a element to edit it": "Sélectionner un élément pour l'éditer",
+    "Field": "Champs",
+    "Fields": "Champs",
+    "Grain": "Grain",
+    "Grains": "Grains",
+    "Behaviour": "Comportement",
+    "Behaviours": "Comportements",
+    "Name": "Nom",
+    "Speed": "Vitesse",
+    "Half-life": "Demi-vie",
+    "Movement": "Déplacement",
+    "Productions": "Productions",
+    "Influences": "Influences",
+    "Permeability": "Perméabilités",
+    "Size": "Taille",
+    "Reactives": "Réactifs",
+    "Directions": "Directions",
+    "Products": "Produits",
+    "Sources": "Sources",
+    "Field thresholds": "Seuils de champs",
+    "Field influences": "Influences des champs",
+    "When age": "Avec l'âge",
+    "Reactions": "Réactions",
+
     "Subscription %0 created.": "Abonnement %0 créé."
   }
 }

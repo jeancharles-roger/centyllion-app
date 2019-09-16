@@ -19,6 +19,7 @@ import bulma.columnsController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
@@ -27,7 +28,7 @@ import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
 class GrainEditController(
-    initialData: Grain, model: GrainModel,
+    initialData: Grain, model: GrainModel, val page: BulmaPage,
     var onUpdate: (old: Grain, new: Grain, controller: GrainEditController) -> Unit = { _, _, _ -> }
 ) : Controller<Grain, GrainModel, Div> {
 
@@ -84,7 +85,7 @@ class GrainEditController(
         data = data.copy(icon = new)
     }
 
-    val nameController = EditableStringController(data.name, "Name", columns = 8) { _, new, _ ->
+    val nameController = EditableStringController(data.name, page.i18n("Name"), columns = 8) { _, new, _ ->
         data = data.copy(name = new)
     }
 
@@ -94,15 +95,15 @@ class GrainEditController(
 
     val sizeValue = Value("${data.size}")
 
-    val descriptionController = EditableStringController(data.description, "Description", columns = 60) { _, new, _ ->
+    val descriptionController = EditableStringController(data.description, page.i18n("Description"), columns = 60) { _, new, _ ->
         data = data.copy(description = new)
     }
 
-    val halfLifeController = editableIntController(data.halfLife, "half life", 0) { _, new, _ ->
+    val halfLifeController = editableIntController(data.halfLife, page.i18n("Half-life"), 0) { _, new, _ ->
         data = data.copy(halfLife = new)
     }
 
-    val speedController = editableDoubleController(data.movementProbability, "speed", 0.0, 1.0) { _, new, _ ->
+    val speedController = editableDoubleController(data.movementProbability, page.i18n("Speed"), 0.0, 1.0) { _, new, _ ->
         data = data.copy(movementProbability = new)
     }
 
@@ -154,25 +155,25 @@ class GrainEditController(
 
     val fieldControls = Columns(
         Column(
-            Label("Productions"), fieldProductionsController,
+            Label(page.i18n("Productions")), fieldProductionsController,
             desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
         ),
         Column(
-            Label("Influences"), fieldInfluencesController,
+            Label(page.i18n("Influences")), fieldInfluencesController,
             desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
         ),
         Column(
-            Label("Permeability"), fieldPermeableController,
+            Label(page.i18n("Permeability")), fieldPermeableController,
             desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
         ),
         multiline = true
     ).apply { hidden = context.fields.isEmpty() }
 
     override val container = Div(
-        Tag("Grain", ElementColor.Primary, Size.Large),
+        Tag(page.i18n("Grain"), ElementColor.Primary, Size.Large),
         Box(
             HorizontalField(
-                Label("Name"),
+                Label(page.i18n("Name")),
                 nameController.container,
                 BField(
                     Control(iconController.container),
@@ -180,16 +181,16 @@ class GrainEditController(
                     addons = true
                 ),
                 BField(
-                    Control(Label("Size")),
+                    Control(Label(page.i18n("Size"))),
                     Control(sizeSlider),
                     Control(sizeValue),
                     grouped = true
                 )
             ),
-            HorizontalField(Label("Description"), descriptionController.container),
-            HorizontalField(Label("Half-life"), halfLifeController.container),
-            HorizontalField(Label("Movement"),
-                BField(Control(Help("Speed")), speedController.container, grouped = true),
+            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+            HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
+            HorizontalField(Label(page.i18n("Movement")),
+                BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
                 firstDirectionController.container,
                 extendedDirectionController.container
             ),

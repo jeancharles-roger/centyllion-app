@@ -23,6 +23,7 @@ import bulma.columnsController
 import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Operator
@@ -31,7 +32,7 @@ import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
-    initialData: Behaviour, model: GrainModel,
+    initialData: Behaviour, model: GrainModel, val page: BulmaPage,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Behaviour, GrainModel, Div> {
@@ -88,17 +89,17 @@ class BehaviourEditController(
         }
     }
 
-    val nameController = EditableStringController(data.name, "Name")
+    val nameController = EditableStringController(data.name, page.i18n("Name"))
     { _, new, _ ->
         this.data = this.data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description")
+    val descriptionController = EditableStringController(data.description, page.i18n("Description"))
     { _, new, _ ->
         this.data = this.data.copy(description = new)
     }
 
-    val probabilityController = editableDoubleController(data.probability, "Speed", 0.0, 1.0)
+    val probabilityController = editableDoubleController(data.probability, page.i18n("Speed"), 0.0, 1.0)
     { _, new, _ ->
         this.data = this.data.copy(probability = new)
     }
@@ -132,10 +133,10 @@ class BehaviourEditController(
     val reactionHeader = listOf(
         // Header
         TileParent(
-            TileChild(Help("Reactive")),
-            TileChild(Help("Directions")),
-            TileChild(Help("Product")),
-            TileChild(Help("Source")),
+            TileChild(Help(page.i18n("Reactives"))),
+            TileChild(Help(page.i18n("Directions"))),
+            TileChild(Help(page.i18n("Products"))),
+            TileChild(Help(page.i18n("Sources"))),
             TileChild()
         ),
         // Main reactive
@@ -194,24 +195,24 @@ class BehaviourEditController(
     val fieldsConfiguration = Columns(
         Column(
             Level(
-                left= listOf(Label("Field thresholds")),
+                left= listOf(Label(page.i18n("Field thresholds"))),
                 right = listOf(addFieldPredicateButton)
             ),
             fieldPredicatesController, size = ColumnSize.S7
         ),
-        Column(Label("Field influences"), fieldInfluencesController, size = ColumnSize.S5)
+        Column(Label(page.i18n("Field influences")), fieldInfluencesController, size = ColumnSize.S5)
     ).apply {
         hidden = context.fields.isEmpty()
     }
 
     override val container = Div(
-        Tag("Behaviour", ElementColor.Primary, Size.Large),
+        Tag(page.i18n("Behaviour"), ElementColor.Primary, Size.Large),
         Box(
-            HorizontalField(Label("Name"), nameController.container),
-            HorizontalField(Label("Description"), descriptionController.container),
-            HorizontalField(Label("Speed"), probabilityController.container),
-            HorizontalField(Label("When age"), agePredicateController.container),
-            Label("Reactions"), reactionsController,
+            HorizontalField(Label(page.i18n("Name")), nameController.container),
+            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+            HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
+            HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
+            Label(page.i18n("Reactions")), reactionsController,
             fieldsConfiguration
         )
     )

@@ -12,6 +12,7 @@ import bulma.TextArea
 import bulma.TextView
 import bulma.iconButton
 import com.centyllion.client.markdownToHtml
+import com.centyllion.i18n.Locale
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
 import kotlin.properties.Delegates.observable
@@ -21,7 +22,13 @@ import kotlin.properties.Delegates.observable
  */
 class EditableStringController(
     initialData: String = "", placeHolder: String = "", readOnly: Boolean = false, columns: Int? = null,
-    val input: TextView = Input(value = initialData, placeholder = placeHolder, readonly = readOnly, static = true, columns = columns),
+    val input: TextView = Input(
+        value = initialData,
+        placeholder = placeHolder,
+        readonly = readOnly,
+        static = true,
+        columns = columns
+    ),
     validateOnEnter: Boolean = true, var isValid: (value: String) -> String? = { null },
     var onUpdate: (old: String, new: String, controller: EditableStringController) -> Unit =
         { _, _, _ -> }
@@ -123,43 +130,39 @@ class EditableStringController(
     }
 }
 
-fun <T : Comparable<T>> isNumberIn(placeholder: String, number: T?, min: T, max: T) = when {
-        number == null -> "$placeholder must be a number"
-        number < min -> "$placeholder must be greater or equal to $min"
-        number > max -> "$placeholder must be less or equal to $max"
-        else -> null
-    }
+fun <T : Comparable<T>> isNumberIn(locale: Locale, placeholder: String, number: T?, min: T, max: T) = when {
+    number == null -> locale.i18n("%0 must be a number", placeholder)
+    number < min || number > max -> locale.i18n("%0 must be between %1 and %2", placeholder, min, max)
+    else -> null
+}
 
 fun editableFloatController(
-    initialData: Float = 0f,
-    placeHolder: String = "",
-    minValue: Float = Float.NEGATIVE_INFINITY,
-    maxValue: Float = Float.POSITIVE_INFINITY,
+    locale: Locale, initialData: Float = 0f, placeHolder: String = "",
+    minValue: Float = Float.NEGATIVE_INFINITY, maxValue: Float = Float.POSITIVE_INFINITY,
     onUpdate: (old: Float, new: Float, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { isNumberIn(placeHolder, it.toFloatOrNull(), minValue, maxValue) },
+    isValid = { isNumberIn(locale, placeHolder, it.toFloatOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toFloat(), new.toFloat(), controller) }
 )
 
 fun editableDoubleController(
-    initialData: Double = 0.0,
-    placeHolder: String = "",
-    minValue: Double = Double.NEGATIVE_INFINITY,
-    maxValue: Double = Double.POSITIVE_INFINITY,
+    locale: Locale, initialData: Double = 0.0, placeHolder: String = "",
+    minValue: Double = Double.NEGATIVE_INFINITY, maxValue: Double = Double.POSITIVE_INFINITY,
     onUpdate: (old: Double, new: Double, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { isNumberIn(placeHolder, it.toDoubleOrNull(), minValue, maxValue) },
+    isValid = { isNumberIn(locale, placeHolder, it.toDoubleOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toDouble(), new.toDouble(), controller) }
 )
 
 fun editableIntController(
-    initialData: Int = 0, placeHolder: String = "", minValue: Int = Int.MIN_VALUE, maxValue: Int = Int.MAX_VALUE,
+    locale: Locale, initialData: Int = 0, placeHolder: String = "",
+    minValue: Int = Int.MIN_VALUE, maxValue: Int = Int.MAX_VALUE,
     onUpdate: (old: Int, new: Int, controller: EditableStringController) -> Unit = { _, _, _ -> }
 ) = EditableStringController(
     initialData.toString(), placeHolder, false,
-    isValid = { isNumberIn(placeHolder, it.toIntOrNull(), minValue, maxValue) },
+    isValid = { isNumberIn(locale, placeHolder, it.toIntOrNull(), minValue, maxValue) },
     onUpdate = { old, new, controller -> onUpdate(old.toInt(), new.toInt(), controller) }
 )
 
@@ -178,7 +181,7 @@ class EditableMarkdownController(
     initialData: String = "", val placeHolder: String = "", readOnly: Boolean = false, rows: Int = 4,
     var onUpdate: (old: String, new: String, controller: EditableMarkdownController) -> Unit =
         { _, _, _ -> }
-): NoContextController<String, Field>() {
+) : NoContextController<String, Field>() {
 
     override var data by observable(initialData) { _, old, new ->
         if (old != new) {
@@ -205,10 +208,12 @@ class EditableMarkdownController(
 
     val inputControl = Control(this.input, expanded = true)
 
-    val html = object: ControlElement {
+    val html = object : ControlElement {
         override val root = document.createElement("div") as HTMLDivElement
 
-        init { root.innerHTML = transform(initialData) }
+        init {
+            root.innerHTML = transform(initialData)
+        }
     }
 
     val penIcon = Icon("pen")

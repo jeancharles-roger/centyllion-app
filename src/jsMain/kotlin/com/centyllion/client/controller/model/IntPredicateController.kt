@@ -1,14 +1,19 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Control
+import bulma.Field
+import bulma.NoContextController
+import bulma.Option
+import bulma.Select
 import com.centyllion.client.controller.utils.editableIntController
+import com.centyllion.i18n.Locale
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
 class IntPredicateController(
-    predicate: Predicate<Int>,
+    locale: Locale, predicate: Predicate<Int>,
     var onUpdate: (old: Predicate<Int>, new: Predicate<Int>, controller: IntPredicateController) -> Unit =
         { _, _, _ -> }
 ): NoContextController<Predicate<Int>, Field>() {
@@ -31,7 +36,7 @@ class IntPredicateController(
         data = data.copy(op = Operator.valueOf(value))
     }
 
-    val value = editableIntController(data.constant) { _, new, _ ->
+    val value = editableIntController(locale, data.constant) { _, new, _ ->
         data = data.copy(constant = new)
     }
 

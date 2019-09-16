@@ -99,13 +99,13 @@ class GrainEditController(
         data = data.copy(description = new)
     }
 
-    val halfLifeController = editableIntController(data.halfLife, page.i18n("Half-life"), 0) { _, new, _ ->
-        data = data.copy(halfLife = new)
-    }
+    val halfLifeController = editableIntController(
+        page.appContext.locale, data.halfLife, page.i18n("Half-life"), 0
+    ) { _, new, _ -> data = data.copy(halfLife = new) }
 
-    val speedController = editableDoubleController(data.movementProbability, page.i18n("Speed"), 0.0, 1.0) { _, new, _ ->
-        data = data.copy(movementProbability = new)
-    }
+    val speedController = editableDoubleController(
+        page.appContext.locale, data.movementProbability, page.i18n("Speed"), 0.0, 1.0
+    ) { _, new, _ -> data = data.copy(movementProbability = new) }
 
     val firstDirectionController: DirectionSetEditController =
         DirectionSetEditController(firstDirections, data.allowedDirection) { _, new, _ ->

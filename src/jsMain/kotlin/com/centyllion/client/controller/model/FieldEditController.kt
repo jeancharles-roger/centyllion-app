@@ -63,9 +63,9 @@ class FieldEditController (
         data = data.copy(description = new)
     }
 
-    val speedController = editableFloatController(data.speed, page.i18n("Speed"), 0f, 1f) { _, new, _ ->
-        this.data = this.data.copy(speed = new)
-    }
+    val speedController = editableFloatController(
+        page.appContext.locale, data.speed, page.i18n("Speed"), 0f, 1f
+    ) { _, new, _ -> this.data = this.data.copy(speed = new) }
 
     val firstDirectionController: DirectionSetEditController =
         DirectionSetEditController(firstDirections, data.allowedDirection) { _, new, _ ->
@@ -77,9 +77,9 @@ class FieldEditController (
             this.data = this.data.copy(allowedDirection = new)
         }
 
-    val halfLifeController = editableIntController(data.halfLife, page.i18n("Half-life"), 0) { _, new, _ ->
-        this.data = this.data.copy(halfLife = new)
-    }
+    val halfLifeController = editableIntController(
+        page.appContext.locale, data.halfLife, page.i18n("Half-life"), 0
+    ) { _, new, _ -> this.data = this.data.copy(halfLife = new) }
 
     override val container = Div(
             Tag(page.i18n("Field"), ElementColor.Primary, Size.Large),

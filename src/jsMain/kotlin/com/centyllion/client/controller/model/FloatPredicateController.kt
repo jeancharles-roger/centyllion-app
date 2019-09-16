@@ -6,13 +6,14 @@ import bulma.NoContextController
 import bulma.Option
 import bulma.Select
 import com.centyllion.client.controller.utils.editableFloatController
+import com.centyllion.i18n.Locale
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
 class FloatPredicateController(
-    predicate: Predicate<Float>,
+    locale: Locale, predicate: Predicate<Float>,
     var onUpdate: (old: Predicate<Float>, new: Predicate<Float>, controller: FloatPredicateController) -> Unit =
         { _, _, _ -> }
 ): NoContextController<Predicate<Float>, Field>() {
@@ -35,7 +36,7 @@ class FloatPredicateController(
         data = data.copy(op = Operator.valueOf(value))
     }
 
-    val value = editableFloatController(data.constant) { _, new, _ ->
+    val value = editableFloatController(locale, data.constant) { _, new, _ ->
         data = data.copy(constant = new)
     }
 

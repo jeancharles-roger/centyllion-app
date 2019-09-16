@@ -69,31 +69,31 @@ class Asset3dEditController(
         grouped = true
     )
 
-    val xController = editableDoubleController(data.x)
+    val xController = editableDoubleController(page.appContext.locale, data.x)
     { _, new, _ -> data = data.copy(x = new) }
 
-    val yController = editableDoubleController(data.y)
+    val yController = editableDoubleController(page.appContext.locale, data.y)
     { _, new, _ -> data = data.copy(y = new) }
 
-    val zController = editableDoubleController(data.z)
+    val zController = editableDoubleController(page.appContext.locale, data.z)
     { _, new, _ -> data = data.copy(z = new) }
 
-    val xScaleController = editableDoubleController(data.xScale)
+    val xScaleController = editableDoubleController(page.appContext.locale, data.xScale)
     { _, new, _ -> data = data.copy(xScale = new) }
 
-    val yScaleController = editableDoubleController(data.yScale)
+    val yScaleController = editableDoubleController(page.appContext.locale, data.yScale)
     { _, new, _ -> data = data.copy(yScale = new) }
 
-    val zScaleController = editableDoubleController(data.zScale)
+    val zScaleController = editableDoubleController(page.appContext.locale, data.zScale)
     { _, new, _ -> data = data.copy(zScale = new) }
 
-    val xRotationController = editableDoubleController(data.xRotation)
+    val xRotationController = editableDoubleController(page.appContext.locale, data.xRotation)
     { _, new, _ -> data = data.copy(xRotation = new) }
 
-    val yRotationController = editableDoubleController(data.yRotation)
+    val yRotationController = editableDoubleController(page.appContext.locale, data.yRotation)
     { _, new, _ -> data = data.copy(yRotation = new) }
 
-    val zRotationController = editableDoubleController(data.zRotation)
+    val zRotationController = editableDoubleController(page.appContext.locale, data.zRotation)
     { _, new, _ -> data = data.copy(zRotation = new) }
 
     val deleteCallbackProperty = DeleteCallbackProperty(onDelete, this) { old, new ->

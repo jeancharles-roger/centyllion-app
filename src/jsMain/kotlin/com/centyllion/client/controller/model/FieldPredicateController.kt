@@ -8,6 +8,7 @@ import bulma.Icon
 import bulma.Level
 import bulma.Size
 import bulma.iconButton
+import com.centyllion.i18n.Locale
 import com.centyllion.model.Field
 import com.centyllion.model.Predicate
 import kotlin.properties.Delegates.observable
@@ -15,7 +16,7 @@ import kotlin.properties.Delegates.observable
 typealias FieldPredicate = Pair<Int, Predicate<Float>>
 
 class FieldPredicateController(
-    value: FieldPredicate, fields: List<Field>,
+    locale: Locale, value: FieldPredicate, fields: List<Field>,
     var onUpdate: (old: FieldPredicate, new: FieldPredicate, controller: FieldPredicateController) -> Unit = { _, _, _ -> },
     var onDelete: (FieldPredicate, controller: FieldPredicateController) -> Unit = { _, _ -> }
 ) : Controller<FieldPredicate, List<Field>, Column> {
@@ -50,7 +51,7 @@ class FieldPredicateController(
         if (old != new) data = new.id to data.second
     }
 
-    val predicateController = FloatPredicateController(value.second) { old, new, _ ->
+    val predicateController = FloatPredicateController(locale, value.second) { old, new, _ ->
         if (old != new) data = data.first to new
     }
 

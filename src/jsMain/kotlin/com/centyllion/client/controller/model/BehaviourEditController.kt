@@ -99,12 +99,13 @@ class BehaviourEditController(
         this.data = this.data.copy(description = new)
     }
 
-    val probabilityController = editableDoubleController(data.probability, page.i18n("Speed"), 0.0, 1.0)
-    { _, new, _ ->
+    val probabilityController = editableDoubleController(
+        page.appContext.locale, data.probability, page.i18n("Speed"), 0.0, 1.0
+    ) { _, new, _ ->
         this.data = this.data.copy(probability = new)
     }
 
-    val agePredicateController = IntPredicateController(data.agePredicate)
+    val agePredicateController = IntPredicateController(page.appContext.locale, data.agePredicate)
     { _, new, _ ->
         this.data = this.data.copy(agePredicate = new)
     }
@@ -178,7 +179,7 @@ class BehaviourEditController(
 
     val fieldPredicatesController =
         columnsController(data.fieldPredicates, context.fields) { pair, previous ->
-            previous ?: FieldPredicateController(pair, context.fields,
+            previous ?: FieldPredicateController(page.appContext.locale, pair, context.fields,
             { old, new, _ -> if (old != new) this.data = data.updateFieldPredicate(old, new) },
             { delete, _ -> this.data = data.dropFieldPredicate(delete) })
         }

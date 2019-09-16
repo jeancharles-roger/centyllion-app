@@ -42,16 +42,17 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
         color = ElementColor.Primary, rounded = true, size = Size.Medium
     )
 
-    val createSubscription = Button("Subscription", Icon("plus"), ElementColor.Info, true) { _ ->
+    val createSubscription = Button(page.i18n("Subscription"), Icon("plus"), ElementColor.Info, true) { _ ->
 
-        val autoRenew = Checkbox("auto renew")
+        val autoRenew = Checkbox(page.i18n("auto renew"))
         val options = SubscriptionType.values().filter { it != SubscriptionType.Apprentice }.map { Option(it.name) }
         val subscription = Select(options, rounded = true)
-        val durationLabel = Help("31 days")
-        val duration = Slider("31", "0", "365", "1", ElementColor.Link)
-            { _, value -> durationLabel.text = if (value == "0") "infinite" else "$value days"}
+        val durationLabel = Help(page.i18n("%0 days", 31))
+        val duration = Slider("31", "0", "365", "1", ElementColor.Link) { _, value ->
+            durationLabel.text = if (value == "0") page.i18n("no bound") else page.i18n("%0 days", value)
+        }
 
-        val createButton = textButton("Create", ElementColor.Success) { _ ->
+        val createButton = textButton(page.i18n("Create"), ElementColor.Success) { _ ->
             val type = SubscriptionType.valueOf(subscription.selectedOption.text)
             val durationMillis = duration.value.toLong() * (24 * 60 * 60 * 1_000)
             val parameters = SubscriptionParameters(autoRenew.checked, type, durationMillis, 0.0,"manual")
@@ -61,10 +62,10 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
                 page.message("Subscription %0 created.", parameters.subscription)
             }.catch { page.error(it) }
         }
-        val cancelButton = textButton("Cancel")
+        val cancelButton = textButton(page.i18n("Cancel"))
 
         val modal = page.modalDialog(
-            "Create subscription",
+            page.i18n("Create subscription"),
             Level(center = listOf(autoRenew, subscription, duration, durationLabel)),
             createButton, cancelButton
         )

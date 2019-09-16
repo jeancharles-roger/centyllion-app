@@ -119,6 +119,14 @@
     "Medium": "Medium",
     "Large": "Large",
 
+    "Loading": "Loading",
+
+    "Subscription": "Subscription",
+    "auto renew": "auto renew",
+    "%0 days": "%0 days",
+    "Create": "Create",
+    "Cancel": "Cancel",
+    "Create subscription": "Create subscription",
     "Subscription %0 created.": "Subscription %0 created."
   }
 }

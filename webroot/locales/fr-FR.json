@@ -119,6 +119,14 @@
     "Medium": "Moyen",
     "Large": "Grand",
 
+    "Loading": "Chargement",
+
+    "Subscription": "Abonnement",
+    "auto renew": "Renouvellement automatique",
+    "%0 days": "%0 jours",
+    "Create": "Créer",
+    "Cancel": "Annuler",
+    "Create subscription": "Créer l'abonnement",
     "Subscription %0 created.": "Abonnement %0 créé."
   }
 }

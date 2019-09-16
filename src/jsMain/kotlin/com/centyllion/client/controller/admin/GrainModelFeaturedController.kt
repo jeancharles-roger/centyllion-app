@@ -12,16 +12,15 @@ import bulma.Icon
 import bulma.Size
 import bulma.SubTitle
 import bulma.TextColor
-import com.centyllion.client.Api
 import com.centyllion.client.markdownToHtml
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
 import kotlin.properties.Delegates.observable
 
 class GrainModelFeaturedController(
-    model: GrainModelDescription, allFeatured: List<FeaturedDescription>,
-    api: Api,
+    model: GrainModelDescription, allFeatured: List<FeaturedDescription>, page: BulmaPage,
     var toggleFeature: (
         simulation: SimulationDescription, featured: FeaturedDescription?
     ) -> Unit = { _, _ -> }
@@ -59,9 +58,9 @@ class GrainModelFeaturedController(
         }
     }
 
-    val simulationDropDown = Dropdown(text = "Simulations", rounded = true, icon = Icon("play")) { dropdown ->
-        dropdown.items = listOf(DropdownSimpleItem("Loading", Icon("sync", spin = true)))
-        api.fetchPublicSimulations(model.id, limit = 50).then { simulations ->
+    val simulationDropDown = Dropdown(text = page.i18n("Simulations"), rounded = true, icon = Icon("play")) { dropdown ->
+        dropdown.items = listOf(DropdownSimpleItem(page.i18n("Loading"), Icon("sync", spin = true)))
+        page.appContext.api.fetchPublicSimulations(model.id, limit = 50).then { simulations ->
             dropdown.items = simulations.content.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
                     toggleFeature(simulation, featured(simulation))

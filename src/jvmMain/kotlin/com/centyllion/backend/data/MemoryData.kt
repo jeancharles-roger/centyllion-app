@@ -110,7 +110,11 @@ class MemoryData(
     }
 
     override fun publicGrainModels(offset: Int, limit: Int) =
-        grainModels.values.filter { it.info.readAccess }.limit(offset, limit)
+        merge(
+            backend?.publicGrainModels(offset, limit),
+            grainModels.values.filter { it.info.readAccess },
+            deletedModels, offset, limit
+        )
 
     override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         merge(

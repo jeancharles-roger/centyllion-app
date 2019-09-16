@@ -348,7 +348,7 @@ data class GrainModel(
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
 
-    fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(fields.map(Field::name), prefix)
+    fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(behaviours.map(Behaviour::name), prefix)
 
     fun newBehaviour(prefix: String = "Behaviour") = Behaviour(availableBehaviourName(prefix))
 

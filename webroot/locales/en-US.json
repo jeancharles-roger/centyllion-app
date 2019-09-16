@@ -15,10 +15,13 @@
     "Subscribe": "Subscribe",
     "Administration": "Administration",
 
+    "all": "all",
     "Model": "Model",
     "Models": "Models",
+    "models": "models",
     "Simulation": "Simulation",
     "Simulations": "Simulations",
+    "simulations": "simulations",
 
     "by %0": "by %0",
     "by me": "by me",

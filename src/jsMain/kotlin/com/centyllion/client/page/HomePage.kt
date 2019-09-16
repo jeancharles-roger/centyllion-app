@@ -71,11 +71,11 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         appContext.openPage(showPage)
     }
 
-    val allTabItem = PanelTabsItem("all") { activateFilter(it) }
+    val allTabItem = PanelTabsItem(i18n("all")) { activateFilter(it) }
 
-    val modelsTabItem = PanelTabsItem("models") { activateFilter(it) }
+    val modelsTabItem = PanelTabsItem(i18n("models")) { activateFilter(it) }
 
-    val simulationsTabItem = PanelTabsItem("simulations") { activateFilter(it) }
+    val simulationsTabItem = PanelTabsItem(i18n("simulations")) { activateFilter(it) }
 
     fun visibleElements() = when {
         allTabItem.active -> setOf(GrainModelDescription::class, SimulationDescription::class)

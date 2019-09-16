@@ -15,10 +15,13 @@
     "Subscribe": "S'abonner",
     "Administration": "Administration",
 
+    "all": "tout",
     "Model": "Modèle",
     "Models": "Modèles",
+    "models": "modèles",
     "Simulation": "Simulation",
     "Simulations": "Simulations",
+    "simulations": "simulations",
 
     "by %0": "par %0",
     "by me": "à moi",

@@ -15,7 +15,6 @@ import babylonjs.Mesh
 import babylonjs.MeshBuilder
 import babylonjs.PickingInfo
 import babylonjs.PlaneOptions
-import babylonjs.PointLight
 import babylonjs.PointerEventTypes
 import babylonjs.Quaternion
 import babylonjs.RawTexture
@@ -229,9 +228,8 @@ class Simulator3dViewController(
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
 
-        val position = simulator.simulation.width.let { Vector3(1.25 * it, 2 * it, 1.25 * it) }
-        HemisphericLight("light1", position, this)
-        PointLight("light2", position, this)
+        val width = simulator.simulation.width
+        HemisphericLight("light1", Vector3(1.25 * width, 3 * width, 1.25 * width), this)
     }
 
     /*

@@ -16,6 +16,7 @@ val logback_version: String by project
 val ktor_version: String by project
 val kotlinx_html_version: String by project
 val bulma_kotlin_version: String by project
+val babylon_kotlin_version: String by project
 val exposed_version: String by project
 val postgresql_version: String by project
 val keycloak_version: String by project
@@ -118,6 +119,7 @@ kotlin {
                     implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
 
                     implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
+                    implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
 
                 }
             }

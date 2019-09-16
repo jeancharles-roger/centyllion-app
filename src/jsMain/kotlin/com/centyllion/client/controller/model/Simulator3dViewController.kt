@@ -229,7 +229,7 @@ class Simulator3dViewController(
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
 
-        val position = simulator.simulation.width.let { Vector3(1.25 * it, -2 * it, 1.25 * it) }
+        val position = simulator.simulation.width.let { Vector3(1.25 * it, 2 * it, 1.25 * it) }
         HemisphericLight("light1", position, this)
         PointLight("light2", position, this)
     }
@@ -273,7 +273,7 @@ class Simulator3dViewController(
         alpha = 1.5*PI
         lowerBetaLimit = -2*PI
         upperBetaLimit = 2*PI
-        beta = PI
+        //beta = PI
 
         panningSensibility = 50
 
@@ -547,7 +547,7 @@ class Simulator3dViewController(
         )
         Animation.CreateAndStartAnimation(
             "Reset camera beta", camera, "beta", 25, 25,
-            camera.beta, PI, 0
+            camera.beta, 0, 0
         )
         Animation.CreateAndStartAnimation(
             "Reset camera target", camera, "target", 26, 26,
@@ -592,8 +592,6 @@ class Simulator3dViewController(
         val material = StandardMaterial("${field.name} material", scene)
         val color = colorFromName(field.color)
         material.diffuseColor = color
-        //material.emissiveColor = color
-        //material.ambientColor = color
         material.opacityTexture = texture
 
         val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
@@ -672,31 +670,6 @@ class Simulator3dViewController(
                     p.y - data.simulation.height / 2.0
                 )
             }
-
-            /*
-            when {
-                mesh != null && newGrainId >= 0 -> {
-                    // transform it to new one
-                    //mesh.geometry = geometries[newGrainId] ?: defaultGeometry
-                    //mesh.material = materials[newGrainId] ?: defaultMaterial
-                }
-                mesh != null && newGrainId < 0 -> {
-                    // deletes the mesh
-                    agentMesh.remove(index)
-                    scene.removeMesh(mesh, true)
-                    mesh.dispose()
-                }
-                mesh == null && newGrainId >= 0 -> {
-                    val p = data.simulation.toPosition(index)
-                    createMesh(
-                        index,
-                        newGrainId,
-                        p.x - data.simulation.width / 2.0 + 0.5,
-                        p.y - data.simulation.height / 2.0 + 0.5
-                    )
-                }
-            }
-             */
         }
     }
 

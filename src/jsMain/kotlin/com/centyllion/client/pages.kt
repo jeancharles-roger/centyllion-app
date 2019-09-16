@@ -10,7 +10,7 @@ import com.centyllion.client.page.SubscriptionPage
 import com.centyllion.common.adminRole
 
 data class Page(
-    val title: String, val id: String, val needUser: Boolean, val role: String?,
+    val titleKey: String, val id: String, val needUser: Boolean, val role: String?,
     val header: Boolean, val callback: (appContext: AppContext) -> BulmaPage
 ) {
     fun authorized(context: AppContext): Boolean = when {

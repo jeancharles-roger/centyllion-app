@@ -471,18 +471,18 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown.active = false
 
         val modal = modalDialog(
-            i18n("Delete model, Are you sure ?"),
+            i18n("Delete model. Are you sure ?"),
             Div(
                 p(i18n("You're about to delete the model '%0' and its simulations.", model.label)),
                 p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
-            textButton("Yes", ElementColor.Danger) {
+            textButton(i18n("Yes"), ElementColor.Danger) {
                 appContext.api.deleteGrainModel(model).then {
                     appContext.openPage(homePage)
                     message("Model %0 deleted", model.label)
                 }
             },
-            textButton("No")
+            textButton(i18n("No"))
         )
 
         modal.active = true
@@ -492,20 +492,20 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown.active = false
 
         val modal = modalDialog(
-            i18n("Delete simulation, Are you sure ?"),
+            i18n("Delete simulation. Are you sure ?"),
             Div(
-                p(i18n("You're about to delete the simulation '%0'.)", simulation.label)),
+                p(i18n("You're about to delete the simulation '%0'.", simulation.label)),
                 p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
-            textButton("Yes", ElementColor.Danger) {
+            textButton(i18n("Yes"), ElementColor.Danger) {
                 appContext.api.deleteSimulation(simulation).then {
-                    message("Simulation %0 deleted", simulation.label)
+                    message("Simulation %0 deleted.", simulation.label)
                     fetchSimulations(model.id)
                 }.then {
                     setSimulation(it.content.firstOrNull() ?: emptySimulationDescription)
                 }
             },
-            textButton("No")
+            textButton(i18n("No"))
         )
 
         modal.active = true
@@ -567,7 +567,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     override fun onExit() = Promise<Boolean> { resolve, _ ->
         if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
-            val model = modalDialog(i18n("Modifications not saved, Do you wan't to save ?"),
+            val model = modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
                 p(i18n("You're about to quit the page and some modifications haven't been saved.")),
                 textButton(i18n("Save"), ElementColor.Success) {
                     save { resolve(true) }

@@ -4,6 +4,17 @@
     "Previous": "Précedent",
     "Next": "Suivant",
 
+    "Anonymous": "Anonyme",
+    "Logout": "Se déconnecter",
+    "Log In": "Se connecter",
+    "Register": "Créer un compte",
+
+    "Explore": "Explorer",
+    "Home": "Ma page",
+    "Show": "Présenter",
+    "Subscribe": "S'abonner",
+    "Administration": "Administration",
+
     "Model": "Modèle",
     "Models": "Modèles",
     "Simulation": "Simulation",
@@ -40,17 +51,21 @@
     "New simulation": "Nouvelle simulation",
     "Simulation cloned": "Simulation clonée",
     "Model %0 deleted": "Modèle %0 supprimé",
-    "Delete simulation, Are you sure ?": "Delete simulation, Are you sure ?",
-    "You're about to delete the model '%0' and its simulations.": "You're about to delete the model '%0' and its simulations.",
-    "This action can't be undone.": "This action can't be undone.",
-    "Simulation %0 deleted": "Simulation %0 deleted",
-    "Modifications not saved, Do you wan't to save ?": "Modifications not saved, Do you wan't to save ?",
-    "You're about to quit the page and some modifications haven't been saved.": "You're about to quit the page and some modifications haven't been saved.",
-    "Don't save": "Don't save",
-    "Stay here": "Stay here",
+    "Delete simulation. Are you sure ?": "Supprimer la simulation. Êtes-vous sur ?",
+    "You're about to delete the simulation '%0'.": "Vous allez supprimer la simulation '%0'.",
+    "Delete model. Are you sure ?": "Supprimer le modèle. Êtes-vous sur ?",
+    "You're about to delete the model '%0' and its simulations.": "Vous allez supprimer le modèle '%0' et ses simulations.",
+    "This action can't be undone.": "Cette action ne peut-être annulée.",
+    "Simulation %0 deleted.": "La simulation %0 a été supprimée",
+    "Modifications not saved. Do you wan't to save ?": "Des modifications n'ont pas été enregistrées. Voulez-vous enregistrer ?",
+    "You're about to quit the page and some modifications haven't been saved.": "Vous allez quitter la page mais des modifications n'ont pas été enregistrées.",
+    "Yes": "Oui",
+    "No": "Non",
+    "Don't save": "Ne pas enregistrer",
+    "Stay here": "Rester sur la page",
 
-    "My models and simulations": "My models and simulations",
-    "My Recent simulation": "My Recent simulation",
+    "My models and simulations": "Mes modèles et simulations",
+    "My Recent simulation": "Mes simulations récentes",
 
     "Search": "Chercher",
     "No simulation found": "Aucune simulation trouvée",
@@ -60,15 +75,15 @@
 
     "Public models": "Modèles publics",
     "Users": "Utilisateurs",
-    "Asset": "Asset",
-    "Assets": "Assets",
-    "Send": "Send",
-    "Asset created with id %0.": "Asset created with id %0.",
+    "Asset": "Ressource",
+    "Assets": "Ressources",
+    "Send": "Envoyer",
+    "Asset created with id %0.": "Ressource créée avec l'id %0.",
 
-    "New tag": "New tag",
+    "New tag": "Ajouter un tag",
     "Tags": "Tags",
-    "Popular": "Popular",
+    "Popular": "Populaires",
 
-    "Subscription %0 created": "Subscription %0 created"
+    "Subscription %0 created": "Abonnement %0 créé"
   }
 }

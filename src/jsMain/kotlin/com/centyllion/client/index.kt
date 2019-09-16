@@ -50,13 +50,13 @@ fun startApp(page: Page?, context: AppContext) {
     if (keycloak.tokenParsed != null) {
         val token = keycloak.tokenParsed.asDynamic()
         navBar.end += NavBarLinkItem(
-            token.name as String? ?: token.preferred_username as String ?: "Not named",
+            token.name as String? ?: token.preferred_username as String ?: context.i18n("Anonymous"),
             keycloak.createAccountUrl()
         )
-        navBar.end += NavBarLinkItem("Logout", keycloak.createLogoutUrl())
+        navBar.end += NavBarLinkItem(context.i18n("Logout"), keycloak.createLogoutUrl())
     } else {
-        navBar.end += NavBarLinkItem("Register", keycloak.createRegisterUrl())
-        navBar.end += NavBarLinkItem("Log In", keycloak.createLoginUrl())
+        navBar.end += NavBarLinkItem(context.i18n("Register"), keycloak.createRegisterUrl())
+        navBar.end += NavBarLinkItem(context.i18n("Log In"), keycloak.createLoginUrl())
     }
 
     // listens to pop state
@@ -67,7 +67,7 @@ fun startApp(page: Page?, context: AppContext) {
     // adds menu
     context.navBar.start = pages
         .filter { it.header && it.authorized(context) }
-        .map { NavBarLinkItem(it.title, id = it.id) { _ -> context.openPage(it) } }
+        .map { NavBarLinkItem(context.i18n(it.titleKey), id = it.id) { _ -> context.openPage(it) } }
 
     showInfo(context)
 
@@ -133,23 +133,6 @@ fun index() {
         }.catch { appendErrorMessage(root, "Locale file for $localeName couldn't be loaded") }
 
     }.catch {appendErrorMessage(root, "Locales file couldn't be loaded") }
-}
-
-/** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
-fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
-    window.location.let { location ->
-        // sets parameters
-        val params = URLSearchParams(if (clearParameters) "" else location.search)
-        parameters.forEach { params.set(it.key, it.value) }
-        val currentPage = page ?: pages.find { it.id == location.pathname }
-
-        // registers page to history if needed
-        if (register) {
-            val stringParams = params.toString().let { if (it.isNotBlank()) "?$it" else "" }
-            val newUrl = "${location.protocol}//${location.host}${page?.id ?: "/"}$stringParams"
-            window.history.pushState(null, "Centyllion ${currentPage?.title}", newUrl)
-        }
-    }
 }
 
 fun findPageInUrl(): Page? = pages.find { it.id == window.location.pathname }
@@ -220,6 +203,23 @@ class BrowserContext(
                         ).root
                     )
                 }
+            }
+        }
+    }
+
+    /** Updates location with given [page] and [parameters]. It can also [register] the location to the history. */
+    private fun updateLocation(page: Page?, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
+        window.location.let { location ->
+            // sets parameters
+            val params = URLSearchParams(if (clearParameters) "" else location.search)
+            parameters.forEach { params.set(it.key, it.value) }
+            val currentPage = page ?: pages.find { it.id == location.pathname }
+
+            // registers page to history if needed
+            if (register) {
+                val stringParams = params.toString().let { if (it.isNotBlank()) "?$it" else "" }
+                val newUrl = "${location.protocol}//${location.host}${page?.id ?: "/"}$stringParams"
+                window.history.pushState(null, "Centyllion ${currentPage?.titleKey?.let { i18n(it) }}", newUrl)
             }
         }
     }

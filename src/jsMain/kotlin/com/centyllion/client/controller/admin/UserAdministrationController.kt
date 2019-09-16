@@ -58,7 +58,7 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
             page.appContext.api.createSubscriptionForUser(data.id, parameters).then {
                 group.text = it.subscription.name
                 group.color = if (it.state == SubscriptionState.Waiting) ElementColor.Warning else ElementColor.Success
-                page.message("Subscription %0 created", parameters.subscription)
+                page.message("Subscription %0 created.", parameters.subscription)
             }.catch { page.error(it) }
         }
         val cancelButton = textButton("Cancel")

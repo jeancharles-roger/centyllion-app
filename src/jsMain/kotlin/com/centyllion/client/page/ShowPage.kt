@@ -123,7 +123,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
-            message("Updates speed for %0 to %1", behaviour.name, speed.toFixed())
+            message("Updated speed for %0 to %1.", behaviour.name, speed.toFixed())
             val newBehaviour = behaviour.copy(probability = speed)
             model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
         },
@@ -312,7 +312,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun saveCurrentThumbnail() {
         simulationController.simulationViewController.screenshot().then {
             api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
-            message("Current state saved as thumbnail")
+            message("Current state saved as thumbnail.")
         }
     }
 
@@ -328,7 +328,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 }.then { newSimulation ->
                     setSimulation(newSimulation)
                     saveInitThumbnail()
-                    message("Model %0 and simulation %1 saved", model.model.name, simulation.simulation.name)
+                    message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
                     after()
                     Unit
                 }.catch {
@@ -341,7 +341,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             if (needModelSave) {
                 api.updateGrainModel(model).then {
                     setModel(model)
-                    message("Model %0 saved", model.model.name)
+                    message("Model %0 saved.", model.model.name)
                     Unit
                 }.catch {
                     this.error(it)
@@ -356,7 +356,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
                         setSimulation(newSimulation)
                         saveInitThumbnail()
-                        message("Simulation %0 saved", simulation.simulation.name)
+                        message("Simulation %0 saved.", simulation.simulation.name)
                         after()
                         Unit
                     }.catch {
@@ -369,7 +369,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         setSimulation(simulation)
                         saveInitThumbnail()
                         refreshButtons()
-                        message("Simulation %0 saved", simulation.simulation.name)
+                        message("Simulation %0 saved.", simulation.simulation.name)
                         after()
                         Unit
                     }.catch {
@@ -387,7 +387,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val readAccess = !model.info.readAccess
         model = model.copy(info = model.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        message("${if (!readAccess) "Un-" else ""}Published model")
+        message("${if (!readAccess) "Un-" else ""}Published model.")
         save()
     }
 
@@ -399,7 +399,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
         simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
         moreDropdown.active = false
-        message("${if (!readAccess) "Un-" else ""}Published simulation")
+        message("${if (!readAccess) "Un-" else ""}Published simulation.")
         save()
     }
 
@@ -421,7 +421,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 // closes the action
                 moreDropdown.active = false
                 editionTab.selectedPage = modelPage
-                message("Model and simulation cloned")
+                message("Model and simulation cloned.")
             }
         }
     }
@@ -439,7 +439,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 setSimulation(emptySimulationDescription)
                 moreDropdown.active = false
                 editionTab.selectedPage = simulationPage
-                message("New simulation")
+                message("New simulation.")
             }
         }
     }
@@ -456,7 +456,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
                 moreDropdown.active = false
                 editionTab.selectedPage = simulationPage
-                message("Simulation cloned")
+                message("Simulation cloned.")
             }
         }
     }
@@ -479,7 +479,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             textButton(i18n("Yes"), ElementColor.Danger) {
                 appContext.api.deleteGrainModel(model).then {
                     appContext.openPage(homePage)
-                    message("Model %0 deleted", model.label)
+                    message("Model %0 deleted.", model.label)
                 }
             },
             textButton(i18n("No"))

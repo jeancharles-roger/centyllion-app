@@ -61,13 +61,14 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         }
 
     val featuredColumns = Columns(
-        Column(SubTitle(i18n("Featured models")), featuredController, size = ColumnSize.Half),
+        Column(SubTitle(i18n("Featured")), featuredController, size = ColumnSize.Half),
         Column(SubTitle(i18n("Public models")), publicModelsController, size = ColumnSize.Half)
     )
 
     val featuredPage = TabPage(TabItem(i18n("Featured"), "star"), featuredColumns)
 
     val usersPageController = ResultPageController(
+        appContext.locale,
         noContextColumnsController(emptyList()) { data, previous ->
             previous ?: UserAdministrationController(data, this).wrap { Column(it.container, size = ColumnSize.S6) }
         },
@@ -107,6 +108,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     val assetSendResult = Label()
 
     val assetsPageController = ResultPageController(
+        appContext.locale,
         noContextColumnsController(emptyList()) { data, previous ->
             previous ?: AssetAdministrationController(data).wrap { Column(it.container, size = ColumnSize.S3) }
         },

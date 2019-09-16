@@ -1,20 +1,25 @@
 {
   "name": "en-US",
   "translations": {
+    "Previous": "Previous",
+    "Next": "Next",
+
+    "Model": "Model",
+    "Models": "Models",
+    "Simulation": "Simulation",
+    "Simulations": "Simulations",
 
     "by %0": "by %0",
     "by me": "by me",
-    "Model": "Model",
-    "Simulation": "Simulation",
     "Model Name": "Model Name",
     "Simulation Name": "Simulation Name",
     "Description": "Description",
     "Clone": "Clone",
     "Save": "Save",
     "Publish Model": "Publish Model",
-    "Un-Publish Model": "Publish Model",
+    "Un-Publish Model": "Un-Publish Model",
     "Publish Simulation": "Publish Simulation",
-    "Un-Publish Simulation": "Publish Simulation",
+    "Un-Publish Simulation": "Un-Publish Simulation",
     "Delete Model": "Delete Model",
     "Delete Simulation": "Delete Simulation",
     "New Simulation": "New Simulation",
@@ -47,7 +52,11 @@
     "My models and simulations": "My models and simulations",
     "My Recent simulation": "My Recent simulation",
 
-    "Featured models": "Featured models",
+    "Search": "Search",
+    "No simulation found": "No simulation found",
+    "No model found": "No model found",
+    "Recent simulations": "Recent simulations",
+
     "Public models": "Public models",
     "Featured": "Featured",
     "Users": "Users",

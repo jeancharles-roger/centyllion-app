@@ -5,7 +5,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class Locales(
-    val default: String = "en_US",
+    val default: String = "en-US",
     val locales: List<String> = emptyList()
 ) {
     /** Searches [locale] in available one the or the closest */

@@ -10,13 +10,13 @@ import bulma.Icon
 import bulma.Input
 import bulma.NoContextController
 import bulma.noContextDropdownController
-import com.centyllion.client.Api
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.ResultPageController
 import com.centyllion.model.Asset
 import kotlin.properties.Delegates.observable
 
 class Asset3dSelectController(
-    url: String, api: Api,
+    url: String, appContext: AppContext,
     var onUpdate: (old: String, new: String, controller: Asset3dSelectController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, Dropdown>() {
 
@@ -63,8 +63,8 @@ class Asset3dSelectController(
         { asset, _ -> AssetItem(asset, this) }
 
     val assetsPageController = ResultPageController(
-        assetsController, { DropdownContentItem(it) },
-        { offset, limit -> api.fetchAllAssets(offset, limit, "gltf", "glb") }
+        appContext.locale, assetsController, { DropdownContentItem(it) },
+        { offset, limit -> appContext.api.fetchAllAssets(offset, limit, "gltf", "glb") }
     )
 
     override val container: Dropdown = dropdown

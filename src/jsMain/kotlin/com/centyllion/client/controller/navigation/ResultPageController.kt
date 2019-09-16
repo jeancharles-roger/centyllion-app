@@ -7,6 +7,7 @@ import bulma.NoContextController
 import bulma.Pagination
 import bulma.PaginationAction
 import bulma.PaginationLink
+import com.centyllion.i18n.Locale
 import com.centyllion.model.ResultPage
 import com.centyllion.model.emptyResultPage
 import kotlin.js.Promise
@@ -24,6 +25,7 @@ class ResultPageController<
     /** Controller for each item */
     Ctrl : Controller<Data, Context, ItemElement>
 >(
+    locale: Locale,
     val contentController: MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>,
     val toHeader: (Pagination) -> ItemElement,
     var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
@@ -48,9 +50,9 @@ class ResultPageController<
         if (old != new) fetch(new, limit).then { data = it }.catch { error(it) }
     }
 
-    val next = PaginationAction("Next") { offset += limit }
+    val next = PaginationAction(locale.i18n("Next")) { offset += limit }
 
-    val previous = PaginationAction("Previous") { offset -= limit }
+    val previous = PaginationAction(locale.i18n("Previous")) { offset -= limit }
 
     val pagination = Pagination(previous = previous, next = next, rounded = true).apply {
         contentController.header += toHeader(this)

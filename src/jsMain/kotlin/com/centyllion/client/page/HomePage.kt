@@ -105,7 +105,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
 
     val recentSimulationResult =
         ResultPageController(
-            recentSimulationListController,
+            appContext.locale, recentSimulationListController,
             { Column(it, size = ColumnSize.Full) },
             { offset, limit ->  appContext.api.fetchMySimulations(null, offset, limit) },
             { error(it) }
@@ -122,7 +122,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         }
 
     val featuredResult = ResultPageController(
-        featuredListController,
+        appContext.locale, featuredListController,
         { Column(it, size = ColumnSize.Full) },
         { offset, limit -> appContext.api.fetchAllFeatured(offset, limit) },
         { error(it) }
@@ -133,7 +133,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         Column(
             userController,
             Title(i18n("My Recent simulation")), recentSimulationResult,
-            Title(i18n("Featured models")), featuredResult,
+            Title(i18n("Featured")), featuredResult,
             size = ColumnSize.TwoThirds
         )
     )

@@ -203,7 +203,7 @@ class SimulationRunController(
 
     val asset3dController =
         noContextColumnsController(simulation.assets) { asset, previous ->
-            previous ?: Asset3dEditController(asset, readOnly, page.appContext.api).wrap { controller ->
+            previous ?: Asset3dEditController(asset, readOnly, page.appContext).wrap { controller ->
                 controller.onUpdate = { old, new, _ ->
                     if (old != new) data = data.updateAsset(old, new)
                 }

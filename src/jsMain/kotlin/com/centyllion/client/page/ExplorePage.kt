@@ -29,7 +29,7 @@ import com.centyllion.model.SimulationDescription
 
 class ExplorePage(override val appContext: AppContext) : BulmaPage {
 
-    val noSimulationResult = Column(SubTitle("No simulation found"), size = ColumnSize.Full)
+    val noSimulationResult = Column(SubTitle(i18n("No simulation found")), size = ColumnSize.Full)
 
     // Searched simulations controller
     val searchedSimulationController =
@@ -44,11 +44,11 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         }
 
     val searchedSimulationResult = ResultPageController(
-        searchedSimulationController,
+        appContext.locale, searchedSimulationController,
         { Column(it, size = ColumnSize.Full) },
         { offset, limit ->
             appContext.api.searchSimulation(searchInput.value, offset, limit).then {
-                searchSimulationTabItem.text = "Simulation (${it.totalSize})"
+                searchSimulationTabItem.text = "${i18n("Simulation")} (${it.totalSize})"
                 noSimulationResult.hidden = it.totalSize > 0
                 it
             }
@@ -58,9 +58,9 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
     )
 
     // searched simulations tab title
-    val searchSimulationTabItem = TabItem("Simulation", "play")
+    val searchSimulationTabItem = TabItem(i18n("Simulations"), "play")
 
-    val noModelResult = Column(SubTitle("No model found"), size = ColumnSize.Full)
+    val noModelResult = Column(SubTitle(i18n("No model found")), size = ColumnSize.Full)
 
     // Searched models controller
     val searchedModelController =
@@ -75,11 +75,11 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         }
 
     val searchedModelResult = ResultPageController(
-        searchedModelController,
+        appContext.locale, searchedModelController,
         { Column(it, size = ColumnSize.Full) },
         { offset, limit ->
             appContext.api.searchModel(searchInput.value, tagsController.tags, offset, limit).then {
-                searchModelTabItem.text = "Model (${it.totalSize})"
+                searchModelTabItem.text = "${i18n("Model")} (${it.totalSize})"
                 noModelResult.hidden = it.totalSize > 0
                 it
             }
@@ -88,12 +88,12 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         initialLimit = 8
     )
     // searched modes tab title
-    val searchModelTabItem = TabItem("Models", "boxes")
+    val searchModelTabItem = TabItem(i18n("Models"), "boxes")
 
     // search input
-    val searchInput: Input = Input("", "Search", rounded = true) { _, value ->
-        searchSimulationTabItem.text = "Simulation"
-        searchModelTabItem.text = "Model"
+    val searchInput: Input = Input("", i18n("Search"), rounded = true) { _, value ->
+        searchSimulationTabItem.text = i18n("Simulation")
+        searchModelTabItem.text = i18n("Model")
         searchedSimulationResult.refreshFetch()
         searchedModelResult.refreshFetch()
     }
@@ -124,7 +124,7 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
 
     val recentResult =
         ResultPageController(
-            recentListController,
+            appContext.locale, recentListController,
             { Column(it, size = ColumnSize.Full) },
             { offset, limit ->  appContext.api.fetchPublicSimulations(null, offset, limit) },
             { error(it) }
@@ -141,16 +141,16 @@ class ExplorePage(override val appContext: AppContext) : BulmaPage {
         }
 
     val featuredResult = ResultPageController(
-        featuredListController,
+        appContext.locale, featuredListController,
         { Column(it, size = ColumnSize.Full) },
         { offset, limit -> appContext.api.fetchAllFeatured(offset, limit) },
         { error(it) }
     )
 
     val container = Div(
-        Title("Search"), Box(search, tagsController, searchTabs),
-        Title("Recent simulations"), Box(recentResult),
-        Title("Featured"), Box(featuredResult)
+        Title(i18n("Search")), Box(search, tagsController, searchTabs),
+        Title(i18n("Recent simulations")), Box(recentResult),
+        Title(i18n("Featured")), Box(featuredResult)
     )
 
     override val root = container.root

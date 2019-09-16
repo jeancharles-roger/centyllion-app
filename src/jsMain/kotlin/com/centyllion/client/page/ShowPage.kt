@@ -536,11 +536,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun refreshMoreButtons() {
         publishModelItem.disabled = model.id.isEmpty()
         publishModelItem.itemIcon.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishModelItem.itemText.text = "${if (model.info.readAccess) "Un-" else ""}Publish Model"
+        publishModelItem.itemText.text = i18n("${if (model.info.readAccess) "Un-" else ""}Publish Model")
 
         publishSimulationItem.disabled = simulation.id.isEmpty()
         publishSimulationItem.itemIcon.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishSimulationItem.itemText.text = "${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation"
+        publishSimulationItem.itemText.text = i18n("${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation")
 
         deleteModelItem.disabled = model.id.isEmpty()
 

@@ -11,7 +11,7 @@ import bulma.Label
 import bulma.Level
 import bulma.NoContextController
 import bulma.Slider
-import com.centyllion.client.Api
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
@@ -19,7 +19,7 @@ import com.centyllion.model.Asset3d
 import kotlin.properties.Delegates.observable
 
 class Asset3dEditController(
-    initialData: Asset3d, readOnly: Boolean = false, api: Api,
+    initialData: Asset3d, readOnly: Boolean = false, appContext: AppContext,
     var onUpdate: (old: Asset3d, new: Asset3d, controller: Asset3dEditController) -> Unit = { _, _, _ -> },
     onDelete: ((Asset3d) -> Unit)? = null
 ) : NoContextController<Asset3d, Box>() {
@@ -51,7 +51,7 @@ class Asset3dEditController(
         }
     }
 
-    val assetSelectController = Asset3dSelectController(data.url, api) { old, new, _ ->
+    val assetSelectController = Asset3dSelectController(data.url, appContext) { old, new, _ ->
         if (old != new) this.data = this.data.copy(url = new)
     }
 

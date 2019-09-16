@@ -107,12 +107,12 @@ class SimulationRunController(
 
     private var presentCharts = false
 
-    val nameController = EditableStringController(data.name, "Simulation Name", readOnly)
+    val nameController = EditableStringController(data.name, page.i18n("Simulation Name"), readOnly)
     { _, new, _ ->
         data = data.copy(name = new)
     }
 
-    val descriptionController = EditableStringController(data.description, "Description", readOnly)
+    val descriptionController = EditableStringController(data.description, page.i18n("Description"), readOnly)
     { _, new, _ ->
         data = data.copy(description = new)
     }
@@ -203,7 +203,7 @@ class SimulationRunController(
 
     val asset3dController =
         noContextColumnsController(simulation.assets) { asset, previous ->
-            previous ?: Asset3dEditController(asset, readOnly, page.appContext).wrap { controller ->
+            previous ?: Asset3dEditController(asset, readOnly, page).wrap { controller ->
                 controller.onUpdate = { old, new, _ ->
                     if (old != new) data = data.updateAsset(old, new)
                 }
@@ -214,7 +214,7 @@ class SimulationRunController(
 
     val assetsColumn = Column(
         Level(
-            left = listOf(Title("Assets", TextSize.S4)),
+            left = listOf(Title(page.i18n("Assets"), TextSize.S4)),
             right = listOf(addAsset3dButton),
             mobile = true
         ),
@@ -245,9 +245,9 @@ class SimulationRunController(
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
-        Column(Title("Grains", TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
+        Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
         Column(simulationColumn, desktopSize = ColumnSize.S6),
-        Column(Title("Behaviours", TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
+        Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
         assetsColumn,
         multiline = true
     )

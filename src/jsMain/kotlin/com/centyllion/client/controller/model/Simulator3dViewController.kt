@@ -177,10 +177,10 @@ open class Simulator3dViewController(
     val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
     { _, _, _ -> selectPointer() }
 
-    val sizeDropdown = Dropdown(text = ToolSize.Fine.name, rounded = true).apply {
+    val sizeDropdown = Dropdown(text = page.i18n(ToolSize.Fine.name), rounded = true).apply {
         items = ToolSize.values().map { size ->
-            DropdownSimpleItem(size.name) {
-                this.text = size.name
+            DropdownSimpleItem(page.i18n(size.name)) {
+                this.text = page.i18n(size.name)
                 selectedSize = size
                 selectPointer()
                 this.toggleDropdown()

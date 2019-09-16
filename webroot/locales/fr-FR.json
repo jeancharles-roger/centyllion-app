@@ -44,7 +44,7 @@
     "Model %0 saved.": "Modèle %0 enregistré.",
     "Simulation %0 saved.": "Simulation %0 enregistré.",
     "Updated speed for %0 to %1.": "Mise à jour de la vitesse de %0 à %1.",
-    "Current state saved as thumbnail.": "Etat courant enregistré comme miniature.",
+    "Current state saved as thumbnail.": "État courant enregistré comme miniature.",
     "Model %0 and simulation %1 saved.": "Modèle %0 et simulation %1 enregistrés.",
     "Published model.": "Modèle publié.",
     "Un-Published model.": "Modèle privatisé.",
@@ -87,7 +87,6 @@
     "Tags": "Tags",
     "Popular": "Populaires",
 
-
     "Select a element to edit it": "Sélectionner un élément pour l'éditer",
     "Field": "Champs",
     "Fields": "Champs",
@@ -111,6 +110,14 @@
     "Field influences": "Influences des champs",
     "When age": "Avec l'âge",
     "Reactions": "Réactions",
+    "Url": "Url",
+    "Position (x,y,z)": "Position (x,y,z)",
+    "Scale (x,y,z)": "Échelle (x,y,z)",
+    "Rotation (x,y,z)": "Rotation (x,y,z)",
+    "Fine": "Fin",
+    "Small": "Petit",
+    "Medium": "Moyen",
+    "Large": "Grand",
 
     "Subscription %0 created.": "Abonnement %0 créé."
   }

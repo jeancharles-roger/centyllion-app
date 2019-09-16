@@ -11,15 +11,15 @@ import bulma.Label
 import bulma.Level
 import bulma.NoContextController
 import bulma.Slider
-import com.centyllion.client.AppContext
 import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Asset3d
 import kotlin.properties.Delegates.observable
 
 class Asset3dEditController(
-    initialData: Asset3d, readOnly: Boolean = false, appContext: AppContext,
+    initialData: Asset3d, readOnly: Boolean = false, val page: BulmaPage,
     var onUpdate: (old: Asset3d, new: Asset3d, controller: Asset3dEditController) -> Unit = { _, _, _ -> },
     onDelete: ((Asset3d) -> Unit)? = null
 ) : NoContextController<Asset3d, Box>() {
@@ -51,11 +51,11 @@ class Asset3dEditController(
         }
     }
 
-    val assetSelectController = Asset3dSelectController(data.url, appContext) { old, new, _ ->
+    val assetSelectController = Asset3dSelectController(data.url, page.appContext) { old, new, _ ->
         if (old != new) this.data = this.data.copy(url = new)
     }
 
-    val urlController = EditableStringController(data.url, "Url")
+    val urlController = EditableStringController(data.url, page.i18n("Url"))
     { _, new, _ ->
         this.data = this.data.copy(url = new)
     }
@@ -111,15 +111,15 @@ class Asset3dEditController(
                 // first line
                 Column(header, size = ColumnSize.Full),
                 Column(opacityField, size = ColumnSize.Full),
-                Column(Label("Position (x,y,z)"), size = ColumnSize.Full),
+                Column(Label(page.i18n("Position (x,y,z)")), size = ColumnSize.Full),
                 Column(xController, size = ColumnSize.OneThird),
                 Column(yController, size = ColumnSize.OneThird),
                 Column(zController, size = ColumnSize.OneThird),
-                Column(Label("Scale (x,y,z)"), size = ColumnSize.Full),
+                Column(Label(page.i18n("Scale (x,y,z)")), size = ColumnSize.Full),
                 Column(xScaleController, size = ColumnSize.OneThird),
                 Column(yScaleController, size = ColumnSize.OneThird),
                 Column(zScaleController, size = ColumnSize.OneThird),
-                Column(Label("Rotation (x,y,z)"), size = ColumnSize.Full),
+                Column(Label(page.i18n("Rotation (x,y,z)")), size = ColumnSize.Full),
                 Column(xRotationController, size = ColumnSize.OneThird),
                 Column(yRotationController, size = ColumnSize.OneThird),
                 Column(zRotationController, size = ColumnSize.OneThird),

@@ -110,6 +110,14 @@
     "Field influences": "Field influences",
     "When age": "When age",
     "Reactions": "Reactions",
+    "Url": "Url",
+    "Position (x,y,z)": "Position (x,y,z)",
+    "Scale (x,y,z)": "Scale (x,y,z)",
+    "Rotation (x,y,z)": "Rotation (x,y,z)",
+    "Fine": "Fine",
+    "Small": "Small",
+    "Medium": "Medium",
+    "Large": "Large",
 
     "Subscription %0 created.": "Subscription %0 created."
   }

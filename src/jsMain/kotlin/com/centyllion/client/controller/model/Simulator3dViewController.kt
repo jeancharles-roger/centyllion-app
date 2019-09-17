@@ -9,6 +9,7 @@ import babylonjs.BoxOptions
 import babylonjs.Color3
 import babylonjs.CylinderOptions
 import babylonjs.Engine
+import babylonjs.GroundOptions
 import babylonjs.HemisphericLight
 import babylonjs.InstancedMesh
 import babylonjs.Mesh
@@ -127,7 +128,7 @@ class Simulator3dViewController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
-    class FieldSupport(val mesh: Mesh, val texture: RawTexture) {
+    class FieldSupport(val mesh: Mesh, val texture: RawTexture, val alpha: Uint8Array) {
         fun dispose() {
             texture.dispose()
             mesh.dispose()
@@ -250,7 +251,7 @@ class Simulator3dViewController(
 
 
     private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
-        old.values.forEach { it.dispose() }
+        //old.values.forEach { it.dispose() }
     }
 
     private var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
@@ -271,23 +272,20 @@ class Simulator3dViewController(
         alpha = 1.5*PI
         lowerBetaLimit = -2*PI
         upperBetaLimit = 2*PI
-        //beta = PI
 
         panningSensibility = 50
 
         attachControl(simulationCanvas.root, false)
     }
 
-    val plane = MeshBuilder.CreatePlane("plane", PlaneOptions(size = 100), scene).apply {
-        rotate(Axis.X, PI/2)
-
-        val material = StandardMaterial("plane material", scene)
+    val plane = MeshBuilder.CreateGround("ground", GroundOptions(width = 100, height = 100, subdivisions = 10), scene).apply {
+        translate(Axis.X, -0.5)
+        val material = StandardMaterial("ground material", scene)
         material.emissiveColor = Color3.Black()
         material.wireframe = true
         this.material = material
     }
 
-    //val pointer = Mesh("pointer", scene)
     val pointer = MeshBuilder.CreateBox(
         "pointer", BoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
     ).apply {
@@ -561,10 +559,10 @@ class Simulator3dViewController(
             val height = grain.size.coerceAtLeast(0.1)
             val color = colorFromName(grain.color).toColor4(1)
             when (grain.icon) {
-                "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 0.8, faceColors = Array(6) {color}), scene)
-                "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
+                "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) {color}), scene)
+                "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
                 "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
-                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(size = 1.0, faceColors = Array(6) {color}), scene)
+                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
                     /*
                     TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
                         // moves the geometry into place
@@ -583,10 +581,12 @@ class Simulator3dViewController(
     private fun fieldSupports() = data.model.fields.map { field ->
         val levels = data.field(field.id)
 
+        val alpha = Uint8Array(levels.size)
+        levels.alpha(alpha)
         val texture = RawTexture.CreateAlphaTexture(
-            levels.alpha(), data.simulation.width, data.simulation.height,
-            scene, false, false, Texture.NEAREST_SAMPLINGMODE
-        )
+                alpha, data.simulation.width, data.simulation.height,
+                scene, false, false, Texture.NEAREST_SAMPLINGMODE
+            )
         val material = StandardMaterial("${field.name} material", scene)
         val color = colorFromName(field.color)
         material.diffuseColor = color
@@ -596,7 +596,7 @@ class Simulator3dViewController(
         mesh.material = material
         mesh.rotate(Axis.X, PI/2)
         scene.addMesh(mesh)
-        field.id to FieldSupport(mesh, texture)
+        field.id to FieldSupport(mesh, texture, alpha)
     }.toMap()
 
 
@@ -642,7 +642,8 @@ class Simulator3dViewController(
         //mesh.receiveShadows = true
 
         // positions the mesh
-        mesh.position.set(x,  0, y)
+        val agent = data.model.indexedGrains[grainId]
+        mesh.position.set(x,  (agent?.size ?: 1.0) / 2.0, y)
 
         // adds the mesh to scene and register it
         scene.addMesh(mesh)
@@ -691,7 +692,10 @@ class Simulator3dViewController(
         dead.forEach { transformMesh(it, -1) }
 
         // updates fields
-        fieldSupports.forEach { it.value.texture.update(data.field(it.key).alpha()) }
+        fieldSupports.forEach {
+            data.field(it.key).alpha(it.value.alpha)
+            it.value.texture.update(it.value.alpha)
+        }
     }
 
     fun render() {
@@ -704,7 +708,10 @@ class Simulator3dViewController(
             transformMesh(i, data.idAtIndex(i))
         }
 
-        fieldSupports.forEach { it.value.texture.update(data.field(it.key).alpha()) }
+        fieldSupports.forEach {
+            data.field(it.key).alpha(it.value.alpha)
+            it.value.texture.update(it.value.alpha)
+        }
         render()
     }
 
@@ -741,16 +748,16 @@ class Simulator3dViewController(
     }
 
     /** Computes alpha value for opacity for each field level in the array */
-    fun FloatArray.alpha() = Uint8Array(this.size).also {
+    fun FloatArray.alpha(array: Uint8Array)  {
         for (i in this.indices) {
             val l = this[i]
             val a = when {
-                l <= minFieldLevel -> 0
-                l >= 0.1f -> 64 + (80*l - 8).roundToInt()
-                else -> (64 / -log10(l)).roundToInt()
+                l <= minFieldLevel -> 0f
+                l >= 1f -> 200f
+                l >= 0.1f -> 111 * l + 89f
+                else -> (-100f / log10(l))
             }
-            it[i] = a.toByte()
+            array[i] = a.toByte()
         }
     }
-
 }

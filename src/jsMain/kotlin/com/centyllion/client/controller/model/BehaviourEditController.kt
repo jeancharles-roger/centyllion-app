@@ -9,6 +9,7 @@ import bulma.Div
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
+import bulma.HtmlWrapper
 import bulma.Icon
 import bulma.Label
 import bulma.Level
@@ -29,6 +30,9 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import com.centyllion.model.Reaction
+import kotlinx.html.dom.create
+import kotlinx.html.js.hr
+import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
@@ -193,6 +197,10 @@ class BehaviourEditController(
             }
         }
 
+    val fieldSeparator = HtmlWrapper(document.create.hr()).apply {
+        hidden = context.fields.isEmpty()
+    }
+
     val fieldsConfiguration = Columns(
         Column(
             Level(
@@ -213,7 +221,9 @@ class BehaviourEditController(
             HorizontalField(Label(page.i18n("Description")), descriptionController.container),
             HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
             HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
+            HtmlWrapper(document.create.hr()),
             Label(page.i18n("Reactions")), reactionsController,
+            fieldSeparator,
             fieldsConfiguration
         )
     )
@@ -231,6 +241,7 @@ class BehaviourEditController(
 
         fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()
+        fieldSeparator.hidden = context.fields.isEmpty()
         fieldsConfiguration.hidden = context.fields.isEmpty()
     }
 

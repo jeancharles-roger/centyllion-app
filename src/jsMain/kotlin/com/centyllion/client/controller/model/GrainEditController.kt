@@ -10,6 +10,7 @@ import bulma.Div
 import bulma.ElementColor
 import bulma.Help
 import bulma.HorizontalField
+import bulma.HtmlWrapper
 import bulma.Label
 import bulma.Size
 import bulma.Slider
@@ -24,6 +25,9 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
+import kotlinx.html.dom.create
+import kotlinx.html.js.hr
+import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
@@ -153,6 +157,11 @@ class GrainEditController(
             }
         }
 
+
+    val fieldSeparator = HtmlWrapper(document.create.hr()).apply {
+        hidden = context.fields.isEmpty()
+    }
+
     val fieldControls = Columns(
         Column(
             Label(page.i18n("Productions")), fieldProductionsController,
@@ -194,6 +203,7 @@ class GrainEditController(
                 firstDirectionController.container,
                 extendedDirectionController.container
             ),
+            fieldSeparator,
             fieldControls
         )
     )
@@ -213,6 +223,7 @@ class GrainEditController(
         sizeSlider.value = "${data.size}"
         sizeValue.text = "${data.size}"
 
+        fieldSeparator.hidden = context.fields.isEmpty()
         fieldControls.hidden = context.fields.isEmpty()
     }
 

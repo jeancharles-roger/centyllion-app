@@ -77,7 +77,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
 
-            tagsController.hidden = !new.info.public
             tagsController.readOnly = readonly
             tagsController.data = new.tags
 
@@ -245,7 +244,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         modelController.readOnly = modelReadonly
         simulationController.readOnly = isSimulationReadOnly
         tools.hidden = true
-        tagsController.hidden = true
 
         // retrieves model and simulation to load
         val params = URLSearchParams(window.location.search)

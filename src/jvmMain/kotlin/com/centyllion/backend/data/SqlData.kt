@@ -341,12 +341,9 @@ class SqlData(
     }
 
     override fun modelTags(userId: String?, offset: Int, limit: Int): ResultPage<String> = transaction {
-        val request = listOfNotNull(
-            "SELECT tags_searchable FROM modeldescriptions",
-            "INNER JOIN infodescriptions ON modeldescriptions.info = infodescriptions.id",
-            " WHERE infodescriptions.\"readAccess\"",
-            userId?.let { "AND infodescriptions.\"userId\" = ''$it''" }
-        ).joinToString(" ")
+        val request = "SELECT tags_searchable FROM modeldescriptions " +
+                "INNER JOIN infodescriptions ON modeldescriptions.info = infodescriptions.id " +
+                "WHERE " + if (userId != null) "infodescriptions.\"userId\" = ''$userId''" else  "infodescriptions.\"readAccess\""
 
         exec("SELECT word FROM ts_stat('$request') ORDER BY ndoc DESC LIMIT $limit OFFSET $offset") {
             val result = mutableListOf<String>()

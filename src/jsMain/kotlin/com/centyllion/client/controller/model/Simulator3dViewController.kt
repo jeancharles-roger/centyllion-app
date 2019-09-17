@@ -251,7 +251,7 @@ class Simulator3dViewController(
 
 
     private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
-        //old.values.forEach { it.dispose() }
+        old.values.forEach { it.dispose() }
     }
 
     private var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
@@ -651,9 +651,9 @@ class Simulator3dViewController(
         return mesh
     }
 
-    fun  transformMesh(index: Int, newGrainId: Int) {
+    fun  transformMesh(index: Int, newGrainId: Int, force: Boolean = false) {
         val mesh = agentMesh[index]
-        if (newGrainId != mesh?.metadata) {
+        if (force || newGrainId != mesh?.metadata) {
             // deletes the mesh
             if (mesh != null) {
                 agentMesh.remove(index)
@@ -705,7 +705,7 @@ class Simulator3dViewController(
     override fun refresh() {
         // applies transform mesh to all simulation
         for (i in data.currentAgents.indices) {
-            transformMesh(i, data.idAtIndex(i))
+            transformMesh(i, data.idAtIndex(i), true)
         }
 
         fieldSupports.forEach {

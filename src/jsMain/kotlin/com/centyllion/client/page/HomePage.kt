@@ -11,10 +11,13 @@ import bulma.Input
 import bulma.NoContextController
 import bulma.Panel
 import bulma.PanelContentBlock
+import bulma.PanelItem
 import bulma.PanelSimpleBlock
 import bulma.PanelTabs
 import bulma.PanelTabsItem
 import bulma.Size
+import bulma.Tag
+import bulma.Tags
 import bulma.Title
 import bulma.noContextColumnsController
 import bulma.noContextPanelController
@@ -29,7 +32,10 @@ import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
+import kotlinx.html.div
+import kotlinx.html.dom.create
 import org.w3c.dom.HTMLElement
+import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 
 class HomePage(override val appContext: AppContext) : BulmaPage {
@@ -84,11 +90,35 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         else -> setOf(GrainModelDescription::class, SimulationDescription::class)
     }
 
+    val myTags = Tags()
+    val myTagsItem = object : PanelItem {
+
+        override val root: HTMLElement = document.create.div(classes = "panel-block")
+
+        init {
+            hidden = true
+            appContext.api.fetchMyTags(0, 10).then {
+                hidden = it.content.isEmpty()
+                myTags.tags = it.content.map { tag ->
+                    Tag(tag, rounded = true).apply {
+                        root.style.cursor = "pointer"
+                        root.onclick = {
+                            color = if (color == ElementColor.None) ElementColor.Primary else ElementColor.None
+                            updateElements()
+                        }
+                    }
+                }
+                root.appendChild(myTags.root)
+            }
+        }
+    }
+
     val panelController = noContextPanelController(
         Panel(i18n("My models and simulations")), emptyList<Description>(),
         header = listOfNotNull(
             PanelContentBlock(Control(newModelButton)),
             PanelContentBlock(Control(searchInput, leftIcon = Icon("search", Size.Small))),
+            myTagsItem,
             PanelTabs(allTabItem, modelsTabItem, simulationsTabItem)
         )
     ) { data, previous -> previous ?: PanelItemController(data) }
@@ -183,12 +213,22 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         updateElements()
     }
 
+    private fun tagsForDescription(description: Description) = when (description) {
+        is GrainModelDescription ->
+            description.tags
+        is SimulationDescription ->
+            elements.filterIsInstance<GrainModelDescription>().find { it.id == description.modelId }?.tags ?: ""
+        else -> ""
+    }
+
     fun updateElements() {
         val search = searchInput.value
+        val activesTags = myTags.tags.filter { it.color == ElementColor.Primary }.map(Tag::text)
         val visibleElements = visibleElements()
         panelController.data = elements.filter {
             visibleElements.contains(it::class) &&
-                    (search.isEmpty() || it.label.contains(search, true))
+            (search.isEmpty() || it.label.contains(search, true)) &&
+            tagsForDescription(it).let { tags -> activesTags.all { tags.contains(it) } }
         }
     }
 }

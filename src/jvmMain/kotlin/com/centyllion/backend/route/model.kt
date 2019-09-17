@@ -36,7 +36,7 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
         get("tags") {
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-            context.respond(data.modelTags(offset, limit))
+            context.respond(data.modelTags(null, offset, limit))
         }
 
         get("search") {

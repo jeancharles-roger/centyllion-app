@@ -16,6 +16,24 @@ paths:
       responses:
         '200':
           description: A JSON containing my profile.
+  /me/tags:
+    get:
+      summary: Tags used in by me
+      tags:
+        - models
+      parameters:
+        - in: query
+          name: offset
+          description: Offset in the result list from the overwhole list
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: limit
+          description: Limit of model in the result list
+          schema:
+            type: integer
+            default: 50
   /me/model:
     get:
       summary: Get the list of my models

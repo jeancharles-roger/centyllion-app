@@ -19,6 +19,15 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
             }
         }
 
+        get("tags") {
+            withRequiredPrincipal {
+                val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+                val user = subscription.getOrCreateUserFromPrincipal(it)
+                context.respond(data.modelTags(user.id, offset, limit))
+            }
+        }
+
         // get all user's saved models
         route("model") {
             get {

@@ -340,9 +340,15 @@ class SqlData(
         ResultPage(content, offset, searchSimulationQuery(query).count())
     }
 
-    override fun modelTags(offset: Int, limit: Int): ResultPage<String> = transaction {
-        // TODO only select public model for tags
-        exec("SELECT word FROM ts_stat('SELECT tags_searchable from modeldescriptions') ORDER BY ndoc DESC LIMIT $limit OFFSET $offset") {
+    override fun modelTags(userId: String?, offset: Int, limit: Int): ResultPage<String> = transaction {
+        val request = listOfNotNull(
+            "SELECT tags_searchable FROM modeldescriptions",
+            "INNER JOIN infodescriptions ON modeldescriptions.info = infodescriptions.id",
+            " WHERE infodescriptions.\"readAccess\"",
+            userId?.let { "AND infodescriptions.\"userId\" = ''$it''" }
+        ).joinToString(" ")
+
+        exec("SELECT word FROM ts_stat('$request') ORDER BY ndoc DESC LIMIT $limit OFFSET $offset") {
             val result = mutableListOf<String>()
             while (it.next()) { result.add(it.getString(1)) }
             ResultPage(result, offset, result.size)

@@ -222,8 +222,9 @@ class MemoryData(
             deletedSimulations, offset, limit
         )
 
-    override fun modelTags(offset: Int, limit: Int): ResultPage<String> {
+    override fun modelTags(userId: String?, offset: Int, limit: Int): ResultPage<String> {
         val words = grainModels.values
+            .filter { userId == null || it.info.user?.id == userId}
             .map { it.tags.split(" ").filter(String::isNotBlank).map(String::trim) }
             .flatten()
         val counts = mutableMapOf<String, Int>()

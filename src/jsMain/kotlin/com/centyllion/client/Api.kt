@@ -30,24 +30,6 @@ import kotlin.js.Promise
 const val finalState: Short = 4
 const val successStatus: Short = 200
 
-fun fetchUrl(method: String, url: String, bearer: String? = null, content: dynamic = null, contentType: String? = "application/json"): Promise<String> =
-    Promise { resolve, reject ->
-        val request = XMLHttpRequest()
-        request.open(method, url, true)
-        bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
-        contentType?.let { request.setRequestHeader("Content-Type", it) }
-        request.onreadystatechange = {
-            if (request.readyState == finalState) {
-                if (request.status == successStatus) {
-                    resolve(request.responseText)
-                } else {
-                    reject(Throwable("Can't $method '$url': (${request.status}) ${request.statusText}"))
-                }
-            }
-        }
-        request.send(content)
-    }
-
 class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
 
     val json = Json(JsonConfiguration.Companion.Stable)
@@ -105,6 +87,11 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
     fun fetchMe(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/me", bearer).then { json.parse(User.serializer(), it) }.catch { null }
+        }
+
+    fun fetchMyTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+        fetch("GET", "/api/me/tags?offset=$offset&limit=$limit", bearer)
+            .then { json.parse(ResultPage.serializer(String.serializer()), it) }
         }
 
     fun saveMe(user: User) =

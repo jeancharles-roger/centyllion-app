@@ -9,7 +9,6 @@ import babylonjs.BoxOptions
 import babylonjs.Color3
 import babylonjs.CylinderOptions
 import babylonjs.Engine
-import babylonjs.GroundOptions
 import babylonjs.HemisphericLight
 import babylonjs.InstancedMesh
 import babylonjs.Mesh
@@ -25,6 +24,7 @@ import babylonjs.StandardMaterial
 import babylonjs.Texture
 import babylonjs.Tools
 import babylonjs.Vector3
+import babylonjs.extension.GridMaterial
 import bulma.BulmaElement
 import bulma.Control
 import bulma.Div
@@ -230,7 +230,7 @@ class Simulator3dViewController(
         blockfreeActiveMeshesAndRenderingGroups = true
 
         val width = simulator.simulation.width
-        HemisphericLight("light1", Vector3(1.25 * width, 3 * width, 1.25 * width), this)
+        HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 1.25 * width), this)
     }
 
     /*
@@ -270,19 +270,24 @@ class Simulator3dViewController(
         lowerAlphaLimit = 0
         upperAlphaLimit = 2*PI
         alpha = 1.5*PI
-        lowerBetaLimit = -2*PI
+        lowerBetaLimit = 0
         upperBetaLimit = 2*PI
+        beta = PI
 
         panningSensibility = 50
 
         attachControl(simulationCanvas.root, false)
     }
 
-    val plane = MeshBuilder.CreateGround("ground", GroundOptions(width = 100, height = 100, subdivisions = 10), scene).apply {
+    val plane = MeshBuilder.CreatePlane("ground", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
+        rotate(Axis.X, PI/2)
         translate(Axis.X, -0.5)
-        val material = StandardMaterial("ground material", scene)
-        material.emissiveColor = Color3.Black()
-        material.wireframe = true
+        translate(Axis.Y, -0.5)
+
+        val material = GridMaterial("ground material", scene)
+        material.opacity = 0.08
+        material.mainColor = Color3.White()
+        material.lineColor = Color3.Black()
         this.material = material
     }
 
@@ -543,7 +548,7 @@ class Simulator3dViewController(
         )
         Animation.CreateAndStartAnimation(
             "Reset camera beta", camera, "beta", 25, 25,
-            camera.beta, 0, 0
+            camera.beta, PI, 0
         )
         Animation.CreateAndStartAnimation(
             "Reset camera target", camera, "target", 26, 26,
@@ -563,17 +568,8 @@ class Simulator3dViewController(
                 "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
                 "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
                 else -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
-                    /*
-                    TextBufferGeometry(grain.iconString, TextGeometryParametersImpl(it, 0.8, height)).apply {
-                        // moves the geometry into place
-                        rotateX(PI / 2)
-                        rotateY(PI)
-                        translate(0.5, height / 2.0, 0.5)
-                        rotateZ(PI)
-                    }
-                     */
             }.apply {
-                isVisible = false
+                setEnabled(false)
             }
         }
     }.toMap()
@@ -595,6 +591,8 @@ class Simulator3dViewController(
         val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
         mesh.material = material
         mesh.rotate(Axis.X, PI/2)
+        mesh.translate(Axis.Z, -0.5 - (0.5 * field.id))
+
         scene.addMesh(mesh)
         field.id to FieldSupport(mesh, texture, alpha)
     }.toMap()
@@ -639,11 +637,15 @@ class Simulator3dViewController(
         // creates mesh
         val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
         mesh.metadata = grainId
-        //mesh.receiveShadows = true
 
         // positions the mesh
         val agent = data.model.indexedGrains[grainId]
-        mesh.position.set(x,  (agent?.size ?: 1.0) / 2.0, y)
+        mesh.position.set(x,  -(agent?.size ?: 1.0) / 2.0, y)
+
+        mesh.freezeWorldMatrix()
+        mesh.ignoreNonUniformScaling = true
+
+        //mesh.receiveShadows = true
 
         // adds the mesh to scene and register it
         scene.addMesh(mesh)

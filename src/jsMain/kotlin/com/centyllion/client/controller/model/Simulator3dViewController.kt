@@ -71,57 +71,6 @@ class Simulator3dViewController(
         Move("arrows-alt"), Pen("pen"),
         Line("pencil-ruler"), Spray("spray-can", 4),
         Eraser("eraser");
-
-        val height = 6.0
-
-        fun changePointer(pointer: Mesh, color: Color3?, size: Int) {
-            // clear all children
-            while (pointer.getChildMeshes().isNotEmpty()) {
-                val mesh = pointer.getChildMeshes().first()
-                pointer.removeChild(mesh)
-                pointer.getScene().removeMesh(mesh)
-            }
-
-            if (this != Move) {
-                val diameter = size * factor
-                val color4 = (color ?: Color3.Green()).toColor4(1)
-                val child = MeshBuilder.CreateCylinder(
-                    "inner pointer",
-                    CylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
-                    null
-                )
-                child.visibility = when (this@EditTools) {
-                    Eraser -> 0.1
-                    Spray -> 0.4
-                    else -> 0.7
-                }
-                child.position.set(pointer.position.x, pointer.position.y, pointer.position.z)
-                pointer.addChild(child)
-            }
-        }
-
-        fun pointerVisibility(pointer: Mesh, visible: Boolean) {
-            pointer.getChildMeshes().forEach { it.isVisible = visible }
-        }
-
-        fun positionPointer(pointer: Mesh, x: Number, y: Number) {
-            pointer.position.set(x, 0.0, y)
-        }
-
-        fun updatePointer(pointer: Mesh, step: Int) {
-            /*
-            val mesh = pointer.children.firstOrNull()
-            if (mesh != null && this == Line) {
-                if (step == 0) {
-                    val newMesh = mesh.clone()
-                    pointer.add(newMesh)
-                }
-                if (step < 0) {
-                    pointer.remove(pointer.children.last())
-                }
-            }
-             */
-        }
     }
 
     enum class ToolSize(val size: Int) {
@@ -306,6 +255,8 @@ class Simulator3dViewController(
 
     var simulationSourceX = -1
     var simulationSourceY = -1
+    var sceneSourceX = -1
+    var sceneSourceY = -1
 
     var simulationX = -1
     var simulationY = -1
@@ -356,9 +307,70 @@ class Simulator3dViewController(
         }
     }
 
+
+    val height = 6.0
+
+    fun changePointer(color: Color3?, size: Int) {
+        // clear all children
+        while (pointer.getChildMeshes().isNotEmpty()) {
+            val mesh = pointer.getChildMeshes().first()
+            pointer.removeChild(mesh)
+            mesh.dispose()
+            pointer.getScene().removeMesh(mesh)
+        }
+
+        if (selectedTool != EditTools.Move) {
+            val diameter = size * selectedTool.factor
+            val color4 = (color ?: Color3.Green()).toColor4(1)
+
+            val child = MeshBuilder.CreateCylinder(
+                "inner pointer",
+                CylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
+                null
+            )
+            child.visibility = when (selectedTool) {
+                EditTools.Eraser -> 0.1
+                EditTools.Spray -> 0.4
+                else -> 0.7
+            }
+            child.position.set(pointer.position.x, pointer.position.y, pointer.position.z)
+            pointer.addChild(child)
+        }
+    }
+
+    fun pointerVisibility(visible: Boolean) {
+        pointer.getChildMeshes().forEach { it.isVisible = visible }
+    }
+
+    fun positionPointer(x: Number, y: Number) {
+        pointer.position.set(x, 0.0, y)
+    }
+
+    fun updatePointer() {
+        if (selectedTool == EditTools.Line) {
+            if (drawStep == 0) {
+                val child = pointer.getChildren({ true }, true).firstOrNull()
+                if (child is Mesh) {
+                    val mesh = child.clone("line source", pointer)
+                    if (mesh is Mesh) {
+                        mesh.freezeWorldMatrix()
+                        pointer.addChild(mesh)
+                    }
+                }
+            }
+            if (drawStep < 0) {
+                val child = pointer.getChildren({ it.name == "line source" }, true).firstOrNull()
+                if (child is Mesh) {
+                    pointer.removeChild(child)
+                    child.dispose()
+                }
+            }
+        }
+    }
+
     fun selectPointer() {
         val color = colorFromName(selectedGrainController.data?.color ?: "Green")
-        selectedTool.changePointer(pointer, color, selectedSize.size)
+        changePointer(color, selectedSize.size)
     }
 
     fun selectTool(tool: EditTools) {
@@ -429,7 +441,7 @@ class Simulator3dViewController(
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            selectedTool.pointerVisibility(pointer, info.hit)
+            pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh == plane) {
                 drawStep = 0
 
@@ -438,9 +450,11 @@ class Simulator3dViewController(
 
                 simulationX = x + 50
                 simulationY = y + 50
+                sceneSourceX = x
+                sceneSourceY = y
                 simulationSourceX = simulationX
                 simulationSourceY = simulationY
-                selectedTool.updatePointer(pointer, drawStep)
+                updatePointer()
                 drawOnSimulation()
                 drawStep += 1
             }
@@ -451,16 +465,16 @@ class Simulator3dViewController(
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            selectedTool.pointerVisibility(pointer, info.hit)
+            pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh == plane) {
                 val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
                 val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
 
-                selectedTool.positionPointer(pointer,   x, y)
+                positionPointer(x, y)
                 if (drawStep > 0) {
                     simulationX = x + 50
                     simulationY = y + 50
-                    selectedTool.updatePointer(pointer, drawStep)
+                    updatePointer()
                     drawOnSimulation()
                     drawStep += 1
                 }
@@ -472,14 +486,14 @@ class Simulator3dViewController(
         val ray = pickInfo?.ray
         if (ray != null && selectedTool != EditTools.Move) {
             val info = ray.intersectsMesh(plane, true)
-            selectedTool.pointerVisibility(pointer, info.hit)
+            pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh != null) {
                 val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
                 val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
                 simulationX = x + 50
                 simulationY = y + 50
                 drawStep = -1
-                selectedTool.updatePointer(pointer, drawStep)
+                updatePointer()
                 drawOnSimulation()
                 simulationSourceX = -1
                 simulationSourceY = -1

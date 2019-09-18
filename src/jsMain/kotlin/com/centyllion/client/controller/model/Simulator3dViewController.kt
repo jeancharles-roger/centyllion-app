@@ -180,7 +180,7 @@ class Simulator3dViewController(
         blockMaterialDirtyMechanism = true
 
         val width = simulator.simulation.width
-        HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 1.25 * width), this)
+        HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 2 * width), this)
     }
 
     /*
@@ -607,6 +607,8 @@ class Simulator3dViewController(
         val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
         mesh.material = material
         mesh.rotate(Axis.X, PI/2)
+        mesh.translate(Axis.X, -0.5)
+        mesh.translate(Axis.Y, -0.5)
         mesh.translate(Axis.Z, -0.5 - (0.5 * field.id))
 
         scene.addMesh(mesh)

@@ -213,7 +213,7 @@ class Simulator3dViewController(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
-    val engine = Engine(simulationCanvas.root, true).apply {
+    val engine = Engine(simulationCanvas.root, true, adaptToDeviceRatio = false).apply {
         val width = (window.innerWidth - 40).coerceAtMost(600)
         val height = simulator.simulation.height * width / simulator.simulation.width
         setSize(width, height)
@@ -228,6 +228,7 @@ class Simulator3dViewController(
         autoClear = false
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
+        blockMaterialDirtyMechanism = true
 
         val width = simulator.simulation.width
         HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 1.25 * width), this)
@@ -421,7 +422,7 @@ class Simulator3dViewController(
         }
 
         onUpdate(drawStep == -1, data, this)
-        refresh()
+        refresh(false)
     }
 
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
@@ -560,18 +561,19 @@ class Simulator3dViewController(
         colorNames[name]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
-        grain.id to /*font?*/null.let {
-            val height = grain.size.coerceAtLeast(0.1)
-            val color = colorFromName(grain.color).toColor4(1)
-            when (grain.icon) {
-                "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) {color}), scene)
-                "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
-                "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
-                else -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
-            }.apply {
-                setEnabled(false)
-            }
+        val height = grain.size.coerceAtLeast(0.1)
+        val color = colorFromName(grain.color).toColor4(1)
+        val mesh = when (grain.icon) {
+            "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) {color}), scene)
+            "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
+            "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
+            else -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
+        }.apply {
+            setEnabled(false)
+            convertToUnIndexedMesh()
+            cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
         }
+        grain.id to mesh
     }.toMap()
 
     private fun fieldSupports() = data.model.fields.map { field ->
@@ -644,6 +646,8 @@ class Simulator3dViewController(
 
         mesh.freezeWorldMatrix()
         mesh.ignoreNonUniformScaling = true
+        mesh.doNotSyncBoundingInfo = true
+        mesh.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
 
         //mesh.receiveShadows = true
 
@@ -704,10 +708,12 @@ class Simulator3dViewController(
         scene.render()
     }
 
-    override fun refresh() {
+    override fun refresh() = refresh(true)
+
+    fun refresh(force: Boolean) {
         // applies transform mesh to all simulation
         for (i in data.currentAgents.indices) {
-            transformMesh(i, data.idAtIndex(i), true)
+            transformMesh(i, data.idAtIndex(i), force)
         }
 
         fieldSupports.forEach {

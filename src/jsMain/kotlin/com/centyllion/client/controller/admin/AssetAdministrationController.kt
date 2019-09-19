@@ -19,9 +19,9 @@ class AssetAdministrationController(asset: Asset) : NoContextController<Asset, B
 
     override var readOnly: Boolean by observable(false) { _, _, _ -> }
 
-    val url get() = "/api/asset/${data.id}"
+    val url get() = "/api/asset/${data.id}/${data.name}"
 
-    val thumbnail = Image(url, ImageSize.Square)
+    val thumbnail = Image(if (data.name.endsWith(".png")) url else "/images/480x480.png", ImageSize.Square)
     val name = Help(data.name)
 
     override val container = Card(

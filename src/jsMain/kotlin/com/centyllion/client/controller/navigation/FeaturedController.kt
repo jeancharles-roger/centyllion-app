@@ -27,7 +27,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
     val author = Label(data.authorName)
 
     val thumbnail = Image(
-        if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png",
+        if (data.thumbnailId != null) "/api/simulation/${data.simulationId}/thumbnail" else "/images/480x480.png",
         ImageSize.Square
     )
 
@@ -42,6 +42,6 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
         name.text = data.name
         description.root.innerHTML = markdownToHtml(data.description)
         author.text = data.authorName
-        thumbnail.src = if (data.thumbnailId != null) "/api/asset/${data.thumbnailId}" else "/images/480x480.png"
+        thumbnail.src = if (data.thumbnailId != null) "/api/simulation/${data.simulationId}/thumbnail" else "/images/480x480.png"
     }
 }

@@ -55,3 +55,7 @@ canvas.is-danger {
 .fa-rotate-45 {
   transform: rotate(45deg);
 }
+
+div.field-label {
+  text-align: left !important;
+}

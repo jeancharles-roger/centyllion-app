@@ -14,12 +14,11 @@ import com.centyllion.model.Subscription
 import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import keycloak.KeycloakInstance
-import kotlinx.html.dom.create
-import kotlinx.html.js.link
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
 import kotlinx.serialization.serializer
+import org.w3c.dom.HTMLLinkElement
 import org.w3c.files.Blob
 import org.w3c.files.File
 import org.w3c.xhr.FormData
@@ -68,7 +67,10 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
     /** Fetches css config and includes css files */
     fun addCss() = fetch("GET", "/css/centyllion/css.config.json").then {path ->
             JSON.parse<CssFile>(path).files.forEach {
-                document.head?.appendChild(document.create.link(url(it), "stylesheet"))
+                val link = document.createElement("link") as HTMLLinkElement
+                link.rel = "stylesheet"
+                link.href = url(it)
+                document.head?.append(link)
             }
         }
 

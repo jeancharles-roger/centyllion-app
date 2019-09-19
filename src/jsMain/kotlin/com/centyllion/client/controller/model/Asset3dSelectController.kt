@@ -12,29 +12,33 @@ import bulma.NoContextController
 import bulma.noContextDropdownController
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.navigation.ResultPageController
-import com.centyllion.model.Asset
+import com.centyllion.model.ResultPage
 import kotlin.properties.Delegates.observable
+
+fun shortUrl(url: String) = url.match("/api/asset/([a-z0-9-]+)/(.*)")?.get(2) ?: url
 
 class Asset3dSelectController(
     url: String, appContext: AppContext,
     var onUpdate: (old: String, new: String, controller: Asset3dSelectController) -> Unit = { _, _, _ -> }
 ) : NoContextController<String, Dropdown>() {
 
-    class AssetItem(asset: Asset, parent: Asset3dSelectController): NoContextController<Asset, DropdownItem>() {
 
-        override var data: Asset by observable(asset) { _, old, new ->
+    class AssetItem(url: String, parent: Asset3dSelectController): NoContextController<String, DropdownItem>() {
+
+        override var data: String by observable(url) { _, old, new ->
             if (old != new) refresh()
         }
 
-        override val container = DropdownSimpleItem(data.name) { _ ->
-            parent.data = "/api/asset/${data.id}"
+
+        override val container = DropdownSimpleItem(shortUrl(data)) { _ ->
+            parent.data = data
             parent.dropdown.active = false
         }
 
         override var readOnly: Boolean = false
 
         override fun refresh() {
-            container.text = data.name
+            container.text = shortUrl(data)
         }
     }
 
@@ -58,19 +62,27 @@ class Asset3dSelectController(
         text = url, rounded = true, menuWidth = "30rem"
     ) { assetsPageController.refreshFetch() }
 
-    val assetsController =
-        noContextDropdownController(emptyList<Asset>(), dropdown)
+    val urlController =
+        noContextDropdownController(emptyList<String>(), dropdown)
         { asset, _ -> AssetItem(asset, this) }
 
     val assetsPageController = ResultPageController(
-        appContext.locale, assetsController, { DropdownContentItem(it) },
-        { offset, limit -> appContext.api.fetchAllAssets(offset, limit, "gltf", "glb") }
+        appContext.locale, urlController, { DropdownContentItem(it) },
+        { offset, limit ->
+            appContext.api.fetchAllAssets(offset, limit, "gltf", "glb", "zip").then {
+                val all = it.content.flatMap {
+                    val base = "/api/asset/${it.id}/${it.name}"
+                    (it.entries.map { "$base/$it" } + base).filter { it.endsWith(".gltf") || it.endsWith(".glb")}
+                }
+                ResultPage(all, offset, it.totalSize)
+            }
+        }
     )
 
     override val container: Dropdown = dropdown
 
     override fun refresh() {
-        container.text = data
+        container.text = shortUrl(data)
     }
 
 }

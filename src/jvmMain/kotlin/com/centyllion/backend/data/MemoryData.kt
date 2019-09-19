@@ -301,11 +301,14 @@ class MemoryData(
             deletedAssets
         )
 
+    override fun getAsset(id: String) = assets[id] ?: backend?.getAsset(id)
+
     override fun getAssetContent(id: String) = assetContents[id] ?: backend?.getAssetContent(id)
 
     override fun createAsset(name: String, userId: String, data: ByteArray): Asset {
         val id = newId()
-        val result = Asset(id, name, userId)
+        val entries = if (name.endsWith(".zip")) listZipEntries(data) else emptyList<String>()
+        val result = Asset(id, name, entries, userId)
         assets[id] = result
         assetContents[id] = data
         deletedAssets.remove(id)

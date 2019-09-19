@@ -39,6 +39,7 @@ class JsonConverter : ContentConverter {
     private fun convertForSend(value: Any?): String = when (value) {
         is Info -> stringify(Info.serializer(), value)
         is User -> stringify(User.serializer(), value)
+        is Asset -> stringify(Asset.serializer(), value)
         is GrainModel -> stringify(GrainModel.serializer(), value)
         is GrainModelDescription -> stringify(GrainModelDescription.serializer(), value)
         is Simulation -> stringify(Simulation.serializer(), value)

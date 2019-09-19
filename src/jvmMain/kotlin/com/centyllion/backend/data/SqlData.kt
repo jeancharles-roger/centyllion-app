@@ -33,8 +33,10 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.joda.time.DateTimeUtils
+import java.io.ByteArrayInputStream
 import java.util.NoSuchElementException
 import java.util.UUID
+import java.util.zip.ZipInputStream
 import javax.sql.rowset.serial.SerialBlob
 
 class FullTextSearchOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@@")
@@ -431,6 +433,10 @@ class SqlData(
     override fun assetsForUser(userId: String) =
         DbAsset.find { DbAssets.userId eq UUID.fromString(userId) }.map { it.toModel() }
 
+    override fun getAsset(id: String) = transaction(database) {
+        DbAsset.findById(UUID.fromString(id))?.toModel()
+    }
+
     override fun getAssetContent(id: String) = transaction(database) {
         DbAsset.findById(UUID.fromString(id))?.content?.let { it.getBytes(1, it.length().toInt()) }
     }
@@ -438,6 +444,7 @@ class SqlData(
     override fun createAsset(name: String, userId: String, data: ByteArray): Asset = transaction(database) {
         DbAsset.new {
             this.name = name
+            this.entries = if (name.endsWith(".zip")) listZipEntries(data).joinToString(",") else ""
             this.userId = UUID.fromString(userId)
             this.content = SerialBlob(data)
         }.toModel()
@@ -450,3 +457,14 @@ class SqlData(
     }
 }
 
+fun listZipEntries(data: ByteArray): MutableList<String> {
+    return ZipInputStream(ByteArrayInputStream(data)).use {
+        val entries = mutableListOf<String>()
+        var entry = it.nextEntry
+        while (entry != null) {
+            entries.add(entry.name)
+            entry = it.nextEntry
+        }
+        entries
+    }
+}

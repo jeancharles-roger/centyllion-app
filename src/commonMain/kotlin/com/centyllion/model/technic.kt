@@ -87,5 +87,6 @@ data class Subscription(
 class Asset(
     override val id: String,
     val name: String,
+    val entries: List<String>,
     val userId: String
 ): Ided

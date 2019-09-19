@@ -49,6 +49,7 @@ interface Data {
 
     fun getAllAssets(offset: Int = 0, limit: Int = 20, extensions: List<String>): ResultPage<Asset>
     fun assetsForUser(userId: String): List<Asset>
+    fun getAsset(id: String): Asset?
     fun getAssetContent(id: String): ByteArray?
     fun createAsset(name: String, userId: String, data: ByteArray): Asset
     fun deleteAsset(id: String)

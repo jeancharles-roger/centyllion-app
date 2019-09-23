@@ -471,6 +471,8 @@ open class Simulator3dViewController(
         }
         materials = materials()
 
+        refreshAssets()
+
         simulationCanvas.root.apply {
             onmouseup = { mouseChange(it) }
             onmousedown = { mouseChange(it) }
@@ -526,13 +528,13 @@ open class Simulator3dViewController(
         if (scene != null) {
             resolve(scene)
         } else {
+            println("Loading ${page.appContext.api.url(path)}..")
             GLTFLoader().load(page.appContext.api.url(path),
                 {
                     println("Asset $path loaded.")
                     scenesCache[path] = it.scene
                     resolve(it.scene)
-                },
-                {}, { reject(IOException(it.toString())) }
+                }, {}, { reject(IOException(it.toString())) }
             )
         }
     }

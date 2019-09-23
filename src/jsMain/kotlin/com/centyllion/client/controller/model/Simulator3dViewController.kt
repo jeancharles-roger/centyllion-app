@@ -473,6 +473,8 @@ open class Simulator3dViewController(
 
         refreshAssets()
 
+        toolbar.hidden = readOnly
+
         simulationCanvas.root.apply {
             onmouseup = { mouseChange(it) }
             onmousedown = { mouseChange(it) }

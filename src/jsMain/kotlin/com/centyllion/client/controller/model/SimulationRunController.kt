@@ -219,7 +219,7 @@ class SimulationRunController(
             mobile = true
         ),
         asset3dController, desktopSize = ColumnSize.Full
-    ).apply { hidden = readOnly }
+    ).apply { hidden = readOnly || !page.appContext.hasRole(creatorRole) }
 
     val simulationColumn: Columns = Columns(
         Column(
@@ -242,14 +242,18 @@ class SimulationRunController(
         multiline = true
     )
 
+    val grainColumn = Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2)
+
+    val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4)
+
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
-        Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2),
+        grainColumn,
         Column(simulationColumn, desktopSize = ColumnSize.S6),
-        Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4),
+        behaviourColumn,
         assetsColumn,
-        multiline = true
+        multiline = true, centered = true
     )
 
     val chart = Chart(chartCanvas.root, LineChartConfig(
@@ -262,6 +266,11 @@ class SimulationRunController(
 
     init {
         window.setTimeout({ animationCallback(0.0) }, 250)
+    }
+
+    fun hideSides(hidden: Boolean ) {
+        grainColumn.hidden = hidden
+        behaviourColumn.hidden = hidden
     }
 
     fun setFpsColor(slowed: Boolean) {

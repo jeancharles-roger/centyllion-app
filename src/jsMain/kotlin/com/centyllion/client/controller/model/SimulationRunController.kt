@@ -141,7 +141,7 @@ class SimulationRunController(
     }
 
     val fullscreenButton = iconButton(Icon("expand-arrows-alt"), rounded = true) {
-        toggleElementToFullScreen(simulationColumn.root)
+        toggleElementToFullScreen(simulationColumns.root)
     }
 
     val grainsController: MultipleController<Grain, GrainModel, Columns, Column, WrappedController<Grain, GrainModel, Box, Column>> =
@@ -221,7 +221,7 @@ class SimulationRunController(
         asset3dController, desktopSize = ColumnSize.Full
     ).apply { hidden = readOnly || !page.appContext.hasRole(creatorRole) }
 
-    val simulationColumn: Columns = Columns(
+    val simulationColumns: Columns = Columns(
         Column(
             Level(
                 center = listOf(
@@ -243,14 +243,15 @@ class SimulationRunController(
     )
 
     val grainColumn = Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2)
-
+    val simulationColumn = Column(simulationColumns, desktopSize = ColumnSize.S6)
     val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4)
+
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
         grainColumn,
-        Column(simulationColumn, desktopSize = ColumnSize.S6),
+        simulationColumn,
         behaviourColumn,
         assetsColumn,
         multiline = true, centered = true
@@ -270,6 +271,7 @@ class SimulationRunController(
 
     fun hideSides(hidden: Boolean ) {
         grainColumn.hidden = hidden
+        simulationColumn.desktopSize = if (hidden) ColumnSize.Full else ColumnSize.S6
         behaviourColumn.hidden = hidden
     }
 

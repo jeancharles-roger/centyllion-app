@@ -174,7 +174,8 @@ class Simulator3dViewController(
 
     val sceneOptions = SceneOptions(true, true, true)
     val scene = Scene(engine, sceneOptions).apply {
-        autoClear = false
+        //autoClear = false
+        clearColor = Color3.Gray().toColor4(1)
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
         blockMaterialDirtyMechanism = true
@@ -235,7 +236,7 @@ class Simulator3dViewController(
         translate(Axis.Y, -0.5)
 
         val material = GridMaterial("ground material", scene)
-        material.opacity = 0.08
+        material.opacity = 0.8
         material.mainColor = Color3.White()
         material.lineColor = Color3.Black()
         this.material = material

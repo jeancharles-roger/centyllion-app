@@ -174,7 +174,7 @@ class Simulator3dViewController(
 
     val sceneOptions = SceneOptions(true, true, true)
     val scene = Scene(engine, sceneOptions).apply {
-        //autoClear = false
+        autoClear = true
         clearColor = Color3.Gray().toColor4(1)
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
@@ -184,9 +184,6 @@ class Simulator3dViewController(
         HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 2 * width), this)
     }
 
-    /*
-    private var font: Font? = null
-    */
     val defaultMesh =  MeshBuilder.CreateBox(
         "default",
         BoxOptions(size = 0.8, faceColors = arrayOf(Color3.Green().toColor4(1))),
@@ -199,7 +196,6 @@ class Simulator3dViewController(
 
     val assetsManager = AssetsManager(scene)
     val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
-
 
     private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
         old.values.forEach { it.dispose() }
@@ -238,7 +234,7 @@ class Simulator3dViewController(
         val material = GridMaterial("ground material", scene)
         material.opacity = 0.8
         material.mainColor = Color3.White()
-        material.lineColor = Color3.Black()
+        material.lineColor = Color3.White()
         this.material = material
     }
 
@@ -506,22 +502,7 @@ class Simulator3dViewController(
 
     init {
 
-        /*
-        page.appContext.getFont("/font/fa-solid-900.json").then {
-            font = it
-            geometries = geometries()
-            refresh()
-        }
-        simulationCanvas.root.apply {
-            onmouseup = { mouseChange(it) }
-            onmousedown = { mouseChange(it) }
-            onmousemove = { mouseChange(it) }
-            onmouseout = {
-                pointer.visible = false
-                render()
-            }
-        }
-        */
+        refreshAssets()
 
         scene.onPointerMove = this::onPointerMove
         scene.onPointerDown = this::onPointerDown
@@ -629,9 +610,9 @@ class Simulator3dViewController(
             task.runTask(scene,
                 {
                     console.log("Success loading of asset ${asset.url}")
-                    val mesh = task.loadedMeshes[0]
+                    val mesh = task.loadedMeshes[0] as Mesh
                     // clone scene to allow multiple occurrences of the same asset
-                    val cloned = mesh
+                    val cloned = mesh.toLeftHanded()
                     cloned.position.set(asset.x, asset.y, asset.z)
                     cloned.scaling.set(asset.xScale, asset.yScale, asset.zScale)
                     if (asset.xRotation != 0.0 || asset.yRotation != 0.0 || asset.zRotation != 0.0) {

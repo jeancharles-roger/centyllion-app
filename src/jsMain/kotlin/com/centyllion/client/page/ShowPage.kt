@@ -564,19 +564,22 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     override fun onExit() = Promise<Boolean> { resolve, _ ->
-        simulationController.stop()
+
+        fun conclude(exit: Boolean) {
+            if (exit) simulationController.dispose()
+            resolve(exit)
+        }
+
         if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
             val model = modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
                 p(i18n("You're about to quit the page and some modifications haven't been saved.")),
-                textButton(i18n("Save"), ElementColor.Success) {
-                    save { resolve(true) }
-                },
-                textButton(i18n("Don't save"), ElementColor.Danger) { resolve(true) },
-                textButton(i18n("Stay here")) { resolve(false) }
+                textButton(i18n("Save"), ElementColor.Success) { save { conclude(true) } },
+                textButton(i18n("Don't save"), ElementColor.Danger) { conclude(true) },
+                textButton(i18n("Stay here")) { conclude(false) }
             )
             model.active = true
         } else {
-            resolve(true)
+            conclude(true)
         }
     }
 }

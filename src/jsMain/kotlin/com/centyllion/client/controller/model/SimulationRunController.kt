@@ -253,9 +253,15 @@ class SimulationRunController(
         multiline = true
     )
 
-    val grainColumn = Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2)
+    val grainColumn = Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2).apply {
+        root.style.height = "80vh"
+        root.style.overflowY = "auto"
+    }
     val simulationColumn = Column(simulationColumns, desktopSize = ColumnSize.S6)
-    val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4)
+    val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4).apply {
+        root.style.height = "80vh"
+        root.style.overflowY = "auto"
+    }
 
 
     override val container = Columns(

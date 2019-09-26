@@ -73,6 +73,7 @@ class Simulator3dViewController(
         Eraser("eraser");
     }
 
+    @Suppress("unused")
     enum class ToolSize(val size: Int) {
         Fine(1), Small(5), Medium(10), Large(20)
     }
@@ -434,6 +435,7 @@ class Simulator3dViewController(
         refresh(false)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
@@ -458,6 +460,7 @@ class Simulator3dViewController(
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun onPointerMove(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
         if (ray != null && selectedTool != EditTools.Move) {
@@ -479,6 +482,8 @@ class Simulator3dViewController(
 
         }
     }
+
+    @Suppress("UNUSED_PARAMETER")
     private fun onPointerUp(evt: PointerEvent, pickInfo: PickingInfo?, type: PointerEventTypes) {
         val ray = pickInfo?.ray
         if (ray != null && selectedTool != EditTools.Move) {
@@ -501,7 +506,6 @@ class Simulator3dViewController(
     }
 
     init {
-
         refreshAssets()
 
         scene.onPointerMove = this::onPointerMove

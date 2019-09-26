@@ -11,7 +11,7 @@ data class Locales(
     /** Searches [locale] in available one the or the closest */
     fun resolve(locale: String): String {
         if (locales.contains(locale)) return locale
-        val prefix = locale.substring(0, locale.indexOf("-") + 1)
+        val prefix = locale.indexOf("-").let { if (it < 0) locale else locale.substring(0, it) }
         return locales.firstOrNull { it.startsWith(prefix) } ?: default
     }
 }

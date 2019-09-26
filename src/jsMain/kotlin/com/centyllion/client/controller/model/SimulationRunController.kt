@@ -321,9 +321,6 @@ class SimulationRunController(
             lastRequestSkipped = refresh
             window.requestAnimationFrame(this::animationCallback)
         }
-
-        // if the document was removed, stop the simulation
-        if (container.root.ownerDocument != container.root.getRootNode()) dispose()
     }
 
     fun step() {

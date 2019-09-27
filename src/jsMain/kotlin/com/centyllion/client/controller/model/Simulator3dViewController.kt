@@ -110,6 +110,7 @@ class Simulator3dViewController(
             }
 
             if (old.simulation.settings != new.simulation.settings) {
+                plane.material?.dispose()
                 plane.material = createPlaneMaterial()
                 scene.clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
             }

@@ -222,6 +222,7 @@ class Simulator3dViewController(
         upperBetaLimit = 2*PI
         beta = PI
 
+        angularSensibilityX = - angularSensibilityX.toDouble()
         panningSensibility = 50
 
         attachControl(simulationCanvas.root, false)

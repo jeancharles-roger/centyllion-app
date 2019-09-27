@@ -140,6 +140,11 @@
     "Subscription %0 created.": "Subscription %0 created.",
 
     "%0 must be a number": "%0 must be a number",
-    "%0 must be between %1 and %2": "%0 must be between %1 and %2"
+    "%0 must be between %1 and %2": "%0 must be between %1 and %2",
+
+    "Simulation Settings": "Simulation Settings",
+    "Background Color": "Background Color",
+    "Grid": "Grid",
+    "Image URL": "Image URL"
   }
 }

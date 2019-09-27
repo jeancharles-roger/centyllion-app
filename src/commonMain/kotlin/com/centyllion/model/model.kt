@@ -390,7 +390,8 @@ fun createSimulation(
 @Serializable
 data class SimulationSettings(
     val showGrid: Boolean = true,
-    val gridTextureUrl: String? = null
+    val gridTextureUrl: String? = null,
+    val backgroundColor: String? = null
 )
 
 @Serializable

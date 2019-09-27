@@ -111,6 +111,7 @@ class Simulator3dViewController(
 
             if (old.simulation.settings != new.simulation.settings) {
                 plane.material = createPlaneMaterial()
+                scene.clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
             }
 
             refresh()
@@ -181,7 +182,7 @@ class Simulator3dViewController(
     val sceneOptions = SceneOptions(true, true, true)
     val scene = Scene(engine, sceneOptions).apply {
         autoClear = true
-        clearColor = Color3.Gray().toColor4(1)
+        clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
         autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
         blockMaterialDirtyMechanism = true

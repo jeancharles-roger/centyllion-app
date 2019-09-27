@@ -231,6 +231,13 @@ class SimulationRunController(
             page.i18n("Simulation Settings"),
             Div(
                 HorizontalField(
+                    Label(page.i18n("Background Color")),
+                    Field(Control(ColorSelectController(newSettings.backgroundColor ?: "Grey") { _, new, _ ->
+                        newSettings = newSettings.copy(backgroundColor = if (new.isBlank()) null else new.trim())
+                        okButton.disabled = newSettings == data.settings
+                    }.container))
+                ),
+                HorizontalField(
                     Label(page.i18n("Grid")),
                     Field(Control(Checkbox(page.i18n("Show"), newSettings.showGrid) { _, c ->
                         newSettings = newSettings.copy(showGrid = c)

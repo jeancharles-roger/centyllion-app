@@ -328,7 +328,7 @@ class Simulator3dViewController(
             val child = MeshBuilder.CreateCylinder(
                 "inner pointer",
                 CylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
-                null
+                scene
             )
             child.visibility = when (selectedTool) {
                 EditTools.Eraser -> 0.1

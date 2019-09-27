@@ -236,6 +236,13 @@ class SimulationRunController(
                         newSettings = newSettings.copy(showGrid = c)
                         okButton.disabled = newSettings == data.settings
                     }))
+                ),
+                HorizontalField(
+                    Label(page.i18n("Image URL")),
+                    EditableStringController(newSettings.gridTextureUrl ?: "", "") { _, new, _ ->
+                        newSettings = newSettings.copy(gridTextureUrl = if (new.isBlank()) null else new.trim())
+                        okButton.disabled = newSettings == data.settings
+                    }.container
                 )
             ),
             okButton,

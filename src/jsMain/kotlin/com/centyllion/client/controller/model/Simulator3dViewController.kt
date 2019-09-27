@@ -45,6 +45,7 @@ import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
 import com.centyllion.model.minFieldLevel
+import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
@@ -233,10 +234,9 @@ class Simulator3dViewController(
     }
 
     val plane = MeshBuilder.CreatePlane("ground", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
-        rotate(Axis.X, PI/2)
+        rotate(Axis.X, -PI/2)
         translate(Axis.X, -0.5)
         translate(Axis.Y, -0.5)
-
 
         this.material = createPlaneMaterial()
     }
@@ -759,7 +759,14 @@ class Simulator3dViewController(
         }
     }
 
-    private fun createPlaneMaterial() = GridMaterial("ground material", scene).apply {
+    private fun createPlaneMaterial() = data.simulation.settings.gridTextureUrl?.let {
+        StandardMaterial("ground material", scene).apply {
+            Texture(it, scene, invertY = true, buffer = null as ArrayBuffer?).let {
+                diffuseTexture = it
+                opacityTexture = it
+            }
+        }
+    } ?: GridMaterial("ground material", scene).apply {
         opacity = if (data.simulation.settings.showGrid) 0.8 else 0.0
         mainColor = Color3.White()
         lineColor = Color3.White()

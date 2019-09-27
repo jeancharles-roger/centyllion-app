@@ -108,6 +108,10 @@ class Simulator3dViewController(
                 fieldSupports = fieldSupports()
             }
 
+            if (old.simulation.settings != new.simulation.settings) {
+                plane.material = createPlaneMaterial()
+            }
+
             refresh()
         }
     }
@@ -233,11 +237,8 @@ class Simulator3dViewController(
         translate(Axis.X, -0.5)
         translate(Axis.Y, -0.5)
 
-        val material = GridMaterial("ground material", scene)
-        material.opacity = 0.8
-        material.mainColor = Color3.White()
-        material.lineColor = Color3.White()
-        this.material = material
+
+        this.material = createPlaneMaterial()
     }
 
     val pointer = MeshBuilder.CreateBox(
@@ -756,6 +757,12 @@ class Simulator3dViewController(
             engine.resize()
             render()
         }
+    }
+
+    private fun createPlaneMaterial() = GridMaterial("ground material", scene).apply {
+        opacity = if (data.simulation.settings.showGrid) 0.8 else 0.0
+        mainColor = Color3.White()
+        lineColor = Color3.White()
     }
 
     /** Computes alpha value for opacity for each field level in the array */

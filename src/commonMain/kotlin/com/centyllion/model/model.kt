@@ -388,10 +388,17 @@ fun createSimulation(
 ) = Simulation(name, description, width, height, depth, agents, assets)
 
 @Serializable
+data class SimulationSettings(
+    val showGrid: Boolean = true,
+    val gridTextureUrl: String? = null
+)
+
+@Serializable
 data class Simulation(
     val name: String, val description: String,
     val width: Int, val height: Int, val depth: Int,
-    val agents: List<Int>, val assets: List<Asset3d> = emptyList()
+    val agents: List<Int>, val assets: List<Asset3d> = emptyList(),
+    val settings: SimulationSettings = SimulationSettings()
 ) {
 
     fun assetIndex(asset: Asset3d) = assets.identityFirstIndexOf(asset)

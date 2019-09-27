@@ -3,6 +3,7 @@ package com.centyllion.client.controller.model
 import bulma.Box
 import bulma.BulmaElement
 import bulma.Button
+import bulma.Checkbox
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -11,6 +12,7 @@ import bulma.Controller
 import bulma.Div
 import bulma.ElementColor
 import bulma.Field
+import bulma.HorizontalField
 import bulma.Icon
 import bulma.Label
 import bulma.Level
@@ -23,6 +25,7 @@ import bulma.canvas
 import bulma.columnsController
 import bulma.iconButton
 import bulma.noContextColumnsController
+import bulma.textButton
 import bulma.wrap
 import chartjs.Chart
 import chartjs.ChartUpdateConfig
@@ -212,6 +215,34 @@ class SimulationRunController(
         this.data = data.copy(assets = data.assets + Asset3d(""))
     }
 
+    val settingsButton = ButtonWithRole(
+        null, Icon("cog"),
+        creatorRole, page.appContext.hasRole(creatorRole),
+        ElementColor.Primary, true
+    ) {
+        var newSettings = data.settings
+        val okButton = textButton(page.i18n("Save"), ElementColor.Success) {
+            if (newSettings != data.settings) {
+                data = data.copy(settings = newSettings)
+            }
+        }
+        okButton.disabled = true
+        page.modalDialog(
+            page.i18n("Simulation Settings"),
+            Div(
+                HorizontalField(
+                    Label(page.i18n("Grid")),
+                    Field(Control(Checkbox(page.i18n("Show"), newSettings.showGrid) { _, c ->
+                        newSettings = newSettings.copy(showGrid = c)
+                        okButton.disabled = newSettings == data.settings
+                    }))
+                )
+            ),
+            okButton,
+            textButton(page.i18n("Cancel"))
+        ).active = true
+    }
+
     val asset3dController =
         noContextColumnsController(simulation.assets) { asset, previous ->
             previous ?: Asset3dEditController(asset, readOnly, page).wrap { controller ->
@@ -226,7 +257,7 @@ class SimulationRunController(
     val assetsColumn = Column(
         Level(
             left = listOf(Title(page.i18n("Assets"), TextSize.S4)),
-            right = listOf(addAsset3dButton),
+            right = listOf(addAsset3dButton, settingsButton),
             mobile = true
         ),
         asset3dController, desktopSize = ColumnSize.Full

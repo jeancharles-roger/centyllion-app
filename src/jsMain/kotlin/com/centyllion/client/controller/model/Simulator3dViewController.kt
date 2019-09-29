@@ -213,8 +213,8 @@ class Simulator3dViewController(
     val camera = ArcRotateCamera(
         "Camera", 0, 0, 1.25 * simulator.simulation.width, Vector3(0, 0, 0), scene
     ).apply {
-        lowerAlphaLimit = 0
-        upperAlphaLimit = 2*PI
+        lowerAlphaLimit = null
+        upperAlphaLimit = null
         alpha = 1.5*PI
         lowerBetaLimit = 0
         upperBetaLimit = 2*PI

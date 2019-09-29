@@ -3,7 +3,6 @@ package com.centyllion.client.controller.model
 import bulma.Box
 import bulma.BulmaElement
 import bulma.Button
-import bulma.Checkbox
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -12,7 +11,6 @@ import bulma.Controller
 import bulma.Div
 import bulma.ElementColor
 import bulma.Field
-import bulma.HorizontalField
 import bulma.Icon
 import bulma.Label
 import bulma.Level
@@ -220,40 +218,19 @@ class SimulationRunController(
         creatorRole, page.appContext.hasRole(creatorRole),
         ElementColor.Primary, true
     ) {
-        var newSettings = data.settings
-        val okButton = textButton(page.i18n("Save"), ElementColor.Success) {
-            if (newSettings != data.settings) {
-                data = data.copy(settings = newSettings)
+        val settingsController = SimulationSettingsController(data.settings, page)
+        val okButton = textButton(page.i18n("Save"), ElementColor.Success, disabled = true) {
+            if (settingsController.data != data.settings) {
+                data = data.copy(settings = settingsController.data)
             }
         }
-        okButton.disabled = true
+        settingsController.onUpdate = { old, new, _ ->
+            okButton.disabled = new == data.settings
+        }
+
         page.modalDialog(
-            page.i18n("Simulation Settings"),
-            Div(
-                HorizontalField(
-                    Label(page.i18n("Background Color")),
-                    Field(Control(ColorSelectController(newSettings.backgroundColor ?: "Grey") { _, new, _ ->
-                        newSettings = newSettings.copy(backgroundColor = if (new.isBlank()) null else new.trim())
-                        okButton.disabled = newSettings == data.settings
-                    }.container))
-                ),
-                HorizontalField(
-                    Label(page.i18n("Grid")),
-                    Field(Control(Checkbox(page.i18n("Show"), newSettings.showGrid) { _, c ->
-                        newSettings = newSettings.copy(showGrid = c)
-                        okButton.disabled = newSettings == data.settings
-                    }))
-                ),
-                HorizontalField(
-                    Label(page.i18n("Image URL")),
-                    EditableStringController(newSettings.gridTextureUrl ?: "", "") { _, new, _ ->
-                        newSettings = newSettings.copy(gridTextureUrl = if (new.isBlank()) null else new.trim())
-                        okButton.disabled = newSettings == data.settings
-                    }.container
-                )
-            ),
-            okButton,
-            textButton(page.i18n("Cancel"))
+            page.i18n("Simulation Settings"), settingsController,
+            okButton, textButton(page.i18n("Cancel"))
         ).active = true
     }
 

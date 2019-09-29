@@ -10,7 +10,6 @@ import babylonjs.Color3
 import babylonjs.CylinderOptions
 import babylonjs.Engine
 import babylonjs.HemisphericLight
-import babylonjs.InstancedMesh
 import babylonjs.Mesh
 import babylonjs.MeshBuilder
 import babylonjs.PickingInfo
@@ -192,29 +191,21 @@ class Simulator3dViewController(
         HemisphericLight("light1", Vector3(1.25 * width, -3 * width, 2 * width), this)
     }
 
-    val defaultMesh =  MeshBuilder.CreateBox(
-        "default",
-        BoxOptions(size = 0.8, faceColors = arrayOf(Color3.Green().toColor4(1))),
-        scene
-    ).apply {
-        isVisible = false
-    }
-
     val agentMesh: MutableMap<Int, AbstractMesh> = mutableMapOf()
 
     val assetsManager = AssetsManager(scene)
     val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
 
     private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
-        old.values.forEach { it.dispose() }
+        old.values.forEach { it?.dispose() }
     }
 
-    private var fieldSupports: Map<Int, FieldSupport> by observable(mapOf()) { _, old, new ->
-        old.values.forEach {
+    private var fieldSupports: Map<Int, FieldSupport?> by observable(mapOf()) { _, old, new ->
+        old.values.filterNotNull().forEach {
             scene.removeMesh(it.mesh)
             it.dispose()
         }
-        new.values.forEach {
+        new.values.filterNotNull().forEach {
             scene.addMesh(it.mesh)
         }
     }
@@ -565,44 +556,72 @@ class Simulator3dViewController(
         colorNames[name]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
 
     private fun sourceMeshes() = data.model.grains.map { grain ->
-        val height = grain.size.coerceAtLeast(0.1)
-        val color = colorFromName(grain.color).toColor4(1)
-        val mesh = when (grain.icon) {
-            "square" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) {color}), scene)
-            "square-full" -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
-            "circle" -> MeshBuilder.CreateCylinder(grain.name, CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) {color}), scene)
-            else -> MeshBuilder.CreateBox(grain.name, BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) {color}), scene)
-        }.apply {
-            setEnabled(false)
-            convertToUnIndexedMesh()
-            cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+        if (!grain.invisible) {
+            val height = grain.size.coerceAtLeast(0.1)
+            val color = colorFromName(grain.color).toColor4(1)
+            val mesh = when (grain.icon) {
+                "square" -> MeshBuilder.CreateBox(
+                    grain.name,
+                    BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) { color }),
+                    scene
+                )
+                "square-full" -> MeshBuilder.CreateBox(
+                    grain.name,
+                    BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color }),
+                    scene
+                )
+                "circle" -> MeshBuilder.CreateCylinder(
+                    grain.name,
+                    CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) { color }),
+                    scene
+                )
+                else -> MeshBuilder.CreateBox(
+                    grain.name,
+                    BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color }),
+                    scene
+                )
+            }.apply {
+                setEnabled(false)
+                convertToUnIndexedMesh()
+                cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+            }
+            grain.id to mesh
+        } else {
+            grain.id to null
         }
-        grain.id to mesh
     }.toMap()
 
     private fun fieldSupports() = data.model.fields.map { field ->
-        val levels = data.field(field.id)
+        if (!field.invisible) {
+            val levels = data.field(field.id)
 
-        val alpha = Uint8Array(levels.size)
-        levels.alpha(alpha)
-        val texture = RawTexture.CreateAlphaTexture(
+            val alpha = Uint8Array(levels.size)
+            levels.alpha(alpha)
+            val texture = RawTexture.CreateAlphaTexture(
                 alpha, data.simulation.width, data.simulation.height,
                 scene, false, false, Texture.NEAREST_SAMPLINGMODE
             )
-        val material = StandardMaterial("${field.name} material", scene)
-        val color = colorFromName(field.color)
-        material.diffuseColor = color
-        material.opacityTexture = texture
+            val material = StandardMaterial("${field.name} material", scene)
+            val color = colorFromName(field.color)
+            material.diffuseColor = color
+            material.opacityTexture = texture
 
-        val mesh = MeshBuilder.CreatePlane("${field.name} mesh", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene)
-        mesh.material = material
-        mesh.rotate(Axis.X, PI/2)
-        mesh.translate(Axis.X, -0.5)
-        mesh.translate(Axis.Y, -0.5)
-        mesh.translate(Axis.Z, -0.5 - (0.5 * field.id))
+            val mesh = MeshBuilder.CreatePlane(
+                "${field.name} mesh",
+                PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE),
+                scene
+            )
+            mesh.material = material
+            mesh.rotate(Axis.X, PI / 2)
+            mesh.translate(Axis.X, -0.5)
+            mesh.translate(Axis.Y, -0.5)
+            mesh.translate(Axis.Z, -0.5 - (0.5 * field.id))
 
-        scene.addMesh(mesh)
-        field.id to FieldSupport(mesh, texture, alpha)
+            scene.addMesh(mesh)
+            field.id to FieldSupport(mesh, texture, alpha)
+        } else {
+            field.id to null
+        }
     }.toMap()
 
 
@@ -641,27 +660,25 @@ class Simulator3dViewController(
         }
     }
 
-    fun createMesh(index: Int, grainId: Int, x: Double, y: Double): InstancedMesh {
-        // creates mesh
-        val mesh = (sourceMeshes[grainId] ?: defaultMesh).createInstance("$index")
-        mesh.metadata = grainId
+    fun createMesh(index: Int, grainId: Int, x: Double, y: Double)=
+        sourceMeshes[grainId]?.createInstance("$index")?.also {
+            it.metadata = grainId
 
-        // positions the mesh
-        val agent = data.model.indexedGrains[grainId]
-        mesh.position.set(x,  -(agent?.size ?: 1.0) / 2.0, y)
+            // positions the mesh
+            val agent = data.model.indexedGrains[grainId]
+            it.position.set(x,  -(agent?.size ?: 1.0) / 2.0, y)
 
-        mesh.freezeWorldMatrix()
-        mesh.ignoreNonUniformScaling = true
-        mesh.doNotSyncBoundingInfo = true
-        mesh.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+            it.freezeWorldMatrix()
+            it.ignoreNonUniformScaling = true
+            it.doNotSyncBoundingInfo = true
+            it.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
 
-        //mesh.receiveShadows = true
+            //mesh.receiveShadows = true
 
-        // adds the mesh to scene and register it
-        scene.addMesh(mesh)
-        agentMesh[index] = mesh
-        return mesh
-    }
+            // adds the mesh to scene and register it
+            scene.addMesh(it)
+            agentMesh[index] = it
+        }
 
     fun  transformMesh(index: Int, newGrainId: Int, force: Boolean = false) {
         val mesh = agentMesh[index]
@@ -705,8 +722,10 @@ class Simulator3dViewController(
 
         // updates fields
         fieldSupports.forEach {
-            data.field(it.key).alpha(it.value.alpha)
-            it.value.texture.update(it.value.alpha)
+            it.value?.let { support ->
+                data.field(it.key).alpha(support.alpha)
+                support.texture.update(support.alpha)
+            }
         }
     }
 
@@ -723,15 +742,16 @@ class Simulator3dViewController(
         }
 
         fieldSupports.forEach {
-            data.field(it.key).alpha(it.value.alpha)
-            it.value.texture.update(it.value.alpha)
+            it.value?.let { support ->
+                data.field(it.key).alpha(support.alpha)
+                support.texture.update(support.alpha)
+            }
         }
         render()
     }
 
     fun dispose() {
         sourceMeshes = emptyMap()
-        defaultMesh.dispose()
         fieldSupports = emptyMap()
         camera.detachControl(simulationCanvas.root)
         camera.dispose()

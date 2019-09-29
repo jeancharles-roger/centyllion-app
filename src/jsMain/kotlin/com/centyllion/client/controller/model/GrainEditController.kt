@@ -17,6 +17,7 @@ import bulma.Slider
 import bulma.Tag
 import bulma.Value
 import bulma.columnsController
+import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
@@ -80,6 +81,11 @@ class GrainEditController(
             fieldProductionsController.readOnly = new
         }
     }
+
+    val invisibleCheckbox = Switch(
+        page.i18n("Invisible"), rounded = true, outlined = true,
+        size = Size.Small, color = ElementColor.Info, checked = data.invisible
+    ) { _, new -> data = data.copy(invisible = new) }
 
     val colorController = ColorSelectController(data.color) { _, new, _ ->
         data = data.copy(color = new)
@@ -183,7 +189,10 @@ class GrainEditController(
         Box(
             HorizontalField(
                 Label(page.i18n("Name")),
-                nameController.container,
+                nameController.container
+            ),
+            HorizontalField(
+                Label(page.i18n("Display")),
                 BField(
                     Control(iconController.container),
                     Control(colorController.container),
@@ -194,7 +203,8 @@ class GrainEditController(
                     Control(sizeSlider),
                     Control(sizeValue),
                     grouped = true
-                )
+                ),
+                BField(invisibleCheckbox)
             ),
             HorizontalField(Label(page.i18n("Description")), descriptionController.container),
             HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),

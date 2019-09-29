@@ -95,6 +95,8 @@
     "Behaviour": "Comportement",
     "Behaviours": "Comportements",
     "Name": "Nom",
+    "Display": "Affichage",
+    "Invisible": "Invisible",
     "Speed": "Vitesse",
     "Half-life": "Demi-vie",
     "Movement": "Déplacement",

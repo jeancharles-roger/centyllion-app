@@ -95,6 +95,8 @@
     "Behaviour": "Behaviour",
     "Behaviours": "Behaviours",
     "Name": "Name",
+    "Display": "Display",
+    "Invisible": "Invisible",
     "Speed": "Speed",
     "Half-life": "Half-life",
     "Movement": "Movement",

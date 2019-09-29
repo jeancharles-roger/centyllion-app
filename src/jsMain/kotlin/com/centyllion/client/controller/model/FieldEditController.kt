@@ -10,6 +10,7 @@ import bulma.Label
 import bulma.NoContextController
 import bulma.Size
 import bulma.Tag
+import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.client.controller.utils.editableIntController
@@ -55,6 +56,11 @@ class FieldEditController (
         data = data.copy(color = new)
     }
 
+    val invisibleCheckbox = Switch(
+        page.i18n("Invisible"), rounded = true, outlined = true,
+        size = Size.Small, color = ElementColor.Info, checked = data.invisible
+    ) { _, new -> data = data.copy(invisible = new) }
+
     val nameController = EditableStringController(data.name, page.i18n("Name"), columns = 8) { _, new, _ ->
         data = data.copy(name = new)
     }
@@ -86,11 +92,15 @@ class FieldEditController (
             Box(
             HorizontalField(
                 Label(page.i18n("Name")),
-                nameController.container,
-                bulma.Field(
+                nameController.container
+            ),
+            HorizontalField(
+                Label(page.i18n("Display")),
+                BField(
                     Control(colorController.container),
                     addons = true
-                )
+                ),
+                BField(invisibleCheckbox)
             ),
             HorizontalField(Label(page.i18n("Description")), descriptionController.container),
             HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),

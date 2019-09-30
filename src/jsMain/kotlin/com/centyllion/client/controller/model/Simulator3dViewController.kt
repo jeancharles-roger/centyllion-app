@@ -220,6 +220,9 @@ class Simulator3dViewController(
         upperBetaLimit = PI * 3.0/2.0
         beta = PI
 
+        lowerRadiusLimit = 5
+        upperRadiusLimit = 500
+
         angularSensibilityX = - angularSensibilityX.toDouble()
         panningSensibility = 50
 

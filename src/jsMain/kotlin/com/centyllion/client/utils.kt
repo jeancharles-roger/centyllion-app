@@ -1,6 +1,6 @@
 package com.centyllion.client
 
-import bulmatoast.BulmaToast
+import bulma.extension.BulmaToast
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
 import org.w3c.dom.HTMLElement
@@ -27,7 +27,7 @@ fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String
 
 @JsName("dependencies")
 fun dependencies(bulmaToast: BulmaToast) {
-    bulmatoast.bulmaToast = bulmaToast
+    bulma.extension.bulmaToast = bulmaToast
 }
 
 fun stringHref(content: String) = "data:text/plain;charset=utf-8,${encodeURIComponent(content)}"

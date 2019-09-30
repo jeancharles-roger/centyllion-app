@@ -15,11 +15,11 @@ import bulma.booleanAttribute
 import bulma.bulma
 import bulma.bulmaList
 import bulma.className
+import bulma.extension.ToastAnimation
+import bulma.extension.ToastOptions
+import bulma.extension.bulmaToast
 import bulma.html
 import bulma.span
-import bulmatoast.ToastAnimation
-import bulmatoast.ToastOptions
-import bulmatoast.bulmaToast
 import com.centyllion.client.AppContext
 import com.centyllion.client.ClientEvent
 import com.centyllion.common.SubscriptionType

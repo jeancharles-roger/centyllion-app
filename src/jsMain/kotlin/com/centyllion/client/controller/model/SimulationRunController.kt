@@ -15,12 +15,12 @@ import bulma.Icon
 import bulma.Label
 import bulma.Level
 import bulma.MultipleController
-import bulma.Slider
 import bulma.TextSize
 import bulma.Title
 import bulma.WrappedController
 import bulma.canvas
 import bulma.columnsController
+import bulma.extension.Slider
 import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.textButton
@@ -136,7 +136,7 @@ class SimulationRunController(
     val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
     val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
 
-    val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info) { _, value ->
+    val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info, circle = true) { _, value ->
         fps = value.toDouble()
         setFpsColor(false)
         fpsLabel.text = if (fps >= 200) "warp" else "$value fps"

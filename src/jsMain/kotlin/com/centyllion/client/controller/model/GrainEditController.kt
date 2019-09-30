@@ -13,10 +13,10 @@ import bulma.HorizontalField
 import bulma.HtmlWrapper
 import bulma.Label
 import bulma.Size
-import bulma.Slider
 import bulma.Tag
 import bulma.Value
 import bulma.columnsController
+import bulma.extension.Slider
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
@@ -99,7 +99,7 @@ class GrainEditController(
         data = data.copy(name = new)
     }
 
-    val sizeSlider = Slider("${data.size}", "0", "5", "0.1", size = Size.Small) { _, value ->
+    val sizeSlider = Slider("${data.size}", "0", "5", "0.1", size = Size.Small, circle = true) { _, value ->
         data = data.copy(size = value.toDoubleOrNull() ?: 1.0)
     }
 
@@ -129,8 +129,7 @@ class GrainEditController(
 
     val fieldProductionsController =
         columnsController(
-            context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) },
-            context.fields
+            context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }, context.fields
         ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
@@ -141,8 +140,7 @@ class GrainEditController(
 
     val fieldInfluencesController =
         columnsController(
-            context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) },
-            context.fields
+            context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }, context.fields
         ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
@@ -153,8 +151,7 @@ class GrainEditController(
 
     val fieldPermeableController =
         columnsController(
-            context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) },
-            context.fields
+            context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }, context.fields
         ) { pair, previous ->
             previous ?: FieldChangeController(pair, context.fields, 0f, 1f) { old, new, _ ->
                 if (old != new) {

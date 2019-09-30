@@ -14,8 +14,8 @@ import bulma.NoContextController
 import bulma.Option
 import bulma.Select
 import bulma.Size
-import bulma.Slider
 import bulma.Tag
+import bulma.extension.Slider
 import bulma.textButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.page.BulmaPage

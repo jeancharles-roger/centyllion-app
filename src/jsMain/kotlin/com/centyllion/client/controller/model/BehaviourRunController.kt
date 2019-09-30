@@ -10,8 +10,8 @@ import bulma.Icon
 import bulma.Label
 import bulma.Level
 import bulma.Size
-import bulma.Slider
 import bulma.TextColor
+import bulma.extension.Slider
 import bulma.textButton
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
@@ -48,7 +48,7 @@ class BehaviourRunController(
         if (probability != data.probability) onValidate(data, probability)
     }
 
-    val speedSlider: Slider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01")
+    val speedSlider: Slider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01", circle = true)
     { _, new ->
         val probability = toProbability(new)
         onSpeedChange(data, probability)

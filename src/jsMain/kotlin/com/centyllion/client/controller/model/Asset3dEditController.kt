@@ -10,7 +10,7 @@ import bulma.Help
 import bulma.Label
 import bulma.Level
 import bulma.NoContextController
-import bulma.Slider
+import bulma.extension.Slider
 import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
@@ -61,7 +61,7 @@ class Asset3dEditController(
     }
 
     val opacitySlider = Slider(
-        data.opacity.toString(), "0.0", "1.0", "0.01", fullWidth = true
+        data.opacity.toString(), "0.0", "1.0", "0.01", circle = true
     ) { _, value -> data = data.copy(opacity = value.toDouble()) }
 
     val opacityField = Field(

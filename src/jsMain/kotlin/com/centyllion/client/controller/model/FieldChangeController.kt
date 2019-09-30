@@ -8,7 +8,7 @@ import bulma.ElementColor
 import bulma.Help
 import bulma.Icon
 import bulma.Level
-import bulma.Slider
+import bulma.extension.Slider
 import bulma.span
 import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
@@ -50,7 +50,7 @@ class FieldChangeController(
     }
 
     val valueSlider = Slider(
-        data.second.toString(), "$min", "$max", "0.1", sliderColor, fullWidth = true
+        data.second.toString(), "$min", "$max", "0.1", sliderColor, circle = true
     ) { _, value -> data = data.first to value.toFloat() }
 
     fun help(value: Float) = when {
@@ -59,10 +59,10 @@ class FieldChangeController(
         else -> "+"
     }
 
-    val valueField = BField(Control(Help(help(min))), Control(valueSlider), Control(Help(help(max))), grouped = true)
+    val valueField = BField(Control(Help(help(min))), Control(valueSlider), Control(Help(help(max))), addons = true)
 
     override val container = Column(
-        Level(left = listOf(fieldIcon, fieldLabel), right = listOf(valueField), mobile = true), size = ColumnSize.Full
+        Level(center = listOf(fieldIcon, fieldLabel, valueField), mobile = true), size = ColumnSize.Full
     ).apply {
         root.style.paddingTop = "0.2rem"
         root.style.paddingBottom = "0.1rem"

@@ -79,6 +79,8 @@ class GrainEditController(
             extendedDirectionController.readOnly = new
             halfLifeController.readOnly = new
             fieldProductionsController.readOnly = new
+            fieldInfluencesController.readOnly = new
+            fieldPermeableController.readOnly = new
         }
     }
 

@@ -31,10 +31,11 @@ class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain,
     }
 
     val titleLabel = Label(grain.name)
+    val invisibleIcon = Icon("eye-slash", color = TextColor.Primary)
     val movingIcon = Icon("walking", color = TextColor.Primary)
     val deathIcon = Icon("skull-crossbones", color = TextColor.Primary)
 
-    val status = Span(movingIcon, deathIcon)
+    val status = Span(invisibleIcon, movingIcon, deathIcon)
 
     val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
 
@@ -50,9 +51,10 @@ class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain,
         icon.icon = data.icon
         icon.root.style.color = data.color
         titleLabel.text = data.name
+        invisibleIcon.hidden = !data.invisible
         movingIcon.hidden = !data.canMove
         deathIcon.hidden = data.halfLife <= 0
-        status.hidden = movingIcon.hidden && deathIcon.hidden
+        status.hidden = invisibleIcon.hidden && movingIcon.hidden && deathIcon.hidden
         movingIcon.root.style.opacity = "${data.movementProbability.coerceAtLeast(0.3)}"
         deathIcon.root.style.opacity = "${(101 - data.halfLife.coerceAtMost(71)) / 100.0}"
     }

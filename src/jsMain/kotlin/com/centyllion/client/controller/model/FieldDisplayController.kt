@@ -26,10 +26,11 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
     }
 
     val titleLabel = Label(field.name)
+    val invisibleIcon = Icon("eye-slash", color = TextColor.Primary)
     val movingIcon = Icon("walking", color = TextColor.Primary)
     val deathIcon = Icon("skull-crossbones", color = TextColor.Primary)
 
-    val status = Span(movingIcon, deathIcon)
+    val status = Span(invisibleIcon, movingIcon, deathIcon)
 
     val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
 
@@ -44,9 +45,10 @@ open class FieldDisplayController(field: Field): NoContextController<Field, Box>
     override fun refresh() {
         icon.root.style.color = data.color
         titleLabel.text = data.name
+        invisibleIcon.hidden = !data.invisible
         movingIcon.hidden = data.speed <= 0.0
         deathIcon.hidden = data.halfLife <= 0
-        status.hidden = movingIcon.hidden && deathIcon.hidden
+        status.hidden = invisibleIcon.hidden && movingIcon.hidden && deathIcon.hidden
         movingIcon.root.style.opacity = "${data.speed.coerceAtLeast(0.3f)}"
         deathIcon.root.style.opacity = "${(101 - data.halfLife.coerceAtMost(71)) / 100.0}"
     }

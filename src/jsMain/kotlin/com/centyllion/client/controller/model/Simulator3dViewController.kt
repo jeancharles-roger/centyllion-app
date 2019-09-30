@@ -383,17 +383,16 @@ class Simulator3dViewController(
         selectPointer()
     }
 
+    fun writeGrain(i: Int, j: Int, id: Int) = data.simulation.toIndex(i, j).let { index ->
+        if (data.idAtIndex(index) < 0) data.setIdAtIndex(index, id)
+    }
+
     fun drawOnSimulation() {
         when (selectedTool) {
             EditTools.Pen -> {
                 if (drawStep >= 0) {
                     selectedGrainController.data?.id?.let { idToSet ->
-                        circle(simulationX, simulationY) { i, j ->
-                            data.setIdAtIndex(
-                                data.simulation.toIndex(i, j),
-                                idToSet
-                            )
-                        }
+                        circle(simulationX, simulationY) { i, j -> writeGrain(i, j, idToSet) }
                     }
                 }
             }
@@ -402,7 +401,7 @@ class Simulator3dViewController(
                     if (drawStep == -1) {
                         // draw the line
                         line(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
-                            data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                            writeGrain(i, j, idToSet)
                         }
                     }
                 }
@@ -414,7 +413,7 @@ class Simulator3dViewController(
                         val sprayDensity = 0.005
                         circle(simulationX, simulationY) { i, j ->
                             if (Random.nextDouble() < sprayDensity) {
-                                data.setIdAtIndex(data.simulation.toIndex(i, j), idToSet)
+                                writeGrain(i, j, idToSet)
                             }
                         }
                     }

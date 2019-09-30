@@ -52,17 +52,22 @@ data class Asset3d(
     val xRotation: Double = 0.0, val yRotation: Double = 0.0, val zRotation: Double = 0.0
 )
 
+interface ModelElement {
+    val name: String
+    val description: String
+}
+
 @Serializable
 data class Field(
     val id: Int = 0,
-    val name: String = "",
+    override val name: String = "",
     val color: String = "SkyBlue",
     val invisible: Boolean = false,
-    val description: String = "",
+    override val description: String = "",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = defaultDirection
-) {
+): ModelElement {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description
@@ -77,19 +82,19 @@ data class Field(
 @Serializable
 data class Grain(
     val id: Int = 0,
-    val name: String = "",
+    override val name: String = "",
     val color: String = "red",
     val icon: String = "square-full",
     val invisible: Boolean = false,
     val size: Double = 1.0,
-    val description: String = "",
+    override val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
     val allowedDirection: Set<Direction> = defaultDirection,
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap()
-) {
+): ModelElement {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description
@@ -148,20 +153,21 @@ data class Reaction(
 
 @Serializable
 data class Behaviour(
-    val name: String = "",
-    val description: String = "",
+    override val name: String = "",
+    override val description: String = "",
     val probability: Double = 1.0,
     val agePredicate: Predicate<Int> = Predicate(Operator.GreaterThanOrEquals, 0),
     val fieldPredicates: List<Pair<Int, Predicate<Float>>> = emptyList(),
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
-) {
+): ModelElement {
     fun reactionIndex(reaction: Reaction) = this.reaction.identityFirstIndexOf(reaction)
 
     fun updateReaction(old: Reaction, new: Reaction): Behaviour {
         val index = reactionIndex(old)
         if (index < 0) return this
+
 
         val newBehaviours = reaction.toMutableList()
         newBehaviours[index] = new

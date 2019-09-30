@@ -3,12 +3,15 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
+import bulma.Control
 import bulma.Controller
 import bulma.ElementColor
 import bulma.Icon
+import bulma.Input
 import bulma.Level
 import bulma.MultipleController
 import bulma.NoContextController
+import bulma.Size
 import bulma.SubTitle
 import bulma.TextSize
 import bulma.Title
@@ -21,6 +24,7 @@ import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
+import com.centyllion.model.ModelElement
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
@@ -31,11 +35,11 @@ class GrainModelEditController(
 
     override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            fieldsController.data = data.fields
+            fieldsController.data = data.fields.filtered()
             grainsController.context = data
-            grainsController.data = data.grains
+            grainsController.data = data.grains.filtered()
             behavioursController.context = data
-            behavioursController.data = data.behaviours
+            behavioursController.data = data.behaviours.filtered()
             editorController?.let { if (it.context is GrainModel) it.context = new }
             onUpdate(old, new, this@GrainModelEditController)
             refresh()
@@ -53,6 +57,17 @@ class GrainModelEditController(
             editorController?.readOnly = new
         }
     }
+
+    // search input
+    val searchInput: Input = Input("", page.i18n("Search"), rounded = true, size = Size.Small) { _, _ ->
+        fieldsController.data = data.fields.filtered()
+        grainsController.data = data.grains.filtered()
+        behavioursController.data = data.behaviours.filtered()
+    }
+
+    val clearSearch = iconButton(Icon("times"), rounded = true, size = Size.Small) { searchInput.value = "" }
+
+    val search = bulma.Field(Control(searchInput, Icon("search"), expanded = true), Control(clearSearch), addons = true)
 
     val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         val field = data.newField(page.i18n("Field"))
@@ -150,6 +165,7 @@ class GrainModelEditController(
 
     override val container = Columns(
         Column(
+            search,
             Level(
                 left = listOf(Title(page.i18n("Fields"), TextSize.S4)),
                 right = listOf(addFieldButton),
@@ -182,5 +198,10 @@ class GrainModelEditController(
     override fun refresh() {
         grainsController.refresh()
         behavioursController.refresh()
+    }
+
+    fun <T: ModelElement> List<T>.filtered() = searchInput.value.let { filter ->
+        if (filter.isBlank()) this
+        else this.filter { it.name.contains(filter, true) || it.description.contains(filter, true) }
     }
 }

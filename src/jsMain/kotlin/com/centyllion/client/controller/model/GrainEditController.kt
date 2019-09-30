@@ -71,6 +71,7 @@ class GrainEditController(
         if (old != new) {
             colorController.readOnly = new
             iconController.readOnly = new
+            invisibleCheckbox.disabled = new
             nameController.readOnly = new
             sizeSlider.disabled = new
             descriptionController.readOnly = new

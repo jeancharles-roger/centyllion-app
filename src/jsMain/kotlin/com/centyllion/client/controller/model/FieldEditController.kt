@@ -43,6 +43,7 @@ class FieldEditController (
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             colorController.readOnly = new
+            invisibleCheckbox.disabled = new
             nameController.readOnly = new
             descriptionController.readOnly = new
             speedController.readOnly = new

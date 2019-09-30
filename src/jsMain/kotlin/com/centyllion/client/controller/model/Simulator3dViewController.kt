@@ -216,8 +216,8 @@ class Simulator3dViewController(
         lowerAlphaLimit = null
         upperAlphaLimit = null
         alpha = 1.5*PI
-        lowerBetaLimit = PI/2.0
-        upperBetaLimit = PI * 3.0/2.0
+        lowerBetaLimit = 0.0
+        upperBetaLimit = 2 * PI
         beta = PI
 
         lowerRadiusLimit = 5

@@ -1,8 +1,14 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Control
+import bulma.ElementColor
+import bulma.Field
+import bulma.Icon
+import bulma.NoContextController
+import bulma.Size
+import bulma.iconButton
 import com.centyllion.model.Direction
-import kotlin.properties.Delegates
+import kotlin.properties.Delegates.observable
 
 class DirectionSetEditController(
     presentedDirection: Set<Direction>, activeDirections: Set<Direction>,
@@ -20,17 +26,21 @@ class DirectionSetEditController(
         Direction.RightDown to Icon("arrow-right").apply { root.classList.add("fa-rotate-45") }
     )
 
-    override var data: Set<Direction> by Delegates.observable(activeDirections) { _, old, new ->
+    override var data: Set<Direction> by observable(activeDirections) { _, old, new ->
         if (old != new) {
             onUpdate(old, new, this@DirectionSetEditController)
             refresh()
         }
     }
 
-    override var readOnly: Boolean by Delegates.observable(false) { _, old, new ->
+    override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
            buttonsMap.values.forEach { it.disabled = new }
         }
+    }
+
+    var error: Boolean by observable(false) { _, old, new ->
+        if (old != new) refresh()
     }
 
     val buttonsMap = presentedDirection.map { it to buttonForDirection(it) }.toMap()
@@ -40,8 +50,11 @@ class DirectionSetEditController(
             toggleDirection(direction)
         }
 
-    fun colorForDirection(direction: Direction) =
-        if (data.contains(direction)) ElementColor.Info else ElementColor.None
+    fun colorForDirection(direction: Direction) = when {
+        error -> ElementColor.Danger
+        data.contains(direction) -> ElementColor.Info
+        else -> ElementColor.None
+    }
 
     fun toggleDirection(direction: Direction) {
         data = if (data.contains(direction)) data - direction else data + direction

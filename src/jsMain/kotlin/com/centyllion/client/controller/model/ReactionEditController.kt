@@ -101,6 +101,9 @@ class ReactionEditController(
         firstDirectionController.refresh()
         extendedDirectionController.refresh()
         productController.refresh()
+
+        firstDirectionController.error = data.allowedDirection.isEmpty()
+        extendedDirectionController.error = data.allowedDirection.isEmpty()
     }
 
 }

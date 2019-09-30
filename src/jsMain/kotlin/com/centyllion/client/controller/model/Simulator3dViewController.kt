@@ -233,6 +233,7 @@ class Simulator3dViewController(
         rotate(Axis.X, -PI/2)
         translate(Axis.X, -0.5)
         translate(Axis.Y, -0.5)
+        alphaIndex = 0
 
         this.material = createPlaneMaterial()
     }
@@ -617,7 +618,7 @@ class Simulator3dViewController(
             mesh.rotate(Axis.X, PI / 2)
             mesh.translate(Axis.X, -0.5)
             mesh.translate(Axis.Y, -0.5)
-            mesh.translate(Axis.Z, -0.5 - (0.5 * field.id))
+            mesh.alphaIndex = field.id + 1
 
             scene.addMesh(mesh)
             field.id to FieldSupport(mesh, texture, alpha)

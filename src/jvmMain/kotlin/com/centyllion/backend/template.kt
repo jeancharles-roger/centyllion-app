@@ -42,10 +42,10 @@ fun HTML.centyllionHead(title: String) = head {
     // Javascript
     script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
 
-    script(src="https://preview.babylonjs.com/babylon.js") {}
-    script(src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js") {}
-    script(src="https://preview.babylonjs.com/materialsLibrary/babylon.gridMaterial.min.js") {}
-    script(src="https://preview.babylonjs.com/loaders/babylon.glTFFileLoader.js") {}
+    script(src="/js/babylonjs-4.0.3/babylon.js") {}
+    script(src="/js/babylonjs-4.0.3/babylonjs.loaders.min.js") {}
+    script(src="/js/babylonjs-4.0.3/babylon.gridMaterial.min.js") {}
+    script(src="/js/babylonjs-4.0.3/babylon.glTFFileLoader.js") {}
 
     script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
 

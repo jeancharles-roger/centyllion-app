@@ -77,11 +77,11 @@ fun startApp(page: Page?, context: AppContext) {
     context.openPage(selectedPage, register = false)
 }
 
-fun appendErrorMessage(root: HTMLElement, throwable: Throwable) {
-    fun findCause(throwable: Throwable): Throwable = throwable.cause?.let { findCause(it) } ?: throwable
+fun appendErrorMessage(root: HTMLElement, throwable: Throwable?) {
+    fun findCause(throwable: Throwable?): Throwable? = throwable?.cause?.let { findCause(it) } ?: throwable
     findCause(throwable).let {
-        appendErrorMessage(root, it.message ?: "")
-        console.error(it.asDynamic().stack)
+        appendErrorMessage(root, it?.message ?: "")
+        console.error(it?.asDynamic()?.stack)
     }
 }
 
@@ -127,7 +127,10 @@ fun index() {
 
                 }.catch { appendErrorMessage(root, it) }
 
-        }.catch { appendErrorMessage(root, "Locale file for $localeName couldn't be loaded") }
+        }.catch {
+            console.error(it)
+            appendErrorMessage(root, "Locale file for $localeName couldn't be loaded")
+        }
 
     }.catch {appendErrorMessage(root, "Locales file couldn't be loaded") }
 }

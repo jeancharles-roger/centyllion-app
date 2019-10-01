@@ -641,19 +641,17 @@ class Simulator3dViewController(
                 {
                     console.log("Success loading of asset ${asset.url}")
                     val mesh = task.loadedMeshes[0] as Mesh
-                    // clone scene to allow multiple occurrences of the same asset
-                    val cloned = mesh.toLeftHanded()
-                    cloned.position.set(asset.x, asset.y, asset.z)
-                    cloned.scaling.set(asset.xScale, asset.yScale, asset.zScale)
+                    mesh.position.set(asset.x, asset.y, asset.z)
+                    mesh.scaling.set(asset.xScale, asset.yScale, asset.zScale)
                     if (asset.xRotation != 0.0 || asset.yRotation != 0.0 || asset.zRotation != 0.0) {
-                        cloned.rotationQuaternion = Quaternion.FromEulerAngles(asset.xRotation, asset.yRotation, asset.zRotation)
+                        mesh.rotationQuaternion = Quaternion.FromEulerAngles(asset.xRotation, asset.yRotation, asset.zRotation)
                     }
                     if (asset.opacity < 1.0) {
-                        cloned.visibility = asset.opacity
-                        cloned.getChildMeshes().forEach { it.visibility = asset.opacity }
+                        mesh.visibility = asset.opacity
+                        mesh.getChildMeshes().forEach { it.visibility = asset.opacity }
                     }
-                    scene.addMesh(cloned)
-                    assetScenes[asset] = cloned
+                    scene.addMesh(mesh)
+                    assetScenes[asset] = mesh
                     render()
                 },
                 {m, _ ->

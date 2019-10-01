@@ -93,11 +93,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val userLabel = Help()
 
-    val modelDescriptionController = EditableMarkdownController(model.model.description, i18n("Description")) { _, new, _ ->
-        model = model.copy(model = model.model.copy(description = new))
-    }
+    val modelDescriptionController =
+        EditableMarkdownController(model.model.description, i18n("Description")) { _, new, _ ->
+            model = model.copy(model = model.model.copy(description = new))
+        }
 
-    val tagsController = TagsController(model.tags, appContext) { old, new, _ -> if (old != new) model = model.copy( tags = new) }
+    val tagsController =
+        TagsController(model.tags, appContext) { old, new, _ -> if (old != new) model = model.copy(tags = new) }
 
     val modelController = GrainModelEditController(model.model, this) { old, new, _ ->
         if (old != new) {
@@ -129,7 +131,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
     )
 
-    val saveButton = Button(i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
+    val saveButton =
+        Button(i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
 
     val publishModelItem = createMenuItem(
         i18n("Publish Model"), "share-square", TextColor.Success, creatorRole
@@ -229,7 +232,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             size = ColumnSize.Full
         ),
         Column(modelDescriptionController, size = ColumnSize.Full),
-        Column(tagsController,size = ColumnSize.FourFifths),
+        Column(tagsController, size = ColumnSize.FourFifths),
         Column(editionTab, size = ColumnSize.Full),
         multiline = true, centered = true
     )
@@ -315,68 +318,70 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun save(after: () -> Unit = {}) {
-        val needModelSave = modelUndoRedo.changed(model) || model.id.isEmpty()
-        if (needModelSave && model.id.isEmpty()) {
-            // The model needs to be created first
-            api.saveGrainModel(model.model)
-                .then { newModel ->
-                    setModel(newModel)
-                    // Saves the simulation and thumbnail
-                    api.saveSimulation(newModel.id, simulation.simulation)
-                }.then { newSimulation ->
-                    setSimulation(newSimulation)
-                    saveInitThumbnail()
-                    message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
-                    after()
-                    Unit
-                }.catch {
-                    this.error(it)
-                    Unit
-                }
-        } else {
-
-            // Save the model if needed
-            if (needModelSave) {
-                api.updateGrainModel(model).then {
-                    setModel(model)
-                    message("Model %0 saved.", model.model.name)
-                    Unit
-                }.catch {
-                    this.error(it)
-                    Unit
-                }
-            }
-
-            // Save the simulation
-            if (simulationUndoRedo.changed(simulation)) {
-                if (simulation.id.isEmpty()) {
-                    // simulation must be created
-                    api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
+        when {
+            model.id.isEmpty() -> {
+                // The model needs to be created first
+                api.saveGrainModel(model.model)
+                    .then { newModel ->
+                        setModel(newModel)
+                        // Saves the simulation and thumbnail
+                        api.saveSimulation(newModel.id, simulation.simulation)
+                    }.then { newSimulation ->
                         setSimulation(newSimulation)
                         saveInitThumbnail()
-                        message("Simulation %0 saved.", simulation.simulation.name)
+                        message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
                         after()
                         Unit
                     }.catch {
                         this.error(it)
                         Unit
                     }
-                } else {
-                    // saves the simulation
-                    api.updateSimulation(simulation).then {
-                        setSimulation(simulation)
-                        saveInitThumbnail()
-                        refreshButtons()
-                        message("Simulation %0 saved.", simulation.simulation.name)
-                        after()
+            }
+            else -> {
+
+                // Save the model if needed
+                if (modelUndoRedo.changed(model)) {
+                    api.updateGrainModel(model).then {
+                        setModel(model)
+                        message("Model %0 saved.", model.model.name)
                         Unit
                     }.catch {
                         this.error(it)
                         Unit
                     }
                 }
-            } else {
-                after()
+
+                // Save the simulation
+                when {
+                    simulation.id.isEmpty() -> {
+                        // simulation must be created
+                        api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
+                            setSimulation(newSimulation)
+                            saveInitThumbnail()
+                            message("Simulation %0 saved.", simulation.simulation.name)
+                            after()
+                            Unit
+                        }.catch {
+                            this.error(it)
+                            Unit
+                        }
+                    }
+                    simulationUndoRedo.changed(simulation) -> {
+                        // saves the simulation
+                        api.updateSimulation(simulation).then {
+                            setSimulation(simulation)
+                            saveInitThumbnail()
+                            refreshButtons()
+                            message("Simulation %0 saved.", simulation.simulation.name)
+                            after()
+                            Unit
+                        }.catch {
+                            this.error(it)
+                            Unit
+                        }
+                    }
+                    else -> after()
+                }
             }
         }
     }
@@ -403,7 +408,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun cloneModel() {
         // checks if something needs saving before creating a new simulation
-        onExit().then {
+        changeModelOrSimulation {
             if (it) {
                 // creates cloned model and cloned simulation
                 val clonedModel = emptyGrainModelDescription.copy(
@@ -430,32 +435,26 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown.active = false
     }
 
-    fun newSimulation() {
-        // checks if something needs saving before creating a new simulation
-        onExit().then {
-            if (it) {
-                setSimulation(emptySimulationDescription)
-                moreDropdown.active = false
-                editionTab.selectedPage = simulationPage
-                message("New simulation.")
-            }
+    fun newSimulation() = changeModelOrSimulation {
+        if (it) {
+            setSimulation(emptySimulationDescription)
+            moreDropdown.active = false
+            editionTab.selectedPage = simulationPage
+            message("New simulation.")
         }
     }
 
-    fun cloneSimulation() {
-        // checks if something needs saving before creating a new simulation
-        onExit().then {
-            if (it) {
-                val cloned = emptySimulationDescription.copy(
-                    modelId = model.id,
-                    simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
-                )
-                setSimulation(cloned)
+    fun cloneSimulation() = changeModelOrSimulation {
+        if (it) {
+            val cloned = emptySimulationDescription.copy(
+                modelId = model.id,
+                simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
+            )
+            setSimulation(cloned)
 
-                moreDropdown.active = false
-                editionTab.selectedPage = simulationPage
-                message("Simulation cloned.")
-            }
+            moreDropdown.active = false
+            editionTab.selectedPage = simulationPage
+            message("Simulation cloned.")
         }
     }
 
@@ -530,7 +529,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         simulationUndoRedo.refresh()
         saveButton.disabled =
             !modelUndoRedo.changed(model) && model.id.isNotEmpty() &&
-            !simulationUndoRedo.changed(simulation) && simulation.id.isNotEmpty()
+                    !simulationUndoRedo.changed(simulation) && simulation.id.isNotEmpty()
     }
 
     fun refreshMoreButtons() {
@@ -552,10 +551,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             fetchSimulations(model.id).then {
                 moreDropdown.items = moreDropdownItems + it.content.map { current ->
                     createMenuItem(current.label, current.icon, disabled = current == simulation) {
-                        save {
-                            setSimulation(current)
-                            moreDropdown.active = false
-                            editionTab.selectedPage = simulationPage
+                        changeModelOrSimulation() {
+                            if (it) {
+                                setSimulation(current)
+                                moreDropdown.active = false
+                                editionTab.selectedPage = simulationPage
+                            }
                         }
                     }
                 }
@@ -565,11 +566,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    override fun onExit() = Promise<Boolean> { resolve, _ ->
-
+    fun changeModelOrSimulation(dispose: Boolean = false, after: (Boolean) -> Unit = {}) {
         fun conclude(exit: Boolean) {
-            if (exit) simulationController.dispose()
-            resolve(exit)
+            if (exit && dispose) simulationController.dispose()
+            after(exit)
         }
 
         if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
@@ -583,5 +583,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         } else {
             conclude(true)
         }
+    }
+
+    override fun onExit() = Promise<Boolean> { resolve, _ ->
+        changeModelOrSimulation(true) { resolve(it) }
     }
 }

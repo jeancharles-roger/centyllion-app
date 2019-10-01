@@ -52,7 +52,6 @@ fun HTML.centyllionHead(title: String) = head {
     script(src = "https://js.stripe.com/v3/") {}
 
     script(src = "/js/require.js") {}
-    script(src = "/js/centyllion/requirejs.config.json") {}
 }
 
 @HtmlTagMarker
@@ -92,5 +91,6 @@ fun HTML.index() {
             div("container")
         }
         centyllionFooter()
+        script(src = "/js/centyllion/requirejs.config.json") {}
     }
 }

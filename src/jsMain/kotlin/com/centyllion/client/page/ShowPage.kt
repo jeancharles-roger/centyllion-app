@@ -177,7 +177,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { refreshMoreButtons() }
 
     val cloneButton = Button(
-        i18n("Clone"), Icon("clone"), ElementColor.Primary,
+        i18n("Clone Simulation"), Icon("clone"), ElementColor.Primary,
         rounded = true, outlined = true
     ) {
         if (appContext.me != null) {
@@ -512,11 +512,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
+                cloneButton.title = i18n("Clone Model")
                 tools.hidden = isModelReadOnly
                 undoControl.body = modelUndoRedo.undoButton
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
+                cloneButton.title = i18n("Clone Simulation")
                 val readonly = isSimulationReadOnly
                 tools.hidden = readonly
                 undoControl.body = simulationUndoRedo.undoButton

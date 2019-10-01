@@ -231,8 +231,6 @@ class Simulator3dViewController(
 
     val plane = MeshBuilder.CreatePlane("ground", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
         rotate(Axis.X, -PI/2)
-        translate(Axis.X, -0.5)
-        translate(Axis.Y, -0.5)
         alphaIndex = 0
 
         this.material = createPlaneMaterial()
@@ -318,7 +316,11 @@ class Simulator3dViewController(
 
         if (selectedTool != EditTools.Move) {
             val diameter = size * selectedTool.factor
-            val color4 = (color ?: Color3.Green()).toColor4(1)
+
+            val color4 = when (selectedTool) {
+                EditTools.Eraser -> Color3.Black()
+                else -> color ?: Color3.Green()
+            }.toColor4(1.0)
 
             val child = MeshBuilder.CreateCylinder(
                 "inner pointer",
@@ -330,7 +332,8 @@ class Simulator3dViewController(
                 EditTools.Spray -> 0.4
                 else -> 0.7
             }
-            child.position.set(pointer.position.x, pointer.position.y, pointer.position.z)
+
+            child.position.set(pointer.position.x, pointer.position.y.toDouble()-height/2.0, pointer.position.z)
             pointer.addChild(child)
         }
     }
@@ -340,7 +343,7 @@ class Simulator3dViewController(
     }
 
     fun positionPointer(x: Number, y: Number) {
-        pointer.position.set(x, 0.0, y)
+        pointer.position.set(x.toDouble()+0.5, 0.0, y.toDouble()+0.5)
     }
 
     fun updatePointer() {
@@ -433,6 +436,8 @@ class Simulator3dViewController(
         refresh(false)
     }
 
+    private fun toSimulation(value: Number?) = ((value?.toDouble()?: 0.0) - 0.5).roundToInt()
+
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
@@ -442,8 +447,8 @@ class Simulator3dViewController(
             if (info.hit && info.pickedMesh == plane) {
                 drawStep = 0
 
-                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
-                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
+                val x = toSimulation(info.pickedPoint?.x)
+                val y = toSimulation(info.pickedPoint?.z)
 
                 simulationX = x + 50
                 simulationY = y + 50
@@ -465,8 +470,8 @@ class Simulator3dViewController(
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh == plane) {
-                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
-                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
+                val x = toSimulation(info.pickedPoint?.x)
+                val y = toSimulation(info.pickedPoint?.z)
 
                 positionPointer(x, y)
                 if (drawStep > 0) {
@@ -488,8 +493,8 @@ class Simulator3dViewController(
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh != null) {
-                val x = info.pickedPoint?.x?.toDouble()?.roundToInt() ?: 0
-                val y = info.pickedPoint?.z?.toDouble()?.roundToInt() ?: 0
+                val x = toSimulation(info.pickedPoint?.x)
+                val y = toSimulation(info.pickedPoint?.z)
                 simulationX = x + 50
                 simulationY = y + 50
                 drawStep = -1
@@ -616,8 +621,6 @@ class Simulator3dViewController(
             )
             mesh.material = material
             mesh.rotate(Axis.X, PI / 2)
-            mesh.translate(Axis.X, -0.5)
-            mesh.translate(Axis.Y, -0.5)
             mesh.alphaIndex = field.id + 1
 
             scene.addMesh(mesh)
@@ -667,7 +670,7 @@ class Simulator3dViewController(
 
             // positions the mesh
             val agent = data.model.indexedGrains[grainId]
-            it.position.set(x,  -(agent?.size ?: 1.0) / 2.0, y)
+            it.position.set(x+0.5,  -(agent?.size ?: 1.0) / 2.0, y+0.5)
 
             it.freezeWorldMatrix()
             it.ignoreNonUniformScaling = true

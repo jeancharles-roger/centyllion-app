@@ -1,0 +1,13 @@
+requirejs.config({
+    'baseUrl': '/js',
+    paths: {
+        'chartjs': 'Chart.js-2.8.0/Chart',
+        'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
+        %DEPENDENCIES%
+    }
+})
+
+requirejs(['chartjs', 'bulmaToast', 'centyllion'], function(chartjs, bulmaToast, centyllion) {
+    centyllion.com.centyllion.client.dependencies(bulmaToast)
+    centyllion.com.centyllion.client.%MAIN%
+})

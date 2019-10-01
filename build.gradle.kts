@@ -148,9 +148,9 @@ tasks {
     val webRoot = rootProject.file("webroot")
     val deploy = rootProject.file("deploy")
 
-    val mainFunction = "com.centyllion.client.index()"
+    val mainFunction = "index()"
     val centyllionUrl = "https://app.centyllion.com"
-    val externalFunction = "com.centyllion.client.external(\"$centyllionUrl\")"
+    val externalFunction = "external(\"$centyllionUrl\")"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
 
@@ -167,7 +167,11 @@ tasks {
         }
     }
 
+
     val allJs by register<Copy>("allJs") {
+        // adds require template file to task input
+        val requireTemplate = file("deploy/requirejs.config.template")
+        inputs.file(requireTemplate)
         dependsOn(compileKotlinJs)
         group = "build"
 
@@ -205,41 +209,15 @@ tasks {
 
             val moduleJoined = modules.map { (k, v) -> "'$k': 'centyllion/$v'" }.joinToString(",\n")
 
-            // Constructs a requirejs.config
-            val configFile = file("${jsDir}/requirejs.config.json")
-            configFile.writeText(
-                """requirejs.config({
-                    'baseUrl': '/js',
-                    paths: {
-                        'chartjs': 'Chart.js-2.8.0/Chart',
-                        'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
-                        $moduleJoined
-                    }
-                })
-                
-                requirejs(['chartjs', 'bulmaToast', 'centyllion'], function(chartjs, bulmaToast, centyllion) {
-                    centyllion.com.centyllion.client.dependencies(bulmaToast)
-                    centyllion.$mainFunction
-                })""".trimIndent()
-            )
+            fun copyRequireJsConfig(name: String, main: String) {
+                val sourceFile = requireTemplate
+                val content = sourceFile.readText().replace("%DEPENDENCIES%", moduleJoined).replace("%MAIN%", main)
+                file(name).writeText(content)
+            }
 
-            // Constructs a centyllion.config.json
-            val centyllionFile = file("$jsDir/centyllion.config.json")
-            centyllionFile.writeText(
-                """requirejs.config({
-                    'baseUrl': '$centyllionUrl/js',
-                    paths: {
-                        'chartjs': 'Chart.js-2.8.0/Chart',
-                        'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
-                        $moduleJoined
-                    }
-                })
-                
-                requirejs(['chartjs', 'bulmaToast', 'centyllion'], function(chartjs, bulmaToast, centyllion) {
-                    centyllion.com.centyllion.client.dependencies(bulmaToast)
-                    centyllion.$externalFunction
-                })""".trimIndent()
-            )
+            copyRequireJsConfig("${jsDir}/requirejs.config.json", mainFunction)
+            copyRequireJsConfig("${jsDir}/centyllion.config.json", externalFunction)
+
         }
     }
 
@@ -322,5 +300,4 @@ tasks {
 
         compression = Compression.GZIP
     }
-
 }

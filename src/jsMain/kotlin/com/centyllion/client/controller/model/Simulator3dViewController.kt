@@ -23,7 +23,8 @@ import babylonjs.StandardMaterial
 import babylonjs.Texture
 import babylonjs.Tools
 import babylonjs.Vector3
-import babylonjs.extension.GridMaterial
+import babylonjs.loaders.GLTFFileLoader
+import babylonjs.materials.GridMaterial
 import bulma.BulmaElement
 import bulma.Control
 import bulma.Div
@@ -509,6 +510,8 @@ class Simulator3dViewController(
     }
 
     init {
+        console.log(GLTFFileLoader::class.simpleName)
+
         refreshAssets()
 
         scene.onPointerMove = this::onPointerMove

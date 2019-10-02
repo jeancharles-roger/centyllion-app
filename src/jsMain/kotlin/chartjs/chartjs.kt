@@ -128,8 +128,7 @@ external interface TooltipModel {
     var displayColors: Boolean
 }
 
-
-@Suppress("UNREACHABLE_CODE")
+@JsModule("chartjs")
 external class Chart {
 
     constructor(context: CanvasRenderingContext2D, config: LineChartConfig = definedExternally)

@@ -16,7 +16,6 @@ import kotlinx.html.p
 import kotlinx.html.script
 import kotlinx.html.section
 import kotlinx.html.span
-import kotlinx.html.strong
 import kotlinx.html.title
 
 @HtmlTagMarker
@@ -42,11 +41,6 @@ fun HTML.centyllionHead(title: String) = head {
     // Javascript
     script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
 
-    script(src="/js/babylonjs-4.0.3/babylon.js") {}
-    script(src="/js/babylonjs-4.0.3/babylonjs.loaders.min.js") {}
-    script(src="/js/babylonjs-4.0.3/babylon.gridMaterial.min.js") {}
-    script(src="/js/babylonjs-4.0.3/babylon.glTFFileLoader.js") {}
-
     script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
 
     script(src = "https://js.stripe.com/v3/") {}
@@ -65,8 +59,10 @@ fun BODY.centyllionFooter() {
                 }
             }
             div("level-item has-text-centered") {
-                img("Centyllion", "https://centyllion.com/assets/images/logo-2by1.png") { width = "300px" }
-                strong { +"platform" }
+                a {
+                    href = "https://centyllion.com"
+                    img("Centyllion", "https://centyllion.com/assets/images/logo-2by1.png") { width = "300px" }
+                }
             }
             div("level-right") {
                 // deployment info

@@ -35,7 +35,7 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                     val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val user = subscription.getOrCreateUserFromPrincipal(it)
-                    context.respond(data.grainModelsForUser(user.id, offset, limit))
+                    context.respond(data.grainModels(user.id, user.id, offset, limit))
                 }
             }
         }
@@ -48,7 +48,7 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val modelId = call.parameters["model"]
                     val user = subscription.getOrCreateUserFromPrincipal(it)
-                    context.respond(data.simulationsForUser(user.id, modelId, offset, limit))
+                    context.respond(data.simulations(user.id, user.id, modelId, offset, limit))
                 }
             }
         }
@@ -57,14 +57,6 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
             withRequiredPrincipal {
                 val user = subscription.getOrCreateUserFromPrincipal(it)
                 context.respond(data.subscriptionsForUser(user.id))
-            }
-        }
-
-        get("asset") {
-            withRequiredPrincipal {
-                val user = subscription.getOrCreateUserFromPrincipal(it)
-                val models = data.grainModelsForUser(user.id)
-                context.respond(models)
             }
         }
     }

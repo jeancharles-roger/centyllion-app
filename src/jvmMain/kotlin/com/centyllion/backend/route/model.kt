@@ -27,10 +27,13 @@ import io.ktor.routing.route
 fun Route.model(subscription: SubscriptionManager, data: Data) {
     route("model") {
         get {
+            val caller = call.principal<JWTPrincipal>()?.let {
+                subscription.getOrCreateUserFromPrincipal(it)
+            }
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-            val models = data.publicGrainModels(offset, limit)
-            context.respond(models)
+            val userId = call.parameters["user"]
+            context.respond(data.grainModels(caller?.id, userId, offset, limit))
         }
 
         get("tags") {

@@ -125,7 +125,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         when (it) {
             featuredPage -> {
                 api.fetchAllFeatured().then { featuredController.data = it.content }.catch { error(it) }
-                api.fetchPublicGrainModels().then { publicModelsController.data = it.content }.catch { error(it) }
+                api.fetchGrainModels().then { publicModelsController.data = it.content }.catch { error(it) }
             }
             userPage -> api.fetchAllUsers(true, 0, usersPageController.limit)
                 .then { usersPageController.data = it }.catch { error(it) }

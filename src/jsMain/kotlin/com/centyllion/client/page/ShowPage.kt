@@ -297,8 +297,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun fetchSimulations(modelId: String, limit: Int = 50) =
-        if (appContext.me != null) appContext.api.fetchMySimulations(modelId, limit = limit)
-        else appContext.api.fetchPublicSimulations(modelId, limit = limit)
+        if (appContext.me != null) appContext.api.fetchSimulations(null, modelId, limit = limit)
+        else appContext.api.fetchSimulations(modelId, limit = limit)
 
     fun saveInitThumbnail() {
         // creates a new simulator 3d view to create an init view

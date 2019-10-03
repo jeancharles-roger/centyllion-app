@@ -137,7 +137,7 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
         ResultPageController(
             appContext.locale, recentSimulationListController,
             { Column(it, size = ColumnSize.Full) },
-            { offset, limit ->  appContext.api.fetchMySimulations(null, offset, limit) },
+            { offset, limit ->  appContext.api.fetchSimulations(appContext.me?.id, null, offset, limit) },
             { error(it) }
         ).apply { limit = 6 }
 
@@ -187,15 +187,17 @@ class HomePage(override val appContext: AppContext) : BulmaPage {
             }
         }
 
-        appContext.api.fetchMyGrainModels(limit = 50).then {
-            elements = it.content
+        appContext.me?.let { me ->
+            appContext.api.fetchGrainModels(userId = me.id, limit = 50).then {
+                elements = it.content
 
-            it.content.forEach { model ->
-                appContext.api.fetchMySimulations(model.id, limit = 50).then {
-                    val index = elements.indexOf(model)
-                    val mutable = elements.toMutableList()
-                    mutable.addAll(index + 1, it.content)
-                    elements = mutable
+                it.content.forEach { model ->
+                    appContext.api.fetchSimulations(appContext.me?.id, model.id, limit = 50).then {
+                        val index = elements.indexOf(model)
+                        val mutable = elements.toMutableList()
+                        mutable.addAll(index + 1, it.content)
+                        elements = mutable
+                    }
                 }
             }
         }

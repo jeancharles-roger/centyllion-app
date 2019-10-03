@@ -154,30 +154,28 @@ class SqlData(
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }
     }
 
-    private fun publicGrainModelQuery() = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-        (DbDescriptionInfos.id eq DbModelDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-    }
-
-    override fun publicGrainModels(offset: Int, limit: Int) = transaction(database) {
-        val content = DbModelDescription.wrapRows(
-            publicGrainModelQuery().limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
-        ).map { it.toModel() }
-
-        ResultPage(content, offset, publicGrainModelQuery().count())
-    }
-
-    private fun grainModelsForUserQuery(userUUID: UUID) = DbModelDescriptions
+    private fun grainModelsQuery(callerIsUser: Boolean, userUUID: UUID?) = DbModelDescriptions
         .innerJoin(DbDescriptionInfos)
-        .select { DbDescriptionInfos.userId eq userUUID }
+        .select {
+            listOfNotNull(
+                userUUID?.let { DbDescriptionInfos.userId eq it },
+                if (userUUID == null || !callerIsUser) DbDescriptionInfos.readAccess eq true else null
+            ).fold(Op.TRUE as Op<Boolean>) {a, c -> a and c }
+
+            DbDescriptionInfos.userId eq userUUID
+        }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
+    override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         transaction(database) {
-            val userUUID = UUID.fromString(userId)
+            val callerIsUser = callerId?.let { it == userId } ?: false
+            val userUUID = userId?.let { UUID.fromString(userId) }
             val content = DbModelDescription.wrapRows(
-                grainModelsForUserQuery(userUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+                grainModelsQuery(callerIsUser, userUUID)
+                    .limit(limit, offset)
+                    .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
             ).map { it.toModel() }
-            ResultPage(content, offset, grainModelsForUserQuery(userUUID).count())
+            ResultPage(content, offset, grainModelsQuery(callerIsUser, userUUID).count())
         }
 
     override fun getGrainModel(id: String) = transaction(database) {
@@ -220,45 +218,28 @@ class SqlData(
         }
     }
 
-    private fun publicSimulationQuery(modelId: UUID?) =
-        DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select {
-            val public = (DbDescriptionInfos.id eq DbSimulationDescriptions.info) and (DbDescriptionInfos.readAccess eq true)
-            when (modelId) {
-                null -> public
-                else -> public and (DbSimulationDescriptions.modelId eq modelId)
-            }
-        }
-
-    override fun publicSimulations(modelId: String?, offset: Int, limit: Int) = transaction(database) {
-        val modelUUID = modelId?.let { UUID.fromString(it) }
-        val content = DbSimulationDescription.wrapRows(
-            publicSimulationQuery(modelUUID).limit(limit, offset).orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
-        ).map { it.toModel() }
-
-        ResultPage(content, offset, publicSimulationQuery(modelUUID).count())
-    }
-
-    private fun simulationsForUserQuery(userUUID: UUID, modelId: UUID?) = DbSimulationDescriptions
+    private fun simulationsQuery(callerIsUser: Boolean, userUUID: UUID?, modelUUID: UUID?) = DbSimulationDescriptions
         .innerJoin(DbDescriptionInfos)
         .select {
-            val user = DbDescriptionInfos.userId eq userUUID
-            when (modelId) {
-                null -> user
-                else -> user and (DbSimulationDescriptions.modelId eq modelId)
-            }
+            listOfNotNull(
+                userUUID?.let { DbDescriptionInfos.userId eq it },
+                modelUUID?.let { DbSimulationDescriptions.modelId eq it },
+                if (userUUID == null || !callerIsUser) DbDescriptionInfos.readAccess eq true else null
+            ).fold(Op.TRUE as Op<Boolean>) {a, c -> a and c }
         }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+    override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         transaction(database) {
-            val userUUID = UUID.fromString(userId)
+            val callerIsUser = callerId?.let { it == userId } ?: false
+            val userUUID = userId?.let { UUID.fromString(it) }
             val modelUUID = modelId?.let { UUID.fromString(it) }
             val content = DbSimulationDescription.wrapRows(
-                simulationsForUserQuery(userUUID, modelUUID)
+                simulationsQuery(callerIsUser, userUUID, modelUUID)
                     .limit(limit, offset)
                     .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
             ).map { it.toModel() }
-            ResultPage(content, offset, simulationsForUserQuery(userUUID, modelUUID).count())
+            ResultPage(content, offset, simulationsQuery(callerIsUser, userUUID, modelUUID).count())
         }
 
     override fun getSimulation(id: String) = transaction(database) {

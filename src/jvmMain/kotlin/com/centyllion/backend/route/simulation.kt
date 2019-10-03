@@ -33,10 +33,14 @@ import io.ktor.routing.route
 fun Route.simulation(subscription: SubscriptionManager, data: Data) {
     route("simulation") {
         get {
+            val caller = call.principal<JWTPrincipal>()?.let {
+                subscription.getOrCreateUserFromPrincipal(it)
+            }
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+            val userId = call.parameters["user"]
             val modelId = call.parameters["model"]
-            context.respond(data.publicSimulations(modelId, offset, limit))
+            context.respond(data.simulations(caller?.id, userId, modelId, offset, limit))
         }
 
         // post a new simulation

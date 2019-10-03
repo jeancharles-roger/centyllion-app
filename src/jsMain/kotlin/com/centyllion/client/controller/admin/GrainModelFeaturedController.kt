@@ -60,7 +60,7 @@ class GrainModelFeaturedController(
 
     val simulationDropDown = Dropdown(text = page.i18n("Simulations"), rounded = true, icon = Icon("play")) { dropdown ->
         dropdown.items = listOf(DropdownSimpleItem(page.i18n("Loading"), Icon("sync", spin = true)))
-        page.appContext.api.fetchPublicSimulations(model.id, limit = 50).then { simulations ->
+        page.appContext.api.fetchSimulations(model.id, limit = 50).then { simulations ->
             dropdown.items = simulations.content.map { simulation ->
                 DropdownSimpleItem(simulation.simulation.name, icon(simulation)) {
                     toggleFeature(simulation, featured(simulation))

@@ -121,26 +121,13 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 .then { json.parse(User.serializer(), it) }.catch { null }
         }
 
-    fun fetchMyGrainModels(offset: Int = 0, limit: Int = 20) =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me/model?offset=$offset&limit=$limit", bearer)
-                .then { json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it) }
-        }
-
-    fun fetchMySimulations(modelId: String? = null, offset: Int = 0, limit: Int = 20) =
+    fun fetchGrainModels(userId: String? = null, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val options = listOfNotNull(
-                if (modelId != null) "model=$modelId" else null,
+                if (userId != null) "user=$userId" else null,
                 "offset=$offset", "limit=$limit"
             )
-            val path = "/api/me/simulation?${options.joinToString("&")}"
-            fetch("GET", path, bearer)
-                .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
-        }
-
-    fun fetchPublicGrainModels(offset: Int = 0, limit: Int = 20) =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/model?offset=$offset&limit=$limit", bearer)
+            fetch("GET", "/api/model?${options.joinToString("&")}", bearer)
                 .then { json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it) }
         }
 
@@ -188,9 +175,10 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         }
     }
 
-    fun fetchPublicSimulations(modelId: String? = null, offset: Int = 0, limit: Int = 20) =
+    fun fetchSimulations(userId: String? = null, modelId: String? = null, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val options = listOfNotNull(
+                if (userId != null) "user=$userId" else null,
                 if (modelId != null) "model=$modelId" else null,
                 "offset=$offset", "limit=$limit"
             )

@@ -109,19 +109,14 @@ class MemoryData(
         users[user.id] = user
     }
 
-    override fun publicGrainModels(offset: Int, limit: Int) =
-        merge(
-            backend?.publicGrainModels(offset, limit),
-            grainModels.values.filter { it.info.readAccess },
+    override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> {
+        val callerIsUser = callerId?.let { it == userId } ?: false
+        return merge(
+            backend?.grainModels(callerId, userId, offset, limit),
+            grainModels.values.filter { (userId == null || it.info.user?.id == userId) && (callerIsUser || it.info.public) },
             deletedModels, offset, limit
         )
-
-    override fun grainModelsForUser(userId: String, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
-        merge(
-            backend?.grainModelsForUser(userId, offset, limit),
-            grainModels.values.filter { it.info.user?.id == userId },
-            deletedModels, offset, limit
-        )
+    }
 
     override fun getGrainModel(id: String) = grainModels[id] ?: backend?.getGrainModel(id)
 
@@ -143,21 +138,16 @@ class MemoryData(
         deletedModels.add(modelId)
     }
 
-    override fun publicSimulations(modelId: String?, offset: Int, limit: Int) =
-        merge(
-            backend?.publicSimulations(modelId, offset, limit),
-            simulations.values.filter { (modelId == null || it.modelId == modelId) && it.info.readAccess },
-            deletedSimulations, offset, limit
-        )
-
-    override fun simulationsForUser(userId: String, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
-        merge(
-            backend?.simulationsForUser(userId, modelId, offset, limit),
+    override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> {
+        val callerIsUser = callerId?.let { it == userId } ?: false
+        return merge(
+            backend?.simulations(callerId, userId, modelId, offset, limit),
             simulations.values.filter {
-                it.info.user?.id == userId && (modelId == null || it.modelId == modelId)
+                it.info.user?.id == userId && (modelId == null || it.modelId == modelId) && ( callerIsUser || it.info.public )
             },
             deletedSimulations, offset, limit
         )
+    }
 
     override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 

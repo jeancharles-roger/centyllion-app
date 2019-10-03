@@ -18,6 +18,16 @@ import kotlin.test.assertTrue
 @KtorExperimentalAPI
 class TestMeApi {
 
+    private fun TestApplicationEngine.getMe(user: User): User {
+        val request = handleGet("/api/me", user)
+        assertEquals(HttpStatusCode.OK, request.response.status())
+
+        val result = request.response.content
+        assertNotNull(result)
+
+        return Json.parse(User.serializer(), result)
+    }
+
     private fun TestApplicationEngine.postModel(model: GrainModel, user: User): GrainModelDescription {
         val content = Json.stringify(GrainModel.serializer(), model)
         val request = handlePost("/api/model", content, user)
@@ -26,7 +36,7 @@ class TestMeApi {
         val result = request.response.content
         assertNotNull(result)
 
-        val retrieved = Json. parse(GrainModelDescription.serializer(), result)
+        val retrieved = Json.parse(GrainModelDescription.serializer(), result)
         assertEquals(model, retrieved.model)
         return retrieved
     }

@@ -16,24 +16,6 @@ paths:
       responses:
         '200':
           description: A JSON containing my profile.
-  /me/tags:
-    get:
-      summary: Tags used in by me
-      tags:
-        - models
-      parameters:
-        - in: query
-          name: offset
-          description: Offset in the result list from the overwhole list
-          schema:
-            type: integer
-            default: 0
-        - in: query
-          name: limit
-          description: Limit of model in the result list
-          schema:
-            type: integer
-            default: 50
   /me/model:
     get:
       summary: Get the list of my models
@@ -45,7 +27,7 @@ paths:
         - in: query
           name: offset
           description: Offset in the result list from the overwhole list
-          schema: 
+          schema:
             type: integer
             default: 0
         - in: query
@@ -72,7 +54,7 @@ paths:
         - in: query
           name: offset
           description: Offset in the result list from the overwhole list
-          schema: 
+          schema:
             type: integer
             default: 0
         - in: query
@@ -88,6 +70,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationDescriptionResultPage'
+  /me/tags:
+    get:
+      summary: Tags used in by me
+      security:
+        - BearerAuth: []
+      tags:
+        - me
+      parameters:
+        - in: query
+          name: offset
+          description: Offset in the result list from the overwhole list
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: limit
+          description: Limit of model in the result list
+          schema:
+            type: integer
+            default: 50
   /me/subscription:
     get:
       summary: Get the list of my subscription
@@ -98,17 +100,6 @@ paths:
       responses:
         200:
           description: A list of subscriptions
-  /me/asset:
-    get:
-      summary: Get the list of my assets
-      security:
-        - BearerAuth: []
-      tags:
-        - me
-      responses:
-        200:
-          description: A list of assets
-
   /model:
     get:
       summary: Get the list of public models
@@ -160,6 +151,12 @@ paths:
       tags:
         - models
       parameters:
+        - in: query
+          name: user
+          description: Selects only simulation for this user id
+          schema:
+            type: string
+            default: none
         - in: query
           name: offset
           description: Offset in the result list from the overwhole list
@@ -284,6 +281,12 @@ paths:
       tags:
         - simulations
       parameters:
+        - in: query
+          name: user
+          description: Selects only simulation for this user id
+          schema:
+            type: string
+            default: none
         - in: query
           name: model
           description: Selects only simulation for this model id

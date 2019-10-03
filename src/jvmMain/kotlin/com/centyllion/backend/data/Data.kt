@@ -20,16 +20,14 @@ interface Data {
     fun saveUser(user: User)
 
     fun modelTags(userId: String? = null, offset: Int = 0, limit: Int = 20): ResultPage<String>
-    fun publicGrainModels(offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun searchModel(query: String, tags: List<String>, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
-    fun grainModelsForUser(userId: String, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
+    fun grainModels(callerId: String?, userId: String?, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun getGrainModel(id: String): GrainModelDescription?
     fun createGrainModel(userId: String, sent: GrainModel): GrainModelDescription
     fun saveGrainModel(model: GrainModelDescription)
     fun deleteGrainModel(modelId: String)
 
-    fun publicSimulations(modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
-    fun simulationsForUser(userId: String, modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
+    fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription

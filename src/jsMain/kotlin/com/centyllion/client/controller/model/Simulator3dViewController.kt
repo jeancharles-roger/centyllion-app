@@ -510,7 +510,8 @@ class Simulator3dViewController(
     }
 
     init {
-        console.log(GLTFFileLoader::class.simpleName)
+        // Force loading of GLTF loader plugin
+        GLTFFileLoader::class.simpleName
 
         refreshAssets()
 

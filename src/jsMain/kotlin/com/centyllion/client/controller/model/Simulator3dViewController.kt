@@ -734,6 +734,8 @@ class Simulator3dViewController(
                 support.texture.update(support.alpha)
             }
         }
+
+        simulationCanvas.root.classList.add("is-danger")
     }
 
     fun render() {
@@ -754,6 +756,9 @@ class Simulator3dViewController(
                 support.texture.update(support.alpha)
             }
         }
+
+        simulationCanvas.root.classList.toggle("is-danger", data.step > 0)
+
         render()
     }
 

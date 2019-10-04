@@ -51,7 +51,10 @@ class FieldChangeController(
 
     val valueSlider = Slider(
         data.second.toString(), "$min", "$max", "0.1", sliderColor, circle = true
-    ) { _, value -> data = data.first to value.toFloat() }
+    ) { _, value ->
+        console.log("Update slider for ${field?.name} to $value")
+        data = data.first to value.toFloat()
+    }
 
     fun help(value: Float) = when {
         value < 0f -> "-"
@@ -66,6 +69,11 @@ class FieldChangeController(
     ).apply {
         root.style.paddingTop = "0.2rem"
         root.style.paddingBottom = "0.1rem"
+    }
+
+    init {
+        // Sets initial value here to correct https://github.com/jeancharles-roger/centyllion/issues/185
+        valueSlider.value = data.second.toString()
     }
 
     override fun refresh() {

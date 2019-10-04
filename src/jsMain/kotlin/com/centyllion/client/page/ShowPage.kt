@@ -317,6 +317,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
+    val modelNeedsSaving get() = modelUndoRedo.changed(model) || model.id.isEmpty()
+
+    val simulationNeedsSaving get() = simulationUndoRedo.changed(simulation) || simulation.id.isEmpty()
+
     fun save(after: () -> Unit = {}) {
         when {
             model.id.isEmpty() -> {
@@ -527,9 +531,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
         modelUndoRedo.refresh()
         simulationUndoRedo.refresh()
-        saveButton.disabled =
-            !modelUndoRedo.changed(model) && model.id.isNotEmpty() &&
-                    !simulationUndoRedo.changed(simulation) && simulation.id.isNotEmpty()
+        saveButton.disabled = !modelNeedsSaving && !simulationNeedsSaving
     }
 
     fun refreshMoreButtons() {
@@ -572,7 +574,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             after(exit)
         }
 
-        if (modelUndoRedo.changed(model) || simulationUndoRedo.changed(simulation)) {
+        if (modelNeedsSaving || simulationNeedsSaving) {
             val model = modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
                 p(i18n("You're about to quit the page and some modifications haven't been saved.")),
                 textButton(i18n("Save"), ElementColor.Success) { save { conclude(true) } },

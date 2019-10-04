@@ -400,9 +400,10 @@ class SimulationRunController(
     }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
-        simulator.resetCount()
         refreshCounts()
-        if (ended) {
+        // only update simulation if initial simulation was modified
+        if (simulator.step == 0 && ended) {
+            simulator.resetCount()
             data = data.copy(agents = new.initialAgents.toList())
         }
     }

@@ -240,7 +240,7 @@ class Simulator(
 
     fun reset() {
         initialAgents.copyInto(agents)
-        for (i in 0 until ages.size) {
+        for (i in ages.indices) {
             ages[i] = if (agents[i] != -1) 0 else -1
             fields.forEach { it.value[i] = minField }
         }

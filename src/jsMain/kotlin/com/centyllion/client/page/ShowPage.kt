@@ -574,7 +574,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             after(exit)
         }
 
-        if (modelNeedsSaving || simulationNeedsSaving) {
+        if ((modelNeedsSaving && model != emptyGrainModelDescription) || (simulationNeedsSaving && simulation != emptySimulationDescription)) {
             val model = modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
                 p(i18n("You're about to quit the page and some modifications haven't been saved.")),
                 textButton(i18n("Save"), ElementColor.Success) { save { conclude(true) } },

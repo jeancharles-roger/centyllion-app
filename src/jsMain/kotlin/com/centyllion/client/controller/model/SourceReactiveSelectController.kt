@@ -1,12 +1,18 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
+import bulma.Control
+import bulma.Controller
+import bulma.Dropdown
+import bulma.DropdownSimpleItem
+import bulma.Field
+import bulma.Icon
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class SourceReactiveSelectController(
-    index: Int, behaviour: Behaviour, model: GrainModel,
+    index: Int, behaviour: Behaviour, model: GrainModel, val page: BulmaPage,
     var onUpdate: (old: Int, new: Int, controller: SourceReactiveSelectController) -> Unit = { _, _, _ -> }
 ) : Controller<Int, Pair<Behaviour, GrainModel>, Field> {
 
@@ -47,12 +53,12 @@ class SourceReactiveSelectController(
         }
     }
 
-    private fun emptyItem() = DropdownSimpleItem("none", Icon("times-circle")) {
+    private fun emptyItem() = DropdownSimpleItem(page.i18n("none"), Icon("times-circle")) {
         data = -1
         dropdown.toggleDropdown()
     }
 
-    private fun indexLabel(index: Int) = if (index >= 0) "reactive ${index + 1}" else "none"
+    private fun indexLabel(index: Int) = if (index >= 0) page.i18n("reactive %0", index + 1) else page.i18n("none")
 
     private fun indexIcon(index: Int) = when {
         index < 0 -> "times-circle"

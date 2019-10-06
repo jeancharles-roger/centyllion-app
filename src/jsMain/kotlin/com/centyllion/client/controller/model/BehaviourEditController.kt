@@ -114,17 +114,16 @@ class BehaviourEditController(
         this.data = this.data.copy(agePredicate = new)
     }
 
-    val mainReactiveController = GrainSelectController(context.indexedGrains[data.mainReactiveId], context.grains)
-    { _, new, _ ->
-        this.data = this.data.copy(mainReactiveId = new?.id ?: -1)
-    }
+    val mainReactiveController = GrainSelectController(
+        context.indexedGrains[data.mainReactiveId], context.grains, page, allowNone = false
+    ) { _, new, _ -> this.data = this.data.copy(mainReactiveId = new?.id ?: -1) }
 
-    val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains)
+    val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
-    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, data, context)
+    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, data, context, page)
     { _, new, _ ->
         this.data = this.data.copy(sourceReactive = new)
     }
@@ -160,7 +159,7 @@ class BehaviourEditController(
         data.reaction, data to context, reactionHeader, emptyList(),
         TileAncestor( *Array(5) { if (it == 4) reactionEditTile else TileParent(vertical = true) } ), null,
         { reaction, previous ->
-            previous ?: ReactionEditController(reaction, data, context).also {
+            previous ?: ReactionEditController(reaction, data, context, page).also {
                 it.onUpdate = { old, new, _ ->
                     data = data.updateReaction(old, new)
                 }

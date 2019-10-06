@@ -182,7 +182,7 @@ class SimulationRunController(
             }
         }
 
-    val selectedGrainController = GrainSelectController(model.grains.firstOrNull(), model.grains)
+    val selectedGrainController = GrainSelectController(model.grains.firstOrNull(), model.grains, page)
 
     val chartCanvas = canvas {}
 

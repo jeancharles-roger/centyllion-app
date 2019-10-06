@@ -109,6 +109,8 @@
     "Directions": "Directions",
     "Products": "Produits",
     "Sources": "Sources",
+    "none": "aucun",
+    "reactive %0": "réactif %0",
     "Field thresholds": "Seuils de champs",
     "Field influences": "Influences des champs",
     "When age": "Avec l'âge",

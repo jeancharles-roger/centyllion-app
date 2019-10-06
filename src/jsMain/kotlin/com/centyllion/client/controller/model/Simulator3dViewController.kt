@@ -131,7 +131,7 @@ class Simulator3dViewController(
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
-    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains)
+    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains, page)
     { _, _, _ -> selectPointer() }
 
     val sizeDropdown = Dropdown(text = page.i18n(ToolSize.Fine.name), rounded = true).apply {

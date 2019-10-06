@@ -8,6 +8,7 @@ import bulma.Size
 import bulma.TileChild
 import bulma.TileParent
 import bulma.iconButton
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Reaction
@@ -16,7 +17,7 @@ import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
-    reaction: Reaction, behaviour: Behaviour, model: GrainModel,
+    reaction: Reaction, behaviour: Behaviour, model: GrainModel, page: BulmaPage,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
 ) : Controller<Reaction, Pair<Behaviour, GrainModel>, TileParent> {
@@ -58,7 +59,7 @@ class ReactionEditController(
         }
     }
 
-    val reactiveController = GrainSelectController(context.second.indexedGrains[data.reactiveId], context.second.grains)
+    val reactiveController = GrainSelectController(context.second.indexedGrains[data.reactiveId], context.second.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
@@ -73,12 +74,12 @@ class ReactionEditController(
         this.data = this.data.copy(allowedDirection = new)
     }
 
-    val productController = GrainSelectController(context.second.indexedGrains[data.productId], context.second.grains)
+    val productController = GrainSelectController(context.second.indexedGrains[data.productId], context.second.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)
     }
 
-    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, context.first, context.second)
+    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, context.first, context.second, page)
     { _, new, _ ->
         this.data = this.data.copy(sourceReactive = new)
     }

@@ -218,28 +218,28 @@ class SqlData(
         }
     }
 
-    private fun simulationsQuery(callerIsUser: Boolean, userUUID: UUID?, modelUUID: UUID?) = DbSimulationDescriptions
+    private fun simulationsQuery(callerUUID: UUID?, userUUID: UUID?, modelUUID: UUID?) = DbSimulationDescriptions
         .innerJoin(DbDescriptionInfos)
         .select {
             listOfNotNull(
                 userUUID?.let { DbDescriptionInfos.userId eq it },
                 modelUUID?.let { DbSimulationDescriptions.modelId eq it },
-                if (userUUID == null || !callerIsUser) DbDescriptionInfos.readAccess eq true else null
+                (DbDescriptionInfos.readAccess eq true) or if (callerUUID != null) DbDescriptionInfos.userId eq callerUUID else Op.FALSE
             ).fold(Op.TRUE as Op<Boolean>) {a, c -> a and c }
         }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
     override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
         transaction(database) {
-            val callerIsUser = callerId?.let { it == userId } ?: false
+            val callerUUID = callerId?.let { UUID.fromString(it) }
             val userUUID = userId?.let { UUID.fromString(it) }
             val modelUUID = modelId?.let { UUID.fromString(it) }
             val content = DbSimulationDescription.wrapRows(
-                simulationsQuery(callerIsUser, userUUID, modelUUID)
+                simulationsQuery(callerUUID, userUUID, modelUUID)
                     .limit(limit, offset)
                     .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
             ).map { it.toModel() }
-            ResultPage(content, offset, simulationsQuery(callerIsUser, userUUID, modelUUID).count())
+            ResultPage(content, offset, simulationsQuery(callerUUID, userUUID, modelUUID).count())
         }
 
     override fun getSimulation(id: String) = transaction(database) {

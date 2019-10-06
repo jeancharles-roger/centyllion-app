@@ -139,11 +139,10 @@ class MemoryData(
     }
 
     override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> {
-        val callerIsUser = callerId?.let { it == userId } ?: false
         return merge(
             backend?.simulations(callerId, userId, modelId, offset, limit),
             simulations.values.filter {
-                it.info.user?.id == userId && (modelId == null || it.modelId == modelId) && ( callerIsUser || it.info.public )
+                it.info.user?.id == userId && (modelId == null || it.modelId == modelId) && (it.info.public || if (callerId != null) it.info.user?.id == callerId else false)
             },
             deletedSimulations, offset, limit
         )

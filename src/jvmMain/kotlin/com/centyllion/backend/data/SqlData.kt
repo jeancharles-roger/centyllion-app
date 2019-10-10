@@ -154,28 +154,26 @@ class SqlData(
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }
     }
 
-    private fun grainModelsQuery(callerIsUser: Boolean, userUUID: UUID?) = DbModelDescriptions
+    private fun grainModelsQuery(callerUUID: UUID?, userUUID: UUID?) = DbModelDescriptions
         .innerJoin(DbDescriptionInfos)
         .select {
             listOfNotNull(
                 userUUID?.let { DbDescriptionInfos.userId eq it },
-                if (userUUID == null || !callerIsUser) DbDescriptionInfos.readAccess eq true else null
+                (DbDescriptionInfos.readAccess eq true) or if (callerUUID != null) DbDescriptionInfos.userId eq callerUUID else Op.FALSE
             ).fold(Op.TRUE as Op<Boolean>) {a, c -> a and c }
-
-            DbDescriptionInfos.userId eq userUUID
         }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
     override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
         transaction(database) {
-            val callerIsUser = callerId?.let { it == userId } ?: false
-            val userUUID = userId?.let { UUID.fromString(userId) }
+            val callerUUID = callerId?.let { UUID.fromString(it) }
+            val userUUID = userId?.let { UUID.fromString(it) }
             val content = DbModelDescription.wrapRows(
-                grainModelsQuery(callerIsUser, userUUID)
+                grainModelsQuery(callerUUID, userUUID)
                     .limit(limit, offset)
                     .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
             ).map { it.toModel() }
-            ResultPage(content, offset, grainModelsQuery(callerIsUser, userUUID).count())
+            ResultPage(content, offset, grainModelsQuery(callerUUID, userUUID).count())
         }
 
     override fun getGrainModel(id: String) = transaction(database) {

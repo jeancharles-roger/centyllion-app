@@ -1,5 +1,9 @@
 package com.centyllion.model
 
+val fieldIcon = "podcast"
+val grainIcon = "square"
+val behaviourIcon = "exchange-alt"
+
 val solidIconNames = mapOf(
     "square" to "\uf0c8",
     "square-full" to "\uf45c",

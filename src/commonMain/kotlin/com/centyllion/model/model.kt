@@ -166,6 +166,7 @@ data class Behaviour(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ): ModelElement {
+
     fun reactionIndex(reaction: Reaction) = this.reaction.identityFirstIndexOf(reaction)
 
     fun updateReaction(old: Reaction, new: Reaction): Behaviour {

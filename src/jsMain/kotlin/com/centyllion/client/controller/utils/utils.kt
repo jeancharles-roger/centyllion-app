@@ -1,7 +1,12 @@
 package com.centyllion.client.controller.utils
 
+import bulma.Box
+import bulma.BulmaElement
 import bulma.Controller
 import bulma.Delete
+import bulma.Div
+import bulma.TabItem
+import bulma.Tabs
 import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -37,3 +42,8 @@ class DeleteCallbackProperty<T>(
         }
     }
 }
+
+fun editorBox(title: String, icon: String?, vararg body: BulmaElement) = Div(
+    Tabs(TabItem(title, icon).apply { active = true }, boxed = true).apply { root.classList.add("editor")},
+    Box(*body).apply { root.classList.add("editor") }
+)

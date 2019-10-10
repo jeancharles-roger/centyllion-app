@@ -25,6 +25,12 @@ import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.ModelElement
+import com.centyllion.model.behaviourIcon
+import com.centyllion.model.fieldIcon
+import com.centyllion.model.grainIcon
+import org.w3c.dom.SMOOTH
+import org.w3c.dom.ScrollBehavior
+import org.w3c.dom.ScrollOptions
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
@@ -163,37 +169,33 @@ class GrainModelEditController(
         }
     }
 
-    override val container = Columns(
-        Column(
-            search,
-            Level(
-                left = listOf(Title(page.i18n("Fields"), TextSize.S4)),
-                right = listOf(addFieldButton),
-                mobile = true
-            ),
-            fieldsController,
-            Level(
-                left = listOf(Title(page.i18n("Grains"), TextSize.S4)),
-                right = listOf(addGrainButton),
-                mobile = true
-            ),
-            grainsController,
-            Level(
-                left = listOf(
-                    Title(page.i18n("Behaviours"), TextSize.S4)
-                ),
-                right = listOf(addBehaviourButton),
-                mobile = true
-            ),
-            behavioursController,
-            size = ColumnSize.OneThird
-        ).apply {
-            root.style.height = "80vh"
-            root.style.overflowY = "auto"
-        },
-        editorColumn,
-        multiline = true, vcentered = true
-    )
+    val selectorColumn = Column(
+        search,
+        Level(
+            left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
+            right = listOf(addFieldButton),
+            mobile = true
+        ),
+        fieldsController,
+        Level(
+            left = listOf(Icon(grainIcon), Title(page.i18n("Grains"), TextSize.S4)),
+            right = listOf(addGrainButton),
+            mobile = true
+        ),
+        grainsController,
+        Level(
+            left = listOf(Icon(behaviourIcon), Title(page.i18n("Behaviours"), TextSize.S4)),
+            right = listOf(addBehaviourButton),
+            mobile = true
+        ),
+        behavioursController,
+        size = ColumnSize.OneThird
+    ).apply {
+        root.style.height = "80vh"
+        root.style.overflowY = "auto"
+    }
+
+    override val container = Columns(selectorColumn, editorColumn, multiline = true, vcentered = true)
 
     override fun refresh() {
         grainsController.refresh()
@@ -201,7 +203,7 @@ class GrainModelEditController(
     }
 
     fun scrollToEdited() {
-        (editorController ?: emptyEditor).root.scrollIntoView()
+        root.scrollIntoView(ScrollOptions(ScrollBehavior.SMOOTH))
     }
 
     fun <T: ModelElement> List<T>.filtered() = searchInput.value.let { filter ->

@@ -1,6 +1,5 @@
 package com.centyllion.client.controller.model
 
-import bulma.Box
 import bulma.Control
 import bulma.Div
 import bulma.ElementColor
@@ -9,14 +8,15 @@ import bulma.HorizontalField
 import bulma.Label
 import bulma.NoContextController
 import bulma.Size
-import bulma.Tag
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.client.controller.utils.editableIntController
+import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Field
 import com.centyllion.model.extendedDirections
+import com.centyllion.model.fieldIcon
 import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
@@ -88,28 +88,25 @@ class FieldEditController (
         page.appContext.locale, data.halfLife, page.i18n("Half-life"), 0
     ) { _, new, _ -> this.data = this.data.copy(halfLife = new) }
 
-    override val container = Div(
-            Tag(page.i18n("Field"), ElementColor.Primary, Size.Large),
-            Box(
-            HorizontalField(
-                Label(page.i18n("Name")),
-                nameController.container
+    override val container = editorBox(page.i18n("Field"), fieldIcon,
+        HorizontalField(
+            Label(page.i18n("Name")),
+            nameController.container
+        ),
+        HorizontalField(
+            Label(page.i18n("Display")),
+            BField(
+                Control(colorController.container),
+                addons = true
             ),
-            HorizontalField(
-                Label(page.i18n("Display")),
-                BField(
-                    Control(colorController.container),
-                    addons = true
-                ),
-                BField(invisibleCheckbox)
-            ),
-            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
-            HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
-            HorizontalField(Label(page.i18n("Movement")),
-                BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
-                firstDirectionController.container,
-                extendedDirectionController.container
-            )
+            BField(invisibleCheckbox)
+        ),
+        HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+        HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
+        HorizontalField(Label(page.i18n("Movement")),
+            BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
+            firstDirectionController.container,
+            extendedDirectionController.container
         )
     )
 

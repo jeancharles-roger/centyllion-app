@@ -1,6 +1,5 @@
 package com.centyllion.client.controller.model
 
-import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -13,7 +12,6 @@ import bulma.HorizontalField
 import bulma.HtmlWrapper
 import bulma.Label
 import bulma.Size
-import bulma.Tag
 import bulma.Value
 import bulma.columnsController
 import bulma.extension.Slider
@@ -21,11 +19,13 @@ import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
+import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
+import com.centyllion.model.grainIcon
 import kotlinx.html.dom.create
 import kotlinx.html.js.hr
 import kotlin.browser.document
@@ -184,38 +184,35 @@ class GrainEditController(
         multiline = true
     ).apply { hidden = context.fields.isEmpty() }
 
-    override val container = Div(
-        Tag(page.i18n("Grain"), ElementColor.Primary, Size.Large),
-        Box(
-            HorizontalField(
-                Label(page.i18n("Name")),
-                nameController.container
+    override val container = editorBox(page.i18n("Grain"), grainIcon,
+        HorizontalField(
+            Label(page.i18n("Name")),
+            nameController.container
+        ),
+        HorizontalField(
+            Label(page.i18n("Display")),
+            BField(
+                Control(iconController.container),
+                Control(colorController.container),
+                addons = true
             ),
-            HorizontalField(
-                Label(page.i18n("Display")),
-                BField(
-                    Control(iconController.container),
-                    Control(colorController.container),
-                    addons = true
-                ),
-                BField(
-                    Control(Label(page.i18n("Size"))),
-                    Control(sizeSlider),
-                    Control(sizeValue),
-                    grouped = true
-                ),
-                BField(invisibleCheckbox)
+            BField(
+                Control(Label(page.i18n("Size"))),
+                Control(sizeSlider),
+                Control(sizeValue),
+                grouped = true
             ),
-            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
-            HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
-            HorizontalField(Label(page.i18n("Movement")),
-                BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
-                firstDirectionController.container,
-                extendedDirectionController.container
-            ),
-            fieldSeparator,
-            fieldControls
-        )
+            BField(invisibleCheckbox)
+        ),
+        HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+        HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
+        HorizontalField(Label(page.i18n("Movement")),
+            BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
+            firstDirectionController.container,
+            extendedDirectionController.container
+        ),
+        fieldSeparator,
+        fieldControls
     )
 
     override fun refresh() {

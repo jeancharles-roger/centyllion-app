@@ -10,7 +10,6 @@ import bulma.Div
 import bulma.Dropdown
 import bulma.ElementColor
 import bulma.FaFlip
-import bulma.Field
 import bulma.Help
 import bulma.Icon
 import bulma.Level
@@ -25,10 +24,10 @@ import bulma.TableHeaderCell
 import bulma.TableHeaderRow
 import bulma.TableRow
 import bulma.Tabs
-import bulma.Tag
 import bulma.TextColor
 import bulma.iconButton
 import bulma.p
+import bulma.span
 import bulma.textButton
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
@@ -46,22 +45,30 @@ import com.centyllion.client.toFixed
 import com.centyllion.common.adminRole
 import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
+import com.centyllion.model.Behaviour
+import com.centyllion.model.Field
+import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.ModelElement
 import com.centyllion.model.Problem
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Simulator
+import com.centyllion.model.behaviourIcon
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptyModel
 import com.centyllion.model.emptySimulation
 import com.centyllion.model.emptySimulationDescription
+import com.centyllion.model.fieldIcon
+import com.centyllion.model.grainIcon
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
+import bulma.Field as BField
 
 /** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
 class ShowPage(override val appContext: AppContext) : BulmaPage {
@@ -132,7 +139,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         head = listOf(TableHeaderRow(
             TableHeaderCell(i18n("Source")), TableHeaderCell(i18n("Message"))
         )),
-        fullWidth = true, striped = true
+        fullWidth = true, hoverable = true
     ).apply {
         root.style.backgroundColor = "transparent"
     }
@@ -145,8 +152,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         hidden = true
     }
 
+    private val ModelElement.icon get() = when (this) {
+        is Field -> fieldIcon
+        is Grain -> grainIcon
+        is Behaviour -> behaviourIcon
+        else -> ""
+    }
+
     private fun Problem.toBulma() = TableRow(
-        TableCell(body = *arrayOf(Tag(source.name))), TableCell(message)
+        TableCell(body = *arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
     ).also {
         it.root.onclick = {
             modelController.edited = this.source
@@ -265,7 +279,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val undoControl = Control(modelUndoRedo.undoButton)
     val redoControl = Control(modelUndoRedo.redoButton)
 
-    val tools = Field(
+    val tools = BField(
         undoControl, redoControl, Control(saveButton), Control(moreDropdown),
         grouped = true
     )

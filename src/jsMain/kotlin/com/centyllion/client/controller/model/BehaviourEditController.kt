@@ -1,6 +1,5 @@
 package com.centyllion.client.controller.model
 
-import bulma.Box
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
@@ -15,7 +14,6 @@ import bulma.Label
 import bulma.Level
 import bulma.MultipleController
 import bulma.Size
-import bulma.Tag
 import bulma.TileAncestor
 import bulma.TileChild
 import bulma.TileParent
@@ -24,12 +22,14 @@ import bulma.columnsController
 import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableDoubleController
+import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import com.centyllion.model.Reaction
+import com.centyllion.model.behaviourIcon
 import kotlinx.html.dom.create
 import kotlinx.html.js.hr
 import kotlin.browser.document
@@ -213,18 +213,15 @@ class BehaviourEditController(
         hidden = context.fields.isEmpty()
     }
 
-    override val container = Div(
-        Tag(page.i18n("Behaviour"), ElementColor.Primary, Size.Large),
-        Box(
-            HorizontalField(Label(page.i18n("Name")), nameController.container),
-            HorizontalField(Label(page.i18n("Description")), descriptionController.container),
-            HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
-            HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
-            HtmlWrapper(document.create.hr()),
-            Label(page.i18n("Reactions")), reactionsController,
-            fieldSeparator,
-            fieldsConfiguration
-        )
+    override val container = editorBox(page.i18n("Behaviour"), behaviourIcon,
+        HorizontalField(Label(page.i18n("Name")), nameController.container),
+        HorizontalField(Label(page.i18n("Description")), descriptionController.container),
+        HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
+        HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
+        HtmlWrapper(document.create.hr()),
+        Label(page.i18n("Reactions")), reactionsController,
+        fieldSeparator,
+        fieldsConfiguration
     )
 
     override fun refresh() {

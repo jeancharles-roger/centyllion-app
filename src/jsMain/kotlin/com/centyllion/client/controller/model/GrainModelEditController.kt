@@ -114,7 +114,7 @@ class GrainModelEditController(
     val behavioursController: MultipleController<Behaviour, GrainModel, Columns, Column, Controller<Behaviour, GrainModel, Column>> =
         columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
         { behaviour, previous ->
-            previous ?: BehaviourDisplayController(behaviour, data).wrap { controller ->
+            previous ?: BehaviourDisplayController(behaviour, data, page).wrap { controller ->
                 controller.onDelete = {
                     if (edited == controller.data) edited = null
                     data = data.dropBehaviour(controller.data)
@@ -140,7 +140,7 @@ class GrainModelEditController(
         }
     }
 
-    var edited: Any? by observable<Any?>(null) { _, previous, current ->
+    var edited: ModelElement? by observable<ModelElement?>(null) { _, previous, current ->
         if (previous !== current) {
             editorController = when (current) {
                 is Field -> FieldEditController(current, page) { old, new, _ ->
@@ -198,6 +198,10 @@ class GrainModelEditController(
     override fun refresh() {
         grainsController.refresh()
         behavioursController.refresh()
+    }
+
+    fun scrollToEdited() {
+        (editorController ?: emptyEditor).root.scrollIntoView()
     }
 
     fun <T: ModelElement> List<T>.filtered() = searchInput.value.let { filter ->

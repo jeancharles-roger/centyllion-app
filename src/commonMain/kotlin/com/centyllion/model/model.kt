@@ -1,5 +1,6 @@
 package com.centyllion.model
 
+import com.centyllion.i18n.Locale
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
@@ -147,8 +148,11 @@ data class Reaction(
     val sourceReactive: Int = -1,
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
-    fun validForModel(model: GrainModel) = model.indexedGrains.containsKey(reactiveId) &&
-            if (productId >= 0) model.indexedGrains.containsKey(productId) else true
+    fun diagnose(model: GrainModel, behaviour: Behaviour, index: Int, locale: Locale): List<Problem> = listOfNotNull(
+        if (reactiveId >= 0 && !model.indexedGrains.containsKey(reactiveId)) Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist")) else null,
+        if (productId >= 0 && !model.indexedGrains.containsKey(productId)) Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist")) else null,
+        if (allowedDirection.isEmpty()) Problem(behaviour, locale.i18n("No direction allowed for reactive %0", index)) else null
+    )
 }
 
 @Serializable
@@ -236,9 +240,12 @@ data class Behaviour(
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
             .filter { it >= 0 }.mapNotNull { model.indexedGrains[it] }.toSet()
 
-    fun validForModel(model: GrainModel) = name.isNotBlank() && probability >= 0.0 && probability <= 1.0 &&
-            mainReactiveId >= 0 &&
-            reaction.fold(true) { a, r -> a && r.validForModel(model) }
+    fun diagnose(model: GrainModel, locale: Locale): List<Problem> = listOfNotNull(
+        if (mainReactiveId < 0) Problem(this, locale.i18n("Behaviour must have a main reactive")) else null,
+        if (probability < 0.0 || probability > 1.0) Problem(this, locale.i18n("Probability must be between 0 and 1")) else null
+    ) + reaction
+        .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
+        .flatten()
 }
 
 @Serializable
@@ -358,7 +365,9 @@ data class GrainModel(
 
     fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(behaviours.map(Behaviour::name), prefix)
 
-    fun newBehaviour(prefix: String = "Behaviour") = Behaviour(availableBehaviourName(prefix))
+    fun newBehaviour(prefix: String = "Behaviour") = Behaviour(
+        availableBehaviourName(prefix), mainReactiveId = grains.firstOrNull()?.id ?: -1
+    )
 
     fun behaviourIndex(behaviour: Behaviour) = behaviours.identityFirstIndexOf(behaviour)
 
@@ -381,6 +390,8 @@ data class GrainModel(
 
         return copy(behaviours = newBehaviours)
     }
+
+    fun diagnose(locale: Locale): List<Problem> = behaviours.flatMap { it.diagnose(this, locale) }
 }
 
 fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }

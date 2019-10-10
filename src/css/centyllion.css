@@ -28,8 +28,23 @@ canvas.cent-simulation {
   border-width: 1px;
 }
 
+canvas.is-primary {
+  border-color: #011f4b !important;
+}
+
+canvas.is-info {
+  border-color: #6497b1 !important;
+}
+
+canvas.is-success {
+  border-color: #3fde77 !important;
+}
+
+canvas.is-warning {
+  border-color: #ffdd57 !important;
+}
+
 canvas.is-danger {
-  border-width: 2px;
   border-color: #ff6181 !important;
 }
 
@@ -43,4 +58,12 @@ canvas.is-danger {
 
 div.field-label {
   text-align: left !important;
+}
+
+div.is-fixed-on-bottom {
+  position: fixed;
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+  /*height: 3rem;*/
 }

@@ -13,15 +13,19 @@ import bulma.Size
 import bulma.TextColor
 import bulma.textButton
 import com.centyllion.client.controller.utils.DeleteCallbackProperty
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Controller<Behaviour, GrainModel, Box> {
+class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel, val page: BulmaPage) : Controller<Behaviour, GrainModel, Box> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            refresh()
+        }
     }
 
     override var context: GrainModel by observable(model) { _, old, new ->
@@ -40,6 +44,10 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Cont
     }
     var onDelete by deleteCallbackProperty
 
+    val errorIcon = Icon("exclamation-triangle", color = TextColor.Danger).apply {
+        hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+    }
+
     val titleLabel = Label(behaviour.name)
 
     val grains = Level(center = grains(), mobile = true)
@@ -50,7 +58,7 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel) : Cont
     )
 
     val header = Level(
-        left = listOf(titleLabel),
+        left = listOf(errorIcon, titleLabel),
         right = listOf(speedValue),
         mobile = true
      )

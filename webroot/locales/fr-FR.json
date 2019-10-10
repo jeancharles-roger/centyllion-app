@@ -1,6 +1,11 @@
 {
   "name": "fr-FR",
   "translations": {
+    "Grain with id %0 doesn't exist": "Le grain avec l'id %0 n'existe pas",
+    "Behaviour must have a main reactive": "Le comportement doit avoir un réactif principal",
+    "Probability must be between 0 and 1": "La probabilité doit être entre 0 et 1",
+    "No direction allowed for reactive %0": "Aucune direction autorisée pour le réactif %0",
+
     "Previous": "Précedent",
     "Next": "Suivant",
 

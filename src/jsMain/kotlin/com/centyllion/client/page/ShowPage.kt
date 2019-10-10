@@ -14,11 +14,20 @@ import bulma.Field
 import bulma.Help
 import bulma.Icon
 import bulma.Level
+import bulma.Message
+import bulma.Size
 import bulma.TabItem
 import bulma.TabPage
 import bulma.TabPages
+import bulma.Table
+import bulma.TableCell
+import bulma.TableHeaderCell
+import bulma.TableHeaderRow
+import bulma.TableRow
 import bulma.Tabs
+import bulma.Tag
 import bulma.TextColor
+import bulma.iconButton
 import bulma.p
 import bulma.textButton
 import com.centyllion.client.AppContext
@@ -39,6 +48,7 @@ import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
+import com.centyllion.model.Problem
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Simulator
@@ -62,6 +72,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() &&
                 model.info.user?.id != appContext.me?.id)
 
+    private var problems: List<Problem> = emptyList()
+
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
             modelUndoRedo.update(old, new)
@@ -81,6 +93,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             tagsController.data = new.tags
 
             simulationController.context = new.model
+
+            // handles problems display
+            problems = model.model.diagnose(appContext.locale)
+            problemIcon.hidden = problems.isEmpty()
+            // problems box is visible is there are problems and was already open
+            problemsColumn.hidden = problemsColumn.hidden || problems.isEmpty()
+            problemsTable.body = problems.map { it.toBulma() }
+
             refreshButtons()
         }
     }
@@ -100,6 +120,40 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val tagsController =
         TagsController(model.tags, appContext) { old, new, _ -> if (old != new) model = model.copy(tags = new) }
+
+    val problemIcon = iconButton(
+        Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
+        onClick = { problemsColumn.hidden = !problemsColumn.hidden }
+    ).apply {
+        hidden = problems.isEmpty()
+    }
+
+    val problemsTable = Table(
+        head = listOf(TableHeaderRow(
+            TableHeaderCell(i18n("Source")), TableHeaderCell(i18n("Message"))
+        )),
+        fullWidth = true, striped = true
+    ).apply {
+        root.style.backgroundColor = "transparent"
+    }
+
+    val problemsColumn = Column(
+        Message(body = listOf(problemsTable), color = ElementColor.Danger),
+        size = ColumnSize.Full
+    ).apply {
+        // Problems column is always hidden when starting
+        hidden = true
+    }
+
+    private fun Problem.toBulma() = TableRow(
+        TableCell(body = *arrayOf(Tag(source.name))), TableCell(message)
+    ).also {
+        it.root.onclick = {
+            modelController.edited = this.source
+            modelController.scrollToEdited()
+            Unit
+        }
+    }
 
     val modelController = GrainModelEditController(model.model, this) { old, new, _ ->
         if (old != new) {
@@ -225,7 +279,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val container: BulmaElement = Columns(
         Column(
             Level(
-                left = listOf(modelNameController, userLabel),
+                left = listOf(problemIcon, modelNameController, userLabel),
                 center = listOf(cloneButton),
                 right = listOf(tools)
             ),
@@ -233,6 +287,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         ),
         Column(modelDescriptionController, size = ColumnSize.Full),
         Column(tagsController, size = ColumnSize.FourFifths),
+        problemsColumn,
         Column(editionTab, size = ColumnSize.Full),
         multiline = true, centered = true
     )

@@ -18,6 +18,11 @@ interface Ided {
     val id: String
 }
 
+data class Problem(
+    val source: ModelElement,
+    val message: String
+)
+
 @Serializable
 data class ResultPage<T>(
     val content: List<T>,
@@ -80,7 +85,6 @@ data class Subscription(
     fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)
 
     fun parameters() = SubscriptionParameters(autoRenew, subscription, duration, amount, paymentMethod)
-
 }
 
 @Serializable

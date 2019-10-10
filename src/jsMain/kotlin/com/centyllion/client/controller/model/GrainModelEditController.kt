@@ -46,6 +46,10 @@ class GrainModelEditController(
             grainsController.data = data.grains.filtered()
             behavioursController.context = data
             behavioursController.data = data.behaviours.filtered()
+
+            if ((new.fields + new.grains + new.behaviours).find { it == edited } == null) {
+                edited = null
+            }
             editorController?.let { if (it.context is GrainModel) it.context = new }
             onUpdate(old, new, this@GrainModelEditController)
             refresh()
@@ -97,10 +101,7 @@ class GrainModelEditController(
         noContextColumnsController(data.fields, onClick = { field, _ -> edited = field })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.onDelete = {
-                    if (edited == controller.data) edited = null
-                    data = data.dropField(controller.data)
-                }
+                controller.onDelete = {data = data.dropField(controller.data) }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }
@@ -109,10 +110,7 @@ class GrainModelEditController(
         columnsController(data.grains, data, onClick = { d, _ -> edited = d })
         { grain, previous ->
             previous ?: GrainDisplayController(grain, data).wrap { controller ->
-                controller.onDelete = {
-                    if (edited == controller.data) edited = null
-                    data = data.dropGrain(controller.data)
-                }
+                controller.onDelete = { data = data.dropGrain(controller.data) }
                 Column(controller, size = ColumnSize.Full)
             }
         }
@@ -121,10 +119,7 @@ class GrainModelEditController(
         columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(behaviour, data, page).wrap { controller ->
-                controller.onDelete = {
-                    if (edited == controller.data) edited = null
-                    data = data.dropBehaviour(controller.data)
-                }
+                controller.onDelete = { data = data.dropBehaviour(controller.data) }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }

@@ -293,7 +293,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val container: BulmaElement = Columns(
         Column(
             Level(
-                left = listOf(problemIcon, modelNameController, userLabel),
+                left = listOf(problemIcon, Div(modelNameController), userLabel),
                 center = listOf(cloneButton),
                 right = listOf(tools)
             ),

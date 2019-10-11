@@ -548,6 +548,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             ),
             textButton(i18n("Yes"), ElementColor.Danger) {
                 appContext.api.deleteGrainModel(model).then {
+                    // sets empty model and simulation to prevent the dialog to save when changed
+                    setModel(emptyGrainModelDescription)
+                    setSimulation(emptySimulationDescription)
+
                     appContext.openPage(homePage)
                     message("Model %0 deleted.", model.label)
                 }

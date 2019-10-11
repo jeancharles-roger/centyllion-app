@@ -62,6 +62,7 @@ import com.centyllion.model.emptySimulation
 import com.centyllion.model.emptySimulationDescription
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -71,6 +72,7 @@ import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
 /** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
+@UseExperimental(UnstableDefault::class)
 class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val api = appContext.api

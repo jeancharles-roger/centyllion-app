@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.centyllion.backend
 
 import com.centyllion.model.Asset

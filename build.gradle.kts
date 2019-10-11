@@ -41,6 +41,10 @@ version = "0.0.1"
 kotlin {
     
     sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+        }
+
         // commonMain is required for reflection name resolution
         val commonMain by getting {
             dependencies {

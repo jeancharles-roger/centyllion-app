@@ -138,7 +138,6 @@ data class Grain(
             fieldInfluences = fieldInfluences
         )
         else null
-
 }
 
 @Serializable
@@ -149,9 +148,15 @@ data class Reaction(
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     fun diagnose(model: GrainModel, behaviour: Behaviour, index: Int, locale: Locale): List<Problem> = listOfNotNull(
-        if (reactiveId >= 0 && !model.indexedGrains.containsKey(reactiveId)) Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist")) else null,
-        if (productId >= 0 && !model.indexedGrains.containsKey(productId)) Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist")) else null,
-        if (allowedDirection.isEmpty()) Problem(behaviour, locale.i18n("No direction allowed for reactive %0", index)) else null
+        (reactiveId >= 0 && !model.indexedGrains.containsKey(reactiveId)).orNull {
+            Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist for reactive %1", reactiveId, index))
+        },
+        (productId >= 0 && !model.indexedGrains.containsKey(productId)).orNull {
+            Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist for reactive %1", productId, index))
+        },
+        (allowedDirection.isEmpty()).orNull {
+            Problem(behaviour, locale.i18n("No direction allowed for reactive %0", index))
+        }
     )
 }
 
@@ -242,8 +247,8 @@ data class Behaviour(
             .filter { it >= 0 }.mapNotNull { model.indexedGrains[it] }.toSet()
 
     fun diagnose(model: GrainModel, locale: Locale): List<Problem> = listOfNotNull(
-        if (mainReactiveId < 0) Problem(this, locale.i18n("Behaviour must have a main reactive")) else null,
-        if (probability < 0.0 || probability > 1.0) Problem(this, locale.i18n("Speed must be between 0 and 1")) else null
+        (mainReactiveId < 0).orNull { Problem(this, locale.i18n("Behaviour must have a main reactive")) },
+        (probability < 0.0 || probability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) }
     ) + reaction
         .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
         .flatten()

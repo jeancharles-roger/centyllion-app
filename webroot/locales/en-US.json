@@ -5,6 +5,8 @@
     "Behaviour must have a main reactive": "Behaviour must have a main reactive",
     "Speed must be between 0 and 1": "Speed must be between 0 and 1",
     "No direction allowed for reactive %0": "No direction allowed for reactive %0",
+    "Grain with id %0 doesn't exist for reactive %1": "Grain with id %0 doesn't exist for reactive %1",
+
 
     "Previous": "Previous",
     "Next": "Next",

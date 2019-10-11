@@ -47,9 +47,9 @@ class GrainModelEditController(
             behavioursController.context = data
             behavioursController.data = data.behaviours.filtered()
 
-            if ((new.fields + new.grains + new.behaviours).find { it == edited } == null) {
-                edited = null
-            }
+            // if edited isn't in model anymore, stops edition
+            if (edited != null && (new.fields + new.grains + new.behaviours).none { it == edited } ) edit(null)
+
             editorController?.let { if (it.context is GrainModel) it.context = new }
             onUpdate(old, new, this@GrainModelEditController)
             refresh()
@@ -82,23 +82,23 @@ class GrainModelEditController(
     val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         val field = data.newField(page.i18n("Field"))
         this.data = data.copy(fields = data.fields + field)
-        edited = field
+        edit(field)
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         val grain = data.newGrain(page.i18n("Grain"))
         this.data = data.copy(grains = data.grains + grain)
-        edited = grain
+        edit(grain)
     }
 
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         val behaviour = data.newBehaviour(page.i18n("Behaviour"))
         this.data = data.copy(behaviours = data.behaviours + behaviour)
-        edited = behaviour
+        edit(behaviour)
     }
 
     val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =
-        noContextColumnsController(data.fields, onClick = { field, _ -> edited = field })
+        noContextColumnsController(data.fields, onClick = { field, _ -> edit(field) })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
                 controller.onDelete = {data = data.dropField(controller.data) }
@@ -107,7 +107,7 @@ class GrainModelEditController(
         }
 
     val grainsController: MultipleController<Grain, GrainModel, Columns, Column, Controller<Grain, GrainModel, Column>> =
-        columnsController(data.grains, data, onClick = { d, _ -> edited = d })
+        columnsController(data.grains, data, onClick = { grain, _ -> edit(grain) })
         { grain, previous ->
             previous ?: GrainDisplayController(grain, data).wrap { controller ->
                 controller.onDelete = { data = data.dropGrain(controller.data) }
@@ -116,7 +116,7 @@ class GrainModelEditController(
         }
 
     val behavioursController: MultipleController<Behaviour, GrainModel, Columns, Column, Controller<Behaviour, GrainModel, Column>> =
-        columnsController(data.behaviours, data, onClick = { d, _ -> edited = d })
+        columnsController(data.behaviours, data, onClick = { behaviour, _ -> edit(behaviour) })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(behaviour, data, page).wrap { controller ->
                 controller.onDelete = { data = data.dropBehaviour(controller.data) }
@@ -141,16 +141,19 @@ class GrainModelEditController(
         }
     }
 
-    var edited: ModelElement? by observable<ModelElement?>(null) { _, previous, current ->
-        if (previous !== current) {
-            editorController = when (current) {
-                is Field -> FieldEditController(current, page) { old, new, _ ->
+    fun edit(element: ModelElement?) {
+        //if (edited !== element) {
+            editorController = when (element) {
+                is Field -> FieldEditController(element, page) { old, new, _ ->
+                    edited = new
                     data = data.updateField(old, new)
                 }
-                is Grain -> GrainEditController(current, data, page) { old, new, _ ->
+                is Grain -> GrainEditController(element, data, page) { old, new, _ ->
+                    edited = new
                     data = data.updateGrain(old, new)
                 }
-                is Behaviour -> BehaviourEditController(current, data, page) { old, new, _ ->
+                is Behaviour -> BehaviourEditController(element, data, page) { old, new, _ ->
+                    edited = new
                     data = data.updateBehaviour(old, new)
                 }
                 else -> null
@@ -158,11 +161,13 @@ class GrainModelEditController(
             editorController?.root?.classList?.add("animated", "fadeIn", "faster")
             editorController?.readOnly = this.readOnly
             editorColumn.body = listOf(editorController ?: emptyEditor)
-            fieldsController.updateSelection(current)
-            grainsController.updateSelection(current)
-            behavioursController.updateSelection(current)
-        }
+            fieldsController.updateSelection(element)
+            grainsController.updateSelection(element)
+            behavioursController.updateSelection(element)
+        //}
     }
+
+    private var edited: ModelElement? = null
 
     val selectorColumn = Column(
         search,

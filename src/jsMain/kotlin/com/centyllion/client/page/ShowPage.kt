@@ -163,7 +163,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         TableCell(body = *arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
     ).also {
         it.root.onclick = {
-            modelController.edited = this.source
+            modelController.edit(this.source)
             modelController.scrollToEdited()
             Unit
         }

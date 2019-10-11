@@ -61,21 +61,26 @@ class MemoryData(
     private val deletedSubscriptions = mutableSetOf<String>()
     private val deletedAssets = mutableSetOf<String>()
 
-    /** Merges source and local lists */
-    fun <T: Ided> merge(source: ResultPage<T>?, local: List<T>, deleted: Set<String>, offset: Int, limit: Int) =
+    /** Merges source and local Ided lists */
+    fun <T: Ided> mergeIded(source: ResultPage<T>?, local: List<T>, deleted: Set<String>, offset: Int, limit: Int) =
         source?.let {
             val all = local + source.content.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } }
             ResultPage(all.limit(offset, limit).content, offset, it.totalSize)
         } ?: local.limit(offset, limit)
 
     /** Merges source and local lists */
-    fun <T: Ided> merge(source: List<T>?, local: List<T>, deleted: Set<String>): List<T> =
+    fun <T: Ided> mergeIded(source: List<T>?, local: List<T>, deleted: Set<String>): List<T> =
+        source?.let { local + source.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } } } ?: local
+
+    /** Merges source and local string lists */
+    fun mergeString(source: ResultPage<String>?, local: List<String>, deleted: Set<String>, offset: Int, limit: Int) =
         source?.let {
-            local + source.filter { s -> !deleted.contains(s.id) && local.none { l -> l.id == s.id } }
-        } ?: local
+            val all = local + source.content.filter { s -> !deleted.contains(s) && local.none { l -> l == s } }
+            ResultPage(all.limit(offset, limit).content, offset, it.totalSize)
+        } ?: local.limit(offset, limit)
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
-        merge(
+        mergeIded(
             backend?.getAllUsers(detailed, offset, limit),
             users.values.toList().map { if (detailed) it else it.copy(details = null) },
             deletedUsers, offset, limit
@@ -110,10 +115,12 @@ class MemoryData(
     }
 
     override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> {
-        val callerIsUser = callerId?.let { it == userId } ?: false
-        return merge(
+        return mergeIded(
             backend?.grainModels(callerId, userId, offset, limit),
-            grainModels.values.filter { (userId == null || it.info.user?.id == userId) && (callerIsUser || it.info.public) },
+            grainModels.values.filter { model ->
+                userId?.let { it == model.info.user?.id } ?: true &&
+                (model.info.public || if (callerId != null) model.info.user?.id == callerId else false)
+            },
             deletedModels, offset, limit
         )
     }
@@ -139,10 +146,12 @@ class MemoryData(
     }
 
     override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> {
-        return merge(
+        return mergeIded(
             backend?.simulations(callerId, userId, modelId, offset, limit),
-            simulations.values.filter {
-                it.info.user?.id == userId && (modelId == null || it.modelId == modelId) && (it.info.public || if (callerId != null) it.info.user?.id == callerId else false)
+            simulations.values.filter { simulation ->
+                userId?.let { it == simulation.info.user?.id } ?: true &&
+                modelId?.let { it == simulation.modelId } ?: true &&
+                (simulation.info.public || if (callerId != null) simulation.info.user?.id == callerId else false)
             },
             deletedSimulations, offset, limit
         )
@@ -168,7 +177,7 @@ class MemoryData(
     }
 
     override fun getAllFeatured(offset: Int, limit: Int) =
-        merge(
+        mergeIded(
             backend?.getAllFeatured(offset, limit),
             featured.values.toList(),
             deletedFeatured, offset, limit
@@ -205,7 +214,7 @@ class MemoryData(
     }
 
     override fun searchSimulation(query: String, offset: Int, limit: Int) =
-        merge(
+        mergeIded(
             backend?.searchSimulation(query, offset, limit),
             simulations.values.filter { it.simulation.name.contains(query) || it.simulation.description.contains(query) },
             deletedSimulations, offset, limit
@@ -218,20 +227,15 @@ class MemoryData(
             .flatten()
         val counts = mutableMapOf<String, Int>()
         words.forEach { counts[it] = 1 + (counts[it] ?: 0) }
-        return counts.keys.toList().sortedByDescending { counts[it] ?: 0 }.limit(offset, limit)
-
-        // TODO tags needs merging
-        /*
-        return merge(
-            backend?.modelTags(offset, limit),
+        return mergeString(
+            backend?.modelTags(userId, offset, limit),
             counts.keys.toList().sortedByDescending { counts[it] ?: 0 },
             emptySet(), offset, limit
         )
-         */
     }
 
     override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) =
-        merge(
+        mergeIded(
             backend?.searchModel(query, tags, offset, limit),
             grainModels.values.filter {
                 it.info.public &&
@@ -242,7 +246,7 @@ class MemoryData(
         )
 
     override fun subscriptionsForUser(userId: String) =
-        merge(
+        mergeIded(
             backend?.subscriptionsForUser(userId),
             subscriptions.values.filter { it.userId == userId },
             deletedSubscriptions
@@ -277,14 +281,14 @@ class MemoryData(
     }
 
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
-        merge(
+        mergeIded(
             backend?.getAllAssets(offset, limit, extensions),
             assets.values.filter { asset -> extensions.any { asset.name.endsWith(it) } }.toList(),
             deletedAssets, offset, limit
         )
 
     override fun assetsForUser(userId: String): List<Asset> =
-        merge(
+        mergeIded(
             backend?.assetsForUser(userId),
             assets.values.filter { it.userId == userId },
             deletedAssets

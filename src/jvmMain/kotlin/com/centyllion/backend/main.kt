@@ -107,7 +107,7 @@ fun Application.centyllion(config: ServerConfig) {
             val type = it.contentType
             when {
                 type == null -> null
-                type.match(ContentType.Application.Json) -> CachingOptions(CacheControl.MaxAge(10))
+                type.match(ContentType.Application.Json) -> CachingOptions(CacheControl.MaxAge(5))
                 type.match(ContentType.Application.JavaScript) -> CachingOptions(CacheControl.MaxAge(31536000 /* one year */))
                 type.match(ContentType.Image.Any) -> CachingOptions(CacheControl.MaxAge(30 * 24 * 60 * 60 /* about a month */))
                 else -> CachingOptions(CacheControl.MaxAge(60 * 60 /* one hours */))

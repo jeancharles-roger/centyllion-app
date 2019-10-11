@@ -3,7 +3,7 @@
   "translations": {
     "Grain with id %0 doesn't exist": "Grain with id %0 doesn't exist",
     "Behaviour must have a main reactive": "Behaviour must have a main reactive",
-    "Probability must be between 0 and 1": "Probability must be between 0 and 1",
+    "Speed must be between 0 and 1": "Speed must be between 0 and 1",
     "No direction allowed for reactive %0": "No direction allowed for reactive %0",
 
     "Previous": "Previous",

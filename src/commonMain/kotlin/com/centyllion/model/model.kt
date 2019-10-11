@@ -243,7 +243,7 @@ data class Behaviour(
 
     fun diagnose(model: GrainModel, locale: Locale): List<Problem> = listOfNotNull(
         if (mainReactiveId < 0) Problem(this, locale.i18n("Behaviour must have a main reactive")) else null,
-        if (probability < 0.0 || probability > 1.0) Problem(this, locale.i18n("Probability must be between 0 and 1")) else null
+        if (probability < 0.0 || probability > 1.0) Problem(this, locale.i18n("Speed must be between 0 and 1")) else null
     ) + reaction
         .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
         .flatten()

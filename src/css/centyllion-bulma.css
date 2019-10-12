@@ -10959,19 +10959,6 @@ input[type=range].slider.is-danger .has-output-tooltip + output {
   background: #ff6181;
 }
 
-:-moz-full-screen canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  width: 90%;
-  height: 50%;
-  box-shadow: 0px 0px 4px white;
-  background-color: white;
-}
-
 .cent-main {
   margin: 2rem;
 }
@@ -11009,10 +10996,6 @@ canvas.is-danger {
   border-color: #ff6181 !important;
 }
 
-.delete {
-  background-color: #b3cde0;
-}
-
 .fa-rotate-45 {
   transform: rotate(45deg);
 }
@@ -11038,4 +11021,32 @@ div.field-label {
 .box.editor {
   border-top-left-radius: 0px;
   padding-top: 0px;
+}
+
+.tutorial {
+  z-index: 100;
+  position: absolute;
+  width: 25rem;
+  margin-top: 1rem;
+  transition: top 0.5s ease-in-out, left 0.5s ease-in-out;
+}
+
+.tutorial:before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #3fde77;
+}
+
+.circle {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  margin: 0.5rem;
 }

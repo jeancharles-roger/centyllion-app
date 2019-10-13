@@ -10,7 +10,6 @@ import bulma.iconButton
 import bulma.p
 import bulma.span
 import com.centyllion.client.page.BulmaPage
-import org.w3c.dom.events.Event
 import kotlin.browser.document
 import kotlin.browser.window
 
@@ -19,12 +18,8 @@ class TutorialLayer<P: BulmaPage>(
 ) {
     init { require(tutorial.isNotEmpty())}
 
+    var started = false
     var currentStep = 0
-
-    private val clicked = { _: Event ->
-        val step = tutorial.steps[currentStep]
-        if (step.validated(page)) next()
-    }
 
     private fun placeStep(step: TutorialStep<P>) {
         val target = step.selector(page)
@@ -58,11 +53,15 @@ class TutorialLayer<P: BulmaPage>(
         nextButton.disabled = !step.validated(page) || currentStep >= tutorial.steps.size - 1
     }
 
+    private fun checking() {
+        val step = tutorial.steps[currentStep]
+        if (step.validated(page)) next()
+        if (started) window.setTimeout(this::checking, 250)
+    }
+
     fun start() {
-        // listens to different kinds of events to update tutorial
-        window.addEventListener("click", clicked)
-        window.addEventListener("mousemove", clicked)
-        window.addEventListener("keyup", clicked)
+        started = true
+        window.setTimeout(this::checking, 1000)
 
         document.body?.appendChild(arrow.root)
         document.body?.appendChild(container.root)
@@ -80,19 +79,21 @@ class TutorialLayer<P: BulmaPage>(
     }
 
     fun next() {
-        if (currentStep < tutorial.steps.size - 1) {
-            currentStep += 1
-            setStep()
-        } else {
-            stop()
+        when {
+            currentStep < tutorial.steps.size - 1 -> {
+                tutorial.steps[currentStep].nextCallback(page)
+                currentStep += 1
+                setStep()
+            }
+            currentStep == tutorial.steps.size - 1 -> {
+                tutorial.steps[currentStep].nextCallback(page)
+                stop()
+            }
         }
     }
 
     fun stop() {
-        // removes the listeners (clicked must be a variable to be correctly removed)
-        window.removeEventListener("click", clicked)
-        window.removeEventListener("mousemove", clicked)
-        window.removeEventListener("keyup", clicked)
+        started = false
 
         arrow.root.classList.remove("fadeIn")
         container.root.classList.remove("fadeIn")
@@ -108,7 +109,7 @@ class TutorialLayer<P: BulmaPage>(
         currentStep = 0
     }
 
-    val arrow = span(classes = "tutorial-arrow animated")
+    val arrow = span(classes = "tutorial tutorial-arrow animated")
     val title = p("")
     val delete = Delete { stop() }
 
@@ -133,6 +134,7 @@ class TutorialLayer<P: BulmaPage>(
         color = ElementColor.Success
     ).apply {
         root.classList.add("tutorial")
+        root.classList.add("tutorial-content")
         root.classList.add("animated")
     }
 }

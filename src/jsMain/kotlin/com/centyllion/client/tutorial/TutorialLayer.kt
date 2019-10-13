@@ -10,22 +10,28 @@ import bulma.iconButton
 import bulma.p
 import bulma.span
 import com.centyllion.client.page.BulmaPage
+import org.w3c.dom.events.Event
 import kotlin.browser.document
 import kotlin.browser.window
 
-class TutorialLayer(
-    val page: BulmaPage,
-    val tutorial: Tutorial
+class TutorialLayer<P: BulmaPage>(
+    val page: P, val tutorial: Tutorial<P>
 ) {
     init { require(tutorial.isNotEmpty())}
 
     var currentStep = 0
 
-    private fun placeForStep(step: TutorialStep) {
+    private val clicked = { _: Event ->
+        val step = tutorial.steps[currentStep]
+        if (step.validated(page)) next()
+    }
+
+    private fun placeStep(step: TutorialStep<P>) {
         val target = step.selector(page)
         val bodyBox = document.body?.getBoundingClientRect()
         val elementBox = target.getBoundingClientRect()
 
+        // places help content
         val top = (elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height)
         container.root.style.top = "${top}px"
 
@@ -38,7 +44,7 @@ class TutorialLayer(
         val step = tutorial.steps[currentStep]
         title.text = step.title
         content.body = step.content
-        placeForStep(step)
+        placeStep(step)
 
         stepDots.forEachIndexed { i, e ->
             e.root.classList.toggle("has-background-success", i == currentStep)
@@ -50,22 +56,38 @@ class TutorialLayer(
     }
 
     fun start() {
+        // listens to different kinds of events to update tutorial
+        window.addEventListener("click", clicked)
+        window.addEventListener("mousemove", clicked)
+        window.addEventListener("keyup", clicked)
+
         document.body?.appendChild(container.root)
         container.root.classList.add("fadeIn")
         setStep()
     }
 
     fun previous() {
-        currentStep += -1
-        setStep()
+        if (currentStep > 0) {
+            currentStep += -1
+            setStep()
+        }
     }
 
     fun next() {
-        currentStep += 1
-        setStep()
+        if (currentStep < tutorial.steps.size - 1) {
+            currentStep += 1
+            setStep()
+        } else {
+            stop()
+        }
     }
 
     fun stop() {
+        // removes the listeners (clicked must be a variable to be correctly removed)
+        window.removeEventListener("click", clicked)
+        window.removeEventListener("mousemove", clicked)
+        window.removeEventListener("keyup", clicked)
+
         container.root.classList.remove("fadeIn")
         container.root.classList.add("fadeOut")
         window.setTimeout( { document.body?.removeChild(container.root) }, 1000)
@@ -75,7 +97,9 @@ class TutorialLayer(
     val title = p("")
     val delete = Delete { stop() }
 
-    val content = Div().apply { root.style.marginBottom = "1rem" }
+    val content = Div().apply {
+        root.style.marginBottom = "1rem"
+    }
 
     val previousButton = iconButton(Icon("arrow-left"), ElementColor.Success, rounded = true) { previous() }
     val nextButton = iconButton(Icon("arrow-right"), ElementColor.Success, rounded = true) { next() }

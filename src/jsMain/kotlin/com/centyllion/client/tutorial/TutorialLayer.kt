@@ -38,6 +38,9 @@ class TutorialLayer<P: BulmaPage>(
         val left = elementBox.left - (bodyBox?.left ?: 0.0) + (target.clientWidth - container.root.clientWidth) / 2
         val coercedLeft = left.coerceIn(bodyBox?.left ?: 0.0, (bodyBox?.width ?: Double.MAX_VALUE) - container.root.clientWidth)
         container.root.style.left = "${coercedLeft}px"
+
+        arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height}px"
+        arrow.root.style.left = "${elementBox.left - (bodyBox?.left ?: 0.0) + elementBox.width/2.0}px"
     }
 
     private fun setStep() {
@@ -52,7 +55,7 @@ class TutorialLayer<P: BulmaPage>(
         }
 
         previousButton.disabled = currentStep == 0
-        nextButton.disabled = currentStep >= tutorial.steps.size - 1
+        nextButton.disabled = !step.validated(page) || currentStep >= tutorial.steps.size - 1
     }
 
     fun start() {
@@ -61,14 +64,17 @@ class TutorialLayer<P: BulmaPage>(
         window.addEventListener("mousemove", clicked)
         window.addEventListener("keyup", clicked)
 
+        document.body?.appendChild(arrow.root)
         document.body?.appendChild(container.root)
+
+        arrow.root.classList.add("fadeIn")
         container.root.classList.add("fadeIn")
         setStep()
     }
 
     fun previous() {
         if (currentStep > 0) {
-            currentStep += -1
+            currentStep -= 1
             setStep()
         }
     }
@@ -88,12 +94,21 @@ class TutorialLayer<P: BulmaPage>(
         window.removeEventListener("mousemove", clicked)
         window.removeEventListener("keyup", clicked)
 
+        arrow.root.classList.remove("fadeIn")
         container.root.classList.remove("fadeIn")
+
+        arrow.root.classList.add("fadeOut")
         container.root.classList.add("fadeOut")
-        window.setTimeout( { document.body?.removeChild(container.root) }, 1000)
+
+        window.setTimeout( {
+            document.body?.removeChild(arrow.root)
+            document.body?.removeChild(container.root)
+        }, 1000)
+
         currentStep = 0
     }
 
+    val arrow = span(classes = "tutorial-arrow animated")
     val title = p("")
     val delete = Delete { stop() }
 

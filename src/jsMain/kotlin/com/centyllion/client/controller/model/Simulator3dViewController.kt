@@ -247,15 +247,18 @@ class Simulator3dViewController(
     private var selectedTool: EditTools = EditTools.Move
     private var selectedSize: ToolSize = ToolSize.Fine
 
-    var drawStep = -1
+    val tool get() = selectedTool
+    val size get() = selectedSize
 
-    var simulationSourceX = -1
-    var simulationSourceY = -1
-    var sceneSourceX = -1
-    var sceneSourceY = -1
+    private var drawStep = -1
 
-    var simulationX = -1
-    var simulationY = -1
+    private var simulationSourceX = -1
+    private var simulationSourceY = -1
+    private var sceneSourceX = -1
+    private var sceneSourceY = -1
+
+    private var simulationX = -1
+    private var simulationY = -1
 
     fun circle(x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
         val size = selectedSize.size * selectedTool.factor

@@ -9,20 +9,19 @@ import bulma.Message
 import bulma.iconButton
 import bulma.p
 import bulma.span
+import bulma.textButton
 import com.centyllion.client.page.BulmaPage
 import kotlin.browser.document
 import kotlin.browser.window
 
-class TutorialLayer<P: BulmaPage>(
-    val page: P, val tutorial: Tutorial<P>
-) {
+class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
     init { require(tutorial.isNotEmpty())}
 
     var started = false
     var currentStep = 0
 
-    private fun placeStep(step: TutorialStep<P>) {
-        val target = step.selector(page)
+    private fun placeStep(step: TutorialStep) {
+        val target = step.selector()
         val bodyBox = document.body?.getBoundingClientRect()
         val elementBox = target.getBoundingClientRect()
 
@@ -50,16 +49,30 @@ class TutorialLayer<P: BulmaPage>(
         }
 
         previousButton.disabled = currentStep == 0
-        nextButton.disabled = !step.validated(page) || currentStep >= tutorial.steps.size - 1
+        nextButton.disabled = !step.validated() || currentStep >= tutorial.steps.size - 1
     }
 
     private fun checking() {
         val step = tutorial.steps[currentStep]
-        if (step.validated(page)) next()
+        if (step.validated()) next()
         if (started) window.setTimeout(this::checking, 250)
     }
 
     fun start() {
+        // first open the introduction if there is one
+        if (tutorial.introduction.isNotEmpty()) {
+            tutorial.page.modalDialog(
+                tutorial.name, tutorial.introduction,
+                textButton(tutorial.i18n("Start tutorial"), color = ElementColor.Success) { startSteps() },
+                textButton(tutorial.i18n("Ok but later")) {  },
+                textButton(tutorial.i18n("I don't need it"), color = ElementColor.Warning) {  }
+            )
+        } else {
+            startSteps()
+        }
+    }
+
+    private fun startSteps() {
         started = true
         window.setTimeout(this::checking, 1000)
 
@@ -81,12 +94,12 @@ class TutorialLayer<P: BulmaPage>(
     fun next() {
         when {
             currentStep < tutorial.steps.size - 1 -> {
-                tutorial.steps[currentStep].nextCallback(page)
+                tutorial.steps[currentStep].nextCallback()
                 currentStep += 1
                 setStep()
             }
             currentStep == tutorial.steps.size - 1 -> {
-                tutorial.steps[currentStep].nextCallback(page)
+                tutorial.steps[currentStep].nextCallback()
                 stop()
             }
         }
@@ -105,6 +118,14 @@ class TutorialLayer<P: BulmaPage>(
             document.body?.removeChild(arrow.root)
             document.body?.removeChild(container.root)
         }, 1000)
+
+        // opens the conclusion if there is one and tutorial was done all the way
+        if (currentStep == tutorial.steps.size - 1 && tutorial.conclusion.isNotEmpty()) {
+            tutorial.page.modalDialog(
+                tutorial.name, tutorial.conclusion,
+                textButton(tutorial.i18n("Ok"), color = ElementColor.Success) { stop() }
+            )
+        }
 
         currentStep = 0
     }

@@ -11026,20 +11026,20 @@ div.field-label {
 .tutorial {
   z-index: 10;
   position: absolute;
+  transition: top 1.5s ease-in-out, left 1.5s ease-in-out;
+}
+
+.tutorial-content {
   width: 25rem;
   margin-top: 1rem;
-  transition: top 0.5s ease-in-out, left 0.5s ease-in-out;
 }
 
 .tutorial-arrow {
-  z-index: 10;
-  position: absolute;
   width: 0;
   height: 0;
   border-left: 1rem solid transparent;
   border-right: 1rem solid transparent;
   border-bottom: 1rem solid #3fde77;
-  transition: top 0.5s ease-in-out, left 0.5s ease-in-out;
 }
 
 .circle {

@@ -62,8 +62,8 @@ class SimulationRunController(
         if (old != new) {
             nameController.data = new.name
             descriptionController.data = new.description
-            simulator = Simulator(context, new)
-            simulationViewController.data = simulator
+            currentSimulator = Simulator(context, new)
+            simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
             running = false
             onUpdate(old, new, this@SimulationRunController)
@@ -78,9 +78,9 @@ class SimulationRunController(
             behaviourController.data = new.behaviours
             selectedGrainController.context = new.grains
             selectedGrainController.data = new.grains.firstOrNull()
-            simulator = Simulator(new, data)
-            behaviourController.context = simulator
-            simulationViewController.data = simulator
+            currentSimulator = Simulator(new, data)
+            behaviourController.context = currentSimulator
+            simulationViewController.data = currentSimulator
             running = false
             refresh()
         }
@@ -96,7 +96,9 @@ class SimulationRunController(
         }
     }
 
-    private var simulator = Simulator(context, data)
+    private var currentSimulator = Simulator(context, data)
+
+    val simulator get() = currentSimulator
 
     private var running: Boolean by observable(false) { _, old, new ->
         if (old != new) {
@@ -110,6 +112,8 @@ class SimulationRunController(
             }
         }
     }
+
+    val isRunning get() = running
 
     private var fps = 50.0
     private var lastStepTimestamp = 0.0
@@ -169,14 +173,14 @@ class SimulationRunController(
         }
 
     val behaviourController =
-        columnsController(model.behaviours, simulator)
+        columnsController(model.behaviours, currentSimulator)
         { behaviour, previous ->
-            previous ?: BehaviourRunController(behaviour, simulator).wrap { controller ->
+            previous ?: BehaviourRunController(behaviour, currentSimulator).wrap { controller ->
                 controller.onValidate = { behaviour, speed ->
                     onChangeSpeed(behaviour, speed, this@SimulationRunController)
                 }
                 controller.onSpeedChange = { behaviour, speed ->
-                    simulator.setSpeed(behaviour, speed)
+                    currentSimulator.setSpeed(behaviour, speed)
                 }
                 Column(controller, size = ColumnSize.Full)
             }
@@ -188,8 +192,8 @@ class SimulationRunController(
 
     var exportCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true, disabled = true) {
         val header = "step,${context.grains.map { if (it.name.isNotBlank()) it.name else it.id }.joinToString(",")}"
-        val content = (0 until simulator.step).joinToString("\n") { step ->
-            val counts = context.grains.map { simulator.grainCountHistory[it]?.get(step) ?: 0 }.joinToString(",")
+        val content = (0 until currentSimulator.step).joinToString("\n") { step ->
+            val counts = context.grains.map { currentSimulator.grainCountHistory[it]?.get(step) ?: 0 }.joinToString(",")
             "$step,$counts"
         }
         download("counts.csv", stringHref("$header\n$content"))
@@ -199,7 +203,7 @@ class SimulationRunController(
         hidden = !presentCharts
     }
 
-    var simulationViewController = Simulator3dViewController(simulator, page, readOnly) { ended, new, _ ->
+    var simulationViewController = Simulator3dViewController(currentSimulator, page, readOnly) { ended, new, _ ->
         updatedSimulatorFromView(ended, new)
     }
 
@@ -229,9 +233,9 @@ class SimulationRunController(
         }
 
         page.modalDialog(
-            page.i18n("Simulation Settings"), settingsController,
+            page.i18n("Simulation Settings"), listOf(settingsController),
             okButton, textButton(page.i18n("Cancel"))
-        ).active = true
+        )
     }
 
     val asset3dController =
@@ -365,20 +369,20 @@ class SimulationRunController(
 
     fun reset() {
         if (!running) {
-            simulator.reset()
+            currentSimulator.reset()
             refresh()
             refreshChart()
         }
     }
 
     private fun executeStep(updateChart: Boolean) {
-        val (applied, dead) = simulator.oneStep()
+        val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
         refreshCounts()
 
         // appends data to charts
         if (presentCharts) {
-            chart.data.datasets.zip(simulator.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+            chart.data.datasets.zip(currentSimulator.lastGrainsCount().values) { set: LineDataSet, i: Int ->
                 val data = set.data
                 if (data != null) {
                     val index = if (data.isEmpty()) 0 else data.lastIndex
@@ -402,29 +406,29 @@ class SimulationRunController(
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
         refreshCounts()
         // only update simulation if initial simulation was modified
-        if (simulator.step == 0 && ended) {
-            simulator.resetCount()
+        if (currentSimulator.step == 0 && ended) {
+            currentSimulator.resetCount()
             data = data.copy(agents = new.initialAgents.toList())
         }
     }
 
     fun refreshButtons() {
         rewindButton.disabled = running
-        rewindButton.color = if (simulator.step == 0) ElementColor.Primary else ElementColor.Danger
+        rewindButton.color = if (currentSimulator.step == 0) ElementColor.Primary else ElementColor.Danger
         runButton.loading = running
         runButton.disabled = running
         stepButton.disabled = running
         stopButton.disabled = !running
 
-        exportCsvButton.disabled = running || simulator.step <= 0
+        exportCsvButton.disabled = running || currentSimulator.step <= 0
     }
 
     fun refreshCounts() {
         // refreshes step count
-        stepLabel.text = "${simulator.step}"
+        stepLabel.text = "${currentSimulator.step}"
 
         // refreshes grain counts
-        val counts = simulator.lastGrainsCount().values
+        val counts = currentSimulator.lastGrainsCount().values
         grainsController.dataControllers.zip(counts) { controller, count ->
             val source = controller.source
             if (source is GrainRunController) source.count = count
@@ -443,7 +447,7 @@ class SimulationRunController(
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()
-            chart.data.datasets = simulator.grainCountHistory.map {
+            chart.data.datasets = currentSimulator.grainCountHistory.map {
                 val dataSet = previous.getOrElse(it.key.id) {
                     LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }

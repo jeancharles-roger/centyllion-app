@@ -38,7 +38,7 @@ import kotlin.properties.Delegates
 interface BulmaPage : BulmaElement {
     val appContext: AppContext
 
-    fun onExit(): Promise<Boolean> = Promise.resolve(true)
+    fun onExit() = Promise.resolve(true)
 
     fun i18n(key: String, vararg parameters: Any) = appContext.locale.i18n(key, *parameters)
 
@@ -63,8 +63,8 @@ interface BulmaPage : BulmaElement {
         notification(event.context, event.color)
     }
 
-    fun modalDialog(title: String, body: BulmaElement, vararg buttons: Button): ModalCard {
-        val modal = ModalCard(title, listOf(body)) { root.removeChild(it.root) }
+    fun modalDialog(title: String, body: List<BulmaElement>, vararg buttons: Button, active: Boolean = true): ModalCard {
+        val modal = ModalCard(title, body) { root.removeChild(it.root) }
         // wraps button actions with the closing of the modal dialog
         modal.buttons = buttons.map {
             val action = it.onClick
@@ -75,6 +75,7 @@ interface BulmaPage : BulmaElement {
             it
         }
         root.appendChild(modal.root)
+        modal.active = active
         return modal
     }
 

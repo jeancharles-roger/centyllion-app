@@ -131,6 +131,8 @@ class GrainModelEditController(
 
     private var editorController: Controller<*, dynamic, dynamic>? = null
 
+    val editor get() = editorController
+
     private fun MultipleController<*, *, *, *, *>.updateSelection(value: Any?) {
         val found =
             this.dataControllers.find { it.data === value } ?:

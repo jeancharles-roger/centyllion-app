@@ -42,6 +42,7 @@ import com.centyllion.client.homePage
 import com.centyllion.client.register
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
+import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.common.adminRole
 import com.centyllion.common.apprenticeRole
 import com.centyllion.common.creatorRole
@@ -74,6 +75,8 @@ import bulma.Field as BField
 /** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
 @UseExperimental(UnstableDefault::class)
 class ShowPage(override val appContext: AppContext) : BulmaPage {
+
+    private var tutorialLayer: TutorialLayer<ShowPage>? = null
 
     val api = appContext.api
 
@@ -261,9 +264,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             }
         } else {
             // no user logged, propose to log in or register in
-            val modal = modalDialog(
+            modalDialog(
                 "Join Centyllion",
-                Div(p("To clone a model or a simulation, you need to be connected.")),
+                listOf(p("To clone a model or a simulation, you need to be connected.")),
                 textButton("Log In", ElementColor.Primary) {
                     // forces to login
                     window.location.href = appContext.keycloak.createLoginUrl()
@@ -271,7 +274,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 textButton("Register", ElementColor.Success) { appContext.openPage(register) },
                 textButton("No, thank you")
             )
-            modal.active = true
         }
     }
 
@@ -349,6 +351,16 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         result.then {
             setModel(it.second)
             setSimulation(it.first)
+
+            /** TODO only activate if not already done */
+            /*
+            if (it.second == emptyGrainModelDescription) {
+                // Activates tutorial
+                tutorialLayer = TutorialLayer(BacteriasTutorial(this))
+                tutorialLayer?.start()
+            }
+             */
+
         }.catch {
             error(it)
         }
@@ -542,9 +554,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun deleteModel() {
         moreDropdown.active = false
 
-        val modal = modalDialog(
+        modalDialog(
             i18n("Delete model. Are you sure ?"),
-            Div(
+            listOf(
                 p(i18n("You're about to delete the model '%0' and its simulations.", model.label)),
                 p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
@@ -560,16 +572,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             },
             textButton(i18n("No"))
         )
-
-        modal.active = true
     }
 
     fun deleteSimulation() {
         moreDropdown.active = false
 
-        val modal = modalDialog(
+        modalDialog(
             i18n("Delete simulation. Are you sure ?"),
-            Div(
+            listOf(
                 p(i18n("You're about to delete the simulation '%0'.", simulation.label)),
                 p(i18n("This action can't be undone."), "has-text-weight-bold")
             ),
@@ -583,8 +593,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             },
             textButton(i18n("No"))
         )
-
-        modal.active = true
     }
 
     fun refreshButtons() {
@@ -650,19 +658,21 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
 
         if ((modelNeedsSaving && model != emptyGrainModelDescription) || (simulationNeedsSaving && simulation != emptySimulationDescription)) {
-            val model = modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
-                p(i18n("You're about to quit the page and some modifications haven't been saved.")),
+            modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
+                listOf(p(i18n("You're about to quit the page and some modifications haven't been saved."))),
                 textButton(i18n("Save"), ElementColor.Success) { save { conclude(true) } },
                 textButton(i18n("Don't save"), ElementColor.Danger) { conclude(true) },
                 textButton(i18n("Stay here")) { conclude(false) }
             )
-            model.active = true
         } else {
             conclude(true)
         }
     }
 
     override fun onExit() = Promise<Boolean> { resolve, _ ->
-        changeModelOrSimulation(true) { resolve(it) }
+        changeModelOrSimulation(true) {
+            if (it) tutorialLayer?.stop()
+            resolve(it)
+        }
     }
 }

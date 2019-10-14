@@ -64,13 +64,11 @@ class UserAdministrationController(user: User, val page: BulmaPage) : NoContextC
         }
         val cancelButton = textButton(page.i18n("Cancel"))
 
-        val modal = page.modalDialog(
+        page.modalDialog(
             page.i18n("Create subscription"),
-            Level(center = listOf(autoRenew, subscription, duration, durationLabel)),
+            listOf(Level(center = listOf(autoRenew, subscription, duration, durationLabel))),
             createButton, cancelButton
         )
-        modal.active = true
-
     }
 
     override val container = Box(Media(

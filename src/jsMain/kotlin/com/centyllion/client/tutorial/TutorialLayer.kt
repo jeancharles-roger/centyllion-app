@@ -3,10 +3,8 @@ package com.centyllion.client.tutorial
 import bulma.Delete
 import bulma.Div
 import bulma.ElementColor
-import bulma.Icon
-import bulma.Level
 import bulma.Message
-import bulma.iconButton
+import bulma.ProgressBar
 import bulma.p
 import bulma.span
 import bulma.textButton
@@ -41,15 +39,8 @@ class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
         val step = tutorial.steps[currentStep]
         title.text = step.title
         content.body = step.content
+        progression.value = currentStep
         placeStep(step)
-
-        stepDots.forEachIndexed { i, e ->
-            e.root.classList.toggle("has-background-success", i == currentStep)
-            e.root.classList.toggle("has-background-grey-light", i != currentStep)
-        }
-
-        previousButton.disabled = currentStep == 0
-        nextButton.disabled = !step.validated() || currentStep >= tutorial.steps.size - 1
     }
 
     private fun checking() {
@@ -138,20 +129,16 @@ class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
         root.style.marginBottom = "1rem"
     }
 
-    val previousButton = iconButton(Icon("arrow-left"), ElementColor.Success, rounded = true) { previous() }
-    val nextButton = iconButton(Icon("arrow-right"), ElementColor.Success, rounded = true) { next() }
-    val stepDots = tutorial.steps.mapIndexed { i, _ ->
-        span(classes = "circle ${if (i == currentStep) "has-background-success" else "has-background-grey-light"}")
+    val progression = ProgressBar().apply {
+        color = ElementColor.Success
+        min = 0
+        value = currentStep
+        max = tutorial.steps.size - 1
     }
-    val footBar = Level(
-        left = listOf(previousButton),
-        center = listOf(Div().apply { body = stepDots }),
-        right = listOf(nextButton)
-    )
 
     val container = Message(
         header = listOf(title, delete),
-        body = listOf(content, footBar),
+        body = listOf(content, progression),
         color = ElementColor.Success
     ).apply {
         root.classList.add("tutorial")

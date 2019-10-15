@@ -11041,11 +11041,3 @@ div.field-label {
   border-right: 1rem solid transparent;
   border-bottom: 1rem solid #3fde77;
 }
-
-.circle {
-  display: inline-block;
-  width: 0.2rem;
-  height: 0.2rem;
-  border-radius: 50%;
-  margin: 0.3rem;
-}

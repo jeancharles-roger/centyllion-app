@@ -62,7 +62,7 @@ class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
         // first open the introduction if there is one
         if (tutorial.introduction.isNotEmpty()) {
             tutorial.page.modalDialog(
-                tutorial.name, tutorial.introduction,
+                tutorial.i18n("Tutorial '%0'", tutorial.i18n(tutorial.name)), tutorial.introduction,
                 textButton(tutorial.i18n("Start tutorial"), color = ElementColor.Success) { startSteps() },
                 textButton(tutorial.i18n("Ok but later")) {  },
                 textButton(tutorial.i18n("I don't need it"), color = ElementColor.Warning) {  }

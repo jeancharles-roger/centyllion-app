@@ -144,29 +144,27 @@ class GrainModelEditController(
     }
 
     fun edit(element: ModelElement?) {
-        //if (edited !== element) {
-            editorController = when (element) {
-                is Field -> FieldEditController(element, page) { old, new, _ ->
-                    edited = new
-                    data = data.updateField(old, new)
-                }
-                is Grain -> GrainEditController(element, data, page) { old, new, _ ->
-                    edited = new
-                    data = data.updateGrain(old, new)
-                }
-                is Behaviour -> BehaviourEditController(element, data, page) { old, new, _ ->
-                    edited = new
-                    data = data.updateBehaviour(old, new)
-                }
-                else -> null
+        editorController = when (element) {
+            is Field -> FieldEditController(element, page) { old, new, _ ->
+                edited = new
+                data = data.updateField(old, new)
             }
-            editorController?.root?.classList?.add("animated", "fadeIn", "faster")
-            editorController?.readOnly = this.readOnly
-            editorColumn.body = listOf(editorController ?: emptyEditor)
-            fieldsController.updateSelection(element)
-            grainsController.updateSelection(element)
-            behavioursController.updateSelection(element)
-        //}
+            is Grain -> GrainEditController(element, data, page) { old, new, _ ->
+                edited = new
+                data = data.updateGrain(old, new)
+            }
+            is Behaviour -> BehaviourEditController(element, data, page) { old, new, _ ->
+                edited = new
+                data = data.updateBehaviour(old, new)
+            }
+            else -> null
+        }
+        editorController?.root?.classList?.add("animated", "fadeIn", "faster")
+        editorController?.readOnly = this.readOnly
+        editorColumn.body = listOf(editorController ?: emptyEditor)
+        fieldsController.updateSelection(element)
+        grainsController.updateSelection(element)
+        behavioursController.updateSelection(element)
     }
 
     private var edited: ModelElement? = null

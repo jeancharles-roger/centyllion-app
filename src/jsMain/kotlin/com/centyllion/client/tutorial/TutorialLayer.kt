@@ -9,6 +9,7 @@ import bulma.p
 import bulma.span
 import bulma.textButton
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.model.UserOptions
 import kotlin.browser.document
 import kotlin.browser.window
 
@@ -50,17 +51,21 @@ class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
     }
 
     fun start() {
-        // first open the introduction if there is one
-        if (tutorial.introduction.isNotEmpty()) {
-            tutorial.page.modalDialog(
-                tutorial.i18n("Tutorial '%0'", tutorial.i18n(tutorial.name)), tutorial.introduction,
-                textButton(tutorial.i18n("Start tutorial"), color = ElementColor.Success) { startSteps() },
-                textButton(tutorial.i18n("Ok but later")) {  },
-                textButton(tutorial.i18n("I don't need it"), color = ElementColor.Warning) {  }
-            )
-        } else {
-            startSteps()
-        }
+        // creates a modal dialog to present the tutorial
+        tutorial.page.modalDialog(
+            tutorial.i18n("Tutorial '%0'", tutorial.i18n(tutorial.name)), tutorial.introduction,
+            textButton(tutorial.i18n("Start tutorial"), color = ElementColor.Success) {
+                tutorialDone()
+                startSteps()
+            },
+            textButton(tutorial.i18n("Ok but later")) { /* nothing to do */ },
+            textButton(tutorial.i18n("I don't need it"), color = ElementColor.Warning) { tutorialDone() }
+        )
+    }
+
+    private fun tutorialDone() {
+        // saves that the tutorial was done in current user.
+        tutorial.page.appContext.api.saveMyOptions(UserOptions(tutorialDone = true))
     }
 
     private fun startSteps() {

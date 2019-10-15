@@ -3,10 +3,14 @@ package com.centyllion.backend.route
 import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.model.UserOptions
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.route
 
 /** Routes for `/api/me`. */
@@ -16,6 +20,18 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
         get {
             withRequiredPrincipal {
                 context.respond(subscription.getOrCreateUserFromPrincipal(it))
+            }
+        }
+
+        post {
+            withRequiredPrincipal {
+                val options = call.receive<UserOptions>()
+                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val newUser = user.copy(details = user.details?.copy(
+                    tutorialDone = options.tutorialDone
+                ))
+                data.saveUser(newUser)
+                context.respond(HttpStatusCode.OK)
             }
         }
 

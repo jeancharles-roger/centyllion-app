@@ -13,6 +13,7 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Subscription
 import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
+import com.centyllion.model.UserOptions
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.features.ContentConverter
@@ -99,6 +100,7 @@ class JsonConverter : ContentConverter {
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
             SubscriptionParameters::class -> Json.parse(SubscriptionParameters.serializer(), text)
             FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
+            UserOptions::class -> Json.parse(UserOptions.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

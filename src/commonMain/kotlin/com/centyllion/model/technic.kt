@@ -44,7 +44,13 @@ data class UserDetails(
     val email: String,
     val stripeId: String?,
     val subscription: SubscriptionType,
-    val subscriptionUpdatedOn: Long?
+    val subscriptionUpdatedOn: Long?,
+    val tutorialDone: Boolean = false
+)
+
+@Serializable
+data class UserOptions(
+    val tutorialDone: Boolean = false
 )
 
 @Serializable

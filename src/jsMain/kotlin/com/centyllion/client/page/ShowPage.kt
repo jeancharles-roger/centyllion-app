@@ -42,6 +42,7 @@ import com.centyllion.client.homePage
 import com.centyllion.client.register
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
+import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.common.adminRole
 import com.centyllion.common.apprenticeRole
@@ -352,14 +353,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             setModel(it.second)
             setSimulation(it.first)
 
-            /** TODO only activate if not already done */
-            /*
-            if (it.second == emptyGrainModelDescription) {
+            if (appContext.me?.details?.tutorialDone != true && it.second == emptyGrainModelDescription) {
                 // Activates tutorial
                 tutorialLayer = TutorialLayer(BacteriasTutorial(this))
                 tutorialLayer?.start()
             }
-             */
 
         }.catch {
             error(it)

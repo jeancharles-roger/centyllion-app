@@ -13,6 +13,7 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.Subscription
 import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
+import com.centyllion.model.UserOptions
 import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -96,9 +97,9 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             .then { json.parse(ResultPage.serializer(String.serializer()), it) }
         }
 
-    fun saveMe(user: User) =
+    fun saveMyOptions(userOptions: UserOptions) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("PATCH", "/api/me", bearer, json.stringify(User.serializer(), user))
+            fetch("POST", "/api/me", bearer, json.stringify(UserOptions.serializer(), userOptions))
         }
 
     fun fetchSubscriptionsForMe(all: Boolean = false): Promise<List<Subscription>> =

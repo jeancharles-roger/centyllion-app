@@ -39,12 +39,13 @@ object DbUsers : UUIDTable("users") {
     val name = text("name")
     val username = text("username").default("")
     val keycloak = text("keycloak")
-    val subscriptionUpdatedOn = datetime("subscriptionUpdatedOn").nullable()
 
     // Details
     val email = text("email")
     val subscription = text("subscription").default("Free")
     val stripe = text("stripe").nullable()
+    val subscriptionUpdatedOn = datetime("subscriptionUpdatedOn").nullable()
+    val tutorialDone = bool("tutorialDone").default(false)
 }
 
 class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -53,14 +54,15 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var keycloak by DbUsers.keycloak
     var name by DbUsers.name
     var username by DbUsers.username
-    var subscriptionUpdatedOn by DbUsers.subscriptionUpdatedOn
     var email by DbUsers.email
     var subscription by DbUsers.subscription
     var stripe by DbUsers.stripe
+    var subscriptionUpdatedOn by DbUsers.subscriptionUpdatedOn
+    var tutorialDone by DbUsers.tutorialDone
 
     fun toModel(detailed: Boolean): User {
         val subscriptionType = SubscriptionType.parse(subscription)
-        val details = UserDetails(keycloak, email, stripe, subscriptionType, subscriptionUpdatedOn?.millis)
+        val details = UserDetails(keycloak, email, stripe, subscriptionType, subscriptionUpdatedOn?.millis, tutorialDone)
         return User(id.toString(), name, username, if (detailed) details else null)
     }
 
@@ -70,6 +72,7 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
         source.details?.let {
             email = it.email
             stripe = it.stripeId
+            tutorialDone = it.tutorialDone
             if (subscription != it.subscription.name) {
                 subscription = it.subscription.name
                 subscriptionUpdatedOn = DateTime.now()

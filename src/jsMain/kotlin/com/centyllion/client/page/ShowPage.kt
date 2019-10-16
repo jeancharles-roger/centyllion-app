@@ -14,6 +14,8 @@ import bulma.Help
 import bulma.Icon
 import bulma.Level
 import bulma.Message
+import bulma.NavBarIconItem
+import bulma.NavBarItem
 import bulma.Size
 import bulma.TabItem
 import bulma.TabPage
@@ -354,13 +356,19 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             setSimulation(it.first)
 
             if (appContext.me?.details?.tutorialDone != true && it.second == emptyGrainModelDescription) {
-                // Activates tutorial
-                tutorialLayer = TutorialLayer(BacteriasTutorial(this))
-                tutorialLayer?.start()
+                startTutorial()
             }
 
         }.catch {
             error(it)
+        }
+    }
+
+    fun startTutorial() {
+        if (tutorialLayer == null) {
+            // Activates tutorial
+            tutorialLayer = TutorialLayer(BacteriasTutorial(this)) { tutorialLayer = null }
+            tutorialLayer?.start()
         }
     }
 
@@ -673,4 +681,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             resolve(it)
         }
     }
+
+    override fun navBarItem(): List<NavBarItem> = listOf(
+        NavBarIconItem(Icon("question-circle")) { startTutorial() }
+    )
 }

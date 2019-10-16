@@ -13,7 +13,9 @@ import com.centyllion.model.UserOptions
 import kotlin.browser.document
 import kotlin.browser.window
 
-class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
+class TutorialLayer<P: BulmaPage>(
+    val tutorial: Tutorial<P>, val onEnd: (TutorialLayer<P>) -> Unit = {}
+) {
     init { require(tutorial.isNotEmpty())}
 
     var started = false
@@ -124,6 +126,7 @@ class TutorialLayer<P: BulmaPage>(val tutorial: Tutorial<P>) {
         }
 
         currentStep = 0
+        onEnd(this)
     }
 
     val arrow = span(classes = "tutorial tutorial-arrow animated")

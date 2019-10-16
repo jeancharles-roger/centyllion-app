@@ -1,5 +1,6 @@
 package com.centyllion.client
 
+import bulma.BulmaElement
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Message
@@ -149,6 +150,7 @@ class BrowserContext(
 
     override val stripeKey = "pk_test_aPFW9HKhSHLmczJtGWW0Avdh00m1Ki47LU"
 
+    private var addedNavbarEndItems: List<BulmaElement> = emptyList()
     private var content: BulmaPage? = null
     private var currentPage: Page? = null
 
@@ -163,8 +165,8 @@ class BrowserContext(
     /** Open the given [page] */
     override fun openPage(page: Page, parameters: Map<String, String>, clearParameters: Boolean, register: Boolean) {
         val open = content?.onExit() ?: Promise.resolve(true)
-        open.then {
-            if (it) {
+        open.then { proceed ->
+            if (proceed) {
                 currentPage = page
 
                 // highlight active page
@@ -189,10 +191,16 @@ class BrowserContext(
                     root.removeChild(root.childNodes[0]!!)
                 }
 
+                // resets navbar end items
+                navBar.end = navBar.end.filter { !addedNavbarEndItems.contains(it) }
+                addedNavbarEndItems = emptyList()
+
                 // tries to load page if authorized
                 if (page.authorized(this)) {
                     content = page.callback(this).also {
                         root.appendChild(it.root)
+                        addedNavbarEndItems = it.navBarItem()
+                        navBar.end = addedNavbarEndItems + navBar.end
                     }
                 } else {
                     root.appendChild(

@@ -8,6 +8,7 @@ import bulma.DropdownItem
 import bulma.ElementColor
 import bulma.Icon
 import bulma.ModalCard
+import bulma.NavBarItem
 import bulma.Position
 import bulma.Size
 import bulma.TextColor
@@ -39,6 +40,8 @@ interface BulmaPage : BulmaElement {
     val appContext: AppContext
 
     fun onExit() = Promise.resolve(true)
+
+    fun navBarItem(): List<NavBarItem> = emptyList()
 
     fun i18n(key: String, vararg parameters: Any) = appContext.locale.i18n(key, *parameters)
 

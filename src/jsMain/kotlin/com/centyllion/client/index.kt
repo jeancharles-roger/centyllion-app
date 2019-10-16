@@ -33,7 +33,9 @@ fun createNavBar() = NavBar(
         ).apply { imgNode.style.maxHeight = "2rem" }
     ),
     end = listOf(
-        NavBarIconItem(Icon("question-circle"), "https://centyllion.com/fr/documentation.html"),
+        NavBarIconItem(Icon("book"), "https://centyllion.com/fr/documentation.html").apply {
+            root.asDynamic().target = "_blank"
+        },
         NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")
     ),
     transparent = true, color = ElementColor.Primary

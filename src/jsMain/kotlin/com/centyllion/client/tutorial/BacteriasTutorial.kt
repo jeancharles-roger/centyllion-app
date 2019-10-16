@@ -168,8 +168,8 @@ class BacteriasTutorial(
             }
             p {
                 +i18n("You can find some documentation here ")
-                a("https://centyllion.com/fr/documentation.html") {
-                    span("icon is-primary") { i("fas fa-question-circle") }
+                a("https://centyllion.com/fr/documentation.html","_blank") {
+                    span("icon is-primary") { i("fas fa-book") }
                 }
                 + "."
             }

@@ -683,6 +683,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     override fun navBarItem(): List<NavBarItem> = listOf(
-        NavBarIconItem(Icon("question-circle")) { startTutorial() }
+        NavBarIconItem(Icon("question-circle")) { startTutorial() }.apply {
+            root.classList.add("tooltip")
+            root.classList.add("is-tooltip-primary")
+            root.classList.add("is-tooltip-bottom")
+            root.setAttribute("data-tooltip", i18n("Start the tutorial"))
+        }
     )
 }

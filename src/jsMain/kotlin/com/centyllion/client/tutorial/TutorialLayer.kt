@@ -15,7 +15,7 @@ import kotlin.browser.window
 
 class TutorialLayer<P: BulmaPage>(
     val tutorial: Tutorial<P>, val onEnd: (TutorialLayer<P>) -> Unit = {}
-) {
+ ) {
     init { require(tutorial.isNotEmpty())}
 
     var started = false

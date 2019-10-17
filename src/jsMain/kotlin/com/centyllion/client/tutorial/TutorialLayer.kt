@@ -31,7 +31,8 @@ class TutorialLayer<P: BulmaPage>(
         container.root.style.top = "${top}px"
 
         val left = elementBox.left - (bodyBox?.left ?: 0.0) + (target.clientWidth - container.root.clientWidth) / 2
-        val coercedLeft = left.coerceIn(bodyBox?.left ?: 0.0, (bodyBox?.width ?: Double.MAX_VALUE) - container.root.clientWidth)
+        val maximumLeft = ((bodyBox?.width ?: Double.MAX_VALUE) - container.root.clientWidth).coerceAtLeast(0.0)
+        val coercedLeft = left.coerceIn(bodyBox?.left ?: 0.0, maximumLeft)
         container.root.style.left = "${coercedLeft}px"
 
         arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height}px"

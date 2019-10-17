@@ -67,7 +67,7 @@ class BacteriasTutorial(
             { bacteriaGrain = page.model.model.grains.first() }
         ),
         TutorialStep(
-            i18n("Go to simulation"), listOf(span(i18n("Open the simulation page, to test the model."))),
+            i18n("Go to simulation"), listOf(span(i18n("Open the simulation page to test the model."))),
             { page.simulationPage.title.root },
             { page.editionTab.selectedPage == page.simulationPage }
         ),

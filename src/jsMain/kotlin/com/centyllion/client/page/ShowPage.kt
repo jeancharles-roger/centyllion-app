@@ -687,7 +687,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             root.classList.add("tooltip")
             root.classList.add("is-tooltip-primary")
             root.classList.add("is-tooltip-bottom")
-            root.setAttribute("data-tooltip", i18n("Start the tutorial"))
+            root.setAttribute("data-tooltip", i18n("Start" +
+                    " tutorial"))
         }
     )
 }

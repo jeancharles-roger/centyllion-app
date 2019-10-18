@@ -202,18 +202,17 @@ class Simulator(
                 val count = field.allowedDirection.size
                 val current = fields[field.id]
                 val next = nextFields[field.id]
-                val permeable = (grain?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                val moveIndex = field.allowedDirection.map { simulation.moveIndex(i, it) }
+                val fieldAtIndex = moveIndex.map { it to ((grainAtIndex(it)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f) }
                 if (next != null && current != null) {
                     val level =
                         // current value cut down
-                        current[i] * (1.0f - field.speed * permeable) +
-                                // adding or removing from current agent if any
-                                (grain?.fieldProductions?.get(field.id) ?: 0f) +
-                                // diffusion from agent around
-                                field.allowedDirection.map {
-                                    val moveIndex = simulation.moveIndex(i, it)
-                                    current[moveIndex] * field.speed * permeable
-                                }.sum() / count
+                        current[i] * (1.0f - field.speed * fieldAtIndex.map { it.second }.sum() / count) +
+                        // adding or removing from current agent if any
+                        (grain?.fieldProductions?.get(field.id) ?: 0f) +
+                        // diffusion from agent around
+                        fieldAtIndex.map { current[it.first] * field.speed * it.second }.sum() / count
+
                     next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
                 }
             }

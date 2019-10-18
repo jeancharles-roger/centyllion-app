@@ -152,7 +152,7 @@ class BacteriasTutorial(
         TutorialStep(
             i18n("Run the simulation"), listOf(span(i18n("Watch the bacteria colony grow."))),
             { page.simulationController.runButton.root },
-            { page.simulationController.simulator.step > 20 },
+            { page.simulationController.simulator.step > 30 },
             { page.simulationController.stop() }
         )
     )

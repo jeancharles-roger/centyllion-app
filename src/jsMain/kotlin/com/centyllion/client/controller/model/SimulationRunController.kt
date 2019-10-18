@@ -217,11 +217,7 @@ class SimulationRunController(
         this.data = data.copy(assets = data.assets + Asset3d(""))
     }
 
-    val settingsButton = ButtonWithRole(
-        null, Icon("cog"),
-        creatorRole, page.appContext.hasRole(creatorRole),
-        ElementColor.Primary, true
-    ) {
+    val settingsButton = Button(null, Icon("cog"), ElementColor.Primary, true) {
         val settingsController = SimulationSettingsController(data.settings, page)
         val okButton = textButton(page.i18n("Save"), ElementColor.Success, disabled = true) {
             if (settingsController.data != data.settings) {

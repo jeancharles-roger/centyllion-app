@@ -76,9 +76,9 @@ class TestMeApi {
     }
 
     @Test
-    fun testMyModelsApprentice() = withCentyllion {
+    fun testMyModels1() = withCentyllion {
         // Test that /api/me/model is protected
-        testUnauthorized( "/api/me/model")
+        testUnauthorized("/api/me/model")
 
         // Test that /api/me/model is protected by the apprentice model
         testGetPage("/api/me/model", emptyList(), 0, GrainModelDescription.serializer(), user1)
@@ -87,16 +87,17 @@ class TestMeApi {
         testUnauthorized("/api/me/model", HttpMethod.Post)
         val model1 = postModel(GrainModel("test1"), user1)
         val model2 = postModel(GrainModel("test2"), user1)
+        patchModel(model2, user2, HttpStatusCode.Unauthorized)
 
         // Checks that models were posted
-        testGetPage("/api/me/model",listOf(model1, model2), 2, GrainModelDescription.serializer(), user1)
+        testGetPage("/api/me/model", listOf(model1, model2), 2, GrainModelDescription.serializer(), user1)
 
         // Test delete a model
         testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
         deleteModel(model1, user1)
 
         // Checks if delete happened
-        testGetPage("/api/me/model", listOf(model2), 1,GrainModelDescription.serializer(), user1)
+        testGetPage("/api/me/model", listOf(model2), 1, GrainModelDescription.serializer(), user1)
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
@@ -105,18 +106,5 @@ class TestMeApi {
 
         // Checks if patch happened
         testGetPage("/api/me/model", listOf(newModel2), 1, GrainModelDescription.serializer(), user1)
-
-        // Checks that publish is protected by creator role
-        val newModel2public = model2.copy(info = model2.info.copy(readAccess = true))
-        patchModel(newModel2public, user1, HttpStatusCode.Forbidden)
-        patchModel(newModel2public, user2, HttpStatusCode.Unauthorized)
-    }
-
-    @Test
-    fun testPublishMyModelsCreator() = withCentyllion {
-        // Creates and make a model public with creator user
-        val model3 = postModel(GrainModel("test3"), user2)
-        val model3public = model3.copy(info = model3.info.copy(readAccess = true))
-        patchModel(model3public, user2)
     }
 }

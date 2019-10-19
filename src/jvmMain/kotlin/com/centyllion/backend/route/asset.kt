@@ -1,10 +1,8 @@
 package com.centyllion.backend.route
 
-import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
-import com.centyllion.common.creatorRole
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -23,18 +21,16 @@ import java.io.ByteArrayInputStream
 import java.util.WeakHashMap
 import java.util.zip.ZipInputStream
 
-fun Route.asset(subscription: SubscriptionManager, data: Data) {
+fun Route.asset(data: Data) {
 
     val zipAssetCache = WeakHashMap<String, ByteArray?>()
 
     route("asset") {
         get {
-            withRequiredPrincipal(creatorRole) {
-                val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
-                val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                val extensions = call.parameters.getAll("extension") ?: emptyList()
-                context.respond(data.getAllAssets(offset, limit, extensions))
-            }
+            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+            val extensions = call.parameters.getAll("extension") ?: emptyList()
+            context.respond(data.getAllAssets(offset, limit, extensions))
         }
 
         route("{asset}") {
@@ -95,7 +91,7 @@ fun Route.asset(subscription: SubscriptionManager, data: Data) {
 
         post {
             withRequiredPrincipal(adminRole) {
-                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val user = data.getOrCreateUserFromPrincipal(it)
 
                 val multipart = call.receiveMultipart()
                 val parts = multipart.readAllParts()

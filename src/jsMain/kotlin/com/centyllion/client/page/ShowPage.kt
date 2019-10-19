@@ -47,8 +47,6 @@ import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.common.adminRole
-import com.centyllion.common.apprenticeRole
-import com.centyllion.common.creatorRole
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
@@ -84,8 +82,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val api = appContext.api
 
     val isModelReadOnly
-        get() = !appContext.hasRole(apprenticeRole) || (model.id.isNotEmpty() &&
-                model.info.user?.id != appContext.me?.id)
+        get() = model.id.isNotEmpty() && model.info.user?.id != appContext.me?.id
 
     private var problems: List<Problem> = emptyList()
 
@@ -184,8 +181,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val isSimulationReadOnly
-        get() = !appContext.hasRole(apprenticeRole) || simulation.id.isNotEmpty() &&
-                simulation.info.user?.id != appContext.me?.id
+        get() = simulation.id.isNotEmpty() && simulation.info.user?.id != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
@@ -211,11 +207,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         Button(i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
 
     val publishModelItem = createMenuItem(
-        i18n("Publish Model"), "share-square", TextColor.Success, creatorRole
+        i18n("Publish Model"), "share-square", TextColor.Success
     ) { toggleModelPublication() }
 
     val publishSimulationItem = createMenuItem(
-        i18n("Publish Simulation"), "share-square", TextColor.Success, creatorRole
+        i18n("Publish Simulation"), "share-square", TextColor.Success
     ) { toggleSimulationPublication() }
 
     val deleteModelItem = createMenuItem(
@@ -227,7 +223,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { deleteSimulation() }
 
     val downloadModelItem = createMenuItem(
-        i18n("Download Model"), "download", TextColor.Primary, adminRole
+        i18n("Download Model"), "download", TextColor.Primary
     ) { downloadModel() }
 
     val newSimulationItem = createMenuItem(
@@ -235,14 +231,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { newSimulation() }
 
     val saveThumbnailItem = createMenuItem(
-        i18n("Save state as thumbnail"), "image", TextColor.Primary, creatorRole
+        i18n("Save state as thumbnail"), "image", TextColor.Primary
     ) { saveCurrentThumbnail() }
 
     val downloadSimulationItem = createMenuItem(
-        i18n("Download Simulation"), "download", TextColor.Primary, adminRole
+        i18n("Download Simulation"), "download", TextColor.Primary
     ) { downloadSimulation() }
 
-    val loadingItem = createMenuItem(i18n("Loading simulations"), "spinner").apply { itemIcon.spin = true }
+    val loadingItem = createMenuItem(i18n("Loading simulations"), "spinner").apply { icon?.spin = true }
 
     val moreDropdownItems = listOfNotNull(
         publishModelItem, publishSimulationItem, createMenuDivider(),
@@ -625,12 +621,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun refreshMoreButtons() {
         publishModelItem.disabled = model.id.isEmpty()
-        publishModelItem.itemIcon.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishModelItem.itemText.text = i18n("${if (model.info.readAccess) "Un-" else ""}Publish Model")
+        publishModelItem.icon?.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
+        publishModelItem.text = i18n("${if (model.info.readAccess) "Un-" else ""}Publish Model")
 
         publishSimulationItem.disabled = simulation.id.isEmpty()
-        publishSimulationItem.itemIcon.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishSimulationItem.itemText.text = i18n("${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation")
+        publishSimulationItem.icon?.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
+        publishSimulationItem.text = i18n("${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation")
 
         deleteModelItem.disabled = model.id.isEmpty()
 
@@ -687,8 +683,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             root.classList.add("tooltip")
             root.classList.add("is-tooltip-primary")
             root.classList.add("is-tooltip-bottom")
-            root.setAttribute("data-tooltip", i18n("Start" +
-                    " tutorial"))
+            root.setAttribute("data-tooltip", i18n("Start tutorial"))
         }
     )
 }

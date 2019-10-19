@@ -1,16 +1,11 @@
 package com.centyllion.backend.data
 
-import com.centyllion.common.SubscriptionType
-import com.centyllion.common.topGroup
 import com.centyllion.model.Asset
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionParameters
-import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
@@ -32,7 +27,6 @@ import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
-import org.joda.time.DateTimeUtils
 import java.io.ByteArrayInputStream
 import java.util.NoSuchElementException
 import java.util.UUID
@@ -107,10 +101,6 @@ class SqlData(
     }
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {
-        // retrieves roles from claim
-        val currentGroup = principal.payload.claims["groups"]?.asList(String::class.java)
-            ?.map { SubscriptionType.valueOf(it) }?.topGroup() ?: SubscriptionType.Apprentice
-
         val currentName = principal.payload.claims["name"]?.asString() ?: ""
         val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
         val currentEmail = principal.payload.claims["email"]?.asString() ?: ""
@@ -124,17 +114,14 @@ class SqlData(
                 name = currentName
                 username = currentUsername
                 email = currentEmail
-                subscription = currentGroup.name
             }
         }
 
-        /* This shouldn't be needed anymore */
-        if (user.name != currentName || user.subscription != currentGroup.name || user.username != currentUsername) {
+        if (user.name != currentName || user.username != currentUsername) {
             // updates roles for user
             transaction {
                 user.name = currentName
                 user.username = currentUsername
-                user.subscription = currentGroup.name
             }
         }
 
@@ -348,52 +335,6 @@ class SqlData(
         ).map { it.toModel() }
 
         ResultPage(content, offset, searchModelQuery(query, tags).count())
-    }
-
-    override fun subscriptionsForUser(userId: String) =
-        subscriptionsForUser(UUID.fromString(userId))
-
-    private fun subscriptionsForUser(userId: UUID) = transaction(database) {
-        val now = DateTimeUtils.currentTimeMillis()
-        DbSubscription
-            .find { DbSubscriptions.userId eq userId }
-            .map { it.toModel() }
-    }
-
-    override fun getSubscription(id: String): Subscription? = transaction(database) {
-        DbSubscription.findById(UUID.fromString(id))?.toModel()
-    }
-
-    override fun createSubscription(
-        userId: String,
-        sandbox: Boolean,
-        parameters: SubscriptionParameters
-    ): Subscription = transaction(database) {
-        DbSubscription.new {
-            this.userId = UUID.fromString(userId)
-            this.sandbox = sandbox
-            autoRenew = parameters.autoRenew
-            startedOn = DateTime.now()
-            expiresOn = parameters.duration.let { if (it > 0) startedOn.plus(it) else null }
-            subscription = parameters.subscription.name
-            duration = parameters.duration
-            amount = parameters.amount
-            paymentMethod = parameters.paymentMethod
-            state = SubscriptionState.Waiting.name
-        }.toModel()
-    }
-
-    override fun saveSubscription(subscription: Subscription) {
-        transaction(database) {
-            val found = DbSubscription.findById(UUID.fromString(subscription.id))
-            found?.fromModel(subscription)
-        }
-    }
-
-    override fun deleteSubscription(subscriptionId: String) {
-        transaction(database) {
-            DbSubscription.findById(UUID.fromString(subscriptionId))?.delete()
-        }
     }
 
     private fun assetExtension(extension: String) = DbAssets.name like "%.$extension"

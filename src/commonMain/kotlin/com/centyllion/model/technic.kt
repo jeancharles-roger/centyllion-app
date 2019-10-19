@@ -1,6 +1,5 @@
 package com.centyllion.model
 
-import com.centyllion.common.SubscriptionType
 import kotlinx.serialization.Serializable
 
 val emptyUser = User("", "", "", null)
@@ -42,9 +41,6 @@ data class User (
 data class UserDetails(
     val keycloakId: String,
     val email: String,
-    val stripeId: String?,
-    val subscription: SubscriptionType,
-    val subscriptionUpdatedOn: Long?,
     val tutorialDone: Boolean = false
 )
 
@@ -52,46 +48,6 @@ data class UserDetails(
 data class UserOptions(
     val tutorialDone: Boolean = false
 )
-
-@Serializable
-data class SubscriptionParameters(
-    val autoRenew: Boolean,
-    val subscription: SubscriptionType,
-    val duration: Long,
-    val amount: Double,
-    val paymentMethod: String
-)
-
-enum class SubscriptionState {
-    Waiting, Refused, Engaged, Disengaged
-}
-
-@Serializable
-data class Subscription(
-    override val id: String,
-
-    val userId: String,
-    val sandbox: Boolean,
-    val autoRenew: Boolean,
-    val cancelled: Boolean,
-
-    val startedOn: Long,
-    val payedOn: Long?,
-    val expiresOn: Long?,
-    val cancelledOn: Long?,
-
-    val subscription: SubscriptionType,
-    val duration: Long,
-    val amount: Double,
-    val paymentMethod: String,
-
-    val state: SubscriptionState = SubscriptionState.Waiting
-): Ided {
-
-    fun active(now: Long) = !cancelled && now >= startedOn && (expiresOn == null || now <= expiresOn)
-
-    fun parameters() = SubscriptionParameters(autoRenew, subscription, duration, amount, paymentMethod)
-}
 
 @Serializable
 class Asset(

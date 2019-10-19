@@ -1,6 +1,5 @@
 package com.centyllion.backend.data
 
-import com.centyllion.common.SubscriptionType
 import com.centyllion.model.Asset
 import com.centyllion.model.DescriptionInfo
 import com.centyllion.model.FeaturedDescription
@@ -8,8 +7,6 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionState
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import kotlinx.serialization.json.Json
@@ -42,10 +39,12 @@ object DbUsers : UUIDTable("users") {
 
     // Details
     val email = text("email")
+    val tutorialDone = bool("tutorialDone").default(false)
+
+    // TODO to remove
     val subscription = text("subscription").default("Free")
     val stripe = text("stripe").nullable()
     val subscriptionUpdatedOn = datetime("subscriptionUpdatedOn").nullable()
-    val tutorialDone = bool("tutorialDone").default(false)
 }
 
 class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -55,14 +54,11 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var name by DbUsers.name
     var username by DbUsers.username
     var email by DbUsers.email
-    var subscription by DbUsers.subscription
-    var stripe by DbUsers.stripe
-    var subscriptionUpdatedOn by DbUsers.subscriptionUpdatedOn
     var tutorialDone by DbUsers.tutorialDone
 
+
     fun toModel(detailed: Boolean): User {
-        val subscriptionType = SubscriptionType.parse(subscription)
-        val details = UserDetails(keycloak, email, stripe, subscriptionType, subscriptionUpdatedOn?.millis, tutorialDone)
+        val details = UserDetails(keycloak, email, tutorialDone)
         return User(id.toString(), name, username, if (detailed) details else null)
     }
 
@@ -71,12 +67,7 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
         username = source.username
         source.details?.let {
             email = it.email
-            stripe = it.stripeId
             tutorialDone = it.tutorialDone
-            if (subscription != it.subscription.name) {
-                subscription = it.subscription.name
-                subscriptionUpdatedOn = DateTime.now()
-            }
         }
     }
 }
@@ -215,6 +206,7 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
     }
 }
 
+// TODO to remove
 object DbSubscriptions : UUIDTable("subscriptions") {
     val userId = uuid("userId")
 
@@ -233,53 +225,6 @@ object DbSubscriptions : UUIDTable("subscriptions") {
     val paymentMethod = text("paymentMethod")
 
     val state = text("state")
-}
-
-class DbSubscription(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<DbSubscription>(DbSubscriptions)
-
-    var userId by DbSubscriptions.userId
-
-    var sandbox by DbSubscriptions.sandbox
-    var autoRenew by DbSubscriptions.autoRenew
-    var cancelled by DbSubscriptions.cancelled
-
-    var startedOn by DbSubscriptions.startedOn
-    var payedOn by DbSubscriptions.payedOn
-    var expiresOn by DbSubscriptions.expiresOn
-    var cancelledOn by DbSubscriptions.cancelledOn
-
-    var subscription by DbSubscriptions.subscription
-    var duration by DbSubscriptions.duration
-    var amount by DbSubscriptions.amount
-    var paymentMethod by DbSubscriptions.paymentMethod
-
-    var state by DbSubscriptions.state
-
-    fun toModel() = Subscription(
-        id.toString(), userId.toString(), sandbox, autoRenew, cancelled,
-        startedOn.millis, payedOn?.millis, expiresOn?.millis, cancelledOn?.millis,
-        SubscriptionType.parse(subscription), duration, amount, paymentMethod,
-        SubscriptionState.valueOf(state)
-    )
-
-    fun fromModel(source: Subscription) {
-        userId = UUID.fromString(source.userId)
-        sandbox = source.sandbox
-        autoRenew = source.autoRenew
-        cancelled = source.cancelled
-        startedOn = DateTime(source.startedOn)
-        payedOn = source.payedOn?.let { DateTime(it) }
-        expiresOn = source.expiresOn?.let { DateTime(it) }
-        cancelledOn = source.cancelledOn?.let { DateTime(it) }
-
-        subscription = source.subscription.name
-        duration = source.duration
-        amount = source.amount
-        paymentMethod = source.paymentMethod
-        state = source.state.name
-    }
-
 }
 
 object DbAssets : UUIDTable("assets") {

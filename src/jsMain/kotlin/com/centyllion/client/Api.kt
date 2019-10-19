@@ -10,14 +10,11 @@ import com.centyllion.model.Info
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import com.centyllion.model.UserOptions
 import keycloak.KeycloakInstance
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.list
 import kotlinx.serialization.serializer
 import org.w3c.dom.HTMLLinkElement
 import org.w3c.files.Blob
@@ -101,13 +98,6 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("POST", "/api/me", bearer, json.stringify(UserOptions.serializer(), userOptions))
         }
-
-    fun fetchSubscriptionsForMe(all: Boolean = false): Promise<List<Subscription>> =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me/subscription?all=$all", bearer)
-                .then { json.parse(Subscription.serializer().list, it) }
-        }
-
 
     fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
@@ -248,20 +238,6 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
     fun deleteFeatured(featured: FeaturedDescription) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("DELETE", "/api/featured/${featured.id}", bearer)
-        }
-
-
-    fun fetchSubscriptionsForUser(userId: String): Promise<List<Subscription>> =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/user/$userId/subscription", bearer)
-                .then { json.parse(Subscription.serializer().list, it) }
-        }
-
-    fun createSubscriptionForUser(userId: String, parameters: SubscriptionParameters) =
-        executeWithRefreshedIdToken(instance) { bearer ->
-            val content = json.stringify(SubscriptionParameters.serializer(), parameters)
-            fetch("POST", "/api/user/$userId/subscription", bearer, content)
-                .then { json.parse(Subscription.serializer(), it) }
         }
 
     fun fetchAllAssets(offset: Int = 0, limit: Int = 20, vararg extensions: String) =

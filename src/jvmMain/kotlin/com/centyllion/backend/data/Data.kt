@@ -7,8 +7,6 @@ import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import io.ktor.auth.jwt.JWTPrincipal
 
@@ -38,12 +36,6 @@ interface Data {
     fun getFeatured(id: String): FeaturedDescription?
     fun createFeatured(simulationId: String): FeaturedDescription
     fun deleteFeatured(featuredId: String)
-
-    fun subscriptionsForUser(userId: String): List<Subscription>
-    fun getSubscription(id: String): Subscription?
-    fun createSubscription(userId: String, sandbox: Boolean, parameters: SubscriptionParameters): Subscription
-    fun saveSubscription(subscription: Subscription)
-    fun deleteSubscription(subscriptionId: String)
 
     fun getAllAssets(offset: Int = 0, limit: Int = 20, extensions: List<String>): ResultPage<Asset>
     fun assetsForUser(userId: String): List<Asset>

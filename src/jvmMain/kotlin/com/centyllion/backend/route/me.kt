@@ -1,6 +1,5 @@
 package com.centyllion.backend.route
 
-import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.model.UserOptions
@@ -14,19 +13,19 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 
 /** Routes for `/api/me`. */
-fun Route.me(subscription: SubscriptionManager, data: Data) {
+fun Route.me(data: Data) {
     route("me") {
         // get the user's profile
         get {
             withRequiredPrincipal {
-                context.respond(subscription.getOrCreateUserFromPrincipal(it))
+                context.respond(data.getOrCreateUserFromPrincipal(it))
             }
         }
 
         post {
             withRequiredPrincipal {
                 val options = call.receive<UserOptions>()
-                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val user = data.getOrCreateUserFromPrincipal(it)
                 val newUser = user.copy(details = user.details?.copy(
                     tutorialDone = options.tutorialDone
                 ))
@@ -39,7 +38,7 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
             withRequiredPrincipal {
                 val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                 val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                val user = subscription.getOrCreateUserFromPrincipal(it)
+                val user = data.getOrCreateUserFromPrincipal(it)
                 context.respond(data.modelTags(user.id, offset, limit))
             }
         }
@@ -50,7 +49,7 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                 withRequiredPrincipal {
                     val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     context.respond(data.grainModels(user.id, user.id, offset, limit))
                 }
             }
@@ -63,16 +62,9 @@ fun Route.me(subscription: SubscriptionManager, data: Data) {
                     val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val modelId = call.parameters["model"]
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     context.respond(data.simulations(user.id, user.id, modelId, offset, limit))
                 }
-            }
-        }
-
-        get("subscription") {
-            withRequiredPrincipal {
-                val user = subscription.getOrCreateUserFromPrincipal(it)
-                context.respond(data.subscriptionsForUser(user.id))
             }
         }
     }

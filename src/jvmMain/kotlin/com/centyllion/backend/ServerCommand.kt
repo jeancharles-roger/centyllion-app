@@ -42,13 +42,11 @@ private fun certificateKeystore(): KeyStore {
 }
 
 interface ServerConfig {
-
     val debug: Boolean
     val dry: Boolean
     val verifier: JWTVerifier?
 
     val authorization: AuthorizationManager
-    val payment: PaymentManager
     val data: Data
 
     val webroot: String
@@ -66,8 +64,6 @@ data class CliServerConfig(
 
     override val authorization: AuthorizationManager =
         KeycloakAuthorizationManager(keycloakPassword)
-
-    override val payment: PaymentManager = StripePaymentManager(stripeKey)
 
     override val data: Data = SqlData(dbType, dbHost, dbPort, dbName, dbUser, dbPassword).let {
         if (dry) MemoryData(backend = it) else it

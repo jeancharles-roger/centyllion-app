@@ -80,8 +80,6 @@ fun Application.centyllion(config: ServerConfig) {
     val mainLogger = LoggerFactory.getLogger(Application::class.java)
     mainLogger.info("Starting centyllion app")
 
-    val subscription = SubscriptionManager(config)
-
     /* TODO CORS did raise https://github.com/jeancharles-roger/centyllion/issues/126.
         Need fixing
         */
@@ -134,7 +132,7 @@ fun Application.centyllion(config: ServerConfig) {
 
                     // insert an event when see a problem
                     val principal = call.principal<JWTPrincipal>()
-                    val user = principal?.let { subscription.getOrCreateUserFromPrincipal(it) }
+                    val user = principal?.let { config.data.getOrCreateUserFromPrincipal(it) }
                     val argument = "${cause.message} ${cause.stackTrace.map { it.toString() }.joinToString { "\n" }}"
                     // TODO responds error
                     call.respond(HttpStatusCode.InternalServerError)
@@ -189,12 +187,12 @@ fun Application.centyllion(config: ServerConfig) {
 
         authenticate(optional = true) {
             route("/api") {
-                me(subscription, config.data)
-                user(subscription, config)
-                featured(subscription, config.data)
-                model(subscription, config.data)
-                simulation(subscription, config.data)
-                asset(subscription, config.data)
+                me(config.data)
+                user(config.data)
+                featured(config.data)
+                model(config.data)
+                simulation(config.data)
+                asset(config.data)
                 info(config)
             }
         }

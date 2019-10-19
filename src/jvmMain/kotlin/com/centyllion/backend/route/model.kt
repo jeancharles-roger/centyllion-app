@@ -1,13 +1,9 @@
 package com.centyllion.backend.route
 
-import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
-import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
-import com.centyllion.common.apprenticeRole
-import com.centyllion.common.creatorRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import io.ktor.application.call
@@ -24,11 +20,11 @@ import io.ktor.routing.patch
 import io.ktor.routing.post
 import io.ktor.routing.route
 
-fun Route.model(subscription: SubscriptionManager, data: Data) {
+fun Route.model(data: Data) {
     route("model") {
         get {
             val caller = call.principal<JWTPrincipal>()?.let {
-                subscription.getOrCreateUserFromPrincipal(it)
+                data.getOrCreateUserFromPrincipal(it)
             }
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
@@ -53,8 +49,8 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
 
         // post a new model
         post {
-            withRequiredPrincipal(apprenticeRole) {
-                val user = subscription.getOrCreateUserFromPrincipal(it)
+            withRequiredPrincipal {
+                val user = data.getOrCreateUserFromPrincipal(it)
                 val newModel = call.receive(GrainModel::class)
                 val newDescription = data.createGrainModel(user.id, newModel)
                 context.respond(newDescription)
@@ -66,7 +62,7 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
             // model get with user
             get {
                 val user = call.principal<JWTPrincipal>()?.let {
-                    subscription.getOrCreateUserFromPrincipal(it)
+                    data.getOrCreateUserFromPrincipal(it)
                 }
                 val id = call.parameters["model"]!!
                 val model = data.getGrainModel(id)
@@ -81,15 +77,14 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
 
             // patch an existing model
             patch {
-                withRequiredPrincipal(apprenticeRole) {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                withRequiredPrincipal {
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["model"]!!
                     val model = call.receive(GrainModelDescription::class)
                     context.respond(
                         when {
                             model.id != id -> HttpStatusCode.Forbidden
                             // Tests that user has creator role to publish the model
-                            !it.hasRole(creatorRole) && model.info.public -> HttpStatusCode.Forbidden
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveGrainModel(model)
@@ -102,8 +97,8 @@ fun Route.model(subscription: SubscriptionManager, data: Data) {
 
             // delete an existing model
             delete {
-                withRequiredPrincipal(apprenticeRole) {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                withRequiredPrincipal {
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     val id = call.parameters["model"]!!
                     val model = data.getGrainModel(id)
                     context.respond(

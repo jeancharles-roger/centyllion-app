@@ -1,6 +1,5 @@
 package com.centyllion.backend.data
 
-import com.centyllion.common.SubscriptionType
 import com.centyllion.model.Asset
 import com.centyllion.model.DescriptionInfo
 import com.centyllion.model.FeaturedDescription
@@ -10,8 +9,6 @@ import com.centyllion.model.Ided
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import io.ktor.auth.jwt.JWTPrincipal
@@ -31,7 +28,7 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
     val name = claims["name"]?.asString() ?: ""
     val username = claims["preferred_username"]?.asString() ?: ""
     val email = claims["email"]?.asString() ?: ""
-    return User(newId(), name, username, UserDetails(keycloakId, email, null, SubscriptionType.Apprentice, null))
+    return User(newId(), name, username, UserDetails(keycloakId, email))
 }
 
 fun createGrainModelDescription(user: User?, sent: GrainModel) = rfc1123Format.format(Date()).let {
@@ -48,7 +45,6 @@ class MemoryData(
     val grainModels: LinkedHashMap<String, GrainModelDescription> = linkedMapOf(),
     val simulations: LinkedHashMap<String, SimulationDescription> = linkedMapOf(),
     val featured: LinkedHashMap<String, FeaturedDescription> = linkedMapOf(),
-    val subscriptions: LinkedHashMap<String, Subscription> = linkedMapOf(),
     val assets: LinkedHashMap<String, Asset> = linkedMapOf(),
     val assetContents: LinkedHashMap<String, ByteArray> = linkedMapOf(),
     val backend: Data? = null
@@ -244,41 +240,6 @@ class MemoryData(
             },
             deletedModels, offset, limit
         )
-
-    override fun subscriptionsForUser(userId: String) =
-        mergeIded(
-            backend?.subscriptionsForUser(userId),
-            subscriptions.values.filter { it.userId == userId },
-            deletedSubscriptions
-        )
-
-    override fun getSubscription(id: String): Subscription? = subscriptions[id] ?: backend?.getSubscription(id)
-
-    override fun createSubscription(
-        userId: String,
-        sandbox: Boolean,
-        parameters: SubscriptionParameters
-    ): Subscription {
-        val now = System.currentTimeMillis()
-        val expiresOn = if (parameters.duration > 0) now + parameters.duration else null
-        val new = Subscription(
-            newId(), userId, sandbox, parameters.autoRenew, false,
-            now, null, expiresOn, null,
-            parameters.subscription, parameters.duration, parameters.amount, parameters.paymentMethod
-        )
-        subscriptions[new.id] = new
-        deletedSubscriptions.remove(new.id)
-        return new
-    }
-
-    override fun saveSubscription(subscription: Subscription) {
-        subscriptions[subscription.id] = subscription
-    }
-
-    override fun deleteSubscription(subscriptionId: String) {
-        subscriptions.remove(subscriptionId)
-        deletedSubscriptions.add(subscriptionId)
-    }
 
     override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) =
         mergeIded(

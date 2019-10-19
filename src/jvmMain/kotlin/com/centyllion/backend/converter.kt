@@ -10,8 +10,6 @@ import com.centyllion.model.Info
 import com.centyllion.model.ResultPage
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Subscription
-import com.centyllion.model.SubscriptionParameters
 import com.centyllion.model.User
 import com.centyllion.model.UserOptions
 import io.ktor.application.ApplicationCall
@@ -48,7 +46,6 @@ class JsonConverter : ContentConverter {
         is Simulation -> stringify(Simulation.serializer(), value)
         is SimulationDescription -> stringify(SimulationDescription.serializer(), value)
         is FeaturedDescription -> stringify(FeaturedDescription.serializer(), value)
-        is Subscription -> stringify(Subscription.serializer(), value)
         is ResultPage<*> ->
             when (value.content.firstOrNull()) {
                 is SimulationDescription -> stringify(
@@ -98,7 +95,6 @@ class JsonConverter : ContentConverter {
             GrainModelDescription::class -> Json.parse(GrainModelDescription.serializer(), text)
             Simulation::class -> Json.parse(Simulation.serializer(), text)
             SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
-            SubscriptionParameters::class -> Json.parse(SubscriptionParameters.serializer(), text)
             FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
             UserOptions::class -> Json.parse(UserOptions.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")

@@ -7,7 +7,6 @@ import com.centyllion.backend.authorization.AuthorizationManager
 import com.centyllion.backend.authorization.MemoryAuthorizationManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.data.MemoryData
-import com.centyllion.common.SubscriptionType
 import com.centyllion.model.ResultPage
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
@@ -29,13 +28,13 @@ import java.security.interfaces.RSAPublicKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-val apprenticeUserDetails = UserDetails("1234", "test@centyllion.com", null, SubscriptionType.Apprentice, null)
-val apprenticeUser = User("1", "Apprentice", "app", apprenticeUserDetails)
+val user1Details = UserDetails("1234", "test@centyllion.com")
+val user1 = User("1", "Apprentice", "app", user1Details)
 
-val creatorUserDetails = UserDetails("1235", "test@centyllion.com", null, SubscriptionType.Creator, null)
-val creatorUser = User("2", "Creator", "cre", creatorUserDetails)
+val user2Details = UserDetails("1235", "test@centyllion.com")
+val user2 = User("2", "Creator", "cre", user2Details)
 
-val adminUserDetails = UserDetails("1236", "test@centyllion.com", null, SubscriptionType.Admin, null)
+val adminUserDetails = UserDetails("1236", "test@centyllion.com")
 val adminUser = User("4", "Admin", "adm", adminUserDetails)
 
 /** Create a private and public key pair for API tests with credentials */
@@ -61,7 +60,6 @@ class TestConfig: ServerConfig {
 
     override val verifier: JWTVerifier? = JWT.require(jwtAlgorithm).withIssuer(authBase).build()
     override val authorization: AuthorizationManager = MemoryAuthorizationManager()
-    override val payment: PaymentManager = MemoryPaymentManager()
     override val data: Data = MemoryData()
 
     override val webroot = "webroot"
@@ -78,7 +76,7 @@ fun TestApplicationEngine.request(
     this.uri = uri
     this.method = method
     user?.details?.let{
-        val token = createTextJwtToken(it.keycloakId, user.name, it.email, it.subscription.roles)
+        val token = createTextJwtToken(it.keycloakId, user.name, it.email, emptyArray())
         this.addHeader("Authorization", "Bearer $token")
     }
     if (content != null) {

@@ -1,13 +1,9 @@
 package com.centyllion.backend.route
 
-import com.centyllion.backend.SubscriptionManager
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
-import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
-import com.centyllion.common.apprenticeRole
-import com.centyllion.common.creatorRole
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
@@ -30,11 +26,11 @@ import io.ktor.routing.patch
 import io.ktor.routing.post
 import io.ktor.routing.route
 
-fun Route.simulation(subscription: SubscriptionManager, data: Data) {
+fun Route.simulation(data: Data) {
     route("simulation") {
         get {
             val caller = call.principal<JWTPrincipal>()?.let {
-                subscription.getOrCreateUserFromPrincipal(it)
+                data.getOrCreateUserFromPrincipal(it)
             }
             val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
@@ -45,8 +41,8 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
 
         // post a new simulation
         post {
-            withRequiredPrincipal(apprenticeRole) {
-                val user = subscription.getOrCreateUserFromPrincipal(it)
+            withRequiredPrincipal {
+                val user = data.getOrCreateUserFromPrincipal(it)
                 val modelId = call.parameters["model"]
                 val model = modelId?.let { data.getGrainModel(it) }
                 val newSimulation = call.receive(Simulation::class)
@@ -71,7 +67,7 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
         route("{simulation}") {
             get {
                 val user = call.principal<JWTPrincipal>()?.let {
-                    subscription.getOrCreateUserFromPrincipal(it)
+                    data.getOrCreateUserFromPrincipal(it)
                 }
                 val simulationId = call.parameters["simulation"]!!
                 val simulation = data.getSimulation(simulationId)
@@ -86,15 +82,13 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
 
             // patch an existing simulation for user
             patch {
-                withRequiredPrincipal(apprenticeRole) {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                withRequiredPrincipal {
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val simulation = call.receive(SimulationDescription::class)
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
-                            // Tests that user has creator role to publish the simulation
-                            !it.hasRole(creatorRole) && simulation.info.public -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)
@@ -107,8 +101,8 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
 
             // delete an existing model for user
             delete {
-                withRequiredPrincipal(apprenticeRole) {
-                    val user = subscription.getOrCreateUserFromPrincipal(it)
+                withRequiredPrincipal {
+                    val user = data.getOrCreateUserFromPrincipal(it)
                     val simulationId = call.parameters["simulation"]!!
                     val simulation = data.getSimulation(simulationId)
                     context.respond(
@@ -144,8 +138,8 @@ fun Route.simulation(subscription: SubscriptionManager, data: Data) {
                 }
 
                 post {
-                    withRequiredPrincipal(apprenticeRole) {
-                        val user = subscription.getOrCreateUserFromPrincipal(it)
+                    withRequiredPrincipal {
+                        val user = data.getOrCreateUserFromPrincipal(it)
                         val simulationId = call.parameters["simulation"]!!
                         val simulation = data.getSimulation(simulationId)
 

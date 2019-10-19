@@ -6,7 +6,20 @@ import kotlinx.serialization.Transient
 import kotlin.math.pow
 
 enum class Direction {
-    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back
+    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back;
+
+    val opposite get() = when (this) {
+        Left -> Right
+        Right -> Left
+        Up -> Down
+        Down -> Up
+        LeftUp -> RightDown
+        RightUp -> LeftDown
+        LeftDown -> RightUp
+        RightDown -> LeftUp
+        Front -> Back
+        Back -> Front
+    }
 }
 
 val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
@@ -78,6 +91,9 @@ data class Field(
 
     @Transient
     val deathProbability = if (halfLife > 0) 1f - 2f.pow(-1f / halfLife) else 0f
+
+    @Transient
+    val oppositeDirections = allowedDirection.map { it.opposite }
 }
 
 @Serializable

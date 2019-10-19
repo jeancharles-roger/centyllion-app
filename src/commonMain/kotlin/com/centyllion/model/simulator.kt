@@ -106,7 +106,6 @@ class Simulator(
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
-        //val all: Array<MutableList<ApplicableBehavior>?> = arrayOfNulls(simulation.dataSize)
         for (i in 0 until simulation.dataSize) {
             val grain = grainAtIndex(i)
             if (grain != null) {
@@ -199,19 +198,26 @@ class Simulator(
 
             // applies field diffusion
             model.fields.forEach { field ->
-                val count = field.allowedDirection.size
                 val current = fields[field.id]
                 val next = nextFields[field.id]
-                val moveIndex = field.allowedDirection.map { simulation.moveIndex(i, it) }
-                val permeableAtIndex = moveIndex.map { (grainAtIndex(it)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f }
+                val count = field.allowedDirection.size
+
+                val permeableSum = field.allowedDirection.map {
+                    val index = simulation.moveIndex(i, it)
+                    (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                }.sum()
                 if (next != null && current != null) {
                     val level =
                         // current value cut down
-                        current[i] * (1.0f - field.speed * permeableAtIndex.sum() / count) +
+                        current[i] * (1.0f - field.speed * permeableSum / count) +
                         // adding or removing from current agent if any
                         (grain?.fieldProductions?.get(field.id) ?: 0f) +
-                        // diffusion from agent around
-                        moveIndex.zip(permeableAtIndex) { index, permeable -> current[index] * field.speed * permeable }.sum() / count
+                        // diffusion from agent around using opposite directions
+                        field.oppositeDirections.map {
+                            val index = simulation.moveIndex(i, it)
+                            val permeable = (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                            current[index] * field.speed * permeable
+                        }.sum() / count
 
                     next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
                 }

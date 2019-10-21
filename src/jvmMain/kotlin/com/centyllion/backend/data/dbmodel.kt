@@ -78,8 +78,8 @@ object DbDescriptionInfos : UUIDTable("infoDescriptions") {
     val userId = uuid("userId").nullable()
     val createdOn = datetime("createdOn")
     val lastModifiedOn = datetime("lastModifiedOn")
-    val readAccess = bool("readAccess")
-    val cloneAccess = bool("cloneAccess")
+    val readAccess = bool("readAccess").default(true)
+    val cloneAccess = bool("cloneAccess").default(true)
 }
 
 class DbDescriptionInfo(id: EntityID<UUID>) : UUIDEntity(id) {

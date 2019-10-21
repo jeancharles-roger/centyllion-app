@@ -42,11 +42,6 @@ object DbUsers : UUIDTable("users") {
     // Details
     val email = text("email")
     val tutorialDone = bool("tutorialDone").default(false)
-
-    // TODO to remove
-    val subscription = text("subscription").default("Free")
-    val stripe = text("stripe").nullable()
-    val subscriptionUpdatedOn = datetime("subscriptionUpdatedOn").nullable()
 }
 
 class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -79,7 +74,6 @@ object DbDescriptionInfos : UUIDTable("infoDescriptions") {
     val createdOn = datetime("createdOn")
     val lastModifiedOn = datetime("lastModifiedOn")
     val readAccess = bool("readAccess").default(true)
-    val cloneAccess = bool("cloneAccess").default(true)
 }
 
 class DbDescriptionInfo(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -204,27 +198,6 @@ class DbFeatured(id: EntityID<UUID>) : UUIDEntity(id) {
     fun fromModel(source: FeaturedDescription) {
        featuredId = UUID.fromString(source.simulationId)
     }
-}
-
-// TODO to remove
-object DbSubscriptions : UUIDTable("subscriptions") {
-    val userId = uuid("userId")
-
-    val sandbox = bool("sandbox")
-    val autoRenew = bool("autoRenew").default(true)
-    val cancelled = bool("cancelled").default(false)
-
-    val startedOn = datetime("startedOn")
-    val payedOn = datetime("payedOn").nullable()
-    val expiresOn = datetime("expiresOn").nullable()
-    val cancelledOn = datetime("cancelledOn").nullable()
-
-    val subscription = text("subscription")
-    val duration = long("duration")
-    val amount = double("amount")
-    val paymentMethod = text("paymentMethod")
-
-    val state = text("state")
 }
 
 object DbAssets : UUIDTable("assets") {

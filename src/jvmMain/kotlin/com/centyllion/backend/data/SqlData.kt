@@ -50,6 +50,7 @@ class ToTsQuery<T : String?>(val expr: Expression<T>, val dictionary: String = "
 }
 
 class SqlData(
+    dry: Boolean = false,
     type: String = "postgresql",
     host: String = "localhost",
     port: Int = 5432,
@@ -71,29 +72,30 @@ class SqlData(
     val database = Database.connect(dataSource)
 
     init {
-        transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(
-                DbMetaTable,
-                DbUsers,
-                DbFeaturedTable,
-                DbAssets,
-                DbDescriptionInfos,
-                DbModelDescriptions,
-                DbSimulationDescriptions,
-                DbSubscriptions
-            )
-            val version = try {
-                DbMeta.all().first().version
-            } catch (e: NoSuchElementException) {
-                // meta doesn't exists, creates tables and insert meta version
-                DbMeta.new { version = 0 }
-                0
+        if (!dry) {
+            transaction(database) {
+                SchemaUtils.createMissingTablesAndColumns(
+                    DbMetaTable,
+                    DbUsers,
+                    DbFeaturedTable,
+                    DbAssets,
+                    DbDescriptionInfos,
+                    DbModelDescriptions,
+                    DbSimulationDescriptions
+                )
+                val version = try {
+                    DbMeta.all().first().version
+                } catch (e: NoSuchElementException) {
+                    // meta doesn't exists, creates tables and insert meta version
+                    DbMeta.new { version = 0 }
+                    0
+                }
+
+                // apply migration
+                migrations.dropWhile { it.to <= version }.forEach { it.update(this) }
+
+                DbMeta.all().first().version = migrations.last().to
             }
-
-            // apply migration
-            migrations.dropWhile { it.to <= version }.forEach { it.update(this) }
-
-            DbMeta.all().first().version = migrations.last().to
         }
     }
 

@@ -9,7 +9,6 @@ import bulma.Control
 import bulma.Div
 import bulma.Dropdown
 import bulma.ElementColor
-import bulma.FaFlip
 import bulma.Help
 import bulma.Icon
 import bulma.Level
@@ -41,12 +40,10 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.homePage
-import com.centyllion.client.register
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
-import com.centyllion.common.adminRole
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
@@ -203,16 +200,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
     )
 
-    val saveButton =
-        Button(i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true) { save() }
+    val saveButton = Button(
+        i18n("Save"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true
+    ) { save() }
 
-    val publishModelItem = createMenuItem(
-        i18n("Publish Model"), "share-square", TextColor.Success
-    ) { toggleModelPublication() }
-
-    val publishSimulationItem = createMenuItem(
-        i18n("Publish Simulation"), "share-square", TextColor.Success
-    ) { toggleSimulationPublication() }
+    val saveControl = Control(saveButton).apply {
+        // adds a message when no user is logged-in
+        if (appContext.me == null) root.appendChild(Help(i18n("Log-in to save")).root)
+    }
 
     val deleteModelItem = createMenuItem(
         i18n("Delete Model"), "trash", TextColor.Danger
@@ -241,10 +236,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val loadingItem = createMenuItem(i18n("Loading simulations"), "spinner").apply { icon?.spin = true }
 
     val moreDropdownItems = listOfNotNull(
-        publishModelItem, publishSimulationItem, createMenuDivider(),
         deleteModelItem, deleteSimulationItem, createMenuDivider(),
         newSimulationItem, saveThumbnailItem, createMenuDivider(),
-        downloadModelItem, downloadSimulationItem, createMenuDivider(adminRole)
+        downloadModelItem, downloadSimulationItem
     )
 
     val moreDropdown = Dropdown(
@@ -255,24 +249,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         i18n("Clone Simulation"), Icon("clone"), ElementColor.Primary,
         rounded = true, outlined = true
     ) {
-        if (appContext.me != null) {
-            // a user is logged, just clone the model or simulation
-            when (editionTab.selectedPage) {
-                modelPage -> cloneModel()
-                simulationPage -> cloneSimulation()
-            }
-        } else {
-            // no user logged, propose to log in or register in
-            modalDialog(
-                "Join Centyllion",
-                listOf(p("To clone a model or a simulation, you need to be connected.")),
-                textButton("Log In", ElementColor.Primary) {
-                    // forces to login
-                    window.location.href = appContext.keycloak.createLoginUrl()
-                },
-                textButton("Register", ElementColor.Success) { appContext.openPage(register) },
-                textButton("No, thank you")
-            )
+        // a user is logged, just clone the model or simulation
+        when (editionTab.selectedPage) {
+            modelPage -> cloneModel()
+            simulationPage -> cloneSimulation()
         }
     }
 
@@ -283,7 +263,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val redoControl = Control(modelUndoRedo.redoButton)
 
     val tools = BField(
-        undoControl, redoControl, Control(saveButton), Control(moreDropdown),
+        undoControl, redoControl, saveControl, Control(moreDropdown),
         grouped = true
     )
 
@@ -475,26 +455,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun toggleModelPublication() {
-        val readAccess = !model.info.readAccess
-        model = model.copy(info = model.info.copy(readAccess = readAccess))
-        moreDropdown.active = false
-        message("${if (!readAccess) "Un-" else ""}Published model.")
-        save()
-    }
-
-    fun toggleSimulationPublication() {
-        val readAccess = !simulation.info.readAccess
-        if (readAccess && !model.info.readAccess) {
-            // first ensure that the model is public
-            model = model.copy(info = model.info.copy(readAccess = true))
-        }
-        simulation = simulation.copy(info = simulation.info.copy(readAccess = readAccess))
-        moreDropdown.active = false
-        message("${if (!readAccess) "Un-" else ""}Published simulation.")
-        save()
-    }
-
     fun cloneModel() {
         // checks if something needs saving before creating a new simulation
         changeModelOrSimulation {
@@ -616,21 +576,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
         modelUndoRedo.refresh()
         simulationUndoRedo.refresh()
-        saveButton.disabled = !modelNeedsSaving && !simulationNeedsSaving
+        saveButton.disabled = appContext.me == null || (!modelNeedsSaving && !simulationNeedsSaving)
     }
 
     fun refreshMoreButtons() {
-        publishModelItem.disabled = model.id.isEmpty()
-        publishModelItem.icon?.flip = if (model.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishModelItem.text = i18n("${if (model.info.readAccess) "Un-" else ""}Publish Model")
-
-        publishSimulationItem.disabled = simulation.id.isEmpty()
-        publishSimulationItem.icon?.flip = if (simulation.info.readAccess) FaFlip.Horizontal else FaFlip.None
-        publishSimulationItem.text = i18n("${if (simulation.info.readAccess) "Un-" else ""}Publish Simulation")
-
-        deleteModelItem.disabled = model.id.isEmpty()
-
-        deleteSimulationItem.disabled = simulation.id.isEmpty()
+        deleteModelItem.disabled = appContext.me == null || model.id.isEmpty()
+        deleteSimulationItem.disabled = appContext.me == null || simulation.id.isEmpty()
+        saveThumbnailItem.disabled = appContext.me == null
 
         if (model.id.isNotEmpty()) {
             moreDropdown.items = moreDropdownItems + loadingItem
@@ -659,7 +611,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             after(exit)
         }
 
-        if ((modelNeedsSaving && model != emptyGrainModelDescription) || (simulationNeedsSaving && simulation != emptySimulationDescription)) {
+        val modelChanged = modelNeedsSaving && model != emptyGrainModelDescription
+        val simulationChanged = simulationNeedsSaving && simulation != emptySimulationDescription
+        if (appContext.me != null && (modelChanged || simulationChanged)) {
             modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
                 listOf(p(i18n("You're about to quit the page and some modifications haven't been saved."))),
                 textButton(i18n("Save"), ElementColor.Success) { save { conclude(true) } },

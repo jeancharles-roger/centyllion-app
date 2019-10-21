@@ -63,7 +63,7 @@ interface BulmaPage : BulmaElement {
         return modal
     }
 
-    fun createMenuDivider(role: String? = null) = DropdownDivider()
+    fun createMenuDivider() = DropdownDivider()
 
     fun createMenuItem(
         text: String, icon: String, color: TextColor = TextColor.None,

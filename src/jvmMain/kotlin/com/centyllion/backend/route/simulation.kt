@@ -89,6 +89,8 @@ fun Route.simulation(data: Data) {
                     context.respond(
                         when {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
+                            // TODO block private model, need some writes
+                            !simulation.info.readAccess -> HttpStatusCode.Forbidden
                             !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)

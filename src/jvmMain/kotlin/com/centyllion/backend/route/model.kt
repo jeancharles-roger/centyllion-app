@@ -84,7 +84,8 @@ fun Route.model(data: Data) {
                     context.respond(
                         when {
                             model.id != id -> HttpStatusCode.Forbidden
-                            // Tests that user has creator role to publish the model
+                            // TODO block private model, need some writes
+                            !model.info.readAccess -> HttpStatusCode.Forbidden
                             !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveGrainModel(model)

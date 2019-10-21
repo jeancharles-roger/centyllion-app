@@ -32,11 +32,11 @@ fun createUser(principal: JWTPrincipal, keycloakId: String): User {
 }
 
 fun createGrainModelDescription(user: User?, sent: GrainModel) = rfc1123Format.format(Date()).let {
-    GrainModelDescription(newId(), DescriptionInfo(user, it, it, false, false), "", sent)
+    GrainModelDescription(newId(), DescriptionInfo(user, it, it), "", sent)
 }
 
 fun createSimulationDescription(user: User?, modelId: String, sent: Simulation) = rfc1123Format.format(Date()).let {
-    SimulationDescription(newId(),  DescriptionInfo(user, it, it, false, false), modelId, null, sent)
+    SimulationDescription(newId(),  DescriptionInfo(user, it, it), modelId, null, sent)
 }
 
 /** Memory implementation for Data. Only used for tests, not optimal at all */
@@ -54,7 +54,6 @@ class MemoryData(
     private val deletedModels = mutableSetOf<String>()
     private val deletedSimulations = mutableSetOf<String>()
     private val deletedFeatured = mutableSetOf<String>()
-    private val deletedSubscriptions = mutableSetOf<String>()
     private val deletedAssets = mutableSetOf<String>()
 
     /** Merges source and local Ided lists */
@@ -115,7 +114,7 @@ class MemoryData(
             backend?.grainModels(callerId, userId, offset, limit),
             grainModels.values.filter { model ->
                 userId?.let { it == model.info.user?.id } ?: true &&
-                (model.info.public || if (callerId != null) model.info.user?.id == callerId else false)
+                (model.info.readAccess || if (callerId != null) model.info.user?.id == callerId else false)
             },
             deletedModels, offset, limit
         )
@@ -147,7 +146,7 @@ class MemoryData(
             simulations.values.filter { simulation ->
                 userId?.let { it == simulation.info.user?.id } ?: true &&
                 modelId?.let { it == simulation.modelId } ?: true &&
-                (simulation.info.public || if (callerId != null) simulation.info.user?.id == callerId else false)
+                (simulation.info.readAccess || if (callerId != null) simulation.info.user?.id == callerId else false)
             },
             deletedSimulations, offset, limit
         )
@@ -234,7 +233,7 @@ class MemoryData(
         mergeIded(
             backend?.searchModel(query, tags, offset, limit),
             grainModels.values.filter {
-                it.info.public &&
+                it.info.readAccess &&
                 tags.all { tag -> it.tags.contains(tag) }        &&
                 (it.model.name.contains(query) || it.model.description.contains(query))
             },

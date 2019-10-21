@@ -1,3 +1,4 @@
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
@@ -9,6 +10,7 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.Database
@@ -144,8 +146,7 @@ class SqlData(
     private fun grainModelsQuery(callerUUID: UUID?, userUUID: UUID?) = DbModelDescriptions
         .innerJoin(DbDescriptionInfos)
         .select {
-            listOfNotNull(
-                userUUID?.let { DbDescriptionInfos.userId eq it },
+            listOfNotNull( userUUID?.let { DbDescriptionInfos.userId eq it },
                 (DbDescriptionInfos.readAccess eq true) or if (callerUUID != null) DbDescriptionInfos.userId eq callerUUID else Op.FALSE
             ).fold(Op.TRUE as Op<Boolean>) {a, c -> a and c }
         }
@@ -172,8 +173,7 @@ class SqlData(
             this.userId = UUID.fromString(userId)
             createdOn = DateTime.now()
             lastModifiedOn = DateTime.now()
-            readAccess = false
-            cloneAccess = false
+            readAccess = true
         }
         DbModelDescription.new {
             info = newInfo
@@ -237,8 +237,7 @@ class SqlData(
                 this.userId = UUID.fromString(userId)
                 createdOn = DateTime.now()
                 lastModifiedOn = DateTime.now()
-                readAccess = false
-                cloneAccess = false
+                readAccess = true
             }
 
             DbSimulationDescription.new {

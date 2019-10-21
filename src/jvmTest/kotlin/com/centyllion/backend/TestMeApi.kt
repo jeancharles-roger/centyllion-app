@@ -1,3 +1,4 @@
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.centyllion.model.GrainModel
@@ -8,14 +9,13 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.contentType
-import io.ktor.util.KtorExperimentalAPI
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@KtorExperimentalAPI
 class TestMeApi {
 
     private fun TestApplicationEngine.getMe(user: User): User {
@@ -106,5 +106,9 @@ class TestMeApi {
 
         // Checks if patch happened
         testGetPage("/api/me/model", listOf(newModel2), 1, GrainModelDescription.serializer(), user1)
+
+        // Tests private model
+        val privateModel2 = model2.copy(info = model2.info.copy(readAccess = false))
+        patchModel(privateModel2, user1, HttpStatusCode.Forbidden)
     }
 }

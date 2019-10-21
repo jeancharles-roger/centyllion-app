@@ -1,3 +1,4 @@
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.auth0.jwk.JwkProvider
@@ -21,7 +22,6 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.auth.principal
 import io.ktor.features.AutoHeadResponse
-import io.ktor.features.CORS
 import io.ktor.features.CachingHeaders
 import io.ktor.features.CallLogging
 import io.ktor.features.Compression
@@ -31,8 +31,6 @@ import io.ktor.features.StatusPages
 import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.CachingOptions
 import io.ktor.http.content.TextContent
@@ -43,8 +41,8 @@ import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
+import kotlinx.serialization.UnstableDefault
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.net.URL
@@ -75,14 +73,12 @@ fun main(args: Array<String>) {
     ServerCommand().main(args)
 }
 
-@KtorExperimentalAPI
 fun Application.centyllion(config: ServerConfig) {
     val mainLogger = LoggerFactory.getLogger(Application::class.java)
     mainLogger.info("Starting centyllion app")
 
-    /* TODO CORS did raise https://github.com/jeancharles-roger/centyllion/issues/126.
-        Need fixing
-        */
+    /*
+    // TODO CORS disabled for now to acommodate new buisness model
     install(CORS) {
         allowCredentials = true
         method(HttpMethod.Get)
@@ -97,6 +93,8 @@ fun Application.centyllion(config: ServerConfig) {
         header(HttpHeaders.Origin)
         anyHost()
     }
+    */
+
     install(Compression)
     install(DefaultHeaders)
     install(AutoHeadResponse)

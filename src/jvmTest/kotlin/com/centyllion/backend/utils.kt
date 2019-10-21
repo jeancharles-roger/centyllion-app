@@ -1,3 +1,4 @@
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.auth0.jwt.JWT
@@ -19,8 +20,8 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
@@ -66,7 +67,6 @@ class TestConfig: ServerConfig {
 }
 
 /** Execute tests with the Centyllion API testing rig */
-@KtorExperimentalAPI
 fun <R> withCentyllion(test: TestApplicationEngine.() -> R): R =
     withTestApplication({ centyllion(TestConfig()) }, test)
 

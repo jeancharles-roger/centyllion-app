@@ -1,3 +1,4 @@
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
@@ -9,6 +10,7 @@ import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -87,20 +89,18 @@ class DbDescriptionInfo(id: EntityID<UUID>) : UUIDEntity(id) {
     var createdOn by DbDescriptionInfos.createdOn
     var lastModifiedOn by DbDescriptionInfos.lastModifiedOn
     var readAccess by DbDescriptionInfos.readAccess
-    var cloneAccess by DbDescriptionInfos.cloneAccess
 
     fun toModel(): DescriptionInfo = DescriptionInfo(
         userId?.let { DbUser.findById(it) }?.toModel(false),
         createdOn.toString(), lastModifiedOn.toString(),
-        readAccess, cloneAccess
+        readAccess
     )
 
     fun fromModel(source: DescriptionInfo) {
-        userId = source?.user?.id?.let { UUID.fromString(it) }
+        userId = source.user?.id?.let { UUID.fromString(it) }
         createdOn = DateTime.parse(source.createdOn)
         lastModifiedOn = DateTime.parse(source.lastModifiedOn)
         readAccess = source.readAccess
-        cloneAccess = source.cloneAccess
     }
 }
 

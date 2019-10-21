@@ -1,5 +1,5 @@
 @file:Suppress("UNCHECKED_CAST")
-
+@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.centyllion.model.Asset
@@ -21,7 +21,6 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
 import io.ktor.request.ApplicationReceiveRequest
 import io.ktor.request.contentCharset
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.readRemaining
@@ -31,7 +30,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Companion.stringify
 import kotlinx.serialization.serializer
 
-@KtorExperimentalAPI @UseExperimental(UnstableDefault::class)
 class JsonConverter : ContentConverter {
     override suspend fun convertForSend(
         context: PipelineContext<Any, ApplicationCall>, contentType: ContentType, value: Any

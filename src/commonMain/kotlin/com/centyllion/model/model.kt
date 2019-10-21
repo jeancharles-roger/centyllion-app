@@ -558,11 +558,8 @@ data class DescriptionInfo(
     val user: User? = null,
     val createdOn: String = "",
     val lastModifiedOn: String = "",
-    val readAccess: Boolean = false,
-    val cloneAccess: Boolean = false
-) {
-    val public get() = readAccess || cloneAccess
-}
+    val readAccess: Boolean = true
+)
 
 @Serializable
 data class GrainModelDescription(

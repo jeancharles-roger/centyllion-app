@@ -588,13 +588,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             moreDropdown.items = moreDropdownItems + loadingItem
 
             fetchSimulations(model.id).then {
-                moreDropdown.items = moreDropdownItems + it.content.map { current ->
-                    createMenuItem(current.label, current.icon, disabled = current == simulation) {
-                        changeModelOrSimulation() {
-                            if (it) {
-                                setSimulation(current)
-                                moreDropdown.active = false
-                                editionTab.selectedPage = simulationPage
+                if (it.content.isNotEmpty()) {
+                    moreDropdown.items = moreDropdownItems + createMenuDivider() + it.content.map { current ->
+                        createMenuItem(current.label, current.icon, disabled = current == simulation) {
+                            changeModelOrSimulation() {
+                                if (it) {
+                                    setSimulation(current)
+                                    moreDropdown.active = false
+                                    editionTab.selectedPage = simulationPage
+                                }
                             }
                         }
                     }

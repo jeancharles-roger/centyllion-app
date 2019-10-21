@@ -1,14 +1,17 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
+import bulma.Button
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Message
 import bulma.NavBar
+import bulma.NavBarContentItem
 import bulma.NavBarIconItem
 import bulma.NavBarImageItem
 import bulma.NavBarLinkItem
 import bulma.Position
+import bulma.Size
 import bulma.span
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.i18n.Locale
@@ -27,7 +30,7 @@ interface CssFile {
     val files: Array<String>
 }
 
-fun createNavBar() = NavBar(
+fun createNavBar(locale: Locale) = NavBar(
     brand = listOf(
         NavBarImageItem(
             "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
@@ -36,8 +39,11 @@ fun createNavBar() = NavBar(
     end = listOf(
         NavBarIconItem(Icon("book"), "https://centyllion.com/fr/documentation.html").apply {
             root.asDynamic().target = "_blank"
+            setTooltip(locale.i18n("Documentation"))
         },
-        NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com")
+        NavBarIconItem(Icon("envelope"), "mailto:bug@centyllion.com").apply {
+            setTooltip(locale.i18n("Contact Us"))
+        }
     ),
     transparent = true, color = ElementColor.Primary
 )
@@ -65,7 +71,7 @@ fun startApp(page: Page?, context: AppContext) {
     })
 
     // adds menu
-    context.navBar.start = pages
+    context.navBar.start += pages
         .filter { it.header && it.authorized(context) }
         .map { NavBarLinkItem(context.i18n(it.titleKey), id = it.id) { _ -> context.openPage(it) } }
 
@@ -114,7 +120,7 @@ fun index() {
         console.log("Loading locale $localeName for ${window.navigator.language}")
         api.fetchLocale(localeName).then { locale ->
 
-            val navBar = createNavBar()
+            val navBar = createNavBar(locale)
             document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
             val page = findPageInUrl()
@@ -126,6 +132,14 @@ fun index() {
                 .then { user ->
                     // creates context
                     val context = BrowserContext(locale, navBar, keycloak, user, api)
+
+                    // adds add model button in navbar
+                    navBar.start += NavBarContentItem(
+                        Button(locale.i18n("Model"), Icon("plus"), ElementColor.Link, size = Size.Small) {
+                            context.openPage(showPage)
+                        }
+                    )
+
                     startApp(page, context)
 
                 }.catch { appendErrorMessage(root, it) }

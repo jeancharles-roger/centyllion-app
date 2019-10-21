@@ -1,22 +1,17 @@
 package com.centyllion.client
 
+import bulma.BulmaElement
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
-import stripe.Stripe
 import kotlin.browser.document
 import kotlin.browser.window
 
 external fun encodeURIComponent(parameter: String): String
 
 external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
-
-external fun <T, O> require(dependency: String): (O) -> T
-
-fun runWithStripe(key: String, block: (Stripe) -> Unit) =
-    require<(String) -> Stripe>(arrayOf("stripe")) { block(it(key)) }
 
 // TODO Couldn't make it work with a val, recreate the renderer each time.
 fun markdownToHtml(source: String) = window.asDynamic().markdownit().render(source) as String
@@ -59,3 +54,9 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement) {
     Unit
 }
 
+fun BulmaElement.setTooltip(text: String) {
+    root.classList.add("tooltip")
+    root.classList.add("is-tooltip-primary")
+    root.classList.add("is-tooltip-bottom")
+    root.setAttribute("data-tooltip", text)
+}

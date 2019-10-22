@@ -55,8 +55,8 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement) {
 }
 
 fun BulmaElement.setTooltip(text: String) {
-    root.classList.add("tooltip")
-    root.classList.add("is-tooltip-primary")
-    root.classList.add("is-tooltip-bottom")
+    root.classList.add("has-tooltip")
+    root.classList.add("has-tooltip-primary")
+    root.classList.add("has-tooltip-bottom")
     root.setAttribute("data-tooltip", text)
 }

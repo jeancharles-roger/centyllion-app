@@ -62,8 +62,7 @@ data class CliServerConfig(
 
 ): ServerConfig {
 
-    override val authorization: AuthorizationManager =
-        KeycloakAuthorizationManager(keycloakPassword)
+    override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
 
     override val data: Data = SqlData(dry, dbType, dbHost, dbPort, dbName, dbUser, dbPassword).let {
         if (dry) MemoryData(backend = it) else it

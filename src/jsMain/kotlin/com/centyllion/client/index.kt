@@ -33,7 +33,8 @@ interface CssFile {
 fun createNavBar(locale: Locale) = NavBar(
     brand = listOf(
         NavBarImageItem(
-            "https://www.centyllion.com/assets/images/logo-white-2by1.png", "/"
+            "https://www.centyllion.com/assets/images/logo-white-2by1.png",
+            "https://centyllion.com"
         ).apply { imgNode.style.maxHeight = "2rem" }
     ),
     end = listOf(

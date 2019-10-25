@@ -1,5 +1,6 @@
 package com.centyllion.client.page
 
+import bulma.Box
 import bulma.BulmaElement
 import bulma.Button
 import bulma.CardFooter
@@ -19,6 +20,8 @@ import bulma.TabItem
 import bulma.TabPage
 import bulma.TabPages
 import bulma.Tabs
+import bulma.Title
+import bulma.Value
 import bulma.columnsController
 import bulma.noContextColumnsController
 import bulma.wrap
@@ -67,6 +70,15 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val featuredPage = TabPage(TabItem(i18n("Featured"), "star"), featuredColumns)
 
+    val monitoringBox = Box(
+        Columns(
+            Column(Label(i18n("Models")), Value().apply { api.fetchGrainModels().then { this.text = "${it.totalSize}" } }),
+            Column(Label(i18n("Simulations")), Value().apply { api.fetchSimulations().then { this.text = "${it.totalSize}" } }),
+            Column(Label(i18n("Users")), Value().apply { api.fetchAllUsers().then { this.text = "${it.totalSize}" } }),
+            Column(Label(i18n("Assets")), Value().apply { api.fetchAllAssets().then { this.text = "${it.totalSize}" } })
+        )
+    )
+
     val usersPageController = ResultPageController(
         appContext.locale,
         noContextColumnsController(emptyList()) { data, previous ->
@@ -76,7 +88,9 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
         { offset, limit -> api.fetchAllUsers(true, offset, limit) }
     )
 
-    val userPage = TabPage(TabItem(i18n("Users"), "user"), usersPageController)
+    val monitoringPage = TabPage(TabItem(i18n("Monitoring"), "chart-bar"),
+        Div(monitoringBox, Title(i18n("Users")), usersPageController)
+    )
 
     val assetInput: FileInput = FileInput(i18n("Asset")) { input, files ->
         val file = files?.get(0)
@@ -127,7 +141,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
                 api.fetchAllFeatured().then { featuredController.data = it.content }.catch { error(it) }
                 api.fetchGrainModels().then { publicModelsController.data = it.content }.catch { error(it) }
             }
-            userPage -> api.fetchAllUsers(true, 0, usersPageController.limit)
+            monitoringPage -> api.fetchAllUsers(true, 0, usersPageController.limit)
                 .then { usersPageController.data = it }.catch { error(it) }
             assetPage -> api.fetchAllAssets(0, assetsPageController.limit)
                 .then { assetsPageController.data = it }.catch { error(it) }
@@ -135,7 +149,7 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val container: BulmaElement = TabPages(
-        featuredPage, userPage, assetPage,
+        monitoringPage, featuredPage, assetPage,
         tabs = Tabs(boxed = true), onTabChange = onTabChange
     )
 

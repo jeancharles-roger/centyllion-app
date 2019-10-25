@@ -20,7 +20,6 @@ val babylon_kotlin_version: String by project
 val exposed_version: String by project
 val postgresql_version: String by project
 val keycloak_version: String by project
-val stripe_version: String by project
 
 plugins {
     kotlin("multiplatform") version "1.3.50"
@@ -93,9 +92,6 @@ kotlin {
                     implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
                     implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
                     implementation("org.keycloak:keycloak-admin-client:$keycloak_version")
-                    
-                    // ads dependencies for stripe
-                    implementation("com.stripe:stripe-java:$stripe_version")
                 }
             }
             // JVM-specific tests and their dependencies:

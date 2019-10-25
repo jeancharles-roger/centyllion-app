@@ -163,8 +163,6 @@ class BrowserContext(
     override val api: Api = Api(keycloak)
 ) : AppContext {
 
-    override val stripeKey = "pk_test_aPFW9HKhSHLmczJtGWW0Avdh00m1Ki47LU"
-
     private var addedNavbarEndItems: List<BulmaElement> = emptyList()
     private var content: BulmaPage? = null
     private var currentPage: Page? = null

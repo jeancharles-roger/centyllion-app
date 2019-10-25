@@ -26,8 +26,6 @@ interface AppContext {
 
     val api: Api
 
-    val stripeKey: String
-
     //fun getFont(path: String): Promise<Font>
     fun i18n(key: String, vararg parameters: String) = locale.i18n(key, *parameters)
 

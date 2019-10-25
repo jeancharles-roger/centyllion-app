@@ -57,7 +57,7 @@ data class CliServerConfig(
     val host: String, val port: Int,
     val dbType: String, val dbHost: String, val dbPort: Int,
     val dbName: String, val dbUser: String, val dbPassword: String,
-    val stripeKey: String, val keycloakPassword: String,
+    val keycloakPassword: String,
     override val webroot: String = "webroot"
 
 ): ServerConfig {
@@ -94,8 +94,6 @@ class ServerCommand : CliktCommand("Start the server") {
     val dbUser by option("--db-user", help = "Database user name").default("centyllion")
     val dbPassword by option("--db-password", help = "Database password")
 
-    val stripeKey by option("--stripe-key", help = "Stripe key")
-
     val keycloakPassword by option("--keycloak-password", help = "Keycloak password")
 
     val keystore by option(help = "Keystore for passwords and keys")
@@ -109,10 +107,6 @@ class ServerCommand : CliktCommand("Start the server") {
         "--db-password-alias", help = "Database password alias for keystore"
     ).default("dbPassword")
 
-    val stripeKeyAlias by option(
-        "--stripe-key-alias", help = "Stripe key alias for keystore"
-    ).default("stripeKey")
-
     val keycloakPasswordKeyAlias by option(
         "--keycloak-password-alias", help = "Keycloak key alias for keystore"
     ).default("keycloak")
@@ -121,8 +115,8 @@ class ServerCommand : CliktCommand("Start the server") {
 
     fun extractPassword(keystore: KeyStore, alias: String, pwd: CharArray): String {
         if (keystore.containsAlias(alias)) {
-            val stripeKeyEntry = keystore.getEntry(alias, KeyStore.PasswordProtection(pwd))
-            if (stripeKeyEntry is KeyStore.SecretKeyEntry) return String(stripeKeyEntry.secretKey.encoded)
+            val entry = keystore.getEntry(alias, KeyStore.PasswordProtection(pwd))
+            if (entry is KeyStore.SecretKeyEntry) return String(entry.secretKey.encoded)
             else throw UsageError("Alias $alias in keystore isn't a secret key")
         } else throw UsageError("Alias $alias in keystore doesn't exist")
     }
@@ -137,14 +131,11 @@ class ServerCommand : CliktCommand("Start the server") {
         }
 
         val actualDbPassword = dbPassword ?: extractPassword(loadedKeystore, dbPasswordAlias, pwd)
-        val actualStripeKey = stripeKey ?: extractPassword(loadedKeystore, stripeKeyAlias, pwd)
         val actualKeycloakPassword = keycloakPassword ?: extractPassword(loadedKeystore, keycloakPasswordKeyAlias, pwd)
         return CliServerConfig(
-            debug, dry,
-            host, port,
+            debug, dry, host, port,
             dbType, dbHost, dbPort, dbName, dbUser, actualDbPassword,
-            actualStripeKey, actualKeycloakPassword,
-            webroot
+            actualKeycloakPassword, webroot
         )
     }
 

@@ -31,7 +31,6 @@ import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.ByteArrayInputStream
@@ -125,11 +124,7 @@ class SqlData(
     }
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
-        val content = DbUser.wrapRows(
-                DbUsers.selectAll()
-                    .orderBy(DbUsers.lastSeenOn, SortOrder.DESC)
-                    .limit(limit, offset)
-            ).map { it -> it.toModel(detailed) }
+        val content = DbUser.all().map { it -> it.toModel(detailed) }
         ResultPage(content, offset, DbUser.all().count())
     }
 

@@ -48,7 +48,6 @@ object DbUsers : UUIDTable("users") {
 
     // Details
     val email = text("email")
-    val lastSeenOn = datetime("lastSeenOn").defaultExpression(MinInfinity())
     val tutorialDone = bool("tutorialDone").default(false)
 }
 

@@ -17,11 +17,18 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
 import org.jetbrains.exposed.sql.ColumnType
+import org.jetbrains.exposed.sql.DateColumnType
+import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.QueryBuilder
 import org.joda.time.DateTime
 import java.util.UUID
 
 class TsVectorColumnType : ColumnType()  {
     override fun sqlType() = "tsvector"
+}
+
+class MinInfinity : Function<DateTime>(DateColumnType(false)) {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder { append("'-infinity'") }
 }
 
 object DbMetaTable : UUIDTable("meta") {
@@ -41,6 +48,7 @@ object DbUsers : UUIDTable("users") {
 
     // Details
     val email = text("email")
+    val lastSeenOn = datetime("lastSeenOn").defaultExpression(MinInfinity())
     val tutorialDone = bool("tutorialDone").default(false)
 }
 
@@ -52,7 +60,6 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var username by DbUsers.username
     var email by DbUsers.email
     var tutorialDone by DbUsers.tutorialDone
-
 
     fun toModel(detailed: Boolean): User {
         val details = UserDetails(keycloak, email, tutorialDone)

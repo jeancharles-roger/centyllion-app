@@ -4,6 +4,7 @@ import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.common.adminRole
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import io.ktor.application.call
@@ -30,6 +31,12 @@ fun Route.model(data: Data) {
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             val userId = call.parameters["user"]
             context.respond(data.grainModels(caller?.id, userId, offset, limit))
+        }
+
+        get("monitor") {
+            withRequiredPrincipal(adminRole) {
+                context.respond(data.grainModelsInfo())
+            }
         }
 
         get("tags") {

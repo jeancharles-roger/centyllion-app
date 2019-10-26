@@ -72,10 +72,22 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val monitoringBox = Box(
         Columns(
-            Column(Label(i18n("Models")), Value().apply { api.fetchGrainModels().then { this.text = "${it.totalSize}" } }),
-            Column(Label(i18n("Simulations")), Value().apply { api.fetchSimulations().then { this.text = "${it.totalSize}" } }),
-            Column(Label(i18n("Users")), Value().apply { api.fetchAllUsers().then { this.text = "${it.totalSize}" } }),
-            Column(Label(i18n("Assets")), Value().apply { api.fetchAllAssets().then { this.text = "${it.totalSize}" } })
+            Column(Label(i18n("Models")), Value().apply {
+                api.fetchGrainModelsInfo().then {
+                    this.text = i18n("Total %0, this week %1, this month %2",it.total, it.lastWeek, it.lastMonth)
+                }
+            }),
+            Column(Label(i18n("Simulations")), Value().apply {
+                api.fetchSimulationsInfo().then {
+                    this.text = i18n("Total %0, this week %1, this month %2",it.total, it.lastWeek, it.lastMonth)
+                }
+            }),
+            Column(Label(i18n("Users")), Value().apply {
+                api.fetchUsersInfo().then { this.text = "${it.total}" }
+            }),
+            Column(Label(i18n("Assets")), Value().apply {
+                api.fetchAllAssets().then { this.text = "${it.totalSize}" }
+            })
         )
     )
 
@@ -175,6 +187,6 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
     }
 
     init {
-        onTabChange(featuredPage)
+        onTabChange(monitoringPage)
     }
 }

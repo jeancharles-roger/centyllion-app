@@ -140,14 +140,7 @@
 
     "Loading": "Loading",
 
-    "Subscription": "Subscription",
-    "auto renew": "auto renew",
-    "no bound": "no bound",
-    "%0 days": "%0 days",
-    "Create": "Create",
-    "Cancel": "Cancel",
-    "Create subscription": "Create subscription",
-    "Subscription %0 created.": "Subscription %0 created.",
+    "Total %0, this week %1, this month %2": "Total %0, this week %1, this month %2",
 
     "%0 must be a number": "%0 must be a number",
     "%0 must be between %1 and %2": "%0 must be between %1 and %2",

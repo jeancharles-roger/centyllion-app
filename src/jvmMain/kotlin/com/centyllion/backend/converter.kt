@@ -3,6 +3,7 @@
 package com.centyllion.backend
 
 import com.centyllion.model.Asset
+import com.centyllion.model.CollectionInfo
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -44,6 +45,7 @@ class JsonConverter : ContentConverter {
         is Simulation -> stringify(Simulation.serializer(), value)
         is SimulationDescription -> stringify(SimulationDescription.serializer(), value)
         is FeaturedDescription -> stringify(FeaturedDescription.serializer(), value)
+        is CollectionInfo -> stringify(CollectionInfo.serializer(), value)
         is ResultPage<*> ->
             when (value.content.firstOrNull()) {
                 is SimulationDescription -> stringify(

@@ -1,6 +1,7 @@
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
+import com.centyllion.model.CollectionInfo
 import com.centyllion.model.DescriptionInfo
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
@@ -74,6 +75,8 @@ class MemoryData(
             ResultPage(all.limit(offset, limit).content, offset, it.totalSize)
         } ?: local.limit(offset, limit)
 
+    override fun usersInfo() = backend?.usersInfo() ?: CollectionInfo(users.size, 0, 0)
+
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> =
         mergeIded(
             backend?.getAllUsers(detailed, offset, limit),
@@ -109,6 +112,8 @@ class MemoryData(
         users[user.id] = user
     }
 
+    override fun grainModelsInfo() = backend?.grainModelsInfo() ?: CollectionInfo(grainModels.size, 0, 0)
+
     override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> {
         return mergeIded(
             backend?.grainModels(callerId, userId, offset, limit),
@@ -139,6 +144,8 @@ class MemoryData(
         grainModels.remove(modelId)
         deletedModels.add(modelId)
     }
+
+    override fun simulationsInfo() = backend?.simulationsInfo() ?: CollectionInfo(simulations.size, 0, 0)
 
     override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> {
         return mergeIded(

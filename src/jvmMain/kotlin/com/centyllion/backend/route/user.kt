@@ -2,6 +2,7 @@ package com.centyllion.backend.route
 
 import com.centyllion.backend.checkRole
 import com.centyllion.backend.data.Data
+import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
@@ -21,6 +22,12 @@ fun Route.user(data: Data) {
                 context.respond(users)
             } else {
                 context.respond(HttpStatusCode.Unauthorized)
+            }
+        }
+
+        get("monitor") {
+            withRequiredPrincipal(adminRole) {
+                context.respond(data.usersInfo())
             }
         }
 

@@ -140,14 +140,7 @@
 
     "Loading": "Chargement",
 
-    "Subscription": "Abonnement",
-    "auto renew": "Renouvellement automatique",
-    "no bound": "sans limite",
-    "%0 days": "%0 jours",
-    "Create": "Créer",
-    "Cancel": "Annuler",
-    "Create subscription": "Créer l'abonnement",
-    "Subscription %0 created.": "Abonnement %0 créé.",
+    "Total %0, this week %1, this month %2": "Total %0, cette semaine %1, ce mois %2",
 
     "%0 must be a number": "%0 doit être un nombre",
     "%0 must be between %1 and %2": "%0 doit être entre %1 et %2",

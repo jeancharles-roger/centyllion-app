@@ -4,6 +4,7 @@ import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
+import com.centyllion.common.adminRole
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import io.ktor.application.call
@@ -53,6 +54,12 @@ fun Route.simulation(data: Data) {
                         else -> data.createSimulation(user.id, modelId, newSimulation)
                     }
                 )
+            }
+        }
+
+        get("monitor") {
+            withRequiredPrincipal(adminRole) {
+                context.respond(data.simulationsInfo())
             }
         }
 

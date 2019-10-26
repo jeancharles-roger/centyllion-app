@@ -7,6 +7,13 @@ val emptyUser = User("", "", "", null)
 fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
 
 @Serializable
+data class CollectionInfo(
+    val total: Int,
+    val lastWeek: Int,
+    val lastMonth: Int
+)
+
+@Serializable
 data class Info(
     val app: String,
     val debug: Boolean,

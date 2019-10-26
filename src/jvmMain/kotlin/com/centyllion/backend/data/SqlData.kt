@@ -2,6 +2,7 @@
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
+import com.centyllion.model.CollectionInfo
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.ResultPage
@@ -12,11 +13,14 @@ import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.DateColumnType
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.GreaterEqOp
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -27,6 +31,7 @@ import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.ByteArrayInputStream
@@ -34,6 +39,15 @@ import java.util.NoSuchElementException
 import java.util.UUID
 import java.util.zip.ZipInputStream
 import javax.sql.rowset.serial.SerialBlob
+
+fun Column<DateTime>.lastWeek() = GreaterEqOp(this, Delay("1 week"))
+fun Column<DateTime>.lastMonth() = GreaterEqOp(this, Delay("1 month"))
+
+class Delay(val delay: String = "1 week") : Function<DateTime>(DateColumnType(true)) {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        append("CURRENT_TIMESTAMP - interval '$delay'")
+    }
+}
 
 class FullTextSearchOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "@@")
 
@@ -46,7 +60,11 @@ infix fun ExpressionWithColumnType<Any>.fullTextSearchEnglish(t: String): Op<Boo
 }
 
 class ToTsQuery<T : String?>(val expr: Expression<T>, val dictionary: String = "pg_catalog.simple") : Function<T>(VarCharColumnType()) {
-    override fun toSQL(queryBuilder: QueryBuilder): String = "to_tsquery('$dictionary', ${expr.toSQL(queryBuilder)})"
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        append("to_tsquery('$dictionary', ")
+        expr.toQueryBuilder(queryBuilder)
+        append(")")
+    }
 }
 
 class SqlData(
@@ -58,8 +76,6 @@ class SqlData(
     user: String = "centyllion",
     password: String = ""
 ) : Data {
-
-    // TODO create events for all access
 
     val url = "jdbc:$type://$host:$port/$name"
 
@@ -99,8 +115,21 @@ class SqlData(
         }
     }
 
+    override fun usersInfo(): CollectionInfo = transaction(database) {
+        // TODO count user last seen
+        CollectionInfo(
+            DbUser.count(),
+            0,
+            0
+        )
+    }
+
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
-        val content = DbUser.all().limit(limit, offset).reversed().map { it.toModel(detailed) }
+        val content = DbUser.wrapRows(
+                DbUsers.selectAll()
+                    .orderBy(DbUsers.lastSeenOn, SortOrder.DESC)
+                    .limit(limit, offset)
+            ).map { it -> it.toModel(detailed) }
         ResultPage(content, offset, DbUser.all().count())
     }
 
@@ -109,10 +138,11 @@ class SqlData(
         val currentUsername = principal.payload.claims["preferred_username"]?.asString() ?: ""
         val currentEmail = principal.payload.claims["email"]?.asString() ?: ""
 
-        // find or create the user
-        val user = transaction(database) {
+        val existing = transaction(database) {
             DbUser.find { DbUsers.keycloak eq principal.payload.subject }.firstOrNull()
-        } ?: transaction(database) {
+        }
+
+        val user = existing ?: transaction(database) {
             DbUser.new {
                 keycloak = principal.payload.subject
                 name = currentName
@@ -122,8 +152,8 @@ class SqlData(
         }
 
         if (user.name != currentName || user.username != currentUsername) {
-            // updates roles for user
             transaction {
+                // updates roles for user
                 user.name = currentName
                 user.username = currentUsername
             }
@@ -143,6 +173,14 @@ class SqlData(
 
     override fun saveUser(user: User) {
         transaction(database) { DbUser.findById(UUID.fromString(user.id))?.fromModel(user) }
+    }
+
+    override fun grainModelsInfo(): CollectionInfo = transaction(database) {
+        CollectionInfo(
+            DbModelDescription.count(),
+            DbModelDescriptions.innerJoin(DbDescriptionInfos).select(DbDescriptionInfos.lastModifiedOn.lastWeek()).count(),
+            DbModelDescriptions.innerJoin(DbDescriptionInfos).select(DbDescriptionInfos.lastModifiedOn.lastMonth()).count()
+        )
     }
 
     private fun grainModelsQuery(callerUUID: UUID?, userUUID: UUID?) = DbModelDescriptions
@@ -203,6 +241,14 @@ class SqlData(
                 it.info.delete()
             }
         }
+    }
+
+    override fun simulationsInfo(): CollectionInfo = transaction(database) {
+        CollectionInfo(
+            DbSimulationDescription.count(),
+            DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select(DbDescriptionInfos.lastModifiedOn.lastWeek()).count(),
+            DbSimulationDescriptions.innerJoin(DbDescriptionInfos).select(DbDescriptionInfos.lastModifiedOn.lastMonth()).count()
+        )
     }
 
     private fun simulationsQuery(callerUUID: UUID?, userUUID: UUID?, modelUUID: UUID?) = DbSimulationDescriptions

@@ -3,6 +3,7 @@ package com.centyllion.client
 import com.centyllion.i18n.Locale
 import com.centyllion.i18n.Locales
 import com.centyllion.model.Asset
+import com.centyllion.model.CollectionInfo
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -97,6 +98,27 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
     fun saveMyOptions(userOptions: UserOptions) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("POST", "/api/me", bearer, json.stringify(UserOptions.serializer(), userOptions))
+        }
+
+    fun fetchUsersInfo() =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/user/monitor", bearer).then {
+                json.parse(CollectionInfo.serializer(), it)
+            }
+        }
+
+    fun fetchGrainModelsInfo() =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/model/monitor", bearer).then {
+                json.parse(CollectionInfo.serializer(), it)
+            }
+        }
+
+    fun fetchSimulationsInfo() =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/simulation/monitor", bearer).then {
+                json.parse(CollectionInfo.serializer(), it)
+            }
         }
 
     fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =

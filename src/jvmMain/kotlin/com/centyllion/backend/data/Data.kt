@@ -1,6 +1,7 @@
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
+import com.centyllion.model.CollectionInfo
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
@@ -11,12 +12,15 @@ import com.centyllion.model.User
 import io.ktor.auth.jwt.JWTPrincipal
 
 interface Data {
+
+    fun usersInfo(): CollectionInfo
     fun getAllUsers(detailed: Boolean, offset: Int = 0, limit: Int = 20): ResultPage<User>
     fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User
     fun getUserFromKeycloakId(keycloakId: String, detailed: Boolean): User?
     fun getUser(id: String, detailed: Boolean): User?
     fun saveUser(user: User)
 
+    fun grainModelsInfo(): CollectionInfo
     fun modelTags(userId: String? = null, offset: Int = 0, limit: Int = 20): ResultPage<String>
     fun searchModel(query: String, tags: List<String>, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
     fun grainModels(callerId: String?, userId: String?, offset: Int = 0, limit: Int = 20): ResultPage<GrainModelDescription>
@@ -25,6 +29,7 @@ interface Data {
     fun saveGrainModel(model: GrainModelDescription)
     fun deleteGrainModel(modelId: String)
 
+    fun simulationsInfo(): CollectionInfo
     fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?

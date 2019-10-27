@@ -124,7 +124,7 @@ class SqlData(
     }
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
-        val content = DbUser.all().map { it -> it.toModel(detailed) }
+        val content = DbUser.all().limit(limit, offset).map { it -> it.toModel(detailed) }
         ResultPage(content, offset, DbUser.all().count())
     }
 

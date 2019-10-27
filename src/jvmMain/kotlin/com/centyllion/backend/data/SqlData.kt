@@ -31,6 +31,7 @@ import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.ByteArrayInputStream
@@ -115,17 +116,18 @@ class SqlData(
     }
 
     override fun usersInfo(): CollectionInfo = transaction(database) {
-        // TODO count user last seen
         CollectionInfo(
             DbUser.count(),
-            0,
-            0
+            DbUser.count(DbUsers.createdOn.lastWeek()),
+            DbUser.count(DbUsers.createdOn.lastMonth())
         )
     }
 
     override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
-        val content = DbUser.all().limit(limit, offset).map { it -> it.toModel(detailed) }
-        ResultPage(content, offset, DbUser.all().count())
+        val content = DbUser.wrapRows(
+            DbUsers.selectAll().orderBy(DbUsers.createdOn, SortOrder.DESC).limit(limit, offset)
+        ).map { it -> it.toModel(detailed) }
+        ResultPage(content, offset, DbUser.count())
     }
 
     override fun getOrCreateUserFromPrincipal(principal: JWTPrincipal): User {

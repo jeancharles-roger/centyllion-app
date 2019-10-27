@@ -83,7 +83,9 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
                 }
             }),
             Column(Label(i18n("Users")), Value().apply {
-                api.fetchUsersInfo().then { this.text = "${it.total}" }
+                api.fetchUsersInfo().then {
+                    this.text = i18n("Total %0, this week %1, this month %2",it.total, it.lastWeek, it.lastMonth)
+                }
             }),
             Column(Label(i18n("Assets")), Value().apply {
                 api.fetchAllAssets().then { this.text = "${it.totalSize}" }

@@ -49,6 +49,7 @@ object DbUsers : UUIDTable("users") {
     // Details
     val email = text("email")
     val tutorialDone = bool("tutorialDone").default(false)
+    val createdOn = datetime("createdOn").defaultExpression(MinInfinity())
 }
 
 class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -59,6 +60,7 @@ class DbUser(id: EntityID<UUID>) : UUIDEntity(id) {
     var username by DbUsers.username
     var email by DbUsers.email
     var tutorialDone by DbUsers.tutorialDone
+    var createdOn by DbUsers.createdOn
 
     fun toModel(detailed: Boolean): User {
         val details = UserDetails(keycloak, email, tutorialDone)

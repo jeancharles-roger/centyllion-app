@@ -12,6 +12,7 @@ import bulma.Level
 import bulma.Size
 import bulma.TextColor
 import bulma.extension.Slider
+import bulma.extension.Switch
 import bulma.textButton
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
@@ -36,6 +37,13 @@ class BehaviourRunController(
 
     override var readOnly = false
 
+    val activeSwitch = Switch(
+        "", color = ElementColor.Success, size = Size.Small, rounded = true, checked = true
+    ) { _, v ->
+        val probability = if (v) toProbability(speedSlider.value) else 0.0
+        onSpeedChange(data, probability)
+    }
+
     val titleLabel = Label(behaviour.name)
 
     val grains = Level(center = grains(), mobile = true)
@@ -58,7 +66,7 @@ class BehaviourRunController(
     }
 
     val header = Level(
-        left = listOf(titleLabel),
+        left = listOf(activeSwitch, titleLabel),
         center = listOf(speedSlider),
         right = listOf(speedValue),
         mobile = true

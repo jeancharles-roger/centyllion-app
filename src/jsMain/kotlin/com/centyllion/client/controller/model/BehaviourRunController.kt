@@ -28,7 +28,10 @@ class BehaviourRunController(
 ) : Controller<Behaviour, Simulator, Box> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            activeSwitch.checked = true
+            refresh()
+        }
     }
 
     override var context: Simulator by observable(simulator) { _, old, new ->

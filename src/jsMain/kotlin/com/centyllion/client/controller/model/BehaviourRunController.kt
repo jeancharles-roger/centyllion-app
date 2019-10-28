@@ -16,8 +16,8 @@ import bulma.textButton
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Simulator
-import kotlin.math.log10
 import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.properties.Delegates.observable
 
 class BehaviourRunController(
@@ -48,7 +48,7 @@ class BehaviourRunController(
         if (probability != data.probability) onValidate(data, probability)
     }
 
-    val speedSlider: Slider = Slider(toSlider(context.getSpeed(data)), "1", "10", "0.01", circle = true)
+    val speedSlider: Slider = Slider(toSlider(context.getSpeed(data)), "0", "1", "any", circle = true)
     { _, new ->
         val probability = toProbability(new)
         onSpeedChange(data, probability)
@@ -66,9 +66,9 @@ class BehaviourRunController(
 
     override val container = Box(header, grains)
 
-    fun toSlider(p: Double) = (10.0.pow(p)).toString()
+    fun toSlider(p: Double) = sqrt(p).toString()
 
-    fun toProbability(value: String) = log10(value.toDouble())
+    fun toProbability(value: String) = value.toDouble().pow(2)
 
     fun grainIcon(id: Int) = context.model.indexedGrains[id].let {
         if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")

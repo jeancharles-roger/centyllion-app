@@ -77,6 +77,7 @@ val colorNames = mapOf(
     "LightSteelBlue" to Triple(176, 196, 222),
     "PowderBlue" to Triple(176, 224, 230),
     "FireBrick" to Triple(178, 34, 34),
+    "FloralWhite" to Triple(255, 250, 240),
     "DarkGoldenRod" to Triple(184, 134, 11),
     "MediumOrchid" to Triple(186, 85, 211),
     "RosyBrown" to Triple(188, 143, 143),
@@ -95,6 +96,7 @@ val colorNames = mapOf(
     "PaleVioletRed" to Triple(219, 112, 147),
     "Crimson" to Triple(220, 20, 60),
     "Gainsboro" to Triple(220, 220, 220),
+    "GhostWhite" to Triple(248, 248, 255),
     "Plum" to Triple(221, 160, 221),
     "BurlyWood" to Triple(222, 184, 135),
     "LightCyan" to Triple(224, 255, 255),
@@ -105,6 +107,7 @@ val colorNames = mapOf(
     "LightCoral" to Triple(240, 128, 128),
     "Khaki" to Triple(240, 230, 140),
     "AliceBlue" to Triple(240, 248, 255),
+    "AntiqueWhite" to Triple(250, 235, 215),
     "HoneyDew" to Triple(240, 255, 240),
     "Azure" to Triple(240, 255, 255),
     "SandyBrown" to Triple(244, 164, 96),
@@ -131,6 +134,7 @@ val colorNames = mapOf(
     "Gold" to Triple(255, 215, 0),
     "PeachPuff" to Triple(255, 218, 185),
     "Moccasin" to Triple(255, 228, 181),
+    "NavajoWhite" to Triple(255, 222, 173),
     "Bisque" to Triple(255, 228, 196),
     "MistyRose" to Triple(255, 228, 225),
     "BlanchedAlmond" to Triple(255, 235, 205),
@@ -142,5 +146,6 @@ val colorNames = mapOf(
     "Snow" to Triple(255, 250, 250),
     "Yellow" to Triple(255, 255, 0),
     "LightYellow" to Triple(255, 255, 224),
-    "Ivory" to Triple(255, 255, 240)
+    "Ivory" to Triple(255, 255, 240),
+    "White" to Triple(255, 255, 255)
 )

@@ -65,6 +65,7 @@ import com.centyllion.model.grainIcon
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.url.URL
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise
@@ -210,41 +211,48 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         if (appContext.me == null) root.appendChild(Help(i18n("Log-in to save")).root)
     }
 
-    val deleteModelItem = createMenuItem(
-        i18n("Delete Model"), "trash", TextColor.Danger
-    ) { deleteModel() }
-
-    val deleteSimulationItem = createMenuItem(
-        i18n("Delete Simulation"), "trash", TextColor.Danger
-    ) { deleteSimulation() }
-
-    val downloadModelItem = createMenuItem(
-        i18n("Download Model"), "download", TextColor.Primary
-    ) { downloadModel() }
-
-    val newSimulationItem = createMenuItem(
-        i18n("New Simulation"), "plus", TextColor.Primary
-    ) { newSimulation() }
-
-    val saveThumbnailItem = createMenuItem(
-        i18n("Save state as thumbnail"), "image", TextColor.Primary
-    ) { saveCurrentThumbnail() }
-
-    val downloadSimulationItem = createMenuItem(
-        i18n("Download Simulation"), "download", TextColor.Primary
-    ) { downloadSimulation() }
-
-    val loadingItem = createMenuItem(i18n("Loading simulations"), "spinner").apply { icon?.spin = true }
-
-    val moreDropdownItems = listOfNotNull(
-        deleteModelItem, deleteSimulationItem, createMenuDivider(),
-        newSimulationItem, saveThumbnailItem, createMenuDivider(),
-        downloadModelItem, downloadSimulationItem
-    )
-
     val moreDropdown = Dropdown(
         icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
+
+    val deleteModelItem = createMenuItem(
+        moreDropdown, i18n("Delete Model"), "trash", TextColor.Danger
+    ) { deleteModel() }
+
+    val deleteSimulationItem = createMenuItem(
+        moreDropdown, i18n("Delete Simulation"), "trash", TextColor.Danger
+    ) { deleteSimulation() }
+
+    val downloadModelItem = createMenuItem(
+        moreDropdown, i18n("Download Model"), "download", TextColor.Primary
+    ) { downloadModel() }
+
+    val newSimulationItem = createMenuItem(
+        moreDropdown, i18n("New Simulation"), "plus", TextColor.Primary
+    ) { newSimulation() }
+
+    val saveThumbnailItem = createMenuItem(
+        moreDropdown, i18n("Save state as thumbnail"), "image", TextColor.Primary
+    ) { saveCurrentThumbnail() }
+
+    val downloadScreenshotItem = createMenuItem(
+        moreDropdown, i18n("Download screenshot"), "image", TextColor.Primary
+    ) { downloadScreenshot() }
+
+    val downloadSimulationItem = createMenuItem(
+        moreDropdown, i18n("Download Simulation"), "download", TextColor.Primary
+    ) { downloadSimulation() }
+
+    val loadingItem = createMenuItem(
+        moreDropdown, i18n("Loading simulations"), "spinner"
+    ).apply { icon?.spin = true }
+
+    val moreDropdownItems = listOfNotNull(
+        deleteModelItem, deleteSimulationItem, createMenuDivider(),
+        newSimulationItem, saveThumbnailItem, downloadScreenshotItem, createMenuDivider(),
+        downloadModelItem, downloadSimulationItem
+    )
+
 
     val cloneButton = Button(
         i18n("Clone Simulation"), Icon("clone"), ElementColor.Primary,
@@ -383,6 +391,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
+    fun downloadScreenshot() {
+        simulationController.simulationViewController.screenshot().then {
+            val name = "${model.label} - ${simulation.label} - screenshot.jpg"
+            download(name, URL.createObjectURL(it))
+        }
+    }
+
     val modelNeedsSaving get() = modelUndoRedo.changed(model) || model.id.isEmpty()
 
     val simulationNeedsSaving get() = simulationUndoRedo.changed(simulation) || simulation.id.isEmpty()
@@ -472,7 +487,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 setSimulation(clonedSimulation)
 
                 // closes the action
-                moreDropdown.active = false
                 editionTab.selectedPage = modelPage
                 message("Model and simulation cloned.")
             }
@@ -482,13 +496,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun downloadModel() {
         val href = stringHref(Json.stringify(GrainModel.serializer(), model.model))
         download("${model.name}.json", href)
-        moreDropdown.active = false
     }
 
     fun newSimulation() = changeModelOrSimulation {
         if (it) {
             setSimulation(emptySimulationDescription)
-            moreDropdown.active = false
             editionTab.selectedPage = simulationPage
             message("New simulation.")
         }
@@ -502,7 +514,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             )
             setSimulation(cloned)
 
-            moreDropdown.active = false
             editionTab.selectedPage = simulationPage
             message("Simulation cloned.")
         }
@@ -511,12 +522,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun downloadSimulation() {
         val href = stringHref(Json.stringify(Simulation.serializer(), simulation.simulation))
         download("${simulation.name}.json", href)
-        moreDropdown.active = false
     }
 
     fun deleteModel() {
-        moreDropdown.active = false
-
         modalDialog(
             i18n("Delete model. Are you sure ?"),
             listOf(
@@ -538,8 +546,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun deleteSimulation() {
-        moreDropdown.active = false
-
         modalDialog(
             i18n("Delete simulation. Are you sure ?"),
             listOf(
@@ -591,11 +597,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             fetchSimulations(model.id).then {
                 if (it.content.isNotEmpty()) {
                     moreDropdown.items = moreDropdownItems + createMenuDivider() + it.content.map { current ->
-                        createMenuItem(current.label, current.icon, disabled = current == simulation) {
+                        createMenuItem(moreDropdown, current.label, current.icon, disabled = current == simulation) {
                             changeModelOrSimulation() {
                                 if (it) {
                                     setSimulation(current)
-                                    moreDropdown.active = false
                                     editionTab.selectedPage = simulationPage
                                 }
                             }

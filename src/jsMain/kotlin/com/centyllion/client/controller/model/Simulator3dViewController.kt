@@ -34,11 +34,11 @@ import bulma.ElementColor
 import bulma.Field
 import bulma.HtmlWrapper
 import bulma.Icon
+import bulma.Input
 import bulma.Level
 import bulma.NoContextController
 import bulma.canvas
 import bulma.iconButton
-import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
@@ -51,7 +51,6 @@ import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.pointerevents.PointerEvent
-import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.browser.window
 import kotlin.js.Promise
@@ -131,7 +130,7 @@ class Simulator3dViewController(
         height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
-    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains, page)
+    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains, page, false)
     { _, _, _ -> selectPointer() }
 
     val sizeDropdown = Dropdown(text = page.i18n(ToolSize.Fine.name), rounded = true).apply {
@@ -154,17 +153,46 @@ class Simulator3dViewController(
 
     val toolsField = Field(addons = true).apply { body = toolButtons.map { Control(it) } }
 
+    val randomAddCountInput: Input = Input("20", rounded = true, columns = 3) { _, v ->
+        val isNotPositiveInt = v.toIntOrNull()?.let { it <= 0 } ?: true
+        randomAddButton.disabled = isNotPositiveInt
+        randomAddButton.color = if (isNotPositiveInt) ElementColor.Danger else ElementColor.Primary
+    }
+
+    val randomAddButton = iconButton(Icon("spray-can"), ElementColor.Primary, rounded = true) {
+        val grainId = selectedGrainController.data?.id
+        val count = randomAddCountInput.value.toIntOrNull()
+        if (count != null && count > 0 && grainId != null){
+            repeat(count) {
+                // try at most 5 times to find a free place
+                for (i in 0 until 5) {
+                    val index = Random.nextInt(data.simulation.dataSize)
+                    if (data.idAtIndex(index) < 0) {
+                        data.setIdAtIndex(index, grainId)
+                        break
+                    }
+                }
+            }
+            onUpdate(true, data, this)
+            refresh(false)
+        }
+    }
+
+    val randomAddField = Field(
+        Control(randomAddCountInput),
+        Control(randomAddButton),
+        addons = true
+    )
+
     val clearAllButton = iconButton(Icon("trash"), ElementColor.Danger, true) {
         (0 until data.simulation.dataSize).forEach { data.resetIdAtIndex(it) }
         onUpdate(true, data, this)
         refresh()
     }
 
-    val imageButton = iconButton(Icon("file-image"), ElementColor.Info, true) {
-        screenshot().then { download("screenshot.jpg", URL.createObjectURL(it)) }
-    }
-
-    val toolbar = Level(center = listOf(toolsField, sizeDropdown, selectedGrainController, clearAllButton, imageButton))
+    val toolbar = Level(
+        center = listOf(toolsField, sizeDropdown, selectedGrainController, randomAddField, clearAllButton)
+    )
 
     override val container = Div(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar

@@ -2,6 +2,7 @@ package com.centyllion.client.page
 
 import bulma.BulmaElement
 import bulma.Button
+import bulma.Dropdown
 import bulma.DropdownDivider
 import bulma.DropdownSimpleItem
 import bulma.ElementColor
@@ -66,9 +67,12 @@ interface BulmaPage : BulmaElement {
     fun createMenuDivider() = DropdownDivider()
 
     fun createMenuItem(
-        text: String, icon: String, color: TextColor = TextColor.None,
+        parent: Dropdown, text: String, icon: String, color: TextColor = TextColor.None,
         disabled: Boolean = false, onClick: () -> Unit = {}
-    ) = DropdownSimpleItem(text, Icon(icon, color = color), disabled) { onClick() }
+    ) = DropdownSimpleItem(text, Icon(icon, color = color), disabled) {
+        onClick()
+        parent.active = false
+    }
 }
 
 private fun notification(content: String, color: ElementColor = ElementColor.None) {

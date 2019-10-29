@@ -25,15 +25,7 @@ import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.textButton
 import bulma.wrap
-import chartjs.Chart
-import chartjs.ChartUpdateConfig
-import chartjs.LineChartConfig
-import chartjs.LineChartOptions
-import chartjs.LineChartPlot
-import chartjs.LineDataSet
-import chartjs.LinearAxisOptions
 import com.centyllion.client.controller.utils.EditableStringController
-import com.centyllion.client.controller.utils.push
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.stringHref
@@ -44,7 +36,13 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
+import uplot.AxeOption
+import uplot.ScaleOptions
+import uplot.SerieOptions
+import uplot.UPlotOptions
+import uplot.uPlot
 import kotlin.browser.window
+import kotlin.js.json
 import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
@@ -79,6 +77,7 @@ class SimulationRunController(
             currentSimulator = Simulator(new, data)
             behaviourController.context = currentSimulator
             simulationViewController.data = currentSimulator
+            chart = createUPlot()
             running = false
             refresh()
         }
@@ -119,7 +118,7 @@ class SimulationRunController(
     private var lastFpsColorRefresh = 0
     private var lastChartRefresh = 0
 
-    private var presentCharts = false
+    private var presentCharts = true
 
     val nameController = EditableStringController(data.name, page.i18n("Simulation Name"), readOnly)
     { _, new, _ ->
@@ -197,7 +196,7 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val chartContainer = Div(chartCanvas, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
+    val chartContainer = Div(Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
         hidden = !presentCharts
     }
 
@@ -290,15 +289,13 @@ class SimulationRunController(
         multiline = true, centered = true
     )
 
-    val chart = Chart(chartCanvas.root, LineChartConfig(
-        options = LineChartOptions().apply {
-            animation.duration = 0
-            scales.xAxes = arrayOf(LinearAxisOptions())
-            scales.yAxes = arrayOf(LinearAxisOptions())
-        }
-    ))
+    private var chart by observable(createUPlot()) { _, old, new ->
+        chartContainer.root.removeChild(old.root)
+        chartContainer.root.appendChild(new.root)
+    }
 
     init {
+        chartContainer.root.appendChild(chart.root)
         window.setTimeout({ animationCallback(0.0) }, 250)
     }
 
@@ -369,6 +366,15 @@ class SimulationRunController(
         simulationViewController.oneStep(applied, dead)
         refreshCounts()
 
+        /*
+        chart.data[0].push(currentSimulator.step)
+        currentSimulator.lastGrainsCount().values.forEachIndexed { i, v ->
+            chart.data[i+1].push(v)
+        }
+        val view = chart.getView();
+        chart.setData(chart.data, view[0], view[1].toInt()+1)
+*/
+        /*
         // appends data to charts
         if (presentCharts) {
             val counts = currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
@@ -385,7 +391,30 @@ class SimulationRunController(
             chart.update(ChartUpdateConfig(duration = 0, lazy = true))
             lastChartRefresh = 0
         }
+        */
     }
+
+    private fun graphRange(min: Number, max: Number): Array<Number> {
+        val actualMin = if (min.toDouble().isNaN()) 0 else min
+        val actualMax = if (max.toDouble().isNaN()) 100 else max
+        return arrayOf(actualMin, actualMax)
+    }
+
+    private fun createUPlot() = uPlot(
+        UPlotOptions(800, 400).apply {
+            scales = json(
+                "x" to ScaleOptions(type = "n", range = ::graphRange),
+                "y" to ScaleOptions(type = "n", range = ::graphRange)
+            )
+            axes.y = arrayOf(AxeOption(scale = "y"))
+            series.x.label = page.i18n("Step")
+            series.y = context.grains.map { SerieOptions(scale = "y", label=it.label(true), color = it.color) }.toTypedArray()
+        },
+        arrayOf(
+            Array<Number>(simulator.step) { it },
+            *(simulator.grainCountHistory.values.map { it.toTypedArray<Number>() }.toTypedArray())
+        )
+    )
 
     fun toggleCharts() {
         presentCharts = !presentCharts
@@ -434,6 +463,11 @@ class SimulationRunController(
 
     fun refreshChart() {
         chartContainer.hidden = !presentCharts
+
+
+        //currentSimulator.grainCountHistory
+
+        /*
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()
@@ -451,6 +485,7 @@ class SimulationRunController(
             lastChartRefresh = 0
         }
         chart.update()
+        */
     }
 
     fun dispose() {

@@ -114,8 +114,10 @@ class TutorialLayer<P: BulmaPage>(
         container.root.classList.add("fadeOut")
 
         window.setTimeout( {
-            document.body?.removeChild(arrow.root)
-            document.body?.removeChild(container.root)
+            document.body?.let { body ->
+                if (body.contains(arrow.root)) body.removeChild(arrow.root)
+                if (body.contains(container.root)) body.removeChild(container.root)
+            }
         }, 1000)
 
         // opens the conclusion if there is one and tutorial was done all the way

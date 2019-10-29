@@ -13,7 +13,6 @@ import bulma.span
 import bulma.wrap
 import com.centyllion.client.controller.model.BehaviourEditController
 import com.centyllion.client.controller.model.GrainEditController
-import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.page.ShowPage
 import com.centyllion.model.Grain
 import kotlinx.html.a
@@ -26,7 +25,7 @@ import kotlinx.html.ul
 class BacteriasTutorial(
     override val page: ShowPage
 ): Tutorial<ShowPage> {
-    override val name = i18n("Create a simple bacterias simulation")
+    override val name = "Create a simple bacterias simulation"
 
     val bacteriaDraw = 15
 
@@ -72,14 +71,8 @@ class BacteriasTutorial(
             { page.editionTab.selectedPage == page.simulationPage }
         ),
         TutorialStep(
-            i18n("Draw some grains"),
-            listOf(span(i18n("Select the ")), Icon(Simulator3dViewController.EditTools.Pen.icon), span(i18n(" tool."))),
-            { page.simulationController.simulationViewController.toolButtons[1].root },
-            { page.simulationController.simulationViewController.tool == Simulator3dViewController.EditTools.Pen }
-        ),
-        TutorialStep(
-            i18n("Draw some grains"), listOf(span(i18n("Draw about %0 bacterias.", bacteriaDraw + 5))),
-            { page.simulationController.simulationViewController.simulationCanvas.root },
+            i18n("Draw some grains"), listOf(span(i18n("Draw %0 bacterias with the random spray.", bacteriaDraw + 5))),
+            { page.simulationController.simulationViewController.randomAddButton.root },
             { page.simulationController.simulator.grainsCounts()[bacteriaGrain?.id ?: 0] ?: 0 > bacteriaDraw }
         ),
         TutorialStep(

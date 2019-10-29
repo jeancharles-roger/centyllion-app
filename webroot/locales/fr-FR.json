@@ -9,6 +9,7 @@
 
     "Previous": "Précedent",
     "Next": "Suivant",
+    "Ok": "Ok",
 
     "Anonymous": "Anonyme",
     "Logout": "Se déconnecter",
@@ -162,9 +163,7 @@
     "Go to simulation": "Aller sur simulation",
     "Open the simulation page to test the model.": "Ouvrez la page de simulation pour tester le modèle.",
     "Draw some grains": "Dessiner quelques grains",
-    "Select the ": "Sélectionnez l'outil ",
-    " tool.": ".",
-    "Draw about %0 bacterias.": "Dessinez environ %0 bacteries.",
+    "Draw %0 bacterias with the random spray.": "Dessinez %0 bacteries avec le l'outil aléatoire.",
     "Run the simulation": "Lancer la simulation",
     "Watch the bacterias move.": "Regardez les bactéries se déplacer.",
     "Stop the simulation": "Arreter la simulation",

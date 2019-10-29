@@ -9,6 +9,7 @@
 
     "Previous": "Previous",
     "Next": "Next",
+    "Ok": "Ok",
 
     "Anonymous": "Anonymous",
     "Logout": "Logout",
@@ -162,9 +163,7 @@
 	"Go to simulation": "Go to simulation",
 	"Open the simulation page to test the model.": "Open the simulation page to test the model.",
 	"Draw some grains": "Draw some grains",
-	"Select the ": "Select the ",
-	" tool.": " tool.",
-	"Draw about %0 bacterias.": "Draw about %0 bacterias.",
+    "Draw %0 bacterias with the random spray.": "Draw %0 bacterias with the random spray.",
 	"Run the simulation": "Run the simulation",
 	"Watch the bacterias move.": "Watch the bacterias move.",
 	"Stop the simulation": "Stop the simulation",

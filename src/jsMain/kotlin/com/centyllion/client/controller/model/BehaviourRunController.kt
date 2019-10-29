@@ -41,7 +41,8 @@ class BehaviourRunController(
     override var readOnly = false
 
     val activeSwitch = Switch(
-        "", color = ElementColor.Success, size = Size.Small, rounded = true, checked = true
+        "", color = ElementColor.Success, size = Size.Small,
+        rounded = true, outlined = true, checked = true
     ) { _, v ->
         val probability = if (v) toProbability(speedSlider.value) else 0.0
         onSpeedChange(data, probability)

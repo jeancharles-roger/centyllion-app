@@ -77,7 +77,7 @@ class SimulationRunController(
             currentSimulator = Simulator(new, data)
             behaviourController.context = currentSimulator
             simulationViewController.data = currentSimulator
-            chart = createUPlot()
+            chart.data = createChart()
             running = false
             refresh()
         }
@@ -116,7 +116,6 @@ class SimulationRunController(
     private var lastStepTimestamp = 0.0
     private var lastRequestSkipped = true
     private var lastFpsColorRefresh = 0
-    private var lastChartRefresh = 0
 
     private var presentCharts = true
 
@@ -185,8 +184,6 @@ class SimulationRunController(
 
     val selectedGrainController = GrainSelectController(model.grains.firstOrNull(), model.grains, page)
 
-    val chartCanvas = canvas {}
-
     var exportCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true, disabled = true) {
         val header = "step,${context.grains.map { if (it.name.isNotBlank()) it.name else it.id }.joinToString(",")}"
         val content = (0 until currentSimulator.step).joinToString("\n") { step ->
@@ -196,7 +193,9 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val chartContainer = Div(Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
+    val chart = ChartController(createChart())
+
+    val chartContainer = Div(chart, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
         hidden = !presentCharts
     }
 
@@ -289,13 +288,7 @@ class SimulationRunController(
         multiline = true, centered = true
     )
 
-    private var chart by observable(createUPlot()) { _, old, new ->
-        chartContainer.root.removeChild(old.root)
-        chartContainer.root.appendChild(new.root)
-    }
-
     init {
-        chartContainer.root.appendChild(chart.root)
         window.setTimeout({ animationCallback(0.0) }, 250)
     }
 
@@ -332,10 +325,7 @@ class SimulationRunController(
             val refresh = fps >= 200 || lastStepTimestamp == 0.0 || delta >= time
             if (refresh) {
                 lastStepTimestamp = timestamp
-                executeStep(lastChartRefresh >= 10)
-                lastChartRefresh += 1
-
-
+                executeStep()
             }
             lastRequestSkipped = refresh
             window.requestAnimationFrame(this::animationCallback)
@@ -344,7 +334,7 @@ class SimulationRunController(
 
     fun step() {
         if (!running) {
-            executeStep(true)
+            executeStep()
             simulationViewController.render()
             refreshButtons()
         }
@@ -357,63 +347,21 @@ class SimulationRunController(
     fun reset() {
         if (!running) {
             currentSimulator.reset()
+            chart.reset()
             refresh()
         }
     }
 
-    private fun executeStep(updateChart: Boolean) {
+    private fun executeStep() {
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
+        chart.push(currentSimulator.step, currentSimulator.lastGrainsCount().values)
         refreshCounts()
-
-        /*
-        chart.data[0].push(currentSimulator.step)
-        currentSimulator.lastGrainsCount().values.forEachIndexed { i, v ->
-            chart.data[i+1].push(v)
-        }
-        val view = chart.getView();
-        chart.setData(chart.data, view[0], view[1].toInt()+1)
-*/
-        /*
-        // appends data to charts
-        if (presentCharts) {
-            val counts = currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
-            chart.data.datasets.zip(counts.values) { set: LineDataSet, i: Int ->
-                val data = set.data
-                if (data != null) {
-                    val index = if (data.isEmpty()) 0 else data.lastIndex
-                    data.push(LineChartPlot(index, i))
-                }
-            }
-        }
-
-        if (updateChart) {
-            chart.update(ChartUpdateConfig(duration = 0, lazy = true))
-            lastChartRefresh = 0
-        }
-        */
     }
 
-    private fun graphRange(min: Number, max: Number): Array<Number> {
-        val actualMin = if (min.toDouble().isNaN()) 0 else min
-        val actualMax = if (max.toDouble().isNaN()) 100 else max
-        return arrayOf(actualMin, actualMax)
-    }
-
-    private fun createUPlot() = uPlot(
-        UPlotOptions(800, 400).apply {
-            scales = json(
-                "x" to ScaleOptions(type = "n", range = ::graphRange),
-                "y" to ScaleOptions(type = "n", range = ::graphRange)
-            )
-            axes.y = arrayOf(AxeOption(scale = "y"))
-            series.x.label = page.i18n("Step")
-            series.y = context.grains.map { SerieOptions(scale = "y", label=it.label(true), color = it.color) }.toTypedArray()
-        },
-        arrayOf(
-            Array<Number>(simulator.step) { it },
-            *(simulator.grainCountHistory.values.map { it.toTypedArray<Number>() }.toTypedArray())
-        )
+    private fun createChart(): Chart = Chart(
+        page.i18n("Step"),
+        context.grains.map { ChartLine(label = it.label(true), color = it.color) }
     )
 
     fun toggleCharts() {
@@ -471,7 +419,7 @@ class SimulationRunController(
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()
-            chart.data.datasets = currentSimulator.grainCountHistory.filter { context.doesGrainCountCanChange(it.key) }.map {
+            chart.data.datasets = currentSimulator.grainCountHistory.map {
                 val dataSet = previous.getOrElse(it.key.id) {
                     LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }

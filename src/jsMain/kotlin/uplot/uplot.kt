@@ -51,13 +51,11 @@ class UPlotOptions(
 )
 
 @JsName("uPlot")
-external class `uPlot`(options: UPlotOptions, data: Array<Array<Number>>) {
-
-    val data: Array<Array<Number>>
+external class uPlot(options: UPlotOptions, data: Array<Array<out Number>>) {
 
     val root: HTMLElement
 
     fun getView(): Array<Number>
 
-    fun setData(data: Array<Array<Number>>, minView: Number = definedExternally, maxView: Number = definedExternally)
+    fun setData(data: Array<Array<out Number>>, minView: Number = definedExternally, maxView: Number = definedExternally)
 }

@@ -1,17 +1,4 @@
 @charset "UTF-8";
-:-moz-full-screen canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  width: 90%;
-  height: 50%;
-  box-shadow: 0px 0px 4px white;
-  background-color: white;
-}
-
 /*! bulma.io v0.8.0 | MIT License | github.com/jgthms/bulma */
 @keyframes spinAround {
   from {
@@ -11750,4 +11737,8 @@ div.field-label {
   border-left: 1rem solid transparent;
   border-right: 1rem solid transparent;
   border-bottom: 1rem solid #3fde77;
+}
+
+.uplot .off {
+  text-decoration: line-through;
 }

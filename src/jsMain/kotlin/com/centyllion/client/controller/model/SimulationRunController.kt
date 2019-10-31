@@ -134,9 +134,13 @@ class SimulationRunController(
     val runButton = iconButton(Icon("play"), ElementColor.Primary, rounded = true) { run() }
     val stepButton = iconButton(Icon("step-forward"), ElementColor.Primary, rounded = true) { step() }
     val stopButton = iconButton(Icon("stop"), ElementColor.Warning, rounded = true) { stop() }
-    val toggleChartsButton = iconButton(Icon("chart-line"), ElementColor.Dark, rounded = true) { toggleCharts() }
+    val toggleChartsButton = iconButton(
+        Icon("chart-line"), ElementColor.Info, rounded = true, light = presentCharts
+    ) { toggleCharts() }
 
-    val fpsSlider = Slider(fps.toString(), "1", "200", "1", color = ElementColor.Info, circle = true) { _, value ->
+    val fpsSlider = Slider(
+        fps.toString(), "1", "200", "1", color = ElementColor.Info, circle = true
+    ) { _, value ->
         fps = value.toDouble()
         setFpsColor(false)
         fpsLabel.text = if (fps >= 200) "warp" else "$value fps"
@@ -366,8 +370,8 @@ class SimulationRunController(
 
     fun toggleCharts() {
         presentCharts = !presentCharts
-        toggleChartsButton.color = if (presentCharts) ElementColor.Info else ElementColor.Dark
-        refreshChart()
+        chartContainer.hidden = !presentCharts
+        toggleChartsButton.light = presentCharts
     }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {
@@ -406,34 +410,6 @@ class SimulationRunController(
         refreshButtons()
         simulationViewController.refresh()
         refreshCounts()
-        refreshChart()
-    }
-
-    fun refreshChart() {
-        chartContainer.hidden = !presentCharts
-
-
-        //currentSimulator.grainCountHistory
-
-        /*
-        if (presentCharts) {
-            // refreshes charts
-            val previous = chart.data.datasets.map { it.key to it }.toMap()
-            chart.data.datasets = currentSimulator.grainCountHistory.map {
-                val dataSet = previous.getOrElse(it.key.id) {
-                    LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
-                }
-                dataSet.apply {
-                    label = it.key.label(true)
-                    borderColor = it.key.color
-                    backgroundColor = it.key.color
-                    data = it.value.mapIndexed { index, i -> LineChartPlot(index, i) }.toTypedArray()
-                }
-            }.toTypedArray()
-            lastChartRefresh = 0
-        }
-        chart.update()
-        */
     }
 
     fun dispose() {

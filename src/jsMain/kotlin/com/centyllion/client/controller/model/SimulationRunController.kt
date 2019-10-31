@@ -275,7 +275,9 @@ class SimulationRunController(
         root.style.height = "80vh"
         root.style.overflowY = "auto"
     }
+
     val simulationColumn = Column(simulationColumns, desktopSize = ColumnSize.S6)
+
     val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4).apply {
         root.style.height = "80vh"
         root.style.overflowY = "auto"

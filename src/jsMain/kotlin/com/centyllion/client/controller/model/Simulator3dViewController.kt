@@ -50,6 +50,7 @@ import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.files.Blob
 import kotlin.browser.window
@@ -540,6 +541,11 @@ class Simulator3dViewController(
         }
     }
 
+    private val resizeCallback: (Event) -> Unit = {
+        resizeSimulationCanvas()
+        Unit
+    }
+
     init {
         // Force loading of GLTF loader plugin
         GLTFFileLoader::class.simpleName
@@ -564,10 +570,7 @@ class Simulator3dViewController(
             }
         }
 
-        window.onresize = {
-            resizeSimulationCanvas()
-            Unit
-        }
+        window.addEventListener("resize", resizeCallback)
     }
 
     fun screenshot() = Promise<Blob> { resolve, reject ->
@@ -802,6 +805,7 @@ class Simulator3dViewController(
         engine.dispose()
         assetsManager.reset()
         pointer.dispose()
+        window.removeEventListener("resize", resizeCallback)
     }
 
     private fun resizeSimulationCanvas() {

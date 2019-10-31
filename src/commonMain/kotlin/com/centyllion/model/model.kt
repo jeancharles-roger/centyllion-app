@@ -414,6 +414,17 @@ data class GrainModel(
     }
 
     fun diagnose(locale: Locale): List<Problem> = behaviours.flatMap { it.diagnose(this, locale) }
+
+    /**
+     * Does the given [grain] may change count over the course of a simulation ?
+     */
+    fun doesGrainCountCanChange(grain: Grain): Boolean {
+        return grain.halfLife > 0 || behaviours.map {
+            val reactiveCount = it.reaction.map { if (it.reactiveId == grain.id) 1 else 0 }.sum() + (if (it.mainReactiveId == grain.id) 1 else 0)
+            val productCount = it.reaction.map { if (it.productId == grain.id) 1 else 0 }.sum() + (if (it.mainProductId == grain.id) 1 else 0)
+            reactiveCount != productCount
+        }.fold(false) { a, p -> a || p }
+    }
 }
 
 fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }

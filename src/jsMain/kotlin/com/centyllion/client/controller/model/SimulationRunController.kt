@@ -371,7 +371,8 @@ class SimulationRunController(
 
         // appends data to charts
         if (presentCharts) {
-            chart.data.datasets.zip(currentSimulator.lastGrainsCount().values) { set: LineDataSet, i: Int ->
+            val counts = currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
+            chart.data.datasets.zip(counts.values) { set: LineDataSet, i: Int ->
                 val data = set.data
                 if (data != null) {
                     val index = if (data.isEmpty()) 0 else data.lastIndex
@@ -436,7 +437,7 @@ class SimulationRunController(
         if (presentCharts) {
             // refreshes charts
             val previous = chart.data.datasets.map { it.key to it }.toMap()
-            chart.data.datasets = currentSimulator.grainCountHistory.map {
+            chart.data.datasets = currentSimulator.grainCountHistory.filter { context.doesGrainCountCanChange(it.key) }.map {
                 val dataSet = previous.getOrElse(it.key.id) {
                     LineDataSet(key = it.key.id, fill = "false", showLine = true, pointRadius = 1)
                 }

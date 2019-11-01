@@ -18,7 +18,6 @@ import bulma.MultipleController
 import bulma.TextSize
 import bulma.Title
 import bulma.WrappedController
-import bulma.canvas
 import bulma.columnsController
 import bulma.extension.Slider
 import bulma.iconButton
@@ -36,13 +35,7 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
-import uplot.AxeOption
-import uplot.ScaleOptions
-import uplot.SerieOptions
-import uplot.UPlotOptions
-import uplot.uPlot
 import kotlin.browser.window
-import kotlin.js.json
 import kotlin.properties.Delegates.observable
 
 class SimulationRunController(
@@ -361,13 +354,18 @@ class SimulationRunController(
     private fun executeStep() {
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
-        chart.push(currentSimulator.step, currentSimulator.lastGrainsCount().values)
+        chart.push(
+            currentSimulator.step,
+            currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }.values
+        )
         refreshCounts()
     }
 
     private fun createChart(): Chart = Chart(
         page.i18n("Step"),
-        context.grains.map { ChartLine(label = it.label(true), color = it.color) }
+        context.grains.filter { context.doesGrainCountCanChange(it) } .map {
+            ChartLine(label = it.label(true), color = it.color)
+        }
     )
 
     fun toggleCharts() {

@@ -55,6 +55,7 @@ class SimulationRunController(
             simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
             running = false
+            chart.reset()
             onUpdate(old, new, this@SimulationRunController)
             refresh()
         }

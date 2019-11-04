@@ -8,15 +8,28 @@ import kotlin.js.Json
 import kotlin.js.json
 import kotlin.properties.Delegates.observable
 
+private external interface Serie {
+    val label: String
+    val type: String
+    val scale: String
+    val width: Number
+    val show: Boolean
+}
 
-@JsName("uPlot")
+private external interface Series {
+    val x: Serie
+    val y: Array<Serie>
+}
+
 private external class uPlot(options: Json, data: Array<Array<out Number>>) {
 
     val root: HTMLElement
 
-    fun getView(): Array<Number>
-
     fun setData(data: Array<Array<out Number>>, minView: Number = definedExternally, maxView: Number = definedExternally)
+
+    fun toggle(idxs: Array<Int>, onOff: Boolean)
+
+    val series : Series
 }
 
 
@@ -63,11 +76,13 @@ class ChartController(
     override var data: Chart by observable(chart) { _, old, new ->
         if (old != new) {
             // resets chart data
-            chartData = ChartData(1, Array(new.lines.size) { emptyArray<Int>() })
-            reset()
+            resetChartData()
 
             // recreate uPlot
             uplot = createUPlot(new, size.first, size.second)
+        } else {
+            // the chart is the same but the model was updated, a reset is required
+            reset()
         }
     }
 
@@ -91,6 +106,7 @@ class ChartController(
 
     private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): uPlot? {
         if (chart.lines.isEmpty()) return null
+        val toggled = uplot?.series?.y?.filter{ !it.show }?.map { it.label } ?: emptyList()
         return uPlot(
             json(
                 "width" to width, "height" to height,
@@ -101,7 +117,11 @@ class ChartController(
                 "series" to json(
                     "x" to json("label" to data.xLabel),
                     "y" to chart.lines.map {
-                        json("type" to "n", "label" to it.label, "color" to it.color, "width" to it.width)
+                        json(
+                            "type" to "n", "label" to it.label,
+                            "show" to !toggled.contains(it.label),
+                            "color" to it.color, "width" to it.width
+                        )
                     }.toTypedArray()
                 )
             ),
@@ -109,11 +129,16 @@ class ChartController(
         )
     }
 
-    fun reset() {
+    private fun resetChartData() {
+        chartData = ChartData(1, Array(data.lines.size) { emptyArray<Int>() })
         xValues = Array(chartData.xCount) { it }
         yValues = chartData.data
         xMax = xValues.max() ?: 0
         yMax = yValues.map { it.max() ?: 0 }.max() ?: 0
+    }
+
+    fun reset() {
+        resetChartData()
         uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
     }
 

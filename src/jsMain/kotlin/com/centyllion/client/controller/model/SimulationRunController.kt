@@ -35,6 +35,8 @@ import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
+import org.w3c.dom.MutationObserver
+import org.w3c.dom.MutationObserverInit
 import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 
@@ -191,7 +193,7 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val chart = ChartController(createChart())
+    val chart = ChartController(createChart(), (window.innerWidth/2 to 400))
 
     val chartContainer = Div(chart, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
         hidden = !presentCharts
@@ -272,11 +274,13 @@ class SimulationRunController(
 
     val simulationColumn = Column(simulationColumns, desktopSize = ColumnSize.S6)
 
-    val behaviourColumn = Column(Title(page.i18n("Behaviours"), TextSize.S4), behaviourController, desktopSize = ColumnSize.S4).apply {
+    val behaviourColumn = Column(
+        Title(page.i18n("Behaviours"), TextSize.S4),
+        behaviourController, desktopSize = ColumnSize.S4
+    ).apply {
         root.style.height = "80vh"
         root.style.overflowY = "auto"
     }
-
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
@@ -288,7 +292,17 @@ class SimulationRunController(
         multiline = true, centered = true
     )
 
+    /** This observable is here to compute the correct size for canvas */
+    private val sizeObservable = MutationObserver { _, o ->
+        chart.size = simulationViewController.root.clientWidth to 400
+        o.disconnect()
+    }
+
     init {
+        sizeObservable.observe(
+            simulationView.root,
+            MutationObserverInit(childList = true, subtree = true, attributes = false)
+        )
         window.setTimeout({ animationCallback(0.0) }, 250)
     }
 
@@ -419,5 +433,6 @@ class SimulationRunController(
     fun dispose() {
         stop()
         simulationViewController.dispose()
+        sizeObservable.disconnect()
     }
 }

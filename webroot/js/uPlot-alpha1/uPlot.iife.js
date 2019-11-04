@@ -131,6 +131,11 @@ var uPlot = (function () {
 		}
 	}
 
+	// https://stackoverflow.com/questions/15141762/how-to-initialize-a-javascript-date-to-a-particular-time-zone/53652131#53652131
+	function tzDate(date, tz) {
+		return new Date(date.toLocaleString('en-US', {timeZone: tz}));
+	}
+
 	function debounce(fn, time) {
 		var pending = null;
 
@@ -223,8 +228,12 @@ var uPlot = (function () {
 	var mousedown = "mousedown";
 	var mouseup = "mouseup";
 	var dblclick = "dblclick";
+	var resize = "resize";
+	var scroll = "scroll";
 
 	var assign = Object.assign;
+
+	var isArr = Array.isArray;
 
 	/*
 	function isObj(v) {
@@ -265,7 +274,8 @@ var uPlot = (function () {
 	//	dash: [],
 	};
 
-	var m = 60,
+	var s = 1,
+		m = 60,
 		h = m * m,
 		d = h * 24,
 		y = d * 365;
@@ -348,6 +358,7 @@ var uPlot = (function () {
 	var secDate	= fmtDate(_second + md2);
 
 	function timeAxisVals(vals, space) {
+		var self = this;
 		var incr = vals[1] - vals[0];
 
 		// these track boundaries when a full label is needed again
@@ -355,7 +366,7 @@ var uPlot = (function () {
 		var prevDate = null;
 
 		return vals.map(function (val, i) {
-			var date = new Date(val * 1e3);
+			var date = self.tzDate(val);
 
 			var newYear = date[getFullYear]();
 			var newDate = date[getDate]();
@@ -386,7 +397,7 @@ var uPlot = (function () {
 	var longDateHourMin = fmtDate('{YYYY}-{MM}-{DD} {h}:{mm}{aa}');
 
 	function timeSeriesVal(val) {
-		return longDateHourMin(new Date(val * 1e3));
+		return longDateHourMin(this.tzDate(val));
 	}
 
 	var xAxisOpts = {
@@ -464,6 +475,9 @@ var uPlot = (function () {
 			sub: function sub(client) {
 				clients.push(client);
 			},
+			unsub: function unsub(client) {
+				clients = clients.filter(function (c) { return c != client; });
+			},
 			pub: function pub(type, self, x, y, w, h, i) {
 				if (clients.length > 1) {
 					clients.forEach(function (client) {
@@ -474,14 +488,29 @@ var uPlot = (function () {
 		};
 	}
 
-	function uPlot(opts, data) {
-		function setDefaults(d, xo, yo) {
-			return [d.x].concat(d.y).map(function (o, i) { return assign({}, (i == 0 ? xo : yo), o); });
-		}
+	function setDefaults(d, xo, yo) {
+		return [d.x].concat(d.y).map(function (o, i) { return assign({}, (i == 0 ? xo : yo), o); });
+	}
 
-		var series = setDefaults(opts.series, xSeriesOpts, ySeriesOpts);
-		var axes = setDefaults(opts.axes || {}, xAxisOpts, yAxisOpts);
-		var scales = (opts.scales = opts.scales || {});
+	function splitXY(d) {
+		return {
+			x: d[0],
+			y: d.slice(1),
+		};
+	}
+
+	function uPlot(opts, data) {
+		var self = this;
+
+		var series  = setDefaults(opts.series, xSeriesOpts, ySeriesOpts);
+		var axes    = setDefaults(opts.axes || {}, xAxisOpts, yAxisOpts);
+		var scales  = (opts.scales = opts.scales || {});
+
+		self.tzDate = opts.tzDate || (function (ts) { return new Date(ts * 1e3); });
+
+		self.series = splitXY(series);
+		self.axes = splitXY(axes);
+		self.scales = scales;
 
 		var legend = assign({}, {show: true}, opts.legend);
 
@@ -519,16 +548,24 @@ var uPlot = (function () {
 		var dataLen;
 
 		// rendered data window
-		var i0;
-		var i1;
+		self.i0 = null;
+		self.i1 = null;
 
 		function setData(_data, _i0, _i1) {
 			data = _data;
 			dataLen = data[0].length;
-			setView(_i0 != null ? _i0 : i0, _i1 != null ? _i1 : i1);
+			resetScales();
+
+			// resets min and max for series
+			series.forEach(function (s) {
+				s.min = inf;
+				s.max = -inf;
+			});
+
+			setView(_i0 != null ? _i0 : self.i0, _i1 != null ? _i1 : self.i1);
 		}
 
-		this.setData = setData;
+		self.setData = setData;
 
 		function setStylePx(el, name, value) {
 			el.style[name] = value + "px";
@@ -780,11 +817,13 @@ var uPlot = (function () {
 
 		// the ensures that axis ticks, values & grid are aligned to logical temporal breakpoints and not an arbitrary timestamp
 		function snapMinDate(scaleMin, scaleMax, incr) {
-			// get ts of 12am on day of i0 timestamp
-			var minDate = new Date(scaleMin * 1000);
+			// get the timezone-adjusted date
+			var minDate = self.tzDate(scaleMin);
+			// get ts of 12am (this lands us at or before the original scaleMin)
 			var min00 = +(new Date(minDate[getFullYear](), minDate[getMonth](), minDate[getDate]())) / 1000;
-			var offset = scaleMin - min00;
-			scaleMin = min00 + incrRoundUp(offset, incr);
+			minDate /= 1000;
+			var tzOffset = scaleMin - minDate;
+			scaleMin = min00 + tzOffset + incrRoundUp(minDate - min00, incr);
 			return [scaleMin, scaleMax];
 		}
 
@@ -792,51 +831,72 @@ var uPlot = (function () {
 			return [round6(incrRoundUp(scaleMin, incr)), scaleMax];
 		}
 
+		function getSerieMinMax(serie, data, _i0, _i1) {
+			if (serie.min == inf || serie.max == -inf) {
+				var minMax = getMinMax(data, _i0, _i1);
+				serie.min = minMax[0];
+				serie.max = minMax[1];
+			}
+			return [serie.min, serie.max]
+		}
+
 		function setScales() {
+			var scs = {};
+
 			for (var k in scales) {
-				scales[k].min = inf;
-				scales[k].max = -inf;
+				if (scales[k].min == inf)
+					{ scs[k] = true; }
 			}
 
 			series.forEach(function (s, i) {
-				var sc = scales[s.scale];
+				var k = s.scale;
 
-				// fast-path for x axis, which is assumed ordered ASC and will not get padded
-				if (i == 0) {
-					var minMax = sc.range(data[0][i0], data[0][i1]);
-					sc.min = minMax[0];
-					sc.max = minMax[1];
-				}
-				else if (s.show) {
-					var minMax$1 = sc.auto ? getMinMax(data[i], i0, i1) : [0,100];
+				if (k in scs) {
+					var sc = scales[k];
 
-					// this is temp data min/max
-					sc.min = min(sc.min, minMax$1[0]);
-					sc.max = max(sc.max, minMax$1[1]);
+					// fast-path for x axis, which is assumed ordered ASC and will not get padded
+					if (i == 0) {
+						var minMax = sc.range(data[0][self.i0], data[0][self.i1]);
+						sc.min = minMax[0];
+						sc.max = minMax[1];
+					}
+					else if (s.show) {
+						var minMax$1 = sc.auto ? getSerieMinMax(s, data[i], self.i0, self.i1) : [0,100];
+
+						// this is temp data min/max
+						sc.min = min(sc.min, minMax$1[0]);
+						sc.max = max(sc.max, minMax$1[1]);
+					}
 				}
 			});
 
 			// snap non-derived scales
 			for (var k$1 in scales) {
-				var sc = scales[k$1];
+				if (k$1 in scs) {
+					var sc = scales[k$1];
 
-				if (sc.base == null) {
-					var minMax = sc.range(sc.min, sc.max);
+					if (sc.base == null && sc.min != inf) {
+						var minMax = sc.range(sc.min, sc.max);
 
-					sc.min = minMax[0];
-					sc.max = minMax[1];
+						sc.min = minMax[0];
+						sc.max = minMax[1];
+					}
 				}
 			}
 
 			// snap derived scales
 			for (var k$2 in scales) {
-				var sc$1 = scales[k$2];
+				if (k$2 in scs) {
+					var sc$1 = scales[k$2];
 
-				if (sc$1.base != null) {
-					var base = scales[sc$1.base];
-					var minMax$1 = sc$1.range(base.min, base.max);
-					sc$1.min = minMax$1[0];
-					sc$1.max = minMax$1[1];
+					if (sc$1.base != null) {
+						var base = scales[sc$1.base];
+						if (base.min != inf) {
+							var minMax$1 = sc$1.range(base.min, base.max);
+							sc$1.min = minMax$1[0];
+							sc$1.max = minMax$1[1];
+						}
+					}
 				}
 			}
 		}
@@ -853,65 +913,83 @@ var uPlot = (function () {
 			return [_min, _max];
 		}
 
+		var dir = 1;
+
 		function drawSeries() {
 			series.forEach(function (s, i) {
-				if (i > 0 && s.show) {
-					drawLine(
-						data[0],
-						data[i],
-						scales[series[0].scale],
-						scales[s.scale],
-						s.color,
-						s[WIDTH],
-						s.dash,
-						s.fill,
-						s.band
-					);
-				}
+				if (i > 0 && s.show && s.path == null)
+					{ buildPath(i, data[0], data[i], scales[series[0].scale], scales[s.scale]); }
+			});
+
+			series.forEach(function (s, i) {
+				if (i > 0 && s.show)
+					{ drawPath(i); }
 			});
 		}
 
-		var dir = 1;
+		function drawPath(is) {
+			var s = series[is];
 
-		function drawLine(xdata, ydata, scaleX, scaleY, color, width, dash, fill, band) {
-			setCtxStyle(color, width, dash, fill);
+			if (dir == 1) {
+				var path = s.path;
+				var width = s[WIDTH];
+				var offset = (width % 2) / 2;
 
+				setCtxStyle(s.color, width, s.dash, s.fill);
+
+				ctx.translate(offset, offset);
+
+				if (s.band)
+					{ ctx.fill(path); }
+				else
+					{ ctx.stroke(path); }
+
+				ctx.translate(-offset, -offset);
+			}
+
+			if (s.band)
+				{ dir *= -1; }
+		}
+
+		function buildPath(is, xdata, ydata, scaleX, scaleY) {
+			var s = series[is];
+			// build path wasn't invalidate, no need to rebuild it
+			if (path != null) { return; }
+
+			var path = s.path = dir == 1 ? new Path2D() : series[is-1].path;
+			var width = s[WIDTH];
 			var offset = (width % 2) / 2;
-			ctx.translate(offset, offset);
 
 			var gap = false;
-
-			if (dir == 1)
-				{ ctx.beginPath(); }
 
 			var minY = inf,
 				maxY = -inf,
 				prevX = dir == 1 ? offset : can[WIDTH] + offset,
 				prevY, x, y;
 
-			for (var i = dir == 1 ? i0 : i1; dir == 1 ? i <= i1 : i >= i0; i += dir) {
+			for (var i = dir == 1 ? self.i0 : self.i1; dir == 1 ? i <= self.i1 : i >= self.i0; i += dir) {
 				x = getXPos(xdata[i], scaleX, can[WIDTH]);
 				y = getYPos(ydata[i], scaleY, can[HEIGHT]);
 
-				if (dir == -1 && i == i1)
-					{ ctx.lineTo(x, y); }
+				if (dir == -1 && i == self.i1)
+					{ path.lineTo(x, y); }
 
 				// bug: will break filled areas due to moveTo
 				if (y == null) {				// data gaps
 					gap = true;
-					ctx.moveTo(x, prevY);
+					path.moveTo(x, prevY);
 				}
 				else {
 					if ((dir == 1 ? x - prevX : prevX - x) >= width) {
 						if (gap) {
-							ctx.moveTo(x, y);
+							path.moveTo(x, y);
 							gap = false;
 						}
-						else if (dir == 1 ? i > i0 : i < i1) {
-							ctx.lineTo(prevX, maxY);		// cannot be moveTo if we intend to fill the path
-							ctx.lineTo(prevX, minY);
-							ctx.lineTo(prevX, prevY);		// cannot be moveTo if we intend to fill the path
-							ctx.lineTo(x, y);
+						else if (dir == 1 ? i > self.i0 : i < self.i1) {
+							path.lineTo(prevX, maxY);		// cannot be moveTo if we intend to fill the path
+							path.lineTo(prevX, minY);
+							path.lineTo(prevX, prevY);		// cannot be moveTo if we intend to fill the path
+							path.lineTo(x, y);
 						}
 
 						minY = maxY = y;
@@ -926,20 +1004,12 @@ var uPlot = (function () {
 				}
 			}
 
-			if (band) {
-				if (dir == -1) {
-					ctx.strokeStyle = "rgba(0,0,0,0)";
-					ctx.closePath();
-					ctx.fill();
-					ctx.stroke();
-				}
+			if (s.band) {
+				if (dir == -1)
+					{ path.closePath(); }
 
 				dir *= -1;
 			}
-			else
-				{ ctx.stroke(); }
-
-			ctx.translate(-offset, -offset);
 		}
 
 		// dim is logical (getClientBoundingRect) pixels, not canvas pixels
@@ -984,8 +1054,8 @@ var uPlot = (function () {
 				var ch = axis.vals[firstChild];
 
 				// this will happen if all series using a specific scale are toggled off
-				if (isNaN(scale.min)) {
-					clearFrom(ch);
+				if (scale.min == inf) {
+					ch && clearFrom(ch);
 					return;
 				}
 
@@ -1009,7 +1079,7 @@ var uPlot = (function () {
 				// TODO: filter ticks & offsets that will end up off-canvas
 				var canOffs = ticks.map(function (val) { return getPos(val, scale, can[dim]); });		// bit of waste if we're not drawing a grid
 
-				var labels = axis.values(ticks, space);
+				var labels = axis.values.call(self, ticks, space);
 
 				canOffs.forEach(function (off, i) {
 					ch = gridLabel(ch, axis.vals, labels[i], cssProp, round(off/pxRatio))[nextSibling];
@@ -1020,6 +1090,8 @@ var uPlot = (function () {
 				var grid = axis.grid;
 
 				if (grid) {
+					// note: the grid is cheap to build & redraw unconditionally, so does not
+					// use the retained Path2D optimization or additional invalidation logic
 					var offset = (grid[WIDTH] % 2) / 2;
 					ctx.translate(offset, offset);
 
@@ -1052,9 +1124,35 @@ var uPlot = (function () {
 			});
 		}
 
+		function resetScales() {
+			for (var key in scales)
+				{ resetScale(key); }
+		}
+
+		function resetScale(key) {
+			var sc = scales[key];
+
+			// if not already reset
+			if (sc.min != inf) {
+				sc.min =  inf;
+				sc.max = -inf;
+
+				// invalidate paths that use this scale
+				series.forEach(function (s) {
+					if (s.scale == key)
+						{ s.path = null; }
+				});
+
+				// TODO: derived scales
+			}
+		}
+
 		function setView(_i0, _i1) {
-			i0 = _i0;
-			i1 = _i1;
+			if (_i0 != self.i0 || _i1 != self.i1)
+				{ resetScales(); }
+
+			self.i0 = _i0;
+			self.i1 = _i1;
 
 			setScales();
 			ctx.clearRect(0, 0, can[WIDTH], can[HEIGHT]);
@@ -1063,13 +1161,7 @@ var uPlot = (function () {
 			updatePointer();
 		}
 
-		this.setView = setView;
-
-		function getView() {
-			return [i0, i1];
-		}
-
-		this.getView = getView;
+		self.setView = setView;
 
 	//	INTERACTION
 
@@ -1091,13 +1183,52 @@ var uPlot = (function () {
 
 		var leg = placeDiv("legend", root);
 
-		function toggle(i) {
+		function toggleDOM(i, onOff) {
 			var s = series[i];
 			var label = legendLabels[i];
-			s.show = !s.show;
-			label[classList].toggle('off');
-			!s.show && trans(cursorPts[i], 0, -10);
+			s.show = onOff != null ? onOff : !s.show;
+
+			if (s.show)
+				{ label[classList].remove("off"); }
+			else {
+				label[classList].add("off");
+				trans(cursorPts[i], 0, -10);
+			}
 		}
+
+		function toggle(idxs, onOff) {
+			(isArr(idxs) ? idxs : [idxs]).forEach(function (i) {
+				var s = series[i];
+
+				// computes current scale min and max
+				var scaleMin = inf;
+				var scaleMax = -inf;
+				series.forEach(function (s) {
+					if (s.show) {
+						scaleMin = min(scaleMin, s.min);
+						scaleMax = max(scaleMax, s.max);
+					}
+				});
+
+				toggleDOM(i, onOff);
+
+				if (s.band) {
+					// not super robust, will break if two bands are adjacent
+					var ip = series[i+1].band ? i+1 : i-1;
+					toggleDOM(ip, onOff);
+				}
+
+				// reset scale if current serie is actually the min or max bound
+				// if the toggled serie was the lower bound then s.min == scaleMin (same for max)
+				// the test then must be `s.min <= scaleMin` (or `s.max >= scaleMax`).
+				if (s.min <= scaleMin || s.max >= scaleMax)
+					{ resetScale(s.scale); }
+			});
+
+			setView(self.i0, self.i1);
+		}
+
+		self.toggle = toggle;
 
 		var legendLabels = legend.show ? series.map(function (s, i) {
 			var label = placeDiv(null, leg);
@@ -1107,17 +1238,7 @@ var uPlot = (function () {
 
 			if (i > 0) {
 				on("click", label, function (e) {
-					if (filtMouse(e)) {
-						toggle(i);
-
-						if (s.band) {
-							// not super robust, will break if two bands are adjacent
-							var pairedSeries = series[i+1].band ? i+1 : i-1;
-							toggle(pairedSeries);
-						}
-
-						setView(i0, i1);
-					}
+					filtMouse(e) && toggle(i);
 				});
 			}
 
@@ -1140,15 +1261,13 @@ var uPlot = (function () {
 			var xsc = scales[series[0].scale];
 			var d = xsc.max - xsc.min;
 			var t = xsc.min + pctX * d;
-			var idx = closestIdx(t, data[0], i0, i1);
+			var idx = closestIdx(t, data[0], self.i0, self.i1);
 			return idx;
 		}
 
 		function trans(el, xPos, yPos) {
 			el.style.transform = "translate(" + xPos + "px," + yPos + "px)";
 		}
-
-		var self = this;
 
 		function updatePointer(pub) {
 			rafPending = false;
@@ -1173,11 +1292,12 @@ var uPlot = (function () {
 					if (yPos == null)
 						{ yPos = -10; }
 
-					trans(cursorPts[i], xPos, yPos);
+					if (cursorPts[i] != null)
+						{ trans(cursorPts[i], xPos, yPos); }
 				}
 
 				if (legend.show)
-					{ legendLabels[i][firstChild].nodeValue = s.label + ': ' + s.value(data[i][idx]); }
+					{ legendLabels[i][firstChild].nodeValue = s.label + ': ' + s.value.call(self, data[i][idx]); }
 			}
 
 			if (dragging) {
@@ -1222,8 +1342,14 @@ var uPlot = (function () {
 			}
 		}
 
+		var evOpts = {passive: true};
+
 		function on(ev, el, cb) {
-			el.addEventListener(ev, cb, {passive: true});
+			el.addEventListener(ev, cb, evOpts);
+		}
+
+		function off(ev, el, cb) {
+			el.removeEventListener(ev, cb, evOpts);
 		}
 
 		function mouseDown(e, src, _x, _y, _w, _h, _i) {
@@ -1233,6 +1359,8 @@ var uPlot = (function () {
 				if (e != null) {
 					x0 = e.clientX - rect.left;
 					y0 = e.clientY - rect.top;
+
+					on(mouseup, doc, mouseUp);
 					sync.pub(mousedown, self, x0, y0, canCssWidth, canCssHeight, null);
 				}
 				else {
@@ -1259,13 +1387,15 @@ var uPlot = (function () {
 					);
 				}
 
-				if (e != null)
-					{ sync.pub(mouseup, self, x, y, canCssWidth, canCssHeight, null); }
+				if (e != null) {
+					off(mouseup, doc, mouseUp);
+					sync.pub(mouseup, self, x, y, canCssWidth, canCssHeight, null);
+				}
 			}
 		}
 
 		function dblClick(e, src, _x, _y, _w, _h, _i) {
-			if (i0 == 0 && i1 == dataLen - 1)
+			if (self.i0 == 0 && self.i1 == dataLen - 1)
 				{ return; }
 
 			setView(0, dataLen - 1);
@@ -1282,33 +1412,43 @@ var uPlot = (function () {
 		events[dblclick] = dblClick;
 
 		for (var ev in events)
-			{ on(ev, ev == mouseup ? doc : can, events[ev]); }
+			{ ev != mouseup && on(ev, can, events[ev]); }
 
 		var deb = debounce(syncRect, 100);
 
-		on("resize", win, deb);
-		on("scroll", win, deb);
+		on(resize, win, deb);
+		on(scroll, win, deb);
 
-		this.root = root;
+		self.root = root;
 
 		var syncKey = cursor.sync;
 
 		var sync = syncKey != null ? (syncs[syncKey] = syncs[syncKey] || _sync()) : _sync();
 
-		sync.sub(this);
+		sync.sub(self);
 
 		function pub(type, src, x, y, w, h, i) {
 			events[type](null, src, x, y, w, h, i);
 		}
 
-		this.pub = pub;
+		self.pub = pub;
 
 		setData(data, 0, data[0].length - 1);
+
+		function destroy() {
+			sync.unsub(self);
+			off(resize, win, deb);
+			off(scroll, win, deb);
+			root.remove();
+		}
+
+		self.destroy = destroy;
 
 		plot.appendChild(can);
 	}
 
 	uPlot.fmtDate = fmtDate;
+	uPlot.tzDate = tzDate;
 
 	return uPlot;
 

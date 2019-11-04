@@ -76,8 +76,6 @@ class ChartController(
 
     override var data: Chart by observable(chart) { _, old, new ->
         if (old != new) {
-            console.log(new.lines)
-
             // resets chart data
             resetChartData()
 

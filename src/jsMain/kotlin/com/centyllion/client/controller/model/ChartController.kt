@@ -22,7 +22,7 @@ private external interface Series {
     val y: Array<Serie>
 }
 
-private external class uPlot(options: Json, data: Array<Array<out Number>>) {
+private external class uPlot(options: Json, data: Array<Array<Int>>) {
 
     val root: HTMLElement
 
@@ -35,7 +35,7 @@ private external class uPlot(options: Json, data: Array<Array<out Number>>) {
 
 
 data class ChartLine(
-    val label: String, val color: String, val width: Int = 2
+    val label: String, val color: String, val width: Int = 2, val initial: Int
 )
 
 data class Chart(
@@ -52,7 +52,7 @@ class ChartController(
     chart: Chart, size: Pair<Int, Int> = 800 to 400
 ): NoContextController<Chart, Div>() {
 
-    private var chartData = ChartData(1, Array(chart.lines.size) { emptyArray<Int>() })
+    private var chartData = ChartData(1, Array(chart.lines.size) { arrayOf(chart.lines[it].initial) })
 
     private var xValues = Array(chartData.xCount) { it }
 
@@ -76,6 +76,8 @@ class ChartController(
 
     override var data: Chart by observable(chart) { _, old, new ->
         if (old != new) {
+            console.log(new.lines)
+
             // resets chart data
             resetChartData()
 
@@ -132,7 +134,7 @@ class ChartController(
     }
 
     private fun resetChartData() {
-        chartData = ChartData(1, Array(data.lines.size) { emptyArray<Int>() })
+        chartData = ChartData(1, Array(data.lines.size) { arrayOf(data.lines[it].initial) })
         xValues = Array(chartData.xCount) { it }
         yValues = chartData.data
         xMax = xValues.max() ?: 0

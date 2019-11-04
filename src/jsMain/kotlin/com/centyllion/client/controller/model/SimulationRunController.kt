@@ -55,7 +55,7 @@ class SimulationRunController(
             simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
             running = false
-            chart.reset()
+            chart.data = createChart()
             onUpdate(old, new, this@SimulationRunController)
             refresh()
         }
@@ -362,12 +362,15 @@ class SimulationRunController(
         refreshCounts()
     }
 
-    private fun createChart(): Chart = Chart(
-        page.i18n("Step"),
-        context.grains.filter { context.doesGrainCountCanChange(it) } .map {
-            ChartLine(label = it.label(true), color = it.color)
-        }
-    )
+    private fun createChart(): Chart {
+        val counts = simulator.grainsCounts()
+        return Chart(
+            page.i18n("Step"),
+            context.grains.filter { context.doesGrainCountCanChange(it) } .map {
+                ChartLine(label = it.label(true), color = it.color, initial = counts[it.id] ?: 0)
+            }
+        )
+    }
 
     fun toggleCharts() {
         presentCharts = !presentCharts

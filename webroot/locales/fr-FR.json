@@ -140,6 +140,9 @@
     "Medium": "Moyen",
     "Large": "Grand",
 
+    "Step": "Pas",
+    "No line to show": "Aucune ligne à montrer",
+
     "Loading": "Chargement",
 
     "Total %0, this week %1, this month %2": "Total %0, cette semaine %1, ce mois %2",

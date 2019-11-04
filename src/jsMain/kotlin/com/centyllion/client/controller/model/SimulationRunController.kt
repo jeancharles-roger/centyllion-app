@@ -193,7 +193,7 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val chart = ChartController(createChart(), (window.innerWidth/2 to 400))
+    val chart = ChartController(page, createChart(), (window.innerWidth/2 to 400))
 
     val chartContainer = Div(chart, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
         hidden = !presentCharts

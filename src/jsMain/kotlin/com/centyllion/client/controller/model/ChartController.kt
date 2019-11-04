@@ -1,8 +1,10 @@
 package com.centyllion.client.controller.model
 
 import bulma.Div
+import bulma.Label
 import bulma.NoContextController
 import com.centyllion.client.controller.utils.push
+import com.centyllion.client.page.BulmaPage
 import org.w3c.dom.HTMLElement
 import kotlin.js.Json
 import kotlin.js.json
@@ -49,7 +51,7 @@ class ChartData(
 )
 
 class ChartController(
-    chart: Chart, size: Pair<Int, Int> = 800 to 400
+    val page: BulmaPage, chart: Chart, size: Pair<Int, Int> = 800 to 400
 ): NoContextController<Chart, Div>() {
 
     private var chartData = ChartData(1, Array(chart.lines.size) { arrayOf(chart.lines[it].initial) })
@@ -62,9 +64,19 @@ class ChartController(
 
     private var yMax = yValues.map { it.max() ?: 0 }
 
+    private val emptyChart = Label(page.i18n("No line to show"))
+
     private var uplot: uPlot? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
-        if (old != null) container.root.removeChild(old.root)
-        if (new != null) container.root.appendChild(new.root)
+        if (old != null) {
+            container.root.removeChild(old.root)
+        } else {
+            container.root.removeChild(emptyChart.root)
+        }
+        if (new != null) {
+            container.root.appendChild(new.root)
+        } else {
+            container.root.appendChild(emptyChart.root)
+        }
     }
 
     var size: Pair<Int, Int> by observable(size) { _, old, new ->
@@ -91,7 +103,11 @@ class ChartController(
     }
 
     override val container: Div = Div().apply {
-        uplot?.let { root.appendChild(it.root) }
+        if (uplot != null) {
+            uplot?.let { root.appendChild(it.root) }
+        } else {
+            root.appendChild(emptyChart.root)
+        }
     }
 
     override fun refresh() {

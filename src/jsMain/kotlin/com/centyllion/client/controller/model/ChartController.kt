@@ -6,6 +6,7 @@ import com.centyllion.client.controller.utils.push
 import org.w3c.dom.HTMLElement
 import kotlin.js.Json
 import kotlin.js.json
+import kotlin.math.max
 import kotlin.properties.Delegates.observable
 
 private external interface Serie {
@@ -59,7 +60,7 @@ class ChartController(
 
     private var xMax = xValues.max() ?: 0
 
-    private var yMax = yValues.map { it.max() ?: 0 }.max() ?: 0
+    private var yMax = yValues.map { it.max() ?: 0 }
 
     private var uplot: uPlot? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
         if (old != null) container.root.removeChild(old.root)
@@ -101,7 +102,8 @@ class ChartController(
     }
 
     private fun graphRangeY(min: Number, max: Number): Array<Number> {
-        return arrayOf(0, yMax + (0.1 * yMax))
+        val currentMax = yMax.filterIndexed { i, _ -> (uplot?.series?.y?.get(i)?.show) ?: false }.max() ?: 0
+        return arrayOf(0, 1.1*currentMax)
     }
 
     private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): uPlot? {
@@ -134,7 +136,7 @@ class ChartController(
         xValues = Array(chartData.xCount) { it }
         yValues = chartData.data
         xMax = xValues.max() ?: 0
-        yMax = yValues.map { it.max() ?: 0 }.max() ?: 0
+        yMax = yValues.map { it.max() ?: 0 }
     }
 
     fun reset() {
@@ -145,7 +147,7 @@ class ChartController(
     fun push(x: Int, ys: Collection<Int>) {
         xMax = maxOf(xMax, x)
         xValues.push(x)
-        yMax = maxOf(yMax, ys.max() ?: 0)
+        yMax = yMax.zip(ys) { c, n -> max(c, n) }
         ys.zip(yValues) { y, data -> data.push(y) }
         uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
     }

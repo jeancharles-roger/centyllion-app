@@ -294,6 +294,7 @@ class SimulationRunController(
 
     /** This observable is here to compute the correct size for canvas */
     private val sizeObservable = MutationObserver { _, o ->
+        simulationViewController.resizeSimulationCanvas()
         chart.size = simulationViewController.root.clientWidth to 400
         o.disconnect()
     }

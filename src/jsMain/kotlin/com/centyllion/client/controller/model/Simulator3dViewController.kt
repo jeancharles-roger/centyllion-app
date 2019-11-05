@@ -808,7 +808,7 @@ class Simulator3dViewController(
         window.removeEventListener("resize", resizeCallback)
     }
 
-    private fun resizeSimulationCanvas() {
+    fun resizeSimulationCanvas() {
         // resize only if the canvas is actually shown
         if (simulationCanvas.root.offsetParent != null) {
             val canvas = simulationCanvas.root

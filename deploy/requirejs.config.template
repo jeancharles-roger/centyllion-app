@@ -2,11 +2,17 @@ requirejs.config({
     'baseUrl': '/js',
     paths: {
         'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
+        'uPlot': 'uPlot-alpha2/uPlot.iife',
         'dragula': 'dragula-3.7.2/dragula',
         'babylonjs': 'babylonjs-4.0.3/babylon',
         'babylonjs-materials': 'babylonjs-4.0.3/babylon.gridMaterial',
         'babylonjs-loaders': 'babylonjs-4.0.3/babylonjs.loaders',
         %DEPENDENCIES%
+    },
+    shim: {
+        'uPlot': {
+            exports: 'uPlot'
+        }
     }
 })
 

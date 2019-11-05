@@ -38,12 +38,9 @@ fun HTML.centyllionHead(title: String) = head {
         attributes["crossorigin"] = "anonymous"
     }
 
-    link("/js/uPlot-alpha1/uPlot.css", "stylesheet")
-
     // Javascript
     script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
     script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
-    script(src = "/js/uPlot-alpha1/uPlot.iife.js") {}
     script(src = "/js/require.js") {}
     script(src = "https://static.ekko.chat/now/ekkonow.min.js") {}
 

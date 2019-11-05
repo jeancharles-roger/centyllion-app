@@ -24,6 +24,7 @@ private external interface Series {
     val y: Array<Serie>
 }
 
+@JsModule("uPlot")
 private external class uPlot(options: Json, data: Array<Array<Int>>) {
 
     val root: HTMLElement

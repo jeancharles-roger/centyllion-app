@@ -73,6 +73,10 @@ class Simulator(
         model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
     }
 
+    val fieldAmountHistory = fieldAmounts().let { amounts ->
+        model.fields.map { it to mutableListOf(amounts[it.id] ?: 0f) }.toMap()
+    }
+
     var step = 0
 
     private val allBehaviours = model.behaviours + model.grains.mapNotNull { it.moveBehaviour() }
@@ -85,6 +89,8 @@ class Simulator(
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
+    fun lastFieldAmount(): Map<Field, Float> = fieldAmountHistory.map { it.key to it.value.last() }.toMap()
+
     fun getSpeed(behaviour: Behaviour) = speeds[behaviour] ?: 0.0
 
     fun setSpeed(behaviour: Behaviour, speed: Double) {
@@ -95,6 +101,7 @@ class Simulator(
     fun oneStep(): Pair<Collection<ApplicableBehavior>, Collection<Int>> {
         // applies agents dying process
         val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
+        val currentFieldAmounts = model.fields.map { it to 0f }.toMap().toMutableMap()
 
         // defines values for fields to avoid dynamic call each time
         val fields = fields
@@ -220,6 +227,8 @@ class Simulator(
                         }.sum() / count
 
                     next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
+                    // count current field amounts
+                    currentFieldAmounts[field] = (currentFieldAmounts[field] ?: 0f) + next[i]
                 }
             }
         }
@@ -232,6 +241,11 @@ class Simulator(
         // stores count for each grain
         currentCount.forEach {
             grainCountHistory[it.key]?.add(it.value)
+        }
+
+        // stores field amounts
+        currentFieldAmounts.forEach {
+            fieldAmountHistory[it.key]?.add(it.value)
         }
 
         // swap fields
@@ -319,4 +333,6 @@ class Simulator(
         }
         return result
     }
+
+    fun fieldAmounts(): Map<Int, Float> = fields.map { it.key to it.value.sum() }.toMap()
 }

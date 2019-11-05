@@ -3,18 +3,17 @@ package com.centyllion.client
 import bulma.BulmaElement
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
+import markdownit.MarkdownIt
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.browser.document
-import kotlin.browser.window
 
 external fun encodeURIComponent(parameter: String): String
 
 external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
 
-// TODO Couldn't make it work with a val, recreate the renderer each time.
-fun markdownToHtml(source: String) = window.asDynamic().markdownit().render(source) as String
+fun markdownToHtml(source: String) = MarkdownIt().render(source)
 
 fun Number.toFixed(size: Int = 3): String = toDouble().toFixed(size)
 fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String

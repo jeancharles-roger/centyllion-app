@@ -463,4 +463,5 @@ external interface KeycloakInstance {
     fun loadUserInfo(): Promise<Any>
 }
 
+@JsModule("keycloak")
 external fun Keycloak(config: String? = definedExternally): KeycloakInstance

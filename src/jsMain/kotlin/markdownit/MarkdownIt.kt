@@ -19,7 +19,8 @@ class MarkdownItOptions(
     val highlight: ((string: String, lang: String) -> String)? = null
 )
 
-external interface MarkdownIt {
+@JsModule("markdown-it")
+external class MarkdownIt() {
 
     fun enable(option: String, ignoreInvalid: Boolean = definedExternally)
     fun enable(options: Array<String>, ignoreInvalid: Boolean = definedExternally)

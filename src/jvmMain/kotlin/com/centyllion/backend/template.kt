@@ -39,9 +39,8 @@ fun HTML.centyllionHead(title: String) = head {
     }
 
     // Javascript
-    script(src = "/js/Keycloak-4.8.0/keycloak.js") {}
-    script(src = "/js/markdown-it-9.1.0/markdown-it.min.js") {}
     script(src = "/js/require.js") {}
+
     script(src = "https://static.ekko.chat/now/ekkonow.min.js") {}
 
 }

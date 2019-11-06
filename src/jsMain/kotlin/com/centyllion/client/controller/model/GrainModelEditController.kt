@@ -9,6 +9,7 @@ import bulma.Icon
 import bulma.Level
 import bulma.MultipleController
 import bulma.NoContextController
+import bulma.Size
 import bulma.SubTitle
 import bulma.TextSize
 import bulma.Title
@@ -17,6 +18,7 @@ import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
 import com.centyllion.client.controller.utils.SearchController
+import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
@@ -39,11 +41,11 @@ class GrainModelEditController(
 
     override var data: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            fieldsController.data = data.fields.filtered()
+            fieldsController.data = data.fields.filtered(searchController.data)
             grainsController.context = data
-            grainsController.data = data.grains.filtered()
+            grainsController.data = data.grains.filtered(searchController.data)
             behavioursController.context = data
-            behavioursController.data = data.behaviours.filtered()
+            behavioursController.data = data.behaviours.filtered(searchController.data)
 
             // if edited isn't in model anymore, stops edition
             if (edited != null && (new.fields + new.grains + new.behaviours).none { it == edited } ) edit(null)
@@ -66,25 +68,25 @@ class GrainModelEditController(
         }
     }
 
-    val searchController: SearchController = SearchController(page) { _, _ ->
-        fieldsController.data = data.fields.filtered()
-        grainsController.data = data.grains.filtered()
-        behavioursController.data = data.behaviours.filtered()
+    val searchController: SearchController = SearchController(page) { _, filter ->
+        fieldsController.data = data.fields.filtered(filter)
+        grainsController.data = data.grains.filtered(filter)
+        behavioursController.data = data.behaviours.filtered(filter)
     }
 
-    val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+    val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true, size = Size.Small) {
         val field = data.newField(page.i18n("Field"))
         this.data = data.copy(fields = data.fields + field)
         edit(field)
     }
 
-    val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+    val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true, size = Size.Small) {
         val grain = data.newGrain(page.i18n("Grain"))
         this.data = data.copy(grains = data.grains + grain)
         edit(grain)
     }
 
-    val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
+    val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true, size = Size.Small) {
         val behaviour = data.newBehaviour(page.i18n("Behaviour"))
         this.data = data.copy(behaviours = data.behaviours + behaviour)
         edit(behaviour)
@@ -199,8 +201,4 @@ class GrainModelEditController(
         root.scrollIntoView(ScrollOptions(ScrollBehavior.SMOOTH))
     }
 
-    fun <T: ModelElement> List<T>.filtered() = searchController.data.let { filter ->
-        if (filter.isBlank()) this
-        else this.filter { it.name.contains(filter, true) || it.description.contains(filter, true) }
-    }
 }

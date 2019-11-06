@@ -7,6 +7,7 @@ import bulma.Delete
 import bulma.Div
 import bulma.TabItem
 import bulma.Tabs
+import com.centyllion.model.ModelElement
 import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -47,3 +48,8 @@ fun editorBox(title: String, icon: String?, vararg body: BulmaElement) = Div(
     Tabs(TabItem(title, icon).apply { active = true }, boxed = true).apply { root.classList.add("editor")},
     Box(*body).apply { root.classList.add("editor") }
 ).apply { root.style.display = "contents"}
+
+
+fun <T: ModelElement> List<T>.filtered(filter: String) =
+    if (filter.isBlank()) this
+    else this.filter { it.name.contains(filter, true) || it.description.contains(filter, true) }

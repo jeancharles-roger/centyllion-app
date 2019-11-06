@@ -23,6 +23,8 @@ import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.textButton
 import bulma.wrap
+import com.centyllion.client.controller.utils.SearchController
+import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.stringHref
@@ -67,9 +69,9 @@ class SimulationRunController(
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
             data = data.cleaned(new)
-            fieldsController.data = new.fields
-            grainsController.data = new.grains
-            behavioursController.data = new.behaviours
+            fieldsController.data = new.fields.filtered(searchController.data)
+            grainsController.data = new.grains.filtered(searchController.data)
+            behavioursController.data = new.behaviours.filtered(searchController.data)
             selectedGrainController.context = new.grains
             selectedGrainController.data = new.grains.firstOrNull()
             currentSimulator = Simulator(new, data)
@@ -146,6 +148,11 @@ class SimulationRunController(
         toggleElementToFullScreen(simulationColumns.root)
     }
 
+    val searchController: SearchController = SearchController(page) { _, filter ->
+        fieldsController.data = context.fields.filtered(filter)
+        grainsController.data = context.grains.filtered(filter)
+        behavioursController.data = context.behaviours.filtered(filter)
+    }
 
     val fieldTitle = Level(
         left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
@@ -254,6 +261,7 @@ class SimulationRunController(
         }
 
     val selectorColumn = Column(
+        searchController,
         fieldTitle,
         fieldsController,
         grainTitle,

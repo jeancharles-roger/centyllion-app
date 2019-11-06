@@ -8,7 +8,6 @@ import bulma.ColumnSize
 import bulma.Columns
 import bulma.Control
 import bulma.Controller
-import bulma.Div
 import bulma.ElementColor
 import bulma.Icon
 import bulma.Label
@@ -39,6 +38,7 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.behaviourIcon
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
 import kotlin.browser.window
@@ -60,7 +60,8 @@ class SimulationRunController(
             simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
             running = false
-            chart.data = createChart()
+            grainChart.data = createGrainChart()
+            fieldChart.data = createFieldChart()
             onUpdate(old, new, this@SimulationRunController)
             refresh()
         }
@@ -77,7 +78,8 @@ class SimulationRunController(
             currentSimulator = Simulator(new, data)
             behavioursController.context = currentSimulator
             simulationViewController.data = currentSimulator
-            chart.data = createChart()
+            grainChart.data = createGrainChart()
+            fieldChart.data = createFieldChart()
             running = false
             refresh()
         }
@@ -222,11 +224,15 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val chart = ChartController(page, createChart(), (window.innerWidth/2 to 400))
+    val grainChart = ChartController(page, page.i18n("Grains"), createGrainChart(), (window.innerWidth/2 to 400))
 
-    val chartContainer = Div(chart, Level(center = listOf(exportCsvButton)), classes = "has-text-centered").apply {
-        hidden = !presentCharts
-    }
+    val fieldChart = ChartController(page, page.i18n("Fields"), createFieldChart(), (window.innerWidth/2 to 400))
+
+    val chartContainer = Columns(
+        Column(grainChart, size = ColumnSize.Half),
+        Column(fieldChart, size = ColumnSize.Half),
+        Column(Level(center = listOf(exportCsvButton)), size = ColumnSize.Full)
+    ).apply { hidden = !presentCharts }
 
     var simulationViewController = Simulator3dViewController(currentSimulator, page, readOnly) { ended, new, _ ->
         updatedSimulatorFromView(ended, new)
@@ -322,7 +328,16 @@ class SimulationRunController(
     /** This observable is here to compute the correct size for canvas */
     private val sizeObservable = MutationObserver { _, o ->
         simulationViewController.resize()
-        chart.size = chartContainer.root.clientWidth to 400
+        val grainParent = grainChart.root.parentElement
+        if (grainParent is HTMLElement) {
+            grainChart.size = (grainParent.offsetWidth-30) to 400
+        }
+
+        val fieldParent = fieldChart.root.parentElement
+        if (fieldParent is HTMLElement) {
+            fieldChart.size = (fieldParent.offsetWidth-30) to 400
+        }
+
         o.disconnect()
     }
 
@@ -388,7 +403,8 @@ class SimulationRunController(
     fun reset() {
         if (!running) {
             currentSimulator.reset()
-            chart.reset()
+            grainChart.reset()
+            fieldChart.reset()
             refresh()
         }
     }
@@ -396,19 +412,33 @@ class SimulationRunController(
     private fun executeStep() {
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
-        chart.push(
+        grainChart.push(
             currentSimulator.step,
             currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }.values
+        )
+        fieldChart.push(
+            currentSimulator.step,
+            currentSimulator.lastFieldAmount().values
         )
         refreshCounts()
     }
 
-    private fun createChart(): Chart {
+    private fun createGrainChart(): Chart {
         val counts = simulator.grainsCounts()
         return Chart(
             page.i18n("Step"),
             context.grains.filter { context.doesGrainCountCanChange(it) } .map {
                 ChartLine(label = it.label(true), color = it.color, initial = counts[it.id] ?: 0)
+            }
+        )
+    }
+
+    private fun createFieldChart(): Chart {
+        val amounts = simulator.fieldAmounts()
+        return Chart(
+            page.i18n("Step"),
+            context.fields.map {
+                ChartLine(label = it.label(true), color = it.color, initial = amounts[it.id] ?: 0)
             }
         )
     }

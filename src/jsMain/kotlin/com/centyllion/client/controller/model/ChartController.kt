@@ -3,6 +3,7 @@ package com.centyllion.client.controller.model
 import bulma.Div
 import bulma.Label
 import bulma.NoContextController
+import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
 import org.w3c.dom.HTMLElement
@@ -25,7 +26,7 @@ private external interface Series {
 }
 
 @JsModule("uPlot")
-private external class uPlot(options: Json, data: Array<Array<Int>>) {
+private external class uPlot(options: Json, data: Array<Array<Number>>) {
 
     val root: HTMLElement
 
@@ -38,7 +39,7 @@ private external class uPlot(options: Json, data: Array<Array<Int>>) {
 
 
 data class ChartLine(
-    val label: String, val color: String, val width: Int = 2, val initial: Int
+    val label: String, val color: String, val width: Int = 2, val initial: Number
 )
 
 data class Chart(
@@ -48,22 +49,22 @@ data class Chart(
 
 class ChartData(
     val xCount: Int,
-    val data: Array<Array<Int>>
+    val data: Array<Array<Number>>
 )
 
 class ChartController(
-    val page: BulmaPage, chart: Chart, size: Pair<Int, Int> = 800 to 400
+    val page: BulmaPage, title: String, chart: Chart, size: Pair<Int, Int> = 800 to 400
 ): NoContextController<Chart, Div>() {
 
     private var chartData = ChartData(1, Array(chart.lines.size) { arrayOf(chart.lines[it].initial) })
 
-    private var xValues = Array(chartData.xCount) { it }
+    private var xValues = Array<Number>(chartData.xCount) { it }
 
-    private var yValues: Array<Array<Int>> = chartData.data
+    private var yValues: Array<Array<Number>> = chartData.data
 
-    private var xMax = xValues.max() ?: 0
+    private var xMax = xValues.map { n -> n.toDouble() }.max() ?: 0.0
 
-    private var yMax = yValues.map { it.max() ?: 0 }
+    private var yMax = yValues.map { it.map { n -> n.toDouble() }.max() ?: 0.0 }
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
@@ -103,7 +104,9 @@ class ChartController(
     override var readOnly: Boolean by observable(false) { _, old, new ->
     }
 
-    override val container: Div = Div().apply {
+    val title = SubTitle(title).apply { root.classList.add("has-text-centered") }
+
+    override val container: Div = Div(this.title).apply {
         if (uplot != null) {
             uplot?.let { root.appendChild(it.root) }
         } else {
@@ -119,7 +122,7 @@ class ChartController(
     }
 
     private fun graphRangeY(min: Number, max: Number): Array<Number> {
-        val currentMax = yMax.filterIndexed { i, _ -> (uplot?.series?.y?.get(i)?.show) ?: false }.max() ?: 0
+        val currentMax = yMax.filterIndexed { i, _ -> (uplot?.series?.y?.get(i)?.show) ?: false }.max() ?: 0.0
         return arrayOf(0, 1.1*currentMax)
     }
 
@@ -152,8 +155,8 @@ class ChartController(
         chartData = ChartData(1, Array(data.lines.size) { arrayOf(data.lines[it].initial) })
         xValues = Array(chartData.xCount) { it }
         yValues = chartData.data
-        xMax = xValues.max() ?: 0
-        yMax = yValues.map { it.max() ?: 0 }
+        xMax = xValues.map { n -> n.toDouble() }.max() ?: 0.0
+        yMax = yValues.map { it.map { n -> n.toDouble() }.max() ?: 0.0 }
     }
 
     fun reset() {
@@ -161,10 +164,10 @@ class ChartController(
         uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
     }
 
-    fun push(x: Int, ys: Collection<Int>) {
-        xMax = maxOf(xMax, x)
+    fun push(x: Number, ys: Collection<Number>) {
+        xMax = maxOf(xMax, x.toDouble())
         xValues.push(x)
-        yMax = yMax.zip(ys) { c, n -> max(c, n) }
+        yMax = yMax.zip(ys) { c, n -> max(c, n.toDouble()) }
         ys.zip(yValues) { y, data -> data.push(y) }
         uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
     }

@@ -36,6 +36,8 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement): Boolean {
     if (d.webkitFullscreenElement != null || d.fullscreenElement != null) {
         if (d.webkitExitFullscreen != null) {
             d.webkitExitFullscreen()
+        } else if (d.mozExitFullscreen != null) {
+            d.mozExitFullscreen()
         } else if (d.exitFullscreen != null) {
             d.exitFullscreen()
         }
@@ -44,6 +46,8 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement): Boolean {
         val view = htmlElement.asDynamic()
         if (view.webkitRequestFullscreen != null) {
             view.webkitRequestFullscreen()
+        } else if (view.mozRequestFullscreen != null) {
+            view.mozRequestFullscreen()
         } else if (view.requestFullscreen != null) {
             view.requestFullscreen()
         }

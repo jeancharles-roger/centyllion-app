@@ -821,21 +821,11 @@ class Simulator3dViewController(
 
     private fun resizeSimulationCanvas(availableWidth: Int, availableHeight: Int) {
         // resize only if the canvas is actually shown
-        if (simulationCanvas.root.offsetParent != null) {
-            val canvas = simulationCanvas.root
-            val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
-            if (availableWidth * ratio > availableHeight) {
-                // height is the limiting factor
-                canvas.width = (availableHeight / ratio).roundToInt()
-                canvas.height = availableHeight
-            } else {
-                // width is the limiting factor
-                canvas.width = availableWidth
-                canvas.height = (availableWidth * ratio).roundToInt()
-            }
-            engine.resize()
-            render()
-        }
+        val canvas = simulationCanvas.root
+        canvas.width = availableWidth
+        canvas.height = availableHeight
+        engine.resize()
+        render()
     }
 
     private fun createPlaneMaterial() = data.simulation.settings.gridTextureUrl?.let {

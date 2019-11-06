@@ -148,11 +148,11 @@ class SimulationRunController(
 
     val fullscreenButton = iconButton(Icon("expand-arrows-alt"), rounded = true) {
         val fullscreen = toggleElementToFullScreen(simulationColumns.root)
-        simulationColumns.root.classList.toggle("is-fullscreen", fullscreen)
         if (fullscreen) {
             simulationViewController.resizeToFullscreen()
         } else {
-            simulationViewController.resize()
+            // uses a timer to wait for the canvas to be connected to it's parent
+            window.setTimeout( { simulationViewController.resize() }, 1000)
         }
     }
 
@@ -327,24 +327,24 @@ class SimulationRunController(
 
     /** This observable is here to compute the correct size for canvas */
     private val sizeObservable = MutationObserver { _, o ->
-        simulationViewController.resize()
-        val grainParent = grainChart.root.parentElement
-        if (grainParent is HTMLElement) {
-            grainChart.size = (grainParent.offsetWidth-30) to 400
-        }
+            simulationViewController.resize()
+            val grainParent = grainChart.root.parentElement
+            if (grainParent is HTMLElement) {
+                grainChart.size = (grainParent.offsetWidth-30) to 400
+            }
 
-        val fieldParent = fieldChart.root.parentElement
-        if (fieldParent is HTMLElement) {
-            fieldChart.size = (fieldParent.offsetWidth-30) to 400
-        }
+            val fieldParent = fieldChart.root.parentElement
+            if (fieldParent is HTMLElement) {
+                fieldChart.size = (fieldParent.offsetWidth-30) to 400
+            }
 
-        o.disconnect()
-    }
+            o.disconnect()
+        }
 
     init {
         sizeObservable.observe(
-            simulationView.root,
-            MutationObserverInit(childList = true, subtree = true, attributes = false)
+            simulationColumns.root,
+            MutationObserverInit(childList = true, subtree = true, attributes = true)
         )
         window.setTimeout({ animationCallback(0.0) }, 250)
     }
@@ -500,6 +500,5 @@ class SimulationRunController(
     fun dispose() {
         stop()
         simulationViewController.dispose()
-        sizeObservable.disconnect()
     }
 }

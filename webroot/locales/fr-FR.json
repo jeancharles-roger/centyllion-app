@@ -38,6 +38,8 @@
     "Model Name": "Nom du Modèle",
     "Simulation Name": "Nom de la Simulation",
     "Description": "Description",
+    "Model Description": "Description du Modèle",
+    "Simulation Description": "Description de la Simulation",
     "Clone Model": "Cloner le Modèle",
     "Clone Simulation": "Cloner la Simulation",
     "Save": "Enregistrer",

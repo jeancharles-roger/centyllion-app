@@ -95,7 +95,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             modelNameController.readOnly = readonly
             modelNameController.data = new.model.name
             val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
-            userLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
+            modelUserLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
 
             modelDescriptionController.readOnly = readonly
             modelDescriptionController.data = new.model.description
@@ -118,19 +118,56 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
+
+    val isSimulationReadOnly
+        get() = simulation.id.isNotEmpty() && simulation.info.user?.id != appContext.me?.id
+
+    var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
+        if (new != old) {
+            simulationUndoRedo.update(old, new)
+
+            val readonly = isSimulationReadOnly
+            simulationController.readOnly = readonly
+            simulationController.data = new.simulation
+            simulationNameController.readOnly = readonly
+            simulationNameController.data = new.simulation.name
+            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
+            simulationUserLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
+
+            simulationDescriptionController.readOnly = readonly
+            simulationDescriptionController.data = new.simulation.description
+            refreshButtons()
+        }
+    }
+
+    private val simulationUndoRedo = UndoRedoSupport(simulation) { simulation = it }
+
     val modelNameController = EditableStringController(model.model.name, i18n("Model Name")) { _, new, _ ->
         model = model.copy(model = model.model.copy(name = new))
     }
 
-    val userLabel = Help()
+    val modelUserLabel = Help()
 
     val modelDescriptionController =
-        EditableMarkdownController(model.model.description, i18n("Description")) { _, new, _ ->
+        EditableMarkdownController(model.model.description, i18n("Model Description")) { _, new, _ ->
             model = model.copy(model = model.model.copy(description = new))
         }
 
     val tagsController =
         TagsController(model.tags, appContext) { old, new, _ -> if (old != new) model = model.copy(tags = new) }
+
+    val simulationNameController = EditableStringController(simulation.simulation.name, i18n("Simulation Name"), isSimulationReadOnly)
+    { _, new, _ ->
+        simulation = simulation.copy(simulation = simulation.simulation.copy(name = new))
+    }
+
+    val simulationDescriptionController = EditableStringController(simulation.simulation.description, i18n("Simulation Description"), isSimulationReadOnly)
+    { _, new, _ ->
+        simulation = simulation.copy(simulation = simulation.simulation.copy(description = new))
+    }
+
+    val simulationUserLabel = Help()
+
 
     val problemIcon = iconButton(
         Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
@@ -178,20 +215,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             model = model.copy(model = new)
         }
     }
-
-    val isSimulationReadOnly
-        get() = simulation.id.isNotEmpty() && simulation.info.user?.id != appContext.me?.id
-
-    var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
-        if (new != old) {
-            simulationUndoRedo.update(old, new)
-            simulationController.readOnly = isSimulationReadOnly
-            simulationController.data = new.simulation
-            refreshButtons()
-        }
-    }
-
-    private val simulationUndoRedo = UndoRedoSupport(simulation) { simulation = it }
 
     val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
         { behaviour, speed, _ ->
@@ -253,17 +276,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         downloadModelItem, downloadSimulationItem
     )
 
+    val cloneModelButton = Button(
+        i18n("Clone Model"), Icon("clone"), ElementColor.Primary,
+        rounded = true, outlined = true
+    ) {cloneModel() }
 
-    val cloneButton = Button(
+    val cloneSimulationButton = Button(
         i18n("Clone Simulation"), Icon("clone"), ElementColor.Primary,
         rounded = true, outlined = true
-    ) {
-        // a user is logged, just clone the model or simulation
-        when (editionTab.selectedPage) {
-            modelPage -> cloneModel()
-            simulationPage -> cloneSimulation()
-        }
-    }
+    ) {cloneSimulation() }
 
     val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
     val simulationPage = TabPage(TabItem(i18n("Simulation"), "play"), simulationController)
@@ -285,14 +306,28 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val container: BulmaElement = Columns(
         Column(
             Level(
-                left = listOf(problemIcon, Div(modelNameController), userLabel),
-                center = listOf(cloneButton),
-                right = listOf(tools)
+                left = listOf(
+                    Level(
+                        center = listOf(problemIcon, Div(modelNameController), modelUserLabel),
+                        mobile = true
+                    )
+                ),
+                center = listOf(cloneModelButton)
             ),
-            size = ColumnSize.Full
+            modelDescriptionController,
+            size = ColumnSize.Half
         ),
-        Column(modelDescriptionController, size = ColumnSize.Full),
-        Column(tagsController, size = ColumnSize.FourFifths),
+        Column(
+            Level(
+                left = listOf(
+                    Level(center = listOf(Div(simulationNameController), simulationUserLabel), mobile = true)
+                ),
+                center = listOf(cloneSimulationButton)
+            ),
+            simulationDescriptionController,
+            size = ColumnSize.Half
+        ),
+        Column(Level(center = listOf(tools)), size = ColumnSize.Full),
         problemsColumn,
         Column(editionTab, size = ColumnSize.Full),
         multiline = true, centered = true
@@ -301,12 +336,16 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     init {
-        // starts with all readonly
         val modelReadonly = isModelReadOnly
         modelNameController.readOnly = modelReadonly
         modelDescriptionController.readOnly = modelReadonly
         modelController.readOnly = modelReadonly
-        simulationController.readOnly = isSimulationReadOnly
+
+        val simulationReadOnly = isSimulationReadOnly
+        simulationController.readOnly = simulationReadOnly
+        simulationNameController.readOnly = simulationReadOnly
+        simulationDescriptionController.readOnly = simulationReadOnly
+
         tools.hidden = true
 
         // retrieves model and simulation to load
@@ -567,13 +606,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                cloneButton.title = i18n("Clone Model")
                 tools.hidden = isModelReadOnly
                 undoControl.body = modelUndoRedo.undoButton
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
-                cloneButton.title = i18n("Clone Simulation")
                 val readonly = isSimulationReadOnly
                 tools.hidden = readonly
                 undoControl.body = simulationUndoRedo.undoButton

@@ -38,6 +38,8 @@
     "Model Name": "Model Name",
     "Simulation Name": "Simulation Name",
     "Description": "Description",
+    "Model Description": "Model Description",
+    "Simulation Description": "Simulation Description",
     "Clone Model": "Clone Model",
     "Clone Simulation": "Clone Simulation",
     "Save": "Save",

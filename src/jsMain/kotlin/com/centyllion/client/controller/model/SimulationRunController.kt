@@ -23,7 +23,6 @@ import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.textButton
 import bulma.wrap
-import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.stringHref
@@ -55,8 +54,6 @@ class SimulationRunController(
 
     override var data: Simulation by observable(simulation) { _, old, new ->
         if (old != new) {
-            nameController.data = new.name
-            descriptionController.data = new.description
             currentSimulator = Simulator(context, new)
             simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
@@ -86,8 +83,6 @@ class SimulationRunController(
 
     override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
-            nameController.readOnly = new
-            descriptionController.readOnly = new
             simulationViewController.readOnly = new
             asset3dController.readOnly = new
             assetsColumn.hidden = new
@@ -119,16 +114,6 @@ class SimulationRunController(
     private var lastFpsColorRefresh = 0
 
     private var presentCharts = true
-
-    val nameController = EditableStringController(data.name, page.i18n("Simulation Name"), readOnly)
-    { _, new, _ ->
-        data = data.copy(name = new)
-    }
-
-    val descriptionController = EditableStringController(data.description, page.i18n("Description"), readOnly)
-    { _, new, _ ->
-        data = data.copy(description = new)
-    }
 
     // simulation execution controls
     val rewindButton = iconButton(Icon("fast-backward"), ElementColor.Danger, rounded = true) { reset() }
@@ -314,8 +299,6 @@ class SimulationRunController(
     val simulationColumn = Column(simulationColumns, size = ColumnSize.TwoThirds)
 
     override val container = Columns(
-        Column(nameController, size = ColumnSize.OneThird),
-        Column(descriptionController, size = ColumnSize.TwoThirds),
         selectorColumn,
         simulationColumn,
         assetsColumn,

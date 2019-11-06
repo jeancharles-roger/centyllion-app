@@ -3,15 +3,12 @@ package com.centyllion.client.controller.model
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
-import bulma.Control
 import bulma.Controller
 import bulma.ElementColor
 import bulma.Icon
-import bulma.Input
 import bulma.Level
 import bulma.MultipleController
 import bulma.NoContextController
-import bulma.Size
 import bulma.SubTitle
 import bulma.TextSize
 import bulma.Title
@@ -19,6 +16,7 @@ import bulma.columnsController
 import bulma.iconButton
 import bulma.noContextColumnsController
 import bulma.wrap
+import com.centyllion.client.controller.utils.SearchController
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
@@ -68,16 +66,11 @@ class GrainModelEditController(
         }
     }
 
-    // search input
-    val searchInput: Input = Input("", page.i18n("Search"), rounded = true, size = Size.Small) { _, _ ->
+    val searchController: SearchController = SearchController(page) { _, _ ->
         fieldsController.data = data.fields.filtered()
         grainsController.data = data.grains.filtered()
         behavioursController.data = data.behaviours.filtered()
     }
-
-    val clearSearch = iconButton(Icon("times"), rounded = true, size = Size.Small) { searchInput.value = "" }
-
-    val search = bulma.Field(Control(searchInput, Icon("search"), expanded = true), Control(clearSearch), addons = true)
 
     val addFieldButton = iconButton(Icon("plus"), ElementColor.Primary, true) {
         val field = data.newField(page.i18n("Field"))
@@ -170,7 +163,7 @@ class GrainModelEditController(
     private var edited: ModelElement? = null
 
     val selectorColumn = Column(
-        search,
+        searchController,
         Level(
             left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
             right = listOf(addFieldButton),
@@ -206,7 +199,7 @@ class GrainModelEditController(
         root.scrollIntoView(ScrollOptions(ScrollBehavior.SMOOTH))
     }
 
-    fun <T: ModelElement> List<T>.filtered() = searchInput.value.let { filter ->
+    fun <T: ModelElement> List<T>.filtered() = searchController.data.let { filter ->
         if (filter.isBlank()) this
         else this.filter { it.name.contains(filter, true) || it.description.contains(filter, true) }
     }

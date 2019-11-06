@@ -145,7 +145,13 @@ class SimulationRunController(
     }
 
     val fullscreenButton = iconButton(Icon("expand-arrows-alt"), rounded = true) {
-        toggleElementToFullScreen(simulationColumns.root)
+        val fullscreen = toggleElementToFullScreen(simulationColumns.root)
+        simulationColumns.root.classList.toggle("is-fullscreen", fullscreen)
+        if (fullscreen) {
+            simulationViewController.resizeToFullscreen()
+        } else {
+            simulationViewController.resize()
+        }
     }
 
     val searchController: SearchController = SearchController(page) { _, filter ->
@@ -291,7 +297,6 @@ class SimulationRunController(
             ), size = ColumnSize.Full
         ),
         simulationView,
-        Column(chartContainer, size = ColumnSize.Full),
         multiline = true
     )
 
@@ -309,14 +314,15 @@ class SimulationRunController(
     override val container = Columns(
         selectorColumn,
         simulationColumn,
+        Column(chartContainer, size = ColumnSize.Full),
         assetsColumn,
         multiline = true, centered = true
     )
 
     /** This observable is here to compute the correct size for canvas */
     private val sizeObservable = MutationObserver { _, o ->
-        simulationViewController.resizeSimulationCanvas()
-        chart.size = simulationViewController.root.clientWidth to 400
+        simulationViewController.resize()
+        chart.size = chartContainer.root.clientWidth to 400
         o.disconnect()
     }
 

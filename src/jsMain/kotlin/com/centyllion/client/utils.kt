@@ -31,7 +31,7 @@ fun download(filename: String, href: String) {
 }
 
 /** Toggles a element into fullscreen */
-fun toggleElementToFullScreen(htmlElement: HTMLElement) {
+fun toggleElementToFullScreen(htmlElement: HTMLElement): Boolean {
     val d = document.asDynamic()
     if (d.webkitFullscreenElement != null || d.fullscreenElement != null) {
         if (d.webkitExitFullscreen != null) {
@@ -39,6 +39,7 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement) {
         } else if (d.exitFullscreen != null) {
             d.exitFullscreen()
         }
+        return false
     } else {
         val view = htmlElement.asDynamic()
         if (view.webkitRequestFullscreen != null) {
@@ -46,8 +47,8 @@ fun toggleElementToFullScreen(htmlElement: HTMLElement) {
         } else if (view.requestFullscreen != null) {
             view.requestFullscreen()
         }
+        return true
     }
-    Unit
 }
 
 fun BulmaElement.setTooltip(text: String) {

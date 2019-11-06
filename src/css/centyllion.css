@@ -11656,6 +11656,10 @@ input[type=range].slider.is-danger .has-output-tooltip + output {
   background-color: white;
 }
 
+.is-fullscreen {
+  background-color: gainsboro;
+}
+
 .cent-main {
   margin: 2rem;
 }

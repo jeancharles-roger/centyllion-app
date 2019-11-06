@@ -542,7 +542,7 @@ class Simulator3dViewController(
     }
 
     private val resizeCallback: (Event) -> Unit = {
-        resizeSimulationCanvas()
+        resize()
         Unit
     }
 
@@ -808,13 +808,21 @@ class Simulator3dViewController(
         window.removeEventListener("resize", resizeCallback)
     }
 
-    fun resizeSimulationCanvas() {
+    fun resizeToFullscreen() {
+        resizeSimulationCanvas(window.innerWidth, window.innerHeight - 120)
+    }
+
+    fun resize() {
+        val canvas = simulationCanvas.root
+        val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
+        val availableHeight = ((0.80) * window.innerHeight).toInt() - 100
+        resizeSimulationCanvas(availableWidth, availableHeight)
+    }
+
+    private fun resizeSimulationCanvas(availableWidth: Int, availableHeight: Int) {
         // resize only if the canvas is actually shown
         if (simulationCanvas.root.offsetParent != null) {
             val canvas = simulationCanvas.root
-            val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
-            val availableHeight = (((0.80) * window.innerHeight) - 120).toInt()
-            console.log("avaible $availableWidth x $availableHeight")
             val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
             if (availableWidth * ratio > availableHeight) {
                 // height is the limiting factor
@@ -825,7 +833,6 @@ class Simulator3dViewController(
                 canvas.width = availableWidth
                 canvas.height = (availableWidth * ratio).roundToInt()
             }
-            console.log("canvas ${canvas.width} x ${canvas.height}")
             engine.resize()
             render()
         }

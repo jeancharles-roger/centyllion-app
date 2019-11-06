@@ -10,7 +10,6 @@ import bulma.Control
 import bulma.Controller
 import bulma.Div
 import bulma.ElementColor
-import bulma.Field
 import bulma.Icon
 import bulma.Label
 import bulma.Level
@@ -31,14 +30,19 @@ import com.centyllion.client.stringHref
 import com.centyllion.client.toggleElementToFullScreen
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
+import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Simulation
 import com.centyllion.model.Simulator
+import com.centyllion.model.behaviourIcon
+import com.centyllion.model.fieldIcon
+import com.centyllion.model.grainIcon
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
 import kotlin.browser.window
 import kotlin.properties.Delegates.observable
+import bulma.Field as BField
 
 class SimulationRunController(
     simulation: Simulation, model: GrainModel,
@@ -66,12 +70,13 @@ class SimulationRunController(
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
             data = data.cleaned(new)
+            fieldsController.data = new.fields
             grainsController.data = new.grains
-            behaviourController.data = new.behaviours
+            behavioursController.data = new.behaviours
             selectedGrainController.context = new.grains
             selectedGrainController.data = new.grains.firstOrNull()
             currentSimulator = Simulator(new, data)
-            behaviourController.context = currentSimulator
+            behavioursController.context = currentSimulator
             simulationViewController.data = currentSimulator
             chart.data = createChart()
             running = false
@@ -156,8 +161,29 @@ class SimulationRunController(
         toggleElementToFullScreen(simulationColumns.root)
     }
 
-    val grainsController: MultipleController<Grain, GrainModel, Columns, Column, WrappedController<Grain, GrainModel, Box, Column>> =
-        columnsController(model.grains, model)
+
+    val fieldTitle = Level(
+        left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
+        mobile = true
+    )
+
+    val fieldsController: MultipleController<
+        Field, Unit, Columns, Column, WrappedController<Field, Unit, Box, Column>
+    > = noContextColumnsController(model.fields)
+        { field, previous ->
+            previous ?: FieldRunController(field).wrap { controller ->
+                Column(controller.container, size = ColumnSize.Full)
+            }
+        }
+
+    val grainTitle = Level(
+        left = listOf(Icon(grainIcon), Title(page.i18n("Grains"), TextSize.S4)),
+        mobile = true
+    )
+
+    val grainsController: MultipleController<
+            Grain, GrainModel, Columns, Column, WrappedController<Grain, GrainModel, Box, Column>
+    > = columnsController(model.grains, model)
         { grain, previous ->
             previous ?: GrainRunController(grain, context).wrap {
                 it.container.root.onclick = { _ ->
@@ -168,7 +194,12 @@ class SimulationRunController(
             }
         }
 
-    val behaviourController =
+    val behaviourTitle = Level(
+        left = listOf(Icon(behaviourIcon), Title(page.i18n("Behaviours"), TextSize.S4)),
+        mobile = true
+    )
+
+    val behavioursController =
         columnsController(model.behaviours, currentSimulator)
         { behaviour, previous ->
             previous ?: BehaviourRunController(behaviour, currentSimulator).wrap { controller ->
@@ -237,6 +268,40 @@ class SimulationRunController(
             }
         }
 
+    val selectorColumn = Column(
+        fieldTitle,
+        fieldsController,
+        grainTitle,
+        grainsController,
+        behaviourTitle,
+        behavioursController,
+        size = ColumnSize.OneThird
+    ).apply {
+        root.style.height = "80vh"
+        root.style.overflowY = "auto"
+    }
+
+    val simulationColumns: Columns = Columns(
+        Column(
+            Level(
+                center = listOf(
+                    BField(
+                        Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
+                        addons = true
+                    ),
+                    Control(stepLabel),
+                    BField(Control(fpsSlider), Control(fpsLabel), grouped = true)
+                ),
+                right = listOf(
+                    BField(Control(toggleChartsButton), Control(resetOrbitButton), Control(fullscreenButton), grouped = true)
+                )
+            ), size = ColumnSize.Full
+        ),
+        simulationView,
+        Column(chartContainer, size = ColumnSize.Full),
+        multiline = true
+    )
+
     val assetsColumn = Column(
         Level(
             left = listOf(Title(page.i18n("Assets"), TextSize.S4)),
@@ -246,48 +311,13 @@ class SimulationRunController(
         asset3dController, desktopSize = ColumnSize.Full
     ).apply { hidden = readOnly }
 
-    val simulationColumns: Columns = Columns(
-        Column(
-            Level(
-                center = listOf(
-                    Field(
-                        Control(rewindButton), Control(runButton), Control(stepButton), Control(stopButton),
-                        addons = true
-                    ),
-                    Control(stepLabel),
-                    Field(Control(fpsSlider), Control(fpsLabel), grouped = true)
-                ),
-                right = listOf(
-                    Field(Control(toggleChartsButton), Control(resetOrbitButton), Control(fullscreenButton), grouped = true)
-                )
-            ), size = ColumnSize.Full
-        ),
-        simulationView,
-        Column(chartContainer, size = ColumnSize.Full),
-        multiline = true
-    )
-
-    val grainColumn = Column(Title(page.i18n("Grains"), TextSize.S4), grainsController, desktopSize = ColumnSize.S2).apply {
-        root.style.height = "80vh"
-        root.style.overflowY = "auto"
-    }
-
-    val simulationColumn = Column(simulationColumns, desktopSize = ColumnSize.S6)
-
-    val behaviourColumn = Column(
-        Title(page.i18n("Behaviours"), TextSize.S4),
-        behaviourController, desktopSize = ColumnSize.S4
-    ).apply {
-        root.style.height = "80vh"
-        root.style.overflowY = "auto"
-    }
+    val simulationColumn = Column(simulationColumns, size = ColumnSize.TwoThirds)
 
     override val container = Columns(
         Column(nameController, size = ColumnSize.OneThird),
         Column(descriptionController, size = ColumnSize.TwoThirds),
-        grainColumn,
+        selectorColumn,
         simulationColumn,
-        behaviourColumn,
         assetsColumn,
         multiline = true, centered = true
     )
@@ -308,9 +338,8 @@ class SimulationRunController(
     }
 
     fun hideSides(hidden: Boolean ) {
-        grainColumn.hidden = hidden
-        simulationColumn.desktopSize = if (hidden) ColumnSize.Full else ColumnSize.S6
-        behaviourColumn.hidden = hidden
+        simulationColumn.size = if (hidden) ColumnSize.Full else ColumnSize.TwoThirds
+        selectorColumn.hidden = hidden
     }
 
     fun setFpsColor(slowed: Boolean) {
@@ -423,9 +452,19 @@ class SimulationRunController(
             val source = controller.source
             if (source is GrainRunController) source.count = count
         }
+
+        // refreshes field amounts
+        val amounts = currentSimulator.lastFieldAmount().values
+            fieldsController.dataControllers.zip(amounts) { controller, amount ->
+            val source = controller.source
+            if (source is FieldRunController) source.amount = amount
+        }
     }
 
     override fun refresh() {
+        fieldTitle.hidden = context.fields.isEmpty()
+        grainTitle.hidden = context.grains.isEmpty()
+        behaviourTitle.hidden = context.behaviours.isEmpty()
         refreshButtons()
         simulationViewController.refresh()
         refreshCounts()

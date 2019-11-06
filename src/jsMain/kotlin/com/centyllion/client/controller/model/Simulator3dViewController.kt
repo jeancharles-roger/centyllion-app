@@ -813,7 +813,8 @@ class Simulator3dViewController(
         if (simulationCanvas.root.offsetParent != null) {
             val canvas = simulationCanvas.root
             val availableWidth = (canvas.parentNode as HTMLElement?)?.offsetWidth ?: 600
-            val availableHeight = window.innerHeight
+            val availableHeight = (((0.80) * window.innerHeight) - 120).toInt()
+            console.log("avaible $availableWidth x $availableHeight")
             val ratio = data.simulation.height.toDouble() / data.simulation.width.toDouble()
             if (availableWidth * ratio > availableHeight) {
                 // height is the limiting factor
@@ -824,6 +825,7 @@ class Simulator3dViewController(
                 canvas.width = availableWidth
                 canvas.height = (availableWidth * ratio).roundToInt()
             }
+            console.log("canvas ${canvas.width} x ${canvas.height}")
             engine.resize()
             render()
         }

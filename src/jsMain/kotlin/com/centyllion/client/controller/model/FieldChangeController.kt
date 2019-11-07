@@ -15,11 +15,13 @@ import kotlin.properties.Delegates.observable
 
 class FieldChangeController(
     value: Pair<Int, Float>, fields: List<Field>, min: Float = -1f, max: Float = 1f,
+    var isValid: (id: Int, value: Float) -> String? = { _, _ -> null },
     var onUpdate: (old: Pair<Int, Float>, new: Pair<Int, Float>, controller: FieldChangeController) -> Unit = { _, _, _ -> }
 ) : Controller<Pair<Int, Float>, List<Field>, Column> {
 
     override var data: Pair<Int, Float> by observable(value) { _, old, new ->
         if (old != new) {
+            validate()
             onUpdate(old, new, this@FieldChangeController)
             refresh()
         }
@@ -39,10 +41,32 @@ class FieldChangeController(
         }
     }
 
+    private var message: String? by observable(isValid(value.first, value.second)) { _, old, new ->
+        if (old != new) {
+            valueSlider.color = sliderColor
+            if (new != null) {
+                // there is a error
+                container.root.classList.add("tooltip")
+                container.root.classList.add("is-tooltip-active")
+                container.root.classList.add("is-tooltip-bottom")
+                container.root.classList.add("is-tooltip-danger")
+                container.root.setAttribute("data-tooltip", new)
+            } else {
+                // input is valid
+                container.root.classList.remove("tooltip")
+                container.root.classList.remove("is-tooltip-active")
+                container.root.classList.remove("is-tooltip-bottom")
+                container.root.classList.remove("is-tooltip-danger")
+                container.root.removeAttribute("data-tooltip")
+            }
+        }
+    }
+
     val fieldIcon = Icon("square-full").apply { root.style.color = field?.color ?: "white" }
     val fieldLabel = span(field?.label() ?: "???")
 
     val sliderColor get() = when {
+        message != null -> ElementColor.Danger
         data.second == 0f -> ElementColor.None
         data.second < 0f -> ElementColor.Warning
         else -> ElementColor.Info
@@ -75,6 +99,10 @@ class FieldChangeController(
         valueSlider.value = data.second.toString()
         valueSlider.color = sliderColor
         valueLabel.text = data.second.toFixed(2)
+    }
+
+    fun validate() {
+        message = isValid(data.first, data.second)
     }
 
 }

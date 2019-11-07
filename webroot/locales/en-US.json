@@ -6,6 +6,11 @@
     "Speed must be between 0 and 1": "Speed must be between 0 and 1",
     "No direction allowed for reactive %0": "No direction allowed for reactive %0",
     "Grain with id %0 doesn't exist for reactive %1": "Grain with id %0 doesn't exist for reactive %1",
+    "Half-life must be positive or zero": "Half-life must be positive or zero",
+    "Field production for %0 must be between -1 and 1": "Field production for %0 must be between -1 and 1",
+    "Field permeability will prevent production for %0": "Field permeability will prevent production for %0",
+    "Field influence for %0 must be between -1 and 1": "Field influence for %0 must be between -1 and 1",
+    "Field permeability for %0 must be between 0 and 1": "Field permeability for %0 must be between 0 and 1",
 
     "Previous": "Previous",
     "Next": "Next",

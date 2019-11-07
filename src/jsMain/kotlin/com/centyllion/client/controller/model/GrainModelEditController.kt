@@ -34,7 +34,7 @@ import org.w3c.dom.ScrollOptions
 import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
-    model: GrainModel, val page: BulmaPage,
+    val page: BulmaPage, model: GrainModel,
     val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
         { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
@@ -104,7 +104,7 @@ class GrainModelEditController(
     val grainsController: MultipleController<Grain, GrainModel, Columns, Column, Controller<Grain, GrainModel, Column>> =
         columnsController(data.grains, data, onClick = { grain, _ -> edit(grain) })
         { grain, previous ->
-            previous ?: GrainDisplayController(grain, data).wrap { controller ->
+            previous ?: GrainDisplayController(page, grain, data).wrap { controller ->
                 controller.onDelete = { data = data.dropGrain(controller.data) }
                 Column(controller, size = ColumnSize.Full)
             }
@@ -113,7 +113,7 @@ class GrainModelEditController(
     val behavioursController: MultipleController<Behaviour, GrainModel, Columns, Column, Controller<Behaviour, GrainModel, Column>> =
         columnsController(data.behaviours, data, onClick = { behaviour, _ -> edit(behaviour) })
         { behaviour, previous ->
-            previous ?: BehaviourDisplayController(behaviour, data, page).wrap { controller ->
+            previous ?: BehaviourDisplayController(page, behaviour, data).wrap { controller ->
                 controller.onDelete = { data = data.dropBehaviour(controller.data) }
                 Column(controller.container, size = ColumnSize.Full)
             }

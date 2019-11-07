@@ -185,7 +185,7 @@ class SimulationRunController(
             Grain, GrainModel, Columns, Column, WrappedController<Grain, GrainModel, Box, Column>
     > = columnsController(model.grains, model)
         { grain, previous ->
-            previous ?: GrainRunController(grain, context).wrap {
+            previous ?: GrainRunController(page, grain, context).wrap {
                 it.container.root.onclick = { _ ->
                     simulationViewController.selectedGrainController.data = it.data
                     Unit

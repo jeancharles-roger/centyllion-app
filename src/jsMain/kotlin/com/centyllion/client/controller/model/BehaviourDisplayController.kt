@@ -19,7 +19,7 @@ import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel, val page: BulmaPage) : Controller<Behaviour, GrainModel, Box> {
+class BehaviourDisplayController(val page: BulmaPage, behaviour: Behaviour, model: GrainModel) : Controller<Behaviour, GrainModel, Box> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
         if (old != new) {
@@ -29,7 +29,10 @@ class BehaviourDisplayController(behaviour: Behaviour, model: GrainModel, val pa
     }
 
     override var context: GrainModel by observable(model) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            refresh()
+        }
     }
 
     override var readOnly by observable(false) { _, old, new ->

@@ -19,7 +19,7 @@ import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.Promise
 
-fun searchAndCreateGrainController(simulationId: String, controller: SimulationRunController) {
+fun searchAndCreateGrainController(page: BulmaPage, simulationId: String, controller: SimulationRunController) {
     document.querySelectorAll(".cent-grain[data-for='$simulationId']").asList().map { container ->
         if (container is HTMLElement) {
             val id = container.dataset["id"]
@@ -27,7 +27,7 @@ fun searchAndCreateGrainController(simulationId: String, controller: SimulationR
 
             val grain = controller.context.indexedGrains[id?.toIntOrNull() ?: -1]
             if (grain != null) {
-                val grainDisplay = GrainDisplayController(grain, controller.context)
+                val grainDisplay = GrainDisplayController(page, grain, controller.context)
                 container.appendChild(grainDisplay.root)
             } else {
                 console.error("Can't find grain $id for simulation $simulationId.")
@@ -83,7 +83,7 @@ fun createSimulationRun(appContext: AppContext, container: HTMLElement) {
         container.append(simulatorView.root)
 
         if (container.id.isNotBlank()) {
-            searchAndCreateGrainController(container.id, simulatorView)
+            searchAndCreateGrainController(page, container.id, simulatorView)
             searchAndCreateBehaviourController(container.id, simulatorView)
         }
 

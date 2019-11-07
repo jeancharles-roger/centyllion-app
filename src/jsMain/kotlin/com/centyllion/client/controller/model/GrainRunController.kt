@@ -3,13 +3,14 @@ package com.centyllion.client.controller.model
 import bulma.Box
 import bulma.Controller
 import bulma.Label
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
 class GrainRunController(
-    grain: Grain, model: GrainModel,
-    wrapped: GrainDisplayController = GrainDisplayController(grain, model)
+    page: BulmaPage, grain: Grain, model: GrainModel,
+    wrapped: GrainDisplayController = GrainDisplayController(page, grain, model)
 ): Controller<Grain, GrainModel, Box> by wrapped {
 
     val countLabel = Label().apply {

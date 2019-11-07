@@ -210,7 +210,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    val modelController = GrainModelEditController(model.model, this) { old, new, _ ->
+    val modelController = GrainModelEditController(this, model.model) { old, new, _ ->
         if (old != new) {
             model = model.copy(model = new)
         }

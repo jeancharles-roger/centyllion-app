@@ -8,22 +8,33 @@ import bulma.Level
 import bulma.Span
 import bulma.TextColor
 import com.centyllion.client.controller.utils.DeleteCallbackProperty
+import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import kotlin.properties.Delegates.observable
 
-class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
+class GrainDisplayController(val page: BulmaPage, grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(grain) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            refresh()
+        }
     }
 
     override var context: GrainModel by observable(model) { _, old, new ->
-        if (old != new) refresh()
+        if (old != new) {
+            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            refresh()
+        }
     }
 
     override var readOnly by observable(false) { _, old, new ->
         if (old != new) deleteCallbackProperty.readOnly = new
+    }
+
+    val errorIcon = Icon("exclamation-triangle", color = TextColor.Danger).apply {
+        hidden = data.diagnose(context, page.appContext.locale).isEmpty()
     }
 
     val icon = Icon(grain.icon).apply {
@@ -37,7 +48,7 @@ class GrainDisplayController(grain: Grain, model: GrainModel): Controller<Grain,
 
     val status = Span(invisibleIcon, movingIcon, deathIcon)
 
-    val body = Level(center = listOf(icon, titleLabel, status), mobile = true)
+    val body = Level(left=listOf(errorIcon), center = listOf(icon, titleLabel, status), mobile = true)
 
     val deleteCallbackProperty = DeleteCallbackProperty(null,this) { old, new ->
         old?.let { body.right -= it }

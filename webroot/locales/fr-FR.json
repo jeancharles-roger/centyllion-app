@@ -6,6 +6,11 @@
     "Probability must be between 0 and 1": "La vitesse doit être entre 0 et 1",
     "No direction allowed for reactive %0": "Aucune direction autorisée pour le réactif %0",
     "Grain with id %0 doesn't exist for reactive %1": "Le grain avec l'id %0 n'existe pas pour le réactif %1",
+    "Half-life must be positive or zero": "La demi-vie doit être positive ou zéro",
+    "Field production for %0 must be between -1 and 1": "La production du champ %0 doit être entre -1 et 1",
+    "Field permeability will prevent production for %0": "La perméabilité du champ %0 empêche sa production",
+    "Field influence for %0 must be between -1 and 1": "L'influence du champ %0 doit être entre -1 et 1",
+    "Field permeability for %0 must be between 0 and 1": "La perméabilité du champ %0 doit être entre 0 et 1",
 
     "Previous": "Précedent",
     "Next": "Suivant",

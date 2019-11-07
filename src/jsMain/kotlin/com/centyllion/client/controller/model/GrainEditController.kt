@@ -11,6 +11,7 @@ import bulma.Help
 import bulma.HorizontalField
 import bulma.HtmlWrapper
 import bulma.Label
+import bulma.MultipleController
 import bulma.Size
 import bulma.Value
 import bulma.columnsController
@@ -21,6 +22,7 @@ import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
@@ -137,6 +139,9 @@ class GrainEditController(
             previous ?: FieldChangeController(pair, context.fields) { old, new, _ ->
                 if (old != new) {
                     this.data = data.updateFieldProduction(new.first, new.second)
+
+                    // revalidate the corresponding permeability
+                    fieldPermeableController.dataControllers.find { it.data.first == pair.first }?.validate()
                 }
             }
         }
@@ -152,15 +157,20 @@ class GrainEditController(
             }
         }
 
-    val fieldPermeableController =
-        columnsController(
+    val fieldPermeableController:
+            MultipleController<Pair<Int, Float>, List<Field>, Columns, Column, FieldChangeController
+    > = columnsController(
             context.fields.map { it.id to (data.fieldPermeable[it.id] ?: 1f) }, context.fields
         ) { pair, previous ->
-            previous ?: FieldChangeController(pair, context.fields, 0f, 1f) { old, new, _ ->
-                if (old != new) {
-                    this.data = data.updateFieldPermeable(new.first, new.second)
-                }
-            }
+            previous ?: FieldChangeController(pair, context.fields, 0f, 1f,
+            { id, value ->
+                if ((data.fieldProductions[id]?: 0f) != 0f && value <= 0f)
+                    page.i18n("Field permeability will prevent production for %0", context.indexedFields[id]?.name ?: "")
+                else null
+            },
+            { old, new, _ ->
+                if (old != new)  this.data = data.updateFieldPermeable(new.first, new.second)
+            })
         }
 
 

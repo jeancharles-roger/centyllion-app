@@ -154,6 +154,41 @@ data class Grain(
             fieldInfluences = fieldInfluences
         )
         else null
+
+    fun diagnose(model: GrainModel, locale: Locale): List<Problem> =
+        listOfNotNull(
+            (halfLife < 0).orNull { Problem(this, locale.i18n("Half-life must be positive or zero")) },
+            (movementProbability < 0.0 || movementProbability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) }
+        ) +
+        fieldProductions.map { entry ->
+            listOfNotNull(
+                (entry.value < -1 || entry.value > 1).orNull {
+                    val field = model.indexedFields[entry.key]
+                    Problem(this, locale.i18n("Field production for %0 must be between -1 and 1", field?.name ?: ""))
+                },
+                ((fieldPermeable[entry.key] ?: 1f) <= 0f && entry.value != 0f).orNull {
+                    val field = model.indexedFields[entry.key]
+                    Problem(this, locale.i18n("Field permeability will prevent production for %0", field?.name ?: ""))
+                }
+            )
+        }.flatten() +
+        fieldInfluences.map { entry ->
+            listOfNotNull(
+                (entry.value < -1 || entry.value > 1).orNull {
+                    val field = model.indexedFields[entry.key]
+                    Problem(this, locale.i18n("Field influence for %0 must be between -1 and 1", field?.name ?: ""))
+                }
+            )
+        }.flatten() +
+        fieldPermeable.map {entry ->
+            listOfNotNull(
+                (entry.value < 0 || entry.value > 1).orNull {
+                    val field = model.indexedFields[entry.key]
+                    Problem(this, locale.i18n("Field permeability for %0 must be between 0 and 1", field?.name ?: ""))
+                }
+            )
+        }.flatten()
+
 }
 
 @Serializable
@@ -299,6 +334,9 @@ data class GrainModel(
     @Transient
     val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
 
+    @Transient
+    val indexedFields: Map<Int, Field> = fields.map { it.id to it }.toMap()
+
     fun availableGrainName(prefix: String = "Grain"): String = availableName(grains.map(Grain::name), prefix)
 
     fun availableGrainId(): Int = availableId(grains.map(Grain::id))
@@ -413,7 +451,9 @@ data class GrainModel(
         return copy(behaviours = newBehaviours)
     }
 
-    fun diagnose(locale: Locale): List<Problem> = behaviours.flatMap { it.diagnose(this, locale) }
+    fun diagnose(locale: Locale): List<Problem> =
+        grains.flatMap { it.diagnose(this, locale) } +
+        behaviours.flatMap { it.diagnose(this, locale) }
 
     /**
      * Does the given [grain] may change count over the course of a simulation ?

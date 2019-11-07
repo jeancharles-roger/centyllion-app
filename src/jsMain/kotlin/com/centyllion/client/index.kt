@@ -153,6 +153,12 @@ fun index() {
                         }
                     )
 
+                    navBar.end = listOf(NavBarIconItem(Icon("question-circle")) {
+                        context.openPage(showPage, mapOf("tutorial" to ""))
+                    }.apply {
+                        setTooltip(locale.i18n("Start tutorial"))
+                    }) + navBar.end
+
                     startApp(page, context)
 
                 }.catch { appendErrorMessage(root, it) }

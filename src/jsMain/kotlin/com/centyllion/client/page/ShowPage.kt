@@ -13,8 +13,6 @@ import bulma.Help
 import bulma.Icon
 import bulma.Level
 import bulma.Message
-import bulma.NavBarIconItem
-import bulma.NavBarItem
 import bulma.Size
 import bulma.TabItem
 import bulma.TabPage
@@ -40,7 +38,6 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.homePage
-import com.centyllion.client.setTooltip
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
@@ -353,6 +350,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val params = URLSearchParams(window.location.search)
         val simulationId = params.get("simulation")
         val modelId = params.get("model")
+        val tutorial = params.get("tutorial")
 
         // Selects model tab if there no simulation provided
         if (simulationId == null) editionTab.selectedPage = modelPage
@@ -380,9 +378,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             setModel(it.second)
             setSimulation(it.first)
 
-            if (appContext.me?.details?.tutorialDone != true && it.second == emptyGrainModelDescription) {
-                startTutorial()
-            }
+            if (
+                (tutorial != null || appContext.me?.details?.tutorialDone != true) &&
+                it.second == emptyGrainModelDescription
+            ) { startTutorial() }
 
         }.catch {
             error(it)
@@ -678,9 +677,4 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    override fun navBarItem(): List<NavBarItem> = listOf(
-        NavBarIconItem(Icon("question-circle")) { startTutorial() }.apply {
-            setTooltip(i18n("Start tutorial"))
-        }
-    )
 }

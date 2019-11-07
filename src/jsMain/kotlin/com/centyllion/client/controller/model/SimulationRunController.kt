@@ -327,19 +327,9 @@ class SimulationRunController(
 
     /** This observable is here to compute the correct size for canvas */
     private val sizeObservable = MutationObserver { _, o ->
-            simulationViewController.resize()
-            val grainParent = grainChart.root.parentElement
-            if (grainParent is HTMLElement) {
-                grainChart.size = (grainParent.offsetWidth-30) to 400
-            }
-
-            val fieldParent = fieldChart.root.parentElement
-            if (fieldParent is HTMLElement) {
-                fieldChart.size = (fieldParent.offsetWidth-30) to 400
-            }
-
-            o.disconnect()
-        }
+        resize()
+        o.disconnect()
+    }
 
     init {
         sizeObservable.observe(
@@ -495,6 +485,19 @@ class SimulationRunController(
         refreshButtons()
         simulationViewController.refresh()
         refreshCounts()
+    }
+
+    fun resize() {
+        simulationViewController.resize()
+        val grainParent = grainChart.root.parentElement
+        if (grainParent is HTMLElement) {
+            grainChart.size = (grainParent.offsetWidth-30) to 400
+        }
+
+        val fieldParent = fieldChart.root.parentElement
+        if (fieldParent is HTMLElement) {
+            fieldChart.size = (fieldParent.offsetWidth-30) to 400
+        }
     }
 
     fun dispose() {

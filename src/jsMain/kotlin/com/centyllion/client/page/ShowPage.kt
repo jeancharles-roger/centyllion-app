@@ -300,6 +300,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val tabs = Tabs(boxed = true)
 
     val editionTab = TabPages(modelPage, simulationPage, tabs = tabs, initialTabIndex = 1) {
+        if (it == simulationPage) simulationController.resize()
         refreshButtons()
     }
 

@@ -62,10 +62,30 @@ class ResultPageController<
 
     fun refreshFetch() = fetch(offset, limit).then { data = it }.catch { error(it) }
 
+    private fun itemFor(page: Int) = (page * limit).let { pageOffset ->
+        PaginationLink("$page", current = (pageOffset == data.offset)) { offset = pageOffset }
+    }
+
+    private fun ellipsis() = PaginationLink("...").apply {
+        root.setAttribute("disabled", "")
+    }
+
     override fun refresh() {
-        pagination.items = (0..(data.totalSize - 1) / limit).map { page ->
-            val pageOffset = page * limit
-            PaginationLink("$page", current = (pageOffset == data.offset)) { offset = pageOffset }
+        val maxItems = 10
+        val fix = maxItems / 2
+        val count = (data.totalSize - 1) / limit
+        val current = data.offset / limit
+        pagination.items = when {
+            count < maxItems -> // no ellipsis needed
+                (0..count).map(::itemFor)
+            current == fix+1 -> // current is just after the first limit
+                (0..fix).map(::itemFor) + itemFor(current) + ellipsis() + (count-fix..count).map(::itemFor)
+            current == count - fix - 1 -> // current is just before the last limit
+                (0..fix).map(::itemFor) + ellipsis() + itemFor(current) + (count-fix..count).map(::itemFor)
+            current in (fix+1 until count - fix) -> // current is inside ellipsis
+                (0..fix).map(::itemFor) + ellipsis() + itemFor(current) + ellipsis() + (count-fix..count).map(::itemFor)
+            else -> // current is in first or last
+                (0..fix).map(::itemFor) + ellipsis() + (count-fix..count).map(::itemFor)
         }
         previous.disabled = offset == 0
         next.disabled = offset > (data.totalSize-1) - limit

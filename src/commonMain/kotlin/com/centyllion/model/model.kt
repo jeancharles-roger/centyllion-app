@@ -299,8 +299,18 @@ data class Behaviour(
 
     fun diagnose(model: GrainModel, locale: Locale): List<Problem> = listOfNotNull(
         (mainReactiveId < 0).orNull { Problem(this, locale.i18n("Behaviour must have a main reactive")) },
-        (probability < 0.0 || probability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) }
-    ) + reaction
+        (probability < 0.0 || probability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) },
+        (agePredicate.constant < 0).orNull { Problem(this, locale.i18n("Age predicate value must be positive or zero")) }
+    ) +
+    fieldPredicates.map { predicate ->
+        listOfNotNull(
+            (predicate.second.constant < 0f || predicate.second.constant > 1f).orNull {
+                val field = model.indexedFields[predicate.first]
+                Problem(this, locale.i18n("Field threshold value for %0 must be between 0 and 1", field?.name ?: ""))
+            }
+        )
+    }.flatten() +
+    reaction
         .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
         .flatten()
 }

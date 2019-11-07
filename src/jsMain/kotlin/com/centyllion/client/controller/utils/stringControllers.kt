@@ -9,6 +9,7 @@ import bulma.Icon
 import bulma.Input
 import bulma.NoContextController
 import bulma.TextArea
+import bulma.TextColor
 import bulma.TextView
 import bulma.iconButton
 import com.centyllion.i18n.Locale
@@ -51,33 +52,13 @@ class EditableStringController(
     val okControl = Control(okButton)
     val cancelControl = Control(cancelButton)
 
+    private var message: String? by observable(isValid(initialData)) { _, old, new ->
+        if (old != new) refreshMessage()
+    }
+
     val penIcon = Icon("pen")
 
     val inputControl = Control(this.input, expanded = true, rightIcon = if (readOnly) null else penIcon)
-
-    private var message: String? by observable(isValid(initialData)) { _, old, new ->
-        if (old != new) {
-            if (new != null) {
-                // there is a error
-                input.color = ElementColor.Danger
-                okButton.disabled = true
-                inputControl.root.classList.add("tooltip")
-                inputControl.root.classList.add("is-tooltip-active")
-                inputControl.root.classList.add("is-tooltip-bottom")
-                inputControl.root.classList.add("is-tooltip-danger")
-                inputControl.root.setAttribute("data-tooltip", new)
-            } else {
-                // input is valid
-                input.color = ElementColor.None
-                okButton.disabled = false
-                inputControl.root.classList.remove("tooltip")
-                inputControl.root.classList.remove("is-tooltip-active")
-                inputControl.root.classList.remove("is-tooltip-bottom")
-                inputControl.root.classList.remove("is-tooltip-danger")
-                inputControl.root.removeAttribute("data-tooltip")
-            }
-        }
-    }
 
     fun edit(start: Boolean) {
         // don't edit if readonly
@@ -112,11 +93,38 @@ class EditableStringController(
             onChange = { _, value -> message = isValid(value) }
             onFocus = { if (it) edit(true) else if (message == null) validate() else cancel() }
         }
-
+        refreshMessage()
     }
 
     override fun refresh() {
         input.value = data
+        refreshMessage()
+    }
+
+    fun refreshMessage() {
+        if (message != null) {
+            // there is a error
+            input.color = ElementColor.Danger
+            input.root.classList.add(TextColor.Danger.className)
+            penIcon.color = TextColor.Danger
+            okButton.disabled = true
+            inputControl.root.classList.add("tooltip")
+            inputControl.root.classList.add("is-tooltip-active")
+            inputControl.root.classList.add("is-tooltip-bottom")
+            inputControl.root.classList.add("is-tooltip-danger")
+            inputControl.root.setAttribute("data-tooltip", message?: "")
+        } else {
+            // input is valid
+            input.color = ElementColor.None
+            input.root.classList.remove(TextColor.Danger.className)
+            penIcon.color = TextColor.None
+            okButton.disabled = false
+            inputControl.root.classList.remove("tooltip")
+            inputControl.root.classList.remove("is-tooltip-active")
+            inputControl.root.classList.remove("is-tooltip-bottom")
+            inputControl.root.classList.remove("is-tooltip-danger")
+            inputControl.root.removeAttribute("data-tooltip")
+        }
     }
 
     fun validate() {

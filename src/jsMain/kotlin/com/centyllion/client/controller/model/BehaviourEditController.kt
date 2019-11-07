@@ -109,7 +109,7 @@ class BehaviourEditController(
         this.data = this.data.copy(probability = new)
     }
 
-    val agePredicateController = IntPredicateController(page.appContext.locale, data.agePredicate)
+    val agePredicateController = IntPredicateController(page.appContext.locale, data.agePredicate, page.i18n("Age"), 0)
     { _, new, _ ->
         this.data = this.data.copy(agePredicate = new)
     }

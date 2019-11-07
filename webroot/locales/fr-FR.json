@@ -11,6 +11,7 @@
     "Field permeability will prevent production for %0": "La perméabilité du champ %0 empêche sa production",
     "Field influence for %0 must be between -1 and 1": "L'influence du champ %0 doit être entre -1 et 1",
     "Field permeability for %0 must be between 0 and 1": "La perméabilité du champ %0 doit être entre 0 et 1",
+    "Field threshold value for %0 must be between 0 and 1": "Le seuil de champ pour %0 doit être entre 0 et 1",
 
     "Previous": "Précedent",
     "Next": "Suivant",
@@ -128,6 +129,7 @@
     "Field thresholds": "Seuils de champs",
     "Field influences": "Influences des champs",
     "When age": "Avec l'âge",
+    "Age": "Âge",
     "Reactions": "Réactions",
     "Url": "Url",
     "Position (x,y,z)": "Position (x,y,z)",

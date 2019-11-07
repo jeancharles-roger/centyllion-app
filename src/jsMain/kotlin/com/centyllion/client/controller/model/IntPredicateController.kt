@@ -13,7 +13,7 @@ import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
 class IntPredicateController(
-    locale: Locale, predicate: Predicate<Int>,
+    locale: Locale, predicate: Predicate<Int>, placeHolder: String = "", minValue: Int = Int.MIN_VALUE, maxValue: Int = Int.MAX_VALUE,
     var onUpdate: (old: Predicate<Int>, new: Predicate<Int>, controller: IntPredicateController) -> Unit =
         { _, _, _ -> }
 ): NoContextController<Predicate<Int>, Field>() {
@@ -36,9 +36,8 @@ class IntPredicateController(
         data = data.copy(op = Operator.valueOf(value))
     }
 
-    val value = editableIntController(locale, data.constant) { _, new, _ ->
-        data = data.copy(constant = new)
-    }
+    val value = editableIntController(locale, data.constant, placeHolder, minValue, maxValue)
+    { _, new, _ -> data = data.copy(constant = new) }
 
     override val container: Field = Field(Control(select), value.container, addons = true)
 

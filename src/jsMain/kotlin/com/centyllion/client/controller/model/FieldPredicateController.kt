@@ -51,7 +51,7 @@ class FieldPredicateController(
         if (old != new) data = new.id to data.second
     }
 
-    val predicateController = FloatPredicateController(locale, value.second) { old, new, _ ->
+    val predicateController = FloatPredicateController(locale, value.second, locale.i18n("Field"),0f, 1f) { old, new, _ ->
         if (old != new) data = data.first to new
     }
 

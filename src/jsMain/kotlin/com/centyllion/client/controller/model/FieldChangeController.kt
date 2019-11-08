@@ -41,7 +41,7 @@ class FieldChangeController(
         }
     }
 
-    private var message: String? by observable(isValid(value.first, value.second)) { _, old, new ->
+    private var message: String? by observable<String?>(null) { _, old, new ->
         if (old != new) {
             valueSlider.color = sliderColor
             if (new != null) {
@@ -91,6 +91,8 @@ class FieldChangeController(
     init {
         // Sets initial value here to correct https://github.com/jeancharles-roger/centyllion/issues/185
         valueSlider.value = data.second.toString()
+
+        validate()
     }
 
     override fun refresh() {
@@ -106,3 +108,4 @@ class FieldChangeController(
     }
 
 }
+

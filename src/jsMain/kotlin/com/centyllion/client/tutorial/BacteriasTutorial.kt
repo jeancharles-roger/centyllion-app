@@ -145,7 +145,7 @@ class BacteriasTutorial(
         TutorialStep(
             i18n("Run the simulation"), listOf(span(i18n("Watch the bacteria colony grow."))),
             { page.simulationController.runButton.root },
-            { page.simulationController.simulator.step > 30 },
+            { page.simulationController.simulator.step > 25 },
             { page.simulationController.stop() }
         )
     )
@@ -156,7 +156,7 @@ class BacteriasTutorial(
             p { +i18n("You can now for instance:") }
             ul {
                 li { +i18n("Set a half-life for bacterias to give them a life-span.") }
-                li { +i18n("Add a sugar grain to feed the bacterias.") }
+                li { +i18n("Add a sugar field to feed the bacterias.") }
                 li { +i18n("Create another bacteria to compete with.") }
             }
             p {
@@ -168,4 +168,6 @@ class BacteriasTutorial(
             }
         }
     )
+
+    override val next: Tutorial<ShowPage>? get() = FieldTutorial(page)
 }

@@ -25,6 +25,7 @@ import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
+import com.centyllion.model.Field
 import com.centyllion.model.GrainModel
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
@@ -180,8 +181,9 @@ class BehaviourEditController(
         this.data = data.copy(fieldPredicates = data.fieldPredicates + predicate)
     }
 
-    val fieldPredicatesController =
-        columnsController(data.fieldPredicates, context.fields) { pair, previous ->
+    val fieldPredicatesController: MultipleController<
+            Pair<Int, Predicate<Float>>, List<Field>, Columns, Column, FieldPredicateController
+    > = columnsController(data.fieldPredicates, context.fields) { pair, previous ->
             previous ?: FieldPredicateController(page.appContext.locale, pair, context.fields,
             { old, new, _ -> if (old != new) this.data = data.updateFieldPredicate(old, new) },
             { delete, _ -> this.data = data.dropFieldPredicate(delete) })

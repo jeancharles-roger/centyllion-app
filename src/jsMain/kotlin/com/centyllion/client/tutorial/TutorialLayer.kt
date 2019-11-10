@@ -14,9 +14,10 @@ import kotlin.browser.document
 import kotlin.browser.window
 
 class TutorialLayer<P: BulmaPage>(
-    val tutorial: Tutorial<P>, val onEnd: (TutorialLayer<P>) -> Unit = {}
+    initial: Tutorial<P>, val onEnd: (TutorialLayer<P>) -> Unit = {}
  ) {
-    init { require(tutorial.isNotEmpty())}
+
+    var tutorial = initial
 
     var started = false
     var currentStep = 0
@@ -48,8 +49,10 @@ class TutorialLayer<P: BulmaPage>(
     }
 
     private fun checking() {
-        val step = tutorial.steps[currentStep]
-        if (step.validated()) next()
+        if (currentStep < tutorial.steps.size) {
+            val step = tutorial.steps[currentStep]
+            if (step.validated()) next()
+        }
         if (started) window.setTimeout(this::checking, 250)
     }
 
@@ -83,26 +86,35 @@ class TutorialLayer<P: BulmaPage>(
         setStep()
     }
 
-    fun previous() {
-        if (currentStep > 0) {
-            currentStep -= 1
-            setStep()
+    fun next() {
+        tutorial.steps[currentStep].nextCallback()
+        currentStep += 1
+        when {
+            currentStep < tutorial.steps.size -> setStep()
+            currentStep == tutorial.steps.size -> lastStep()
         }
     }
 
-    fun next() {
-        when {
-            currentStep < tutorial.steps.size - 1 -> {
-                tutorial.steps[currentStep].nextCallback()
-                currentStep += 1
-                setStep()
-            }
-            currentStep == tutorial.steps.size - 1 -> {
-                tutorial.steps[currentStep].nextCallback()
-                stop()
-            }
+    fun lastStep() {
+        // opens the conclusion if there is one and tutorial was done all the way
+        if (tutorial.conclusion.isNotEmpty()) {
+            val buttons = listOfNotNull(
+                textButton(tutorial.i18n("Ok"), color = ElementColor.Success) { stop() },
+                tutorial.next?.let { next ->
+                    textButton(tutorial.i18n(next.name), color = ElementColor.Primary) {
+                        tutorial = next
+                        currentStep = 0
+                        start()
+                    }
+                }
+            ).toTypedArray()
+
+            tutorial.page.modalDialog(tutorial.i18n(tutorial.name), tutorial.conclusion, *buttons)
+        } else {
+            stop()
         }
     }
+
 
     fun stop() {
         started = false
@@ -119,14 +131,6 @@ class TutorialLayer<P: BulmaPage>(
                 if (body.contains(container.root)) body.removeChild(container.root)
             }
         }, 1000)
-
-        // opens the conclusion if there is one and tutorial was done all the way
-        if (currentStep == tutorial.steps.size - 1 && tutorial.conclusion.isNotEmpty()) {
-            tutorial.page.modalDialog(
-                tutorial.name, tutorial.conclusion,
-                textButton(tutorial.i18n("Ok"), color = ElementColor.Success) { stop() }
-            )
-        }
 
         currentStep = 0
         onEnd(this)

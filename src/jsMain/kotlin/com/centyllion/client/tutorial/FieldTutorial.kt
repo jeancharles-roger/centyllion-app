@@ -17,8 +17,10 @@ import com.centyllion.client.controller.model.GrainEditController
 import com.centyllion.client.page.ShowPage
 import kotlinx.html.a
 import kotlinx.html.i
+import kotlinx.html.li
 import kotlinx.html.p
 import kotlinx.html.span
+import kotlinx.html.ul
 
 class FieldTutorial(
     override val page: ShowPage
@@ -147,6 +149,12 @@ class FieldTutorial(
     override val conclusion: List<BulmaElement> = listOf(
         SubTitle(i18n("Now you know how to use fields with Centyllion, well done 👍.")),
         wrap("content") {
+            p { +i18n("You can now for instance:") }
+            ul {
+                li { +i18n("Change the field threshold for sugar division (try 0.001 or 1e-6 (0.000001).") }
+                li { +i18n("Prevents the sources from moving.") }
+                li { +i18n("Makes the bacterias consume the sugar (production to -0.5).") }
+            }
             p {
                 +i18n("You can find some documentation here ")
                 a("https://centyllion.com/fr/documentation.html","_blank") {

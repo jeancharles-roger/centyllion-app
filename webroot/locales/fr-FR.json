@@ -228,6 +228,9 @@
     "Draw %0 source with the random spray.": "Dessinez %0 source avec le l'outil aléatoire.",
     "Watch the bacteria colony grow around the sugar sources.": "Regardez les bactéries se développer autour des sources de sucre.",
     "Now you know how to use fields with Centyllion, well done 👍.": "Maintenant vous savez utiliser les champs avec Centyllion, bravo 👍.",
+    "Change the field threshold for sugar division (try 0.001 or 1e-6 (0.000001).": "Changer le seuil du champ sucre pour la division (essayez 0.001 ou 1e-6 (0.000001).",
+    "Prevents the sources from moving.": "Empécher les sources de sucre de bouger.",
+    "Makes the bacterias consume the sugar (production to -0.5).": "Rendre les bacterias consommatrice de sucre (production à -0.5).",
     "Feed bacterias with sugar": "Du sucre pour les bactéries"
   }
 }

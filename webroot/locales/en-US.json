@@ -228,6 +228,9 @@
 	"Draw %0 source with the random spray.": "Draw %0 source with the random spray.",
 	"Watch the bacteria colony grow around the sugar sources.": "Watch the bacteria colony grow around the sugar sources.",
 	"Now you know how to use fields with Centyllion, well done 👍.": "Now you know how to use fields with Centyllion, well done 👍.",
-	"Feed bacterias with sugar": "Feed bacterias with sugar"
+    "Change the field threshold for sugar division (try 0.001 or 1e-6 (0.000001).": "Change the field threshold for sugar division (try 0.001 or 1e-6 (0.000001).",
+    "Prevents the sources from moving.": "Prevents the sources from moving.",
+    "Makes the bacterias consume the sugar (production to -0.5).": "Makes the bacterias consume the sugar (production to -0.5).",
+    "Feed bacterias with sugar": "Feed bacterias with sugar"
   }
 }

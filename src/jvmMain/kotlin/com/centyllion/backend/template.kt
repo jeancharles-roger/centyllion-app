@@ -62,7 +62,7 @@ fun HTML.centyllionHead(
     */
 
     // Twitter card
-    meta("twitter:card", "summary_large_image")
+    meta("twitter:card", "summary")
     meta("twitter:title", title)
     meta("twitter:description", description)
     meta("twitter:image", image)

@@ -176,6 +176,26 @@ fun Application.centyllion(config: ServerConfig) {
     }
 
     routing {
+        get("/show") {
+            val modelId = call.parameters["model"]
+            val simulationId = call.parameters["simulation"]
+            when {
+                simulationId != null -> {
+                    val simulation = config.data.getSimulation(simulationId)
+                    val name = simulation?.name ?: ""
+                    val description = simulation?.simulation?.description ?: ""
+                    val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
+                    context.respondHtml { index("Show $name", description, image) }
+                }
+                modelId != null -> {
+                    val model = config.data.getGrainModel(modelId)
+                    val name = model?.name ?: ""
+                    val description = model?.model?.description ?: ""
+                    context.respondHtml { index("Show $name", description) }
+                }
+                else -> context.respondHtml { index() }
+            }
+        }
         get("/{page?}") { context.respondHtml { index() } }
 
         // Static files

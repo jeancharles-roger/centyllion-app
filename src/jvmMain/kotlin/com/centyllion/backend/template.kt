@@ -46,20 +46,15 @@ fun HTML.centyllionHead(
 
     script(src = "https://static.ekko.chat/now/ekkonow.min.js") {}
 
-    /**
-    <!-- Open graph -->
-    <meta property="og:url" content="{{ site.url }}{{ page.url }}">
-    <meta property="og:site_name" content="Centyllion">
-    <meta property="article:published_time" content="2019-09-8 10:30:00 +0000" />
-    <meta property="og:type" content="article">
-    <meta property="og:locale" content="{{page.lang}}">
-    <meta property="og:title" content="{{title}}">
-    <meta property="og:description" content="{{ page.description }}">
-
-    <meta property="og:image" content="{{ site.url }}{%if page.img %}{{ page.img }}{% else %}/assets/images/logo-2by1.png{% endif %}" />
-    <meta property="article:publisher" content="https://twitter.com/centyllion" />
-    <meta property="article:author" content="https://twitter.com/centyllion" />
-    */
+    // Open graph
+    meta("og:site_name", "Centyllion")
+    meta("og:type","article")
+    //meta("article:published_time", "2019-09-8 10:30:00 +0000")
+    meta("og:type", "article")
+    meta("og:title", title)
+    meta("og:description", description)
+    meta("og:image", image)
+    meta("article:publisher", "https://twitter.com/centyllion")
 
     // Twitter card
     meta("twitter:card", "summary")

@@ -20,7 +20,7 @@ import kotlinx.html.title
 
 @HtmlTagMarker
 fun HTML.centyllionHead(
-    title: String, description: String = "",
+    title: String, description: String = "", path: String? = null,
     image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
 ) = head {
     title { +title }
@@ -47,18 +47,18 @@ fun HTML.centyllionHead(
     script(src = "https://static.ekko.chat/now/ekkonow.min.js") {}
 
     // Open graph
-    meta("og:site_name", "Centyllion")
-    meta("og:type","article")
+    meta(content = "https://app.centyllion.com${path ?: ""}") { attributes["property"] = "og:url" }
+    meta(content = "Centyllion") { attributes["property"] = "og:site_name" }
+    meta(content = "article") { attributes["property"] = "og:type" }
     //meta("article:published_time", "2019-09-8 10:30:00 +0000")
-    meta("og:type", "article")
-    meta("og:title", title)
-    meta("og:description", description)
-    meta("og:image", image)
+    meta(content = title) { attributes["property"] = "og:title" }
+    meta(content = description) { attributes["property"] = "og:description" }
+    meta(content = image) { attributes["property"] = "og:image" }
     if (thumbnail) {
-        meta("og:image:width", "600")
-        meta("og:image:height", "600")
+        meta(content = "600") { attributes["property"] = "og:image:width" }
+        meta(content = "600") { attributes["property"] = "og:image:height" }
     }
-    meta("article:publisher", "https://twitter.com/centyllion")
+    meta(content = "https://twitter.com/centyllion") { attributes["property"] = "article:publisher" }
 
     // Twitter card
     meta("twitter:card", "summary")
@@ -103,10 +103,10 @@ fun BODY.centyllionFooter() {
 
 @HtmlTagMarker
 fun HTML.index(
-    title: String = "Centyllion", description: String = "",
-   image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
+    title: String = "Centyllion", description: String = "", path: String? = null,
+    image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
 ) {
-    centyllionHead(title, description, image, thumbnail)
+    centyllionHead(title, description, path, image, thumbnail)
     body {
         section("central cent-main") {
             div("container")

@@ -37,6 +37,7 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.withCharset
+import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.route
@@ -177,6 +178,7 @@ fun Application.centyllion(config: ServerConfig) {
 
     routing {
         get("/show") {
+            val path = call.request.uri
             val modelId = call.parameters["model"]
             val simulationId = call.parameters["simulation"]
             when {
@@ -185,15 +187,15 @@ fun Application.centyllion(config: ServerConfig) {
                     val name = simulation?.name ?: ""
                     val description = simulation?.simulation?.description ?: ""
                     val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
-                    context.respondHtml { index("Show $name", description, image, true) }
+                    context.respondHtml { index("Show $name", description, path, image, true) }
                 }
                 modelId != null -> {
                     val model = config.data.getGrainModel(modelId)
                     val name = model?.name ?: ""
                     val description = model?.model?.description ?: ""
-                    context.respondHtml { index("Show $name", description) }
+                    context.respondHtml { index("Show $name", description, path) }
                 }
-                else -> context.respondHtml { index() }
+                else -> context.respondHtml { index(path = path) }
             }
         }
         get("/{page?}") { context.respondHtml { index() } }

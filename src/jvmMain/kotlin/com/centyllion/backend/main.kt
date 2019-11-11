@@ -185,7 +185,7 @@ fun Application.centyllion(config: ServerConfig) {
                     val name = simulation?.name ?: ""
                     val description = simulation?.simulation?.description ?: ""
                     val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
-                    context.respondHtml { index("Show $name", description, image) }
+                    context.respondHtml { index("Show $name", description, image, true) }
                 }
                 modelId != null -> {
                     val model = config.data.getGrainModel(modelId)

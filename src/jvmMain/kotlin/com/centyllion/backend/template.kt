@@ -21,7 +21,7 @@ import kotlinx.html.title
 @HtmlTagMarker
 fun HTML.centyllionHead(
     title: String, description: String = "",
-    image: String = "https://centyllion.com/assets/images/logo-square.png"
+    image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
 ) = head {
     title { +title }
     meta("viewport", "width=device-width, initial-scale=1", "UTF-8")
@@ -54,6 +54,10 @@ fun HTML.centyllionHead(
     meta("og:title", title)
     meta("og:description", description)
     meta("og:image", image)
+    if (thumbnail) {
+        meta("og:image:width", "600")
+        meta("og:image:height", "600")
+    }
     meta("article:publisher", "https://twitter.com/centyllion")
 
     // Twitter card
@@ -100,9 +104,9 @@ fun BODY.centyllionFooter() {
 @HtmlTagMarker
 fun HTML.index(
     title: String = "Centyllion", description: String = "",
-   image: String = "https://centyllion.com/assets/images/logo-square.png"
+   image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
 ) {
-    centyllionHead(title, description, image)
+    centyllionHead(title, description, image, thumbnail)
     body {
         section("central cent-main") {
             div("container")

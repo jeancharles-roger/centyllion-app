@@ -33,7 +33,7 @@ class SimulationDisplayController(
     val description = Help(data.simulation.description)
     val author = Help(data.info.user?.name?.let {"by $it"} ?: "")
 
-    val thumbnail = Image("/api/simulation/${data.id}/thumbnail", ImageSize.Square)
+    val thumbnail = Image("/api/simulation/${data.id}/thumbnail", ImageSize.S3by2)
 
     override val container = Card(
         CardImage(thumbnail),

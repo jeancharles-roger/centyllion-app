@@ -9,6 +9,7 @@ import babylonjs.BoxOptions
 import babylonjs.Color3
 import babylonjs.CylinderOptions
 import babylonjs.Engine
+import babylonjs.EngineOptions
 import babylonjs.HemisphericLight
 import babylonjs.Mesh
 import babylonjs.MeshBuilder
@@ -53,8 +54,10 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.files.Blob
+import org.w3c.files.BlobPropertyBag
 import kotlin.browser.window
 import kotlin.js.Promise
+import kotlin.js.json
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
@@ -199,7 +202,14 @@ class Simulator3dViewController(
         Div(simulationCanvas, classes = "has-text-centered"), toolbar
     )
 
-    val engine = Engine(simulationCanvas.root, true, adaptToDeviceRatio = false).apply {
+    // { preserveDrawingBuffer: true, stencil: true }
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    val engineOptions = json(
+        "preserveDrawingBuffer" to true,
+         "stencil" to true
+    ) as EngineOptions
+
+    val engine = Engine(simulationCanvas.root, true, options = engineOptions, adaptToDeviceRatio = false).apply {
         val width = (window.innerWidth - 40).coerceAtMost(600)
         val height = simulator.simulation.height * width / simulator.simulation.width
         setSize(width, height)
@@ -213,7 +223,6 @@ class Simulator3dViewController(
     val scene = Scene(engine, sceneOptions).apply {
         autoClear = true
         clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
-        autoClearDepthAndStencil = false
         blockfreeActiveMeshesAndRenderingGroups = true
         blockMaterialDirtyMechanism = true
 
@@ -573,9 +582,13 @@ class Simulator3dViewController(
         window.addEventListener("resize", resizeCallback)
     }
 
-    fun screenshot() = Promise<Blob> { resolve, reject ->
-        render()
-        Tools.ToBlob(simulationCanvas.root, { if (it != null) resolve(it) else reject(Exception("No content")) })
+    fun screenshot() = screenshotURL().then {
+        val buffer = Tools.DecodeBase64(it)
+        Blob(arrayOf(buffer), object: BlobPropertyBag { override var type: String? = "image/png" })
+    }
+
+    fun screenshotURL() = Promise<String> { resolve, _ ->
+        Tools.CreateScreenshot(engine, camera, json("width" to 1200, "height" to 800), { resolve(it) }, "image/png")
     }
 
     fun resetCamera() {
@@ -593,9 +606,10 @@ class Simulator3dViewController(
             camera.beta, PI, 0
         )
         Animation.CreateAndStartAnimation(
-            "Reset camera target", camera, "target", 26, 26,
-            camera.target, Vector3(0, 0, 0), 0, onAnimationEnd = { animated = false }
+            "Reset camera target", camera, "target", 25, 25,
+            camera.target, Vector3(0, 0, 0), 0
         )
+        window.setTimeout( { animated = false }, 1000)
     }
 
     fun colorFromName(name: String) =

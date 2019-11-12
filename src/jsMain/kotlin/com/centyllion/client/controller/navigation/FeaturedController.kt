@@ -30,7 +30,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
 
     val thumbnail = Image(
         if (data.thumbnailId != null) "/api/simulation/${data.simulationId}/thumbnail" else "/images/480x480.png",
-        ImageSize.Square
+        ImageSize.S3by2
     )
 
     override val container = Card(

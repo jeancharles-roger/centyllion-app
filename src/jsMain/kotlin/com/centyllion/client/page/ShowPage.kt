@@ -31,7 +31,6 @@ import bulma.textButton
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
-import com.centyllion.client.controller.model.Simulator3dViewController
 import com.centyllion.client.controller.model.TagsController
 import com.centyllion.client.controller.utils.EditableMarkdownController
 import com.centyllion.client.controller.utils.EditableStringController
@@ -51,7 +50,6 @@ import com.centyllion.model.ModelElement
 import com.centyllion.model.Problem
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import com.centyllion.model.Simulator
 import com.centyllion.model.behaviourIcon
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptyModel
@@ -62,7 +60,6 @@ import com.centyllion.model.grainIcon
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
-import org.w3c.dom.url.URL
 import org.w3c.dom.url.URLSearchParams
 import kotlin.browser.window
 import kotlin.js.Promise
@@ -413,16 +410,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         if (appContext.me != null) appContext.api.fetchSimulations(null, modelId, limit = limit)
         else appContext.api.fetchSimulations(modelId, limit = limit)
 
-    fun saveInitThumbnail() {
-        // creates a new simulator 3d view to create an init view
-        val controller = Simulator3dViewController(Simulator(model.model, simulation.simulation), this)
-        controller.refresh()
-        controller.screenshot().then {
-            controller.dispose()
-            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
-        }.catch { controller.dispose() }
-    }
-
     fun saveCurrentThumbnail() {
         simulationController.simulationViewController.screenshot().then {
             api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
@@ -431,9 +418,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun downloadScreenshot() {
-        simulationController.simulationViewController.screenshot().then {
-            val name = "${model.label} - ${simulation.label} - screenshot.jpg"
-            download(name, URL.createObjectURL(it))
+        simulationController.simulationViewController.screenshotURL().then {
+            val name = "${model.label} - ${simulation.label} - screenshot.png"
+            download(name, it)
         }
     }
 
@@ -452,7 +439,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         api.saveSimulation(newModel.id, simulation.simulation)
                     }.then { newSimulation ->
                         setSimulation(newSimulation)
-                        saveInitThumbnail()
+                        saveCurrentThumbnail()
                         message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
                         after()
                         Unit
@@ -481,7 +468,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         // simulation must be created
                         api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
                             setSimulation(newSimulation)
-                            saveInitThumbnail()
+                            saveCurrentThumbnail()
                             message("Simulation %0 saved.", simulation.simulation.name)
                             after()
                             Unit
@@ -494,7 +481,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         // saves the simulation
                         api.updateSimulation(simulation).then {
                             setSimulation(simulation)
-                            saveInitThumbnail()
+                            saveCurrentThumbnail()
                             refreshButtons()
                             message("Simulation %0 saved.", simulation.simulation.name)
                             after()

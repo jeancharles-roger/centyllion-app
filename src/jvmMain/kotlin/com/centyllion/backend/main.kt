@@ -5,6 +5,7 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.centyllion.backend.route.asset
 import com.centyllion.backend.route.featured
+import com.centyllion.backend.route.html
 import com.centyllion.backend.route.info
 import com.centyllion.backend.route.me
 import com.centyllion.backend.route.model
@@ -28,7 +29,6 @@ import io.ktor.features.Compression
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
-import io.ktor.html.respondHtml
 import io.ktor.http.CacheControl
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -37,9 +37,7 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.withCharset
-import io.ktor.request.uri
 import io.ktor.response.respond
-import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.util.pipeline.PipelineContext
@@ -177,28 +175,7 @@ fun Application.centyllion(config: ServerConfig) {
     }
 
     routing {
-        get("/show") {
-            val path = call.request.uri
-            val modelId = call.parameters["model"]
-            val simulationId = call.parameters["simulation"]
-            when {
-                simulationId != null -> {
-                    val simulation = config.data.getSimulation(simulationId)
-                    val name = simulation?.name ?: ""
-                    val description = simulation?.simulation?.description ?: ""
-                    val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
-                    context.respondHtml { index("Show $name", description, path, image, true) }
-                }
-                modelId != null -> {
-                    val model = config.data.getGrainModel(modelId)
-                    val name = model?.name ?: ""
-                    val description = model?.model?.description ?: ""
-                    context.respondHtml { index("Show $name", description, path) }
-                }
-                else -> context.respondHtml { index(path = path) }
-            }
-        }
-        get("/{page?}") { context.respondHtml { index() } }
+        html(config.data)
 
         // Static files
         Files.list(Paths.get(config.webroot)).forEach {

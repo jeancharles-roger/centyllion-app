@@ -61,7 +61,7 @@ fun HTML.centyllionHead(
     meta(content = "https://twitter.com/centyllion") { attributes["property"] = "article:publisher" }
 
     // Twitter card
-    meta("twitter:card", "summary")
+    meta("twitter:card", "summary_large_image")
     meta("twitter:title", title)
     meta("twitter:description", description)
     meta("twitter:image", image)

@@ -9,6 +9,7 @@ import bulma.Control
 import bulma.Div
 import bulma.Dropdown
 import bulma.ElementColor
+import bulma.FieldElement
 import bulma.Help
 import bulma.Icon
 import bulma.Level
@@ -36,11 +37,14 @@ import com.centyllion.client.controller.utils.EditableMarkdownController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
+import com.centyllion.client.facebookHref
 import com.centyllion.client.homePage
+import com.centyllion.client.linkedInHref
 import com.centyllion.client.stringHref
 import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
+import com.centyllion.client.twitterHref
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
@@ -57,10 +61,17 @@ import com.centyllion.model.emptySimulation
 import com.centyllion.model.emptySimulationDescription
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import kotlinx.html.a
+import kotlinx.html.dom.create
+import kotlinx.html.i
+import kotlinx.html.js.div
+import kotlinx.html.span
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
+import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
@@ -131,6 +142,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             simulationDescriptionController.readOnly = readonly
             simulationDescriptionController.data = new.simulation.description
             refreshButtons()
+
+            twitterShare.content.href = twitterHref(simulation.simulation.description)
+            facebookShare.content.href = facebookHref()
+            linkedInShare.content.href = linkedInHref(simulation.simulation.description)
         }
     }
 
@@ -286,9 +301,40 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val undoControl = Control(modelUndoRedo.undoButton)
     val redoControl = Control(modelUndoRedo.redoButton)
 
+    val twitterShare = ControlWrapper(document.create.a(
+        href = twitterHref(simulation.simulation.description),
+        target = "_blank",
+        classes = "button is-rounded is-primary"
+    ) {
+        rel = "noopener"
+        attributes["style"] = "background-color: #55acee;"
+        span(classes = "icon") { i("fab fa-twitter fa-lg") }
+    } as HTMLAnchorElement)
+
+    val facebookShare = ControlWrapper(document.create.a(
+        href = facebookHref(),
+        target = "_blank",
+        classes = "button is-rounded is-primary"
+    ) {
+        rel = "noopener"
+        attributes["style"] = "background-color: #3b5998;"
+        span(classes = "icon") { i("fab fa-facebook fa-lg") }
+    } as HTMLAnchorElement)
+
+    val linkedInShare = ControlWrapper(document.create.a(
+        href = linkedInHref(simulation.simulation.description),
+        target = "_blank",
+        classes = "button is-rounded is-primary"
+    ) {
+        rel = "noopener"
+        attributes["style"] = "background-color: #0077b5;"
+        span(classes = "icon") { i("fab fa-linkedin fa-lg") }
+    } as HTMLAnchorElement)
+
+
     val tools = BField(
-        undoControl, redoControl, saveControl, Control(moreDropdown),
-        grouped = true
+        undoControl, redoControl, saveControl, Control(moreDropdown), twitterShare, facebookShare, linkedInShare,
+        grouped = true, groupedMultiline = true
     )
 
     val tabs = Tabs(boxed = true)
@@ -664,4 +710,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
+}
+
+class ControlWrapper<Html : HTMLElement>(val content: Html) : FieldElement {
+    override val root: HTMLElement = document.create.div(classes = "control").apply {
+        appendChild(content)
+    }
 }

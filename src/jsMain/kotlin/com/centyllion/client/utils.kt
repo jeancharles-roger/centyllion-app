@@ -8,6 +8,7 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import kotlin.browser.document
 
+external fun encodeURI(parameter: String): String
 external fun encodeURIComponent(parameter: String): String
 
 external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
@@ -61,3 +62,14 @@ fun BulmaElement.setTooltip(text: String) {
     root.classList.add("has-tooltip-bottom")
     root.setAttribute("data-tooltip", text)
 }
+
+fun myHost() = encodeURI(document.location?.let { "${it.protocol}://${it.host}" } ?: "")
+fun myUrl() = encodeURI(document.location?.toString() ?: "")
+
+fun twitterHref(description: String) =
+    "https://twitter.com/intent/tweet/?text=${encodeURI(description)}&url=${myUrl()}&via=centyllion"
+
+fun facebookHref() = "https://facebook.com/sharer/sharer.php?u=${myUrl()}"
+
+fun linkedInHref(description: String) =
+    "https://www.linkedin.com/shareArticle?mini=true&url=${myUrl()}&title=${encodeURI(document.title)}&summary=${encodeURI(description)}&source=${myHost()}"

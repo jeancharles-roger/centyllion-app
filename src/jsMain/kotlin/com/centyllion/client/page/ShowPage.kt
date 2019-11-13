@@ -247,6 +247,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
     ) { refreshMoreButtons() }
 
+    val moreControl = Control(moreDropdown)
+
     val deleteModelItem = createMenuItem(
         moreDropdown, i18n("Delete Model"), "trash", TextColor.Danger
     ) { deleteModel() }
@@ -254,6 +256,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val deleteSimulationItem = createMenuItem(
         moreDropdown, i18n("Delete Simulation"), "trash", TextColor.Danger
     ) { deleteSimulation() }
+
+    val deleteDivider = createMenuDivider()
 
     val downloadModelItem = createMenuItem(
         moreDropdown, i18n("Download Model"), "download", TextColor.Primary
@@ -271,6 +275,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         moreDropdown, i18n("Download screenshot"), "image", TextColor.Primary
     ) { downloadScreenshot() }
 
+    val simulationDivider = createMenuDivider()
+
     val downloadSimulationItem = createMenuItem(
         moreDropdown, i18n("Download Simulation"), "download", TextColor.Primary
     ) { downloadSimulation() }
@@ -280,8 +286,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ).apply { icon?.spin = true }
 
     val moreDropdownItems = listOfNotNull(
-        deleteModelItem, deleteSimulationItem, createMenuDivider(),
-        newSimulationItem, saveThumbnailItem, downloadScreenshotItem, createMenuDivider(),
+        deleteModelItem, deleteSimulationItem, deleteDivider,
+        newSimulationItem, saveThumbnailItem, downloadScreenshotItem, simulationDivider,
         downloadModelItem, downloadSimulationItem
     )
 
@@ -332,8 +338,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     } as HTMLAnchorElement)
 
 
+    private val readOnlyTools = listOf(
+        moreControl, twitterShare, facebookShare, linkedInShare,
+        newSimulationItem, downloadScreenshotItem, simulationDivider,
+        downloadModelItem, downloadSimulationItem
+    )
+
     val tools = BField(
-        undoControl, redoControl, saveControl, Control(moreDropdown), twitterShare, facebookShare, linkedInShare,
+        undoControl, redoControl, saveControl, twitterShare, facebookShare, linkedInShare, moreControl,
         grouped = true, groupedMultiline = true
     )
 
@@ -386,8 +398,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         simulationController.readOnly = simulationReadOnly
         simulationNameController.readOnly = simulationReadOnly
         simulationDescriptionController.readOnly = simulationReadOnly
-
-        tools.hidden = true
 
         // retrieves model and simulation to load
         val params = URLSearchParams(window.location.search)
@@ -639,13 +649,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                tools.hidden = isModelReadOnly
+                setReadonlyControls(isModelReadOnly)
                 undoControl.body = modelUndoRedo.undoButton
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
-                val readonly = isSimulationReadOnly
-                tools.hidden = readonly
+                setReadonlyControls(isModelReadOnly)
                 undoControl.body = simulationUndoRedo.undoButton
                 redoControl.body = simulationUndoRedo.redoButton
             }
@@ -654,6 +663,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         modelUndoRedo.refresh()
         simulationUndoRedo.refresh()
         saveButton.disabled = appContext.me == null || (!modelNeedsSaving && !simulationNeedsSaving)
+    }
+
+    private fun setReadonlyControls(readOnly: Boolean) {
+        tools.body.forEach { it.hidden = if (readOnlyTools.contains(it) ) false else readOnly }
+        moreDropdownItems.forEach { it.hidden = if (readOnlyTools.contains(it) ) false else readOnly }
     }
 
     fun refreshMoreButtons() {
@@ -676,6 +690,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                             }
                         }
                     }
+                } else {
+                    moreDropdown.items = moreDropdownItems
                 }
             }.catch { error(it) }
         } else {

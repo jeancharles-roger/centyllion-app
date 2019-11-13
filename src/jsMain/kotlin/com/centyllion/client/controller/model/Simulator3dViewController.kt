@@ -588,7 +588,12 @@ class Simulator3dViewController(
     }
 
     fun screenshotURL() = Promise<String> { resolve, _ ->
-        Tools.CreateScreenshot(engine, camera, json("width" to 1200, "height" to 800), { resolve(it) }, "image/png")
+        animated = true
+        Tools.CreateScreenshotUsingRenderTarget(
+            engine, camera, json("width" to 1200, "height" to 800), { resolve(it) },
+            "image/png", null, true, null
+        )
+        window.setTimeout( { animated = false }, 1000)
     }
 
     fun resetCamera() {

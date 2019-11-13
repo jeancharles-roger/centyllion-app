@@ -605,10 +605,7 @@ class Simulator3dViewController(
             "Reset camera beta", camera, "beta", 25, 25,
             camera.beta, PI, 0
         )
-        Animation.CreateAndStartAnimation(
-            "Reset camera target", camera, "target", 25, 25,
-            camera.target, Vector3(0, 0, 0), 0
-        )
+        camera.target = Vector3(0, 0, 0)
         window.setTimeout( { animated = false }, 1000)
     }
 
@@ -690,11 +687,9 @@ class Simulator3dViewController(
 
         // sets new assets
         data.simulation.assets.map { asset ->
-            console.log("Loading asset ${asset.url}")
             val task = assetsManager.addMeshTask("Loading ${asset.url}", "", asset.url, "")
             task.runTask(scene,
                 {
-                    console.log("Success loading of asset ${asset.url}")
                     val mesh = task.loadedMeshes[0] as Mesh
                     mesh.position.set(asset.x, asset.y, asset.z)
                     mesh.scaling.set(asset.xScale, asset.yScale, asset.zScale)
@@ -707,7 +702,9 @@ class Simulator3dViewController(
                     }
                     scene.addMesh(mesh)
                     assetScenes[asset] = mesh
+                    animated = true
                     render()
+                    scene.executeWhenReady { animated = false }
                 },
                 {m, _ ->
                     page.error("Error loading asset: $m")

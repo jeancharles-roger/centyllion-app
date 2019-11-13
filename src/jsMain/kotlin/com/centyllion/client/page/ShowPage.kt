@@ -123,7 +123,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
-
     val isSimulationReadOnly
         get() = simulation.id.isNotEmpty() && simulation.info.user?.id != appContext.me?.id
 
@@ -143,9 +142,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             simulationDescriptionController.data = new.simulation.description
             refreshButtons()
 
-            twitterShare.content.href = twitterHref(simulation.simulation.description)
+            twitterShare.content.href = twitterHref(description())
             facebookShare.content.href = facebookHref()
-            linkedInShare.content.href = linkedInHref(simulation.simulation.description)
+            linkedInShare.content.href = linkedInHref(description())
         }
     }
 
@@ -176,7 +175,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val simulationUserLabel = Help()
-
 
     val problemIcon = iconButton(
         Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
@@ -308,7 +306,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val redoControl = Control(modelUndoRedo.redoButton)
 
     val twitterShare = ControlWrapper(document.create.a(
-        href = twitterHref(simulation.simulation.description),
+        href = twitterHref(description()),
         target = "_blank",
         classes = "button is-rounded is-primary"
     ) {
@@ -328,7 +326,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     } as HTMLAnchorElement)
 
     val linkedInShare = ControlWrapper(document.create.a(
-        href = linkedInHref(simulation.simulation.description),
+        href = linkedInHref(description()),
         target = "_blank",
         classes = "button is-rounded is-primary"
     ) {
@@ -440,6 +438,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             error(it)
         }
     }
+
+    fun description() =
+        if (simulation.simulation.description.isNotBlank()) simulation.simulation.description
+        else model.model.description
 
     fun startTutorial() {
         if (tutorialLayer == null) {

@@ -68,6 +68,7 @@ import kotlinx.html.js.div
 import kotlinx.html.span
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import markdownit.MarkdownIt
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -142,9 +143,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             simulationDescriptionController.data = new.simulation.description
             refreshButtons()
 
-            twitterShare.content.href = twitterHref(description())
+            twitterShare.content.href = twitterHref(descriptionText())
             facebookShare.content.href = facebookHref()
-            linkedInShare.content.href = linkedInHref(description())
+            linkedInShare.content.href = linkedInHref(descriptionText())
         }
     }
 
@@ -306,7 +307,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val redoControl = Control(modelUndoRedo.redoButton)
 
     val twitterShare = ControlWrapper(document.create.a(
-        href = twitterHref(description()),
+        href = twitterHref(descriptionText()),
         target = "_blank",
         classes = "button is-rounded is-primary"
     ) {
@@ -326,7 +327,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     } as HTMLAnchorElement)
 
     val linkedInShare = ControlWrapper(document.create.a(
-        href = linkedInHref(description()),
+        href = linkedInHref(descriptionText()),
         target = "_blank",
         classes = "button is-rounded is-primary"
     ) {
@@ -439,9 +440,11 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun description() =
-        if (simulation.simulation.description.isNotBlank()) simulation.simulation.description
-        else model.model.description
+    /** Retrieves simulation description or model description instead if blank and strips the markdown */
+    fun descriptionText() = MarkdownIt().render(
+        if (simulationDescriptionController.data.isNotBlank()) simulationDescriptionController.data
+        else modelDescriptionController.data
+    ).replace(Regex("<[^>]*>"), "").trim()
 
     fun startTutorial() {
         if (tutorialLayer == null) {

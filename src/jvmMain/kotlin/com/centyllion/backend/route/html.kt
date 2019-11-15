@@ -59,13 +59,13 @@ fun Route.html(data: Data) {
                 val name = simulation?.name ?: ""
                 val description = simulation?.simulation?.description ?: ""
                 val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
-                context.respondHtml { index("Show $name", description, path, image, true) }
+                context.respondHtml { index("Simulation $name", description, path, image, true) }
             }
             modelId != null -> {
                 val model = data.getGrainModel(modelId)
                 val name = model?.name ?: ""
                 val description = model?.model?.description ?: ""
-                context.respondHtml { index("Show $name", description, path) }
+                context.respondHtml { index("Model $name", description, path) }
             }
             else -> context.respondHtml { index(path = path) }
         }

@@ -6,37 +6,10 @@ import bulma.NoContextController
 import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
-import org.w3c.dom.HTMLElement
-import kotlin.js.Json
+import uplot.Line
 import kotlin.js.json
 import kotlin.math.max
 import kotlin.properties.Delegates.observable
-
-private external interface Serie {
-    val label: String
-    val type: String
-    val scale: String
-    val width: Number
-    val show: Boolean
-}
-
-private external interface Series {
-    val x: Serie
-    val y: Array<Serie>
-}
-
-@JsModule("uPlot")
-private external class uPlot(options: Json, data: Array<Array<Number>>) {
-
-    val root: HTMLElement
-
-    fun setData(data: Array<Array<out Number>>, minView: Number = definedExternally, maxView: Number = definedExternally)
-
-    fun toggle(idxs: Array<Int>, onOff: Boolean)
-
-    val series : Series
-}
-
 
 data class ChartLine(
     val label: String, val color: String, val width: Int = 2, val initial: Number
@@ -68,7 +41,7 @@ class ChartController(
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
-    private var uplot: uPlot? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
+    private var uplot: Line? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
         if (old != null) {
             container.root.removeChild(old.root)
         } else {
@@ -126,22 +99,20 @@ class ChartController(
         return arrayOf(0, 1.1*currentMax)
     }
 
-    private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): uPlot? {
+    private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): Line? {
         if (chart.lines.isEmpty()) return null
-        val toggled = uplot?.series?.y?.filter{ !it.show }?.map { it.label } ?: emptyList()
-        return uPlot(
+        val line = Line(
             json(
                 "width" to width, "height" to height,
                 "scales" to json(
-                    "x" to json("type" to "n", "range" to ::graphRangeX),
-                    "y" to json("type" to "n", "range" to ::graphRangeY)
+                    "x" to json("time" to false, "range" to ::graphRangeX),
+                    "y" to json("time" to false, "range" to ::graphRangeY)
                 ),
                 "series" to json(
                     "x" to json("label" to data.xLabel),
                     "y" to chart.lines.map {
                         json(
-                            "type" to "n", "label" to it.label,
-                            "show" to !toggled.contains(it.label),
+                            "type" to false, "label" to it.label,
                             "color" to it.color, "width" to it.width
                         )
                     }.toTypedArray()
@@ -149,6 +120,15 @@ class ChartController(
             ),
             arrayOf(xValues, *yValues)
         )
+        /** Toggle series that where toggled */
+        val toggledIds = (uplot?.series?.y ?: emptyArray())
+            .mapIndexed { i, s -> i+1 to s.show }
+            .filter{ !it.second}
+            .map { (i, _) -> i }
+
+        if (toggledIds.isNotEmpty()) line.toggle(toggledIds.toTypedArray())
+
+        return line
     }
 
     private fun resetChartData() {

@@ -121,11 +121,11 @@ class ChartController(
             arrayOf(xValues, *yValues)
         )
         /** Toggle series that where toggled */
-        val toggledIds = (uplot?.series?.y ?: emptyArray())
-            .mapIndexed { i, s -> i+1 to s.show }
+        val toggled = uplot?.series?.y?.filter{ !it.show }?.map { it.label } ?: emptyList()
+        val toggledIds = line.series.y
+            .mapIndexed { i, s -> i+1 to (!toggled.contains(s.label)) }
             .filter{ !it.second}
             .map { (i, _) -> i }
-
         if (toggledIds.isNotEmpty()) line.toggle(toggledIds.toTypedArray())
 
         return line

@@ -8,7 +8,6 @@ import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
 import uplot.Line
 import kotlin.js.json
-import kotlin.math.max
 import kotlin.properties.Delegates.observable
 
 data class ChartLine(
@@ -34,10 +33,6 @@ class ChartController(
     private var xValues = Array<Number>(chartData.xCount) { it }
 
     private var yValues: Array<Array<Number>> = chartData.data
-
-    private var xMax = xValues.map { n -> n.toDouble() }.max() ?: 0.0
-
-    private var yMax = yValues.map { it.map { n -> n.toDouble() }.max() ?: 0.0 }
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
@@ -90,23 +85,14 @@ class ChartController(
     override fun refresh() {
     }
 
-    private fun graphRangeX(min: Number, max: Number): Array<Number> {
-        return arrayOf(min, max)
-    }
-
-    private fun graphRangeY(min: Number, max: Number): Array<Number> {
-        val currentMax = yMax.filterIndexed { i, _ -> (uplot?.series?.y?.get(i)?.show) ?: false }.max() ?: 0.0
-        return arrayOf(0, 1.1*currentMax)
-    }
-
     private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): Line? {
         if (chart.lines.isEmpty()) return null
         val line = Line(
             json(
                 "width" to width, "height" to height,
                 "scales" to json(
-                    "x" to json("time" to false, "range" to ::graphRangeX),
-                    "y" to json("time" to false, "range" to ::graphRangeY)
+                    "x" to json("time" to false),
+                    "y" to json("time" to false, "range" to { _: Number, max: Number -> arrayOf(0, max.toDouble()*1.1) })
                 ),
                 "series" to json(
                     "x" to json("label" to data.xLabel),
@@ -135,21 +121,17 @@ class ChartController(
         chartData = ChartData(1, Array(data.lines.size) { arrayOf(data.lines[it].initial) })
         xValues = Array(chartData.xCount) { it }
         yValues = chartData.data
-        xMax = xValues.map { n -> n.toDouble() }.max() ?: 0.0
-        yMax = yValues.map { it.map { n -> n.toDouble() }.max() ?: 0.0 }
     }
 
     fun reset() {
         resetChartData()
-        uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
+        uplot?.setData(arrayOf(xValues, *yValues), 0, xValues.lastOrNull() ?: 0)
     }
 
     fun push(x: Number, ys: Collection<Number>) {
-        xMax = maxOf(xMax, x.toDouble())
         xValues.push(x)
-        yMax = yMax.zip(ys) { c, n -> max(c, n.toDouble()) }
         ys.zip(yValues) { y, data -> data.push(y) }
-        uplot?.setData(arrayOf(xValues, *yValues), 0, xMax)
+        uplot?.setData(arrayOf(xValues, *yValues), 0, x)
     }
 
 }

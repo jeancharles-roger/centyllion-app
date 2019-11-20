@@ -25,7 +25,7 @@ fun searchAndCreateGrainController(page: BulmaPage, simulationId: String, contro
             val id = container.dataset["id"]
             console.log("Found grain for '#${simulationId}' on $id.")
 
-            val grain = controller.context.indexedGrains[id?.toIntOrNull() ?: -1]
+            val grain = controller.context.grainForId(id?.toIntOrNull() ?: -1)
             if (grain != null) {
                 val grainDisplay = GrainDisplayController(page, grain, controller.context)
                 container.appendChild(grainDisplay.root)

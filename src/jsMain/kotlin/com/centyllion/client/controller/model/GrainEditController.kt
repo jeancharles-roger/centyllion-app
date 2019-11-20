@@ -165,7 +165,7 @@ class GrainEditController(
             previous ?: FieldChangeController(pair, context.fields, 0f, 1f,
             { id, value ->
                 if ((data.fieldProductions[id]?: 0f) != 0f && value <= 0f)
-                    page.i18n("Field permeability will prevent production for %0", context.indexedFields[id]?.name ?: "")
+                    page.i18n("Field permeability will prevent production for %0", context.fieldForId(id)?.name ?: "")
                 else null
             },
             { old, new, _ ->

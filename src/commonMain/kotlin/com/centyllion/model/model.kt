@@ -6,7 +6,7 @@ import kotlinx.serialization.Transient
 import kotlin.math.pow
 
 enum class Direction {
-    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown, Front, Back;
+    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown;
 
     val opposite get() = when (this) {
         Left -> Right
@@ -17,8 +17,6 @@ enum class Direction {
         RightUp -> LeftDown
         LeftDown -> RightUp
         RightDown -> LeftUp
-        Front -> Back
-        Back -> Front
     }
 }
 
@@ -163,11 +161,11 @@ data class Grain(
         fieldProductions.map { entry ->
             listOfNotNull(
                 (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.indexedFields[entry.key]
+                    val field = model.fieldForId(entry.key)
                     Problem(this, locale.i18n("Field production for %0 must be between -1 and 1", field?.name ?: ""))
                 },
                 ((fieldPermeable[entry.key] ?: 1f) <= 0f && entry.value != 0f).orNull {
-                    val field = model.indexedFields[entry.key]
+                    val field = model.fieldForId(entry.key)
                     Problem(this, locale.i18n("Field permeability will prevent production for %0", field?.name ?: ""))
                 }
             )
@@ -175,7 +173,7 @@ data class Grain(
         fieldInfluences.map { entry ->
             listOfNotNull(
                 (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.indexedFields[entry.key]
+                    val field = model.fieldForId(entry.key)
                     Problem(this, locale.i18n("Field influence for %0 must be between -1 and 1", field?.name ?: ""))
                 }
             )
@@ -183,7 +181,7 @@ data class Grain(
         fieldPermeable.map {entry ->
             listOfNotNull(
                 (entry.value < 0 || entry.value > 1).orNull {
-                    val field = model.indexedFields[entry.key]
+                    val field = model.fieldForId(entry.key)
                     Problem(this, locale.i18n("Field permeability for %0 must be between 0 and 1", field?.name ?: ""))
                 }
             )
@@ -199,10 +197,10 @@ data class Reaction(
     val allowedDirection: Set<Direction> = defaultDirection
 ) {
     fun diagnose(model: GrainModel, behaviour: Behaviour, index: Int, locale: Locale): List<Problem> = listOfNotNull(
-        (reactiveId >= 0 && !model.indexedGrains.containsKey(reactiveId)).orNull {
+        (reactiveId >= 0 && model.grainForId(reactiveId) == null).orNull {
             Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist for reactive %1", reactiveId, index))
         },
-        (productId >= 0 && !model.indexedGrains.containsKey(productId)).orNull {
+        (productId >= 0 && model.grainForId(productId) == null).orNull {
             Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist for reactive %1", productId, index))
         },
         (allowedDirection.isEmpty()).orNull {
@@ -276,26 +274,27 @@ data class Behaviour(
 
     /** Is behavior applicable for given [grain], [age] and [neighbours] ? */
     fun applicable(
-        grain: Grain,
-        age: Int,
-        fields: List<Pair<Int, Float>>,
-        neighbours: List<Pair<Direction, Agent>>
-    ): Boolean =
-        mainReactiveId == grain.id && agePredicate.check(age) &&
-                fieldPredicates.fold(true) { a, p ->
-                    a && p.second.check(
-                        (fields.firstOrNull { it.first == p.first }?.second ?: 0f).flatten(minFieldLevel)
-                    )
-                } &&
-                reaction.fold(true) { a, r ->
-                    a && r.allowedDirection.any { d ->
-                        neighbours.any { it.first == d && it.second.id == r.reactiveId }
-                    }
-                }
+        grain: Grain, age: Int, fields: List<Pair<Int, Float>>, neighbours: List<Pair<Direction, Agent>>
+    ): Boolean {
+        // checks main reactive and age
+        if (mainReactiveId != grain.id || !agePredicate.check(age)) return false
+        // checks field predicate
+        for (p in fieldPredicates) {
+            val value = (fields.find { it.first == p.first }?.second ?: 0f).flatten(minFieldLevel)
+            if (!p.second.check(value)) return false
+        }
+        // checks reactions
+        for (r in reaction) {
+            if (r.allowedDirection.none { d ->
+                neighbours.any { it.first == d && it.second.id == r.reactiveId }
+            }) return false
+        }
+        return true
+    }
 
     fun usedGrains(model: GrainModel) =
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
-            .filter { it >= 0 }.mapNotNull { model.indexedGrains[it] }.toSet()
+            .filter { it >= 0 }.mapNotNull { model.grainForId(it) }.toSet()
 
     fun diagnose(model: GrainModel, locale: Locale): List<Problem> = listOfNotNull(
         (mainReactiveId < 0).orNull { Problem(this, locale.i18n("Behaviour must have a main reactive")) },
@@ -305,7 +304,7 @@ data class Behaviour(
     fieldPredicates.map { predicate ->
         listOfNotNull(
             (predicate.second.constant < 0f || predicate.second.constant > 1f).orNull {
-                val field = model.indexedFields[predicate.first]
+                val field = model.fieldForId(predicate.first)
                 Problem(this, locale.i18n("Field threshold value for %0 must be between 0 and 1", field?.name ?: ""))
             }
         )
@@ -324,12 +323,10 @@ data class Position(
         Direction.Right -> copy(x = x - step)
         Direction.Up -> copy(y = y - step)
         Direction.Down -> copy(y = y + step)
-        Direction.Front -> copy(z = z - step)
         Direction.LeftUp -> copy(x = x + step, y = y - step)
         Direction.RightUp -> copy(x = x - step, y = y - step)
         Direction.LeftDown -> copy(x = x + step, y = y + step)
         Direction.RightDown -> copy(x = x - step, y = y + step)
-        Direction.Back -> copy(z = z + step)
     }
 }
 
@@ -341,11 +338,9 @@ data class GrainModel(
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList()
 ) {
-    @Transient
-    val indexedGrains: Map<Int, Grain> = grains.map { it.id to it }.toMap()
+    fun grainForId(id: Int) = grains.find { it.id == id }
 
-    @Transient
-    val indexedFields: Map<Int, Field> = fields.map { it.id to it }.toMap()
+    fun fieldForId(id: Int) = fields.find { it.id == id }
 
     fun availableGrainName(prefix: String = "Grain"): String = availableName(grains.map(Grain::name), prefix)
 
@@ -560,8 +555,6 @@ data class Simulation(
                 x = (x + step) % width
                 y = (y + step) % height
             }
-            Direction.Front -> z = (z + depth - step) % depth
-            Direction.Back -> z = (z + step) % depth
         }
 
         if (x < 0) x += width
@@ -598,7 +591,7 @@ data class Simulation(
         val newAgents = agents.map {
             val new = when {
                 it < 0 -> -1
-                model.indexedGrains[it] == null -> -1
+                model.grainForId(it) == null -> -1
                 else -> it
             }
             new

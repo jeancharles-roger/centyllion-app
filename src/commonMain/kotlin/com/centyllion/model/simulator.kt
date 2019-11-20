@@ -83,9 +83,9 @@ class Simulator(
 
     private val speeds = allBehaviours.map { it to it.probability }.toMap().toMutableMap()
 
-    private val reactiveGrains = allBehaviours.mapNotNull { model.indexedGrains[it.mainReactiveId] }.toSet()
+    private val reactiveGrains = allBehaviours.mapNotNull { model.grainForId(it.mainReactiveId) }.toSet()
 
-    fun grainAtIndex(index: Int) = model.indexedGrains[idAtIndex(index)]
+    fun grainAtIndex(index: Int) = model.grainForId(idAtIndex(index))
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
 
@@ -145,15 +145,10 @@ class Simulator(
 
                         // searches for applicable behaviours
                         val applicable = allBehaviours
-                            .filter {
-                                it.applicable(
-                                    grain,
-                                    age,
-                                    fieldValues,
-                                    neighbours
-                                )
-                            } // found applicable behaviours
-                            .filter { random.nextDouble() < speeds[it]!! } // filters by probability
+                            // found applicable behaviours
+                            .filter { it.applicable(grain, age, fieldValues, neighbours) }
+                            // filters by probability
+                            .filter { random.nextDouble() < speeds[it]!! }
 
                         // selects behaviour if any is applicable
                         if (applicable.isNotEmpty()) {
@@ -181,7 +176,7 @@ class Simulator(
                             // translates influence to positive float and to the power of 4 for a stronger effect
                             val translatedInfluence = influence.min()?.let { min ->
                                 influence.map { (it - min + 1f).pow(6) }
-                            } ?: influence
+                            } ?: influence.toList()
 
                             // chooses one randomly influenced by the fields
                             val totalInfluence = translatedInfluence.mapIndexed { index, value ->
@@ -209,22 +204,27 @@ class Simulator(
                 val next = nextFields[field.id]
                 val count = field.allowedDirection.size
 
-                val permeableSum = field.allowedDirection.map {
-                    val index = simulation.moveIndex(i, it)
-                    (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
-                }.sum()
+                var permeableSum = 0f
+                for (allowed in field.allowedDirection) {
+                    val index = simulation.moveIndex(i, allowed)
+                    permeableSum += (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                }
+
                 if (next != null && current != null) {
+                    var diffusionSum = 0f
+                    for (opposite in field.oppositeDirections) {
+                        val index = simulation.moveIndex(i, opposite)
+                        val permeable = (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                        diffusionSum += current[index] * field.speed * permeable
+                    }
+
                     val level =
                         // current value cut down
                         current[i] * (1.0f - field.speed * permeableSum / count) +
                         // adding or removing from current agent if any
                         (grain?.fieldProductions?.get(field.id) ?: 0f) +
                         // diffusion from agent around using opposite directions
-                        field.oppositeDirections.map {
-                            val index = simulation.moveIndex(i, it)
-                            val permeable = (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
-                            current[index] * field.speed * permeable
-                        }.sum() / count
+                        diffusionSum / count
 
                     next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
                     // count current field amounts
@@ -314,7 +314,9 @@ class Simulator(
 
     /** Returns all neighbours agents in all directions */
     fun neighbours(index: Int): List<Pair<Direction, Agent>> {
-        return Direction.values().map { direction ->
+        val all = Direction.values()
+        return List(all.size) { i ->
+            val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->
                 val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {
                     field(it).let { field -> log10(field[id]) - log10(field[index]) }

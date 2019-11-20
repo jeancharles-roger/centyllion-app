@@ -13,7 +13,7 @@ class PerformanceTest {
     @Test
     fun testAntsPerformance() {
         val simulator = Simulator(antsModel(), antsSimulation(100, 100))
-        repeat(500) { simulator.oneStep() }
+        repeat(300) { simulator.oneStep() }
     }
 
 }

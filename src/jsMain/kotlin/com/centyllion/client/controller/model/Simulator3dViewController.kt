@@ -723,7 +723,7 @@ class Simulator3dViewController(
             it.metadata = grainId
 
             // positions the mesh
-            val agent = data.model.indexedGrains[grainId]
+            val agent = data.model.grainForId(grainId)
             it.position.set(x+0.5,  -(agent?.size ?: 1.0) / 2.0, y+0.5)
 
             it.freezeWorldMatrix()

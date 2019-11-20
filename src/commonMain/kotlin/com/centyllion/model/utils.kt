@@ -16,9 +16,7 @@ internal fun <T> List<List<T>>.combine(prefix: List<T>): List<List<T>> =
     when {
         isEmpty() -> listOf(prefix)
         else -> drop(1).let { tail ->
-            first().flatMap {
-                tail.combine(prefix + it)
-            }
+            first().flatMap { tail.combine(prefix + it) }
         }
     }
 

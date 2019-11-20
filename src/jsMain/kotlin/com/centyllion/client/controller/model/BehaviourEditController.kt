@@ -48,8 +48,8 @@ class BehaviourEditController(
             descriptionController.data = data.description
             probabilityController.data = "${data.probability}"
             agePredicateController.data = data.agePredicate
-            mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
-            mainProductController.data = context.indexedGrains[data.mainProductId]
+            mainReactiveController.data = context.grainForId(data.mainReactiveId)
+            mainProductController.data = context.grainForId(data.mainProductId)
             sourceReactiveController.data = data.sourceReactive
             sourceReactiveController.context = data to context
             reactionsController.data = data.reaction
@@ -63,9 +63,9 @@ class BehaviourEditController(
 
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            mainReactiveController.data = context.indexedGrains[data.mainReactiveId]
+            mainReactiveController.data = context.grainForId(data.mainReactiveId)
             mainReactiveController.context = new.grains
-            mainProductController.data = context.indexedGrains[data.mainProductId]
+            mainProductController.data = context.grainForId(data.mainProductId)
             mainProductController.context = new.grains
             sourceReactiveController.context = data to context
             reactionsController.context = data to context
@@ -116,10 +116,10 @@ class BehaviourEditController(
     }
 
     val mainReactiveController = GrainSelectController(
-        context.indexedGrains[data.mainReactiveId], context.grains, page, allowNone = false
+        context.grainForId(data.mainReactiveId), context.grains, page, allowNone = false
     ) { _, new, _ -> this.data = this.data.copy(mainReactiveId = new?.id ?: -1) }
 
-    val mainProductController = GrainSelectController(context.indexedGrains[data.mainProductId], context.grains, page)
+    val mainProductController = GrainSelectController(context.grainForId(data.mainProductId), context.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }

@@ -82,7 +82,7 @@ class BehaviourRunController(
 
     fun toProbability(value: String) = value.toDouble().pow(2)
 
-    fun grainIcon(id: Int) = context.model.indexedGrains[id].let {
+    fun grainIcon(id: Int) = context.model.grainForId(id).let {
         if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")
     }
 

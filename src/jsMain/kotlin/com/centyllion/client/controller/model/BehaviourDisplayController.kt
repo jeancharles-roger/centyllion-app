@@ -68,7 +68,7 @@ class BehaviourDisplayController(val page: BulmaPage, behaviour: Behaviour, mode
 
     override val container = Box(header, grains)
 
-    fun grainIcon(id: Int) = context.indexedGrains[id].let {
+    fun grainIcon(id: Int) = context.grainForId(id).let {
         if (it != null) Icon(it.icon).apply { root.style.color = it.color } else Icon("times-circle")
     }
 

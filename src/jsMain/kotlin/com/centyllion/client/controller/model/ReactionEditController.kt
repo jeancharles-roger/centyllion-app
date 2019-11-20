@@ -24,10 +24,10 @@ class ReactionEditController(
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
-            reactiveController.data = context.second.indexedGrains[data.reactiveId]
+            reactiveController.data = context.second.grainForId(data.reactiveId)
             firstDirectionController.data = data.allowedDirection
             extendedDirectionController.data = data.allowedDirection
-            productController.data = context.second.indexedGrains[data.productId]
+            productController.data = context.second.grainForId(data.productId)
             sourceReactiveController.data = data.sourceReactive
             onUpdate(old, new, this@ReactionEditController)
         }
@@ -37,9 +37,9 @@ class ReactionEditController(
     override var context: Pair<Behaviour, GrainModel> by observable(behaviour to model)
     { _, old, new ->
         if (old.second != new.second) {
-            reactiveController.data = context.second.indexedGrains[data.reactiveId]
+            reactiveController.data = context.second.grainForId(data.reactiveId)
             reactiveController.context = new.second.grains
-            productController.data = context.second.indexedGrains[data.productId]
+            productController.data = context.second.grainForId(data.productId)
             productController.context = new.second.grains
             refresh()
         }
@@ -59,7 +59,7 @@ class ReactionEditController(
         }
     }
 
-    val reactiveController = GrainSelectController(context.second.indexedGrains[data.reactiveId], context.second.grains, page)
+    val reactiveController = GrainSelectController(context.second.grainForId(data.reactiveId), context.second.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
@@ -74,7 +74,7 @@ class ReactionEditController(
         this.data = this.data.copy(allowedDirection = new)
     }
 
-    val productController = GrainSelectController(context.second.indexedGrains[data.productId], context.second.grains, page)
+    val productController = GrainSelectController(context.second.grainForId(data.productId), context.second.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(productId = new?.id ?: -1)
     }

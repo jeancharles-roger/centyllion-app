@@ -22,8 +22,8 @@ val postgresql_version: String by project
 val keycloak_version: String by project
 
 plugins {
-    kotlin("multiplatform") version "1.3.50"
-    id("kotlinx-serialization") version "1.3.50"
+    kotlin("multiplatform") version "1.3.60"
+    id("kotlinx-serialization") version "1.3.60"
 }
 
 repositories {

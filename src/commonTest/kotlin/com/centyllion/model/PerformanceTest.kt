@@ -10,4 +10,10 @@ class PerformanceTest {
         repeat(500) { simulator.oneStep() }
     }
 
+    @Test
+    fun testAntsPerformance() {
+        val simulator = Simulator(antsModel(), antsSimulation(100, 100))
+        repeat(500) { simulator.oneStep() }
+    }
+
 }

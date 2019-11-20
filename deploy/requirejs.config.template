@@ -3,7 +3,7 @@ requirejs.config({
     paths: {
         'keycloak': 'Keycloak-4.8.0/keycloak',
         'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',
-        'uPlot': 'uPlot-alpha3/uPlot.iife',
+        'uPlot': 'uPlot-alpha4/uPlot.iife',
         'markdown-it': 'markdown-it-10.0.0/markdown-it',
         'babylonjs': 'babylonjs-4.0.3/babylon',
         'babylonjs-materials': 'babylonjs-4.0.3/babylon.gridMaterial',

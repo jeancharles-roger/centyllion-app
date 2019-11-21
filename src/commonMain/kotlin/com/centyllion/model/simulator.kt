@@ -170,7 +170,9 @@ class Simulator(
                             val influence = FloatArray(allCombinations.size) {
                                 var sum = 0f
                                 allCombinations[it].forEach { (_, agent) ->
-                                    sum += behaviour.fieldInfluences.asSequence().map { agent.deltaFields[it.key] * it.value }.sum()
+                                    behaviour.fieldInfluences.forEach {
+                                        sum += agent.deltaFields[it.key] * it.value
+                                    }
                                 }
                                 sum
                             }
@@ -186,9 +188,8 @@ class Simulator(
                             }
 
                             // chooses one randomly influenced by the fields
-                            val chosenCombination = random.nextDouble(current.toDouble()).let { p ->
-                                influence.indexOfFirst { p < it }
-                            }
+                            val probability = random.nextDouble(current.toDouble())
+                            val chosenCombination = influence.indexOfFirst { probability < it }
 
                             // registers behaviour for for concurrency
                             val usedNeighbours = allCombinations[chosenCombination].map { it.second }

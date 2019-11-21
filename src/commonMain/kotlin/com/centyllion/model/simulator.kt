@@ -167,29 +167,31 @@ class Simulator(
                             val allCombinations = possibleReactions.allCombinations()
 
                             // computes weight of each combination by adding the influence of all neighbours for a combination
-                            val influence = allCombinations.map { combination ->
-                                combination.map { (_, agent) ->
-                                    behaviour.fieldInfluences.map { agent.deltaFields[it.key] * it.value }.sum()
-                                }.sum()
+                            val influence = FloatArray(allCombinations.size) {
+                                var sum = 0f
+                                allCombinations[it].forEach { (_, agent) ->
+                                    sum += behaviour.fieldInfluences.asSequence().map { agent.deltaFields[it.key] * it.value }.sum()
+                                }
+                                sum
                             }
 
-                            // translates influence to positive float and to the power of 4 for a stronger effect
-                            val translatedInfluence = influence.min()?.let { min ->
-                                influence.map { (it - min + 1f).pow(6) }
-                            } ?: influence.toList()
+                            val min = influence.min() ?: 0f
+                            var current = 0f
+                            for (index in influence.indices) {
+                                // translates influence to positive float and to the power of 6 for a stronger effect
+                                val translated = (influence[index] - min + 1f).pow(6)
+                                // computes the total value
+                                influence[index] = current + translated
+                                current += translated
+                            }
 
                             // chooses one randomly influenced by the fields
-                            val totalInfluence = translatedInfluence.mapIndexed { index, value ->
-                                translatedInfluence.subList(0, index).sum() + value
+                            val chosenCombination = random.nextDouble(current.toDouble()).let { p ->
+                                influence.indexOfFirst { p < it }
                             }
-
-                            val chosenCombination = random.nextDouble(translatedInfluence.sum().toDouble()).let { p ->
-                                totalInfluence.indexOfFirst { p < it }
-                            }
-
-                            val usedNeighbours = allCombinations[chosenCombination].map { it.second }
 
                             // registers behaviour for for concurrency
+                            val usedNeighbours = allCombinations[chosenCombination].map { it.second }
                             val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)
                             selected.add(behavior)
                             usedNeighbours.forEach { all.getOrPut(it.index) { mutableListOf() }.add(behavior) }

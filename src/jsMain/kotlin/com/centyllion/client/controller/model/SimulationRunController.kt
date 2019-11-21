@@ -251,7 +251,7 @@ class SimulationRunController(
                 data = data.copy(settings = settingsController.data)
             }
         }
-        settingsController.onUpdate = { old, new, _ ->
+        settingsController.onUpdate = { _, new, _ ->
             okButton.disabled = new == data.settings
         }
 

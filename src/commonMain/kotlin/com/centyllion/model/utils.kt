@@ -10,15 +10,23 @@ fun <T>Boolean.orNull(block: () -> T): T? {
     return if (this) block() else null
 }
 
-fun <T> List<List<T>>.allCombinations(): List<List<T>> = combine(emptyList())
+fun <T> List<List<T>>.allCombinations(): List<List<T>> {
+    var count = 1
+    for (element in this) count *= element.size
+    val result = ArrayList<List<T>>(count)
+    combine(emptyList(), result)
+    return result
+}
 
-internal fun <T> List<List<T>>.combine(prefix: List<T>): List<List<T>> =
+internal fun <T> List<List<T>>.combine(prefix: List<T>, result: ArrayList<List<T>>) {
     when {
-        isEmpty() -> listOf(prefix)
-        else -> drop(1).let { tail ->
-            first().flatMap { tail.combine(prefix + it) }
+        isEmpty() -> result.add(prefix)
+        else -> {
+            val tail: List<List<T>> = drop(1)
+            first().forEach { tail.combine(prefix + it, result) }
         }
     }
+}
 
 /** Creates a new id excluding [existing] */
 fun availableId(existing: Collection<Int>) = existing.toSet().let {

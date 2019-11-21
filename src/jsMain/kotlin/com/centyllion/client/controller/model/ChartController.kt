@@ -128,10 +128,14 @@ class ChartController(
         uplot?.setData(arrayOf(xValues, *yValues), 0, xValues.lastOrNull() ?: 0)
     }
 
-    fun push(x: Number, ys: Collection<Number>) {
+    fun push(x: Number, ys: Collection<Number>, refresh: Boolean) {
         xValues.push(x)
         ys.zip(yValues) { y, data -> data.push(y) }
-        uplot?.setData(arrayOf(xValues, *yValues), 0, x)
+        if (refresh) refreshData()
+    }
+
+    fun refreshData() {
+        uplot?.setData(arrayOf(xValues, *yValues), 0, xValues.lastOrNull() ?: 0)
     }
 
 }

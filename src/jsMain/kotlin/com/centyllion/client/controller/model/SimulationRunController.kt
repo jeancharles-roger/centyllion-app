@@ -117,7 +117,7 @@ class SimulationRunController(
     private var lastRequestSkipped = true
     private var lastFpsColorRefresh = 0
 
-    private var presentCharts = true
+    private var presentCharts = false
 
     // simulation execution controls
     val rewindButton = iconButton(Icon("fast-backward"), ElementColor.Danger, rounded = true) { reset() }
@@ -402,14 +402,18 @@ class SimulationRunController(
     private fun executeStep() {
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
+
         grainChart.push(
             currentSimulator.step,
-            currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }.values
+            currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }.values,
+            presentCharts
         )
         fieldChart.push(
             currentSimulator.step,
-            currentSimulator.lastFieldAmount().values
+            currentSimulator.lastFieldAmount().values,
+            presentCharts
         )
+
         refreshCounts()
     }
 
@@ -437,6 +441,10 @@ class SimulationRunController(
         presentCharts = !presentCharts
         chartContainer.hidden = !presentCharts
         toggleChartsButton.light = presentCharts
+        if (presentCharts) {
+            grainChart.refresh()
+            fieldChart.refresh()
+        }
     }
 
     private fun updatedSimulatorFromView(ended: Boolean, new: Simulator) {

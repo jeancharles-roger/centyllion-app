@@ -9,7 +9,7 @@ const val minFieldLevel = 1e-14f
 
 val emptyFloatArray = FloatArray(0)
 
-class Agent(val index: Int, val id: Int, val age: Int, val deltaFields: FloatArray)
+class Agent(val index: Int, val id: Int, val age: Int, val fields: FloatArray)
 
 class ApplicableBehavior(
     /** Index in the data where to apply the behavior */
@@ -167,11 +167,13 @@ class Simulator(
                             val allCombinations = possibleReactions.allCombinations()
 
                             // computes weight of each combination by adding the influence of all neighbours for a combination
-                            val influence = FloatArray(allCombinations.size) {
+                            val influence = FloatArray(allCombinations.size) { c ->
                                 var sum = 0f
-                                allCombinations[it].forEach { (_, agent) ->
-                                    behaviour.fieldInfluences.forEach {
-                                        sum += agent.deltaFields[it.key] * it.value
+                                allCombinations[c].forEach { (_, agent) ->
+                                    behaviour.fieldInfluences.forEach {influence ->
+                                        val sourceField = fieldValues.find { it.first == influence.key }?.second ?: 0f
+                                        val delta = log10(agent.fields[influence.key]) - log10(sourceField)
+                                        sum += delta * influence.value
                                     }
                                 }
                                 sum
@@ -279,12 +281,6 @@ class Simulator(
         }
     }
 
-    fun saveState() {
-        agents.copyInto(initialAgents)
-    }
-
-    fun indexIsFree(index: Int) = currentAgents[index] < 0
-
     fun idAtIndex(index: Int) = currentAgents[index]
 
     fun ageAtIndex(index: Int) = ages[index]
@@ -321,9 +317,7 @@ class Simulator(
         return List(all.size) { i ->
             val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->
-                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {
-                    field(it).let { field -> log10(field[id]) - log10(field[index]) }
-                }
+                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {field(it)[id] }
                 Agent(id, currentAgents[id], ages[id], fieldValues)
             }
         }

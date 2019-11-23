@@ -143,12 +143,10 @@ class Simulator(
                         // find all neighbours
                         val neighbours = neighbours(i)
 
-                        // searches for applicable behaviours
-                        val applicable = allBehaviours
-                            // found applicable behaviours
-                            .filter { it.applicable(grain, age, fieldValues, neighbours) }
-                            // filters by probability
-                            .filter { random.nextDouble() < speeds[it]!! }
+                        // searches for applicable behaviours and filters by probability
+                        val applicable = allBehaviours.filter {
+                            it.applicable(grain, age, fieldValues, neighbours) && random.nextDouble() < speeds[it]!!
+                        }
 
                         // selects behaviour if any is applicable
                         if (applicable.isNotEmpty()) {

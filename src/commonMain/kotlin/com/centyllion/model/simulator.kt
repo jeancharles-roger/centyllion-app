@@ -244,8 +244,10 @@ class Simulator(
         }
 
         // filters behaviors that are concurrent
-        val toExclude = all.values.filter { it.size > 1 }.flatMap { it - it[random.nextInt(it.size)] }
-        val toExecute = (all.values.flatten() - toExclude).toSet()
+        val values = all.values.asSequence()
+        val toExclude = values.filter { it.size > 1 }.flatMap { (it - it[random.nextInt(it.size)]).asSequence() }
+        val toExecute = (values.flatten() - toExclude).toSet()
+
         toExecute.forEach { it.apply(this) }
 
         // stores count for each grain

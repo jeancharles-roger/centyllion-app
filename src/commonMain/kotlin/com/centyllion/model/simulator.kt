@@ -164,33 +164,40 @@ class Simulator(
                             // combines possibilities
                             val allCombinations = possibleReactions.allCombinations()
 
-                            // computes weight of each combination by adding the influence of all neighbours for a combination
-                            val influence = FloatArray(allCombinations.size) { c ->
-                                var sum = 0f
-                                allCombinations[c].forEach { (_, agent) ->
-                                    behaviour.fieldInfluences.forEach {influence ->
-                                        val sourceField = fieldValues.find { it.first == influence.key }?.second ?: 0f
-                                        val delta = log10(agent.fields[influence.key]) - log10(sourceField)
-                                        sum += delta * influence.value
-                                    }
+                            val chosenCombination =  when {
+                                // optimized case when no field is used for the behaviour
+                                model.fields.isEmpty() || !behaviour.fieldInfluenced -> {
+                                    random.nextInt(allCombinations.size)
                                 }
-                                sum
+                                else -> {
+                                    // computes weight of each combination by adding the influence of all neighbours for a combination
+                                    val influence = FloatArray(allCombinations.size) { c ->
+                                        var sum = 0f
+                                        allCombinations[c].forEach { (_, agent) ->
+                                            behaviour.fieldInfluences.forEach { influence ->
+                                                val sourceField = fieldValues.find { it.first == influence.key }?.second ?: 0f
+                                                val delta = log10(agent.fields[influence.key]) - log10(sourceField)
+                                                sum += delta * influence.value
+                                            }
+                                        }
+                                        sum
+                                    }
+
+                                    val min = influence.min() ?: 0f
+                                    var current = 0f
+                                    for (index in influence.indices) {
+                                        // translates influence to positive float and to the power of 6 for a stronger effect
+                                        val translated = (influence[index] - min + 1f).pow(6)
+                                        // computes the total value
+                                        influence[index] = current + translated
+                                        current += translated
+                                    }
+
+                                    // chooses one randomly influenced by the fields
+                                    val probability = random.nextDouble(current.toDouble())
+                                    influence.indexOfFirst { probability < it }
+                                }
                             }
-
-                            val min = influence.min() ?: 0f
-                            var current = 0f
-                            for (index in influence.indices) {
-                                // translates influence to positive float and to the power of 6 for a stronger effect
-                                val translated = (influence[index] - min + 1f).pow(6)
-                                // computes the total value
-                                influence[index] = current + translated
-                                current += translated
-                            }
-
-                            // chooses one randomly influenced by the fields
-                            val probability = random.nextDouble(current.toDouble())
-                            val chosenCombination = influence.indexOfFirst { probability < it }
-
                             // registers behaviour for for concurrency
                             val usedNeighbours = allCombinations[chosenCombination].map { it.second }
                             val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)

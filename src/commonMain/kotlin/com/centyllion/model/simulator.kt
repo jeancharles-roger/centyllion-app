@@ -88,6 +88,8 @@ class Simulator(
     // Caches an array of Grain placed with their id for fast grain resolution
     private val grainIdArray = Array((model.grains.map { it.id }.max() ?: -1) + 1) { id -> model.grains.find { it.id == id } }
 
+    fun grainForId(id: Int): Grain? = if (id < 0) null else grainIdArray[id]
+
     fun grainAtIndex(index: Int): Grain? {
         val id = idAtIndex(index)
         return if (id < 0) null else grainIdArray[id]

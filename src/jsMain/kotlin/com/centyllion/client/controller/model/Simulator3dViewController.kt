@@ -236,7 +236,7 @@ class Simulator3dViewController(
     val assetScenes: MutableMap<Asset3d, AbstractMesh> = mutableMapOf()
 
     private var sourceMeshes by observable(sourceMeshes()) { _, old, _ ->
-        old.values.forEach { it?.dispose() }
+        old.values.forEach { it.dispose() }
     }
 
     private var fieldSupports: Map<Int, FieldSupport?> by observable(mapOf()) { _, old, new ->
@@ -427,6 +427,8 @@ class Simulator3dViewController(
             camera.detachControl(simulationCanvas.root)
         }
         selectPointer()
+
+        refresh(true)
     }
 
     fun writeGrain(i: Int, j: Int, id: Int) = data.simulation.toIndex(i, j).let { index ->
@@ -617,40 +619,41 @@ class Simulator3dViewController(
     fun colorFromName(name: String) =
         colorNames[name]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
 
-    private fun sourceMeshes() = data.model.grains.map { grain ->
-        if (!grain.invisible) {
-            val height = grain.size.coerceAtLeast(0.1)
-            val color = colorFromName(grain.color).toColor4(1)
-            val mesh = when (grain.icon) {
-                "square" -> MeshBuilder.CreateBox(
-                    grain.name,
-                    BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) { color }),
-                    scene
-                )
-                "square-full" -> MeshBuilder.CreateBox(
-                    grain.name,
-                    BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color }),
-                    scene
-                )
-                "circle" -> MeshBuilder.CreateCylinder(
-                    grain.name,
-                    CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) { color }),
-                    scene
-                )
-                else -> MeshBuilder.CreateBox(
-                    grain.name,
-                    BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color }),
-                    scene
-                )
-            }.apply {
-                setEnabled(false)
-                convertToUnIndexedMesh()
-                cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+    private fun sourceMeshes(): Map<Int, Mesh> = data.model.grains.map { grain ->
+        val height = grain.size.coerceAtLeast(0.1)
+        val color = colorFromName(grain.color)
+        val color4 = color.toColor4(1)
+        val mesh = when (grain.icon) {
+            "square" -> MeshBuilder.CreateBox(
+                grain.name,
+                BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) { color4 }),
+                scene
+            )
+            "square-full" -> MeshBuilder.CreateBox(
+                grain.name,
+                BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
+                scene
+            )
+            "circle" -> MeshBuilder.CreateCylinder(
+                grain.name,
+                CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) { color4 }),
+                scene
+            )
+            else -> MeshBuilder.CreateBox(
+                grain.name,
+                BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
+                scene
+            )
+        }.apply {
+            material = StandardMaterial("material ${grain.name}", scene).apply {
+                diffuseColor = color
+                wireframe = grain.invisible
             }
-            grain.id to mesh
-        } else {
-            grain.id to null
+            setEnabled(false)
+            convertToUnIndexedMesh()
+            cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
         }
+        grain.id to mesh
     }.toMap()
 
     private fun fieldSupports() = data.model.fields.map { field ->
@@ -718,25 +721,29 @@ class Simulator3dViewController(
         }
     }
 
-    fun createMesh(index: Int, grainId: Int, x: Double, y: Double)=
-        sourceMeshes[grainId]?.createInstance("$index")?.also {
-            it.metadata = grainId
+    fun createMesh(index: Int, grainId: Int, x: Double, y: Double) {
+        val agent = data.grainForId(grainId)
+        if (selectedTool != EditTools.Move || (agent?.invisible != true) ) {
+            console.log(agent?.invisible)
+            sourceMeshes[grainId]?.createInstance("$index")?.also {
+                it.metadata = grainId
 
-            // positions the mesh
-            val agent = data.model.grainForId(grainId)
-            it.position.set(x+0.5,  -(agent?.size ?: 1.0) / 2.0, y+0.5)
+                // positions the mesh
+                it.position.set(x + 0.5, -(agent?.size ?: 1.0) / 2.0, y + 0.5)
 
-            it.freezeWorldMatrix()
-            it.ignoreNonUniformScaling = true
-            it.doNotSyncBoundingInfo = true
-            it.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+                it.freezeWorldMatrix()
+                it.ignoreNonUniformScaling = true
+                it.doNotSyncBoundingInfo = true
+                it.cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
 
-            //mesh.receiveShadows = true
+                //mesh.receiveShadows = true
 
-            // adds the mesh to scene and register it
-            scene.addMesh(it)
-            agentMesh[index] = it
+                // adds the mesh to scene and register it
+                scene.addMesh(it)
+                agentMesh[index] = it
+            }
         }
+    }
 
     fun  transformMesh(index: Int, newGrainId: Int, force: Boolean = false) {
         val mesh = agentMesh[index]

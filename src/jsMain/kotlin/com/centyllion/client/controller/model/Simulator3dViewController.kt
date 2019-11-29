@@ -724,7 +724,6 @@ class Simulator3dViewController(
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double) {
         val agent = data.grainForId(grainId)
         if (selectedTool != EditTools.Move || (agent?.invisible != true) ) {
-            console.log(agent?.invisible)
             sourceMeshes[grainId]?.createInstance("$index")?.also {
                 it.metadata = grainId
 

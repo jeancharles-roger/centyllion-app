@@ -93,6 +93,12 @@ class SimulationRunController(
         }
     }
 
+    var filterGrainsInChart: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            grainChart.data = createGrainChart()
+        }
+    }
+
     private var currentSimulator = Simulator(context, data)
 
     val simulator get() = currentSimulator
@@ -403,9 +409,12 @@ class SimulationRunController(
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
 
+        val grainCounts =
+            if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
+            else currentSimulator.lastGrainsCount()
         grainChart.push(
             currentSimulator.step,
-            currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }.values,
+            grainCounts.values,
             presentCharts
         )
         fieldChart.push(
@@ -419,11 +428,12 @@ class SimulationRunController(
 
     private fun createGrainChart(): Chart {
         val counts = simulator.grainsCounts()
+        val grains =
+            if (filterGrainsInChart) context.grains.filter { context.doesGrainCountCanChange(it) }
+            else context.grains
         return Chart(
             page.i18n("Step"),
-            context.grains.filter { context.doesGrainCountCanChange(it) } .map {
-                ChartLine(label = it.label(true), color = it.color, initial = counts[it.id] ?: 0)
-            }
+            grains.map { ChartLine(label = it.label(true), color = it.color, initial = counts[it.id] ?: 0) }
         )
     }
 

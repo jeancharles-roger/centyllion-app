@@ -9,21 +9,21 @@ import java.util.Date
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serialization_version: String by project
-val coroutine_version: String by project
-val clikt_version: String by project
-val logback_version: String by project
-val ktor_version: String by project
-val kotlinx_html_version: String by project
-val bulma_kotlin_version: String by project
-val babylon_kotlin_version: String by project
-val exposed_version: String by project
-val postgresql_version: String by project
-val keycloak_version: String by project
+val serialization_version: String = "0.14.0"
+val coroutine_version: String = "1.3.3"
+val clikt_version: String = "2.3.0"
+val logback_version: String = "1.2.3"
+val ktor_version: String = "1.3.0"
+val kotlinx_html_version: String = "0.6.10"
+val bulma_kotlin_version: String = "0.3.1"
+val babylon_kotlin_version: String = "0.2"
+val exposed_version: String = "0.17.5"
+val postgresql_version: String = "42.2.5"
+val keycloak_version: String = "4.8.0.Final"
 
 plugins {
-    kotlin("multiplatform") version "1.3.60"
-    id("kotlinx-serialization") version "1.3.60"
+    kotlin("multiplatform") version "1.3.61"
+    id("kotlinx-serialization") version "1.3.61"
 }
 
 repositories {
@@ -77,7 +77,9 @@ kotlin {
                     implementation("io.ktor:ktor-auth:$ktor_version")
                     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
                     implementation("io.ktor:ktor-network-tls:$ktor_version")
+                    implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
                     implementation("io.ktor:ktor-server-netty:$ktor_version")
+                    implementation("io.ktor:ktor-serialization:$ktor_version")
 
                     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 

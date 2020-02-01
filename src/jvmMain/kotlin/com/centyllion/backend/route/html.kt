@@ -14,7 +14,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.cio.bufferedWriter
-import kotlinx.coroutines.io.ByteWriteChannel
+import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.html.HTML
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.visitAndFinalize

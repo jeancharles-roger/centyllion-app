@@ -46,7 +46,7 @@ project {
     buildType {
         id("Build")
         name = "Build"
-        artifactRules = "build/distribution/*.tar.gz -> ."
+        artifactRules = "build/distribution/*.tar.gz => ."
         steps {
             gradle {
                 tasks = "build distribution"

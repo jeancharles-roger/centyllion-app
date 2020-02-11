@@ -55,6 +55,7 @@ project {
 
         steps {
             gradle {
+                buildFile = "build.gradle.kts"
                 tasks = "build distribution"
             }
         }

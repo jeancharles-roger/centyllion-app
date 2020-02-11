@@ -47,7 +47,7 @@ project {
     buildType {
         id("Build")
         name = "Build"
-        artifactRules = "build/distribution/*.tar.gz => ."
+        artifactRules = "build/distributions/*.tgz => ."
 
         vcs {
             root(DslContext.settingsRoot)

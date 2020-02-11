@@ -1,3 +1,4 @@
+import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.version
@@ -47,6 +48,11 @@ project {
         id("Build")
         name = "Build"
         artifactRules = "build/distribution/*.tar.gz => ."
+
+        vcs {
+            root(DslContext.settingsRoot)
+        }
+
         steps {
             gradle {
                 tasks = "build distribution"

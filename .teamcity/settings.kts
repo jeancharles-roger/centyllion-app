@@ -1,4 +1,6 @@
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.v2019_2.project
+import jetbrains.buildServer.configs.kotlin.v2019_2.version
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -38,6 +40,17 @@ project {
             param("type", "GithubIssues")
             param("secure:accessToken", "credentialsJSON:e848deb0-32d8-4f3d-bd39-f36e997d9849")
             param("username", "")
+        }
+    }
+
+    buildType {
+        id("Build")
+        name = "Build"
+        artifactRules = "build/distribution/*.tar.gz -> ."
+        steps {
+            gradle {
+                tasks = "build distribution"
+            }
         }
     }
 }

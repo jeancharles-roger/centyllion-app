@@ -1,3 +1,4 @@
+import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
@@ -45,25 +46,26 @@ project {
         }
     }
 
-    buildType {
-        id("Build")
-        name = "Build"
-        artifactRules = "build/distributions/*.tgz => ."
+    buildType(Build)
+}
 
-        vcs {
-            root(DslContext.settingsRoot)
-        }
+object Build: BuildType({
+    name = "Build"
+    artifactRules = "build/distributions/*.tgz => ."
 
-        triggers {
-            vcs {}
-        }
+    vcs {
+        root(DslContext.settingsRoot)
+    }
 
-        steps {
-            gradle {
-                buildFile = "build.gradle.kts"
-                tasks = "build distribution"
-                jdkHome =  "%env.JDK_11%"
-            }
+    triggers {
+        vcs {}
+    }
+
+    steps {
+        gradle {
+            buildFile = "build.gradle.kts"
+            tasks = "build distribution"
+            jdkHome =  "%env.JDK_11%"
         }
     }
-}
+})

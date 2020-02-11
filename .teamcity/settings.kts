@@ -57,6 +57,7 @@ project {
             gradle {
                 buildFile = "build.gradle.kts"
                 tasks = "build distribution"
+                jdkHome = "JDK_11_x64"
             }
         }
     }

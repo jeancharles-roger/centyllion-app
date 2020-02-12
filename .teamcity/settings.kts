@@ -52,7 +52,7 @@ project {
 
 object Build: BuildType({
     name = "Build"
-    artifactRules = "build/distributions/centyllion.*.tgz => ."
+    artifactRules = "build/distributions/* => ."
 
     vcs {
         root(DslContext.settingsRoot)

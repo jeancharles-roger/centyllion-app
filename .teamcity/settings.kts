@@ -47,11 +47,12 @@ project {
     }
 
     buildType(Build)
+    buildType(DeployBeta)
 }
 
 object Build: BuildType({
     name = "Build"
-    artifactRules = "build/distributions/*.tgz => ."
+    artifactRules = "build/distributions/centyllion.*.tgz => centyllion.tgz"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -66,6 +67,43 @@ object Build: BuildType({
             buildFile = "build.gradle.kts"
             tasks = "build distribution"
             jdkHome =  "%env.JDK_11%"
+        }
+    }
+})
+
+object DeployBeta: BuildType({
+    name = "Deploy Beta"
+
+    dependencies {
+        artifacts(Build) {
+
+        }
+    }
+
+    steps {
+        step {
+            name = "Upload distribution"
+            type = "ssh-deploy-runner"
+            param("jetbrains.buildServer.deployer.ssh.transport", "jetbrains.buildServer.deployer.ssh.transport.scp")
+            param("jetbrains.buildServer.deployer.username", "ubuntu")
+            param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
+            param("teamcitySshKey", "Centyllion Deploy")
+            param("secure:jetbrains.buildServer.deployer.password", "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b")
+            param("jetbrains.buildServer.deployer.sourcePath", "centyllion.tgz")
+            param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com:/home/ubuntu/data/beta/files")
+        }
+        step {
+            name = "Deploy"
+            type = "ssh-exec-runner"
+            param("jetbrains.buildServer.deployer.username", "ubuntu")
+            param("teamcitySshKey", "Centyllion Deploy")
+            param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
+            param("secure:jetbrains.buildServer.deployer.password", "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b")
+            param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com")
+            param("jetbrains.buildServer.sshexec.command", """
+                cd /home/ubuntu/data/beta
+                ./deploy_ssh.sh
+            """.trimIndent())
         }
     }
 })

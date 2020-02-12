@@ -52,7 +52,7 @@ project {
 
 object Build: BuildType({
     name = "Build"
-    artifactRules = "build/distributions/centyllion.*.tgz => centyllion.tgz"
+    artifactRules = "build/distributions/centyllion.*.tgz => ."
 
     vcs {
         root(DslContext.settingsRoot)
@@ -76,7 +76,7 @@ object DeployBeta: BuildType({
 
     dependencies {
         artifacts(Build) {
-
+            artifactRules = "centyllion-*.tgz"
         }
     }
 
@@ -89,7 +89,7 @@ object DeployBeta: BuildType({
             param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
             param("teamcitySshKey", "Centyllion Deploy")
             param("secure:jetbrains.buildServer.deployer.password", "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b")
-            param("jetbrains.buildServer.deployer.sourcePath", "centyllion.tgz")
+            param("jetbrains.buildServer.deployer.sourcePath", "centyllion-*.tgz")
             param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com:/home/ubuntu/data/beta/files")
         }
         step {

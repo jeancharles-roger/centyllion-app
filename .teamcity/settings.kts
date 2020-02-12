@@ -1,8 +1,10 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.v2019_2.ui.add
 import jetbrains.buildServer.configs.kotlin.v2019_2.version
 
 /*
@@ -31,6 +33,19 @@ version = "2019.2"
 
 project {
 
+    params {
+        add {
+            password(
+                "PASSWORD",
+                "credentialsJSON:51b652cf-c42d-49ba-b32b-d7e373105bd3",
+                label = "Password",
+                description = "Centyllion JKS Password",
+                display = ParameterDisplay.HIDDEN,
+                readOnly = true
+            )
+        }
+    }
+
     features {
         feature {
             id = "PROJECT_EXT_3"
@@ -50,7 +65,7 @@ project {
     buildType(DeployBeta)
 }
 
-object Build: BuildType({
+object Build : BuildType({
     name = "Build"
     artifactRules = "build/distributions/* => ."
 
@@ -66,12 +81,12 @@ object Build: BuildType({
         gradle {
             buildFile = "build.gradle.kts"
             tasks = "build distribution"
-            jdkHome =  "%env.JDK_11%"
+            jdkHome = "%env.JDK_11%"
         }
     }
 })
 
-object DeployBeta: BuildType({
+object DeployBeta : BuildType({
     name = "Deploy Beta"
 
     dependencies {
@@ -88,7 +103,10 @@ object DeployBeta: BuildType({
             param("jetbrains.buildServer.deployer.username", "ubuntu")
             param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
             param("teamcitySshKey", "Centyllion Deploy")
-            param("secure:jetbrains.buildServer.deployer.password", "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b")
+            param(
+                "secure:jetbrains.buildServer.deployer.password",
+                "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b"
+            )
             param("jetbrains.buildServer.deployer.sourcePath", "centyllion-*.tgz")
             param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com:/home/ubuntu/data/beta/files")
         }
@@ -98,12 +116,18 @@ object DeployBeta: BuildType({
             param("jetbrains.buildServer.deployer.username", "ubuntu")
             param("teamcitySshKey", "Centyllion Deploy")
             param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
-            param("secure:jetbrains.buildServer.deployer.password", "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b")
+            param(
+                "secure:jetbrains.buildServer.deployer.password",
+                "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b"
+            )
             param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com")
-            param("jetbrains.buildServer.sshexec.command", """
+            param(
+                "jetbrains.buildServer.sshexec.command", """
                 cd /home/ubuntu/data/beta
+                export PASSWORD=%PASSWORD%
                 ./deploy_ssh.sh
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
     }
 })

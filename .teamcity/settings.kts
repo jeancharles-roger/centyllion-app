@@ -64,6 +64,7 @@ project {
 
     buildType(Build)
     buildType(DeployBeta)
+    buildType(DeployApp)
 }
 
 object Build : BuildType({
@@ -134,6 +135,32 @@ object DeployBeta : BuildType({
             param(
                 "jetbrains.buildServer.sshexec.command", """
                 cd /home/ubuntu/data/beta
+                export PASSWORD=%PASSWORD%
+                ./deploy_ssh.sh
+            """.trimIndent()
+            )
+        }
+    }
+})
+
+object DeployApp : BuildType({
+    name = "Deploy App"
+
+    steps {
+        step {
+            name = "Deploy"
+            type = "ssh-exec-runner"
+            param("jetbrains.buildServer.deployer.username", "ubuntu")
+            param("teamcitySshKey", "Centyllion Deploy")
+            param("jetbrains.buildServer.sshexec.authMethod", "UPLOADED_KEY")
+            param(
+                "secure:jetbrains.buildServer.deployer.password",
+                "zxxddb8a30a2da357f67b6a3468afce8392c23170b755891609cf108d8b64dc922201e161547acd4d1b"
+            )
+            param("jetbrains.buildServer.deployer.targetUrl", "centyllion.com")
+            param(
+                "jetbrains.buildServer.sshexec.command", """
+                cd /home/ubuntu/data/app
                 export PASSWORD=%PASSWORD%
                 ./deploy_ssh.sh
             """.trimIndent()

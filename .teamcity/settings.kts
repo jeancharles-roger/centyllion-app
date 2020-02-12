@@ -3,6 +3,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.DslContext
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.ui.add
 import jetbrains.buildServer.configs.kotlin.v2019_2.version
@@ -90,8 +91,17 @@ object DeployBeta : BuildType({
     name = "Deploy Beta"
 
     dependencies {
-        artifacts(Build) {
-            artifactRules = "centyllion-*.tgz"
+        dependency(Build) {
+            snapshot {}
+            artifacts {
+                artifactRules = "centyllion-*.tgz"
+            }
+        }
+    }
+    triggers {
+        finishBuildTrigger {
+            buildType = "${Build.id}"
+            successfulOnly = true
         }
     }
 

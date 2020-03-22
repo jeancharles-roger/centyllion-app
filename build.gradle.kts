@@ -9,7 +9,7 @@ import java.util.Date
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serialization_version: String = "0.14.0"
+val serialization_version: String = "0.20.0"
 val coroutine_version: String = "1.3.3"
 val clikt_version: String = "2.3.0"
 val logback_version: String = "1.2.3"
@@ -22,8 +22,8 @@ val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "4.8.0.Final"
 
 plugins {
-    kotlin("multiplatform") version "1.3.61"
-    id("kotlinx-serialization") version "1.3.61"
+    kotlin("multiplatform") version "1.3.70"
+    id("kotlinx-serialization") version "1.3.70"
 }
 
 repositories {

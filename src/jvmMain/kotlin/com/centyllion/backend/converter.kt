@@ -27,9 +27,8 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.readText
 import io.ktor.utils.io.readRemaining
 import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.Json.Companion.stringify
-import kotlinx.serialization.serializer
 
 class JsonConverter : ContentConverter {
     override suspend fun convertForSend(
@@ -37,43 +36,43 @@ class JsonConverter : ContentConverter {
     ) = TextContent(convertForSend(value), contentType.withCharset(context.call.suitableCharset()))
 
     private fun convertForSend(value: Any?): String = when (value) {
-        is Info -> stringify(Info.serializer(), value)
-        is User -> stringify(User.serializer(), value)
-        is Asset -> stringify(Asset.serializer(), value)
-        is GrainModel -> stringify(GrainModel.serializer(), value)
-        is GrainModelDescription -> stringify(GrainModelDescription.serializer(), value)
-        is Simulation -> stringify(Simulation.serializer(), value)
-        is SimulationDescription -> stringify(SimulationDescription.serializer(), value)
-        is FeaturedDescription -> stringify(FeaturedDescription.serializer(), value)
-        is CollectionInfo -> stringify(CollectionInfo.serializer(), value)
+        is Info -> Json.stringify(Info.serializer(), value)
+        is User -> Json.stringify(User.serializer(), value)
+        is Asset -> Json.stringify(Asset.serializer(), value)
+        is GrainModel -> Json.stringify(GrainModel.serializer(), value)
+        is GrainModelDescription -> Json.stringify(GrainModelDescription.serializer(), value)
+        is Simulation -> Json.stringify(Simulation.serializer(), value)
+        is SimulationDescription -> Json.stringify(SimulationDescription.serializer(), value)
+        is FeaturedDescription -> Json.stringify(FeaturedDescription.serializer(), value)
+        is CollectionInfo -> Json.stringify(CollectionInfo.serializer(), value)
         is ResultPage<*> ->
             when (value.content.firstOrNull()) {
-                is SimulationDescription -> stringify(
+                is SimulationDescription -> Json.stringify(
                     ResultPage.serializer(SimulationDescription.serializer()),
                     value as ResultPage<SimulationDescription>
                 )
-                is GrainModelDescription -> stringify(
+                is GrainModelDescription -> Json.stringify(
                     ResultPage.serializer(GrainModelDescription.serializer()),
                     value as ResultPage<GrainModelDescription>
                 )
-                is FeaturedDescription -> stringify(
+                is FeaturedDescription -> Json.stringify(
                     ResultPage.serializer(FeaturedDescription.serializer()),
                     value as ResultPage<FeaturedDescription>
                 )
-                is User -> stringify(
+                is User -> Json.stringify(
                     ResultPage.serializer(User.serializer()),
                     value as ResultPage<User>
                 )
-                is Asset -> stringify(
+                is Asset -> Json.stringify(
                     ResultPage.serializer(Asset.serializer()),
                     value as ResultPage<Asset>
                 )
-                is String -> stringify(
+                is String -> Json.stringify(
                     ResultPage.serializer(String.serializer()),
                     value as ResultPage<String>
                 )
                 else -> // the page is empty send it using any serializer
-                    stringify(
+                    Json.stringify(
                         ResultPage.serializer(String.serializer()),
                         value as ResultPage<String>
                     )

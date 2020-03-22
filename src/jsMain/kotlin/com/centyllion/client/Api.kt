@@ -14,9 +14,9 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.centyllion.model.UserOptions
 import keycloak.KeycloakInstance
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.serializer
 import org.w3c.dom.HTMLLinkElement
 import org.w3c.files.Blob
 import org.w3c.files.File

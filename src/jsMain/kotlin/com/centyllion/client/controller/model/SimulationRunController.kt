@@ -442,10 +442,10 @@ class SimulationRunController(
         val amounts = simulator.fieldAmounts()
         return Chart(
             page.i18n("Step"),
-            context.fields.map {
+            context.fields.map { field ->
                 ChartLine(
-                    label = it.label(true), color = it.color,
-                    initial = amounts[it.id] ?: 0,
+                    label = field.label(true), color = field.color,
+                    initial = amounts[field.id] ?: 0,
                     value = { it.toFixed(3) }
                 )
             }
@@ -457,6 +457,7 @@ class SimulationRunController(
         chartContainer.hidden = !presentCharts
         toggleChartsButton.light = presentCharts
         if (presentCharts) {
+            resizeCharts()
             grainChart.refresh()
             fieldChart.refresh()
         }
@@ -512,14 +513,18 @@ class SimulationRunController(
 
     fun resize() {
         simulationViewController.resize()
+        if (presentCharts) resizeCharts()
+    }
+
+    fun resizeCharts() {
         val grainParent = grainChart.root.parentElement
         if (grainParent is HTMLElement) {
-            grainChart.size = (grainParent.offsetWidth-30) to 400
+            grainChart.size = (grainParent.offsetWidth - 30) to 400
         }
 
         val fieldParent = fieldChart.root.parentElement
         if (fieldParent is HTMLElement) {
-            fieldChart.size = (fieldParent.offsetWidth-30) to 400
+            fieldChart.size = (fieldParent.offsetWidth - 30) to 400
         }
     }
 

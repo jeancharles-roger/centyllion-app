@@ -65,13 +65,9 @@ class ChartController(
 
     override var context: Pair<Int, Int> by observable(size) { _, old, new ->
         // re-sizes uPlot
-        console.log("Resize to $new")
-        uplot?.setSize(
-            Size(
-                new.first.coerceAtLeast(801),
-                new.second.coerceAtLeast(400)
-            )
-        )
+        if (old != new) {
+            uplot?.setSize(Size(new.first, new.second))
+        }
     }
 
     override var data: Chart by observable(chart) { _, old, new ->

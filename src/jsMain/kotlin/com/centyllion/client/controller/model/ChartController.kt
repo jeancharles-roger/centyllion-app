@@ -1,17 +1,21 @@
 package com.centyllion.client.controller.model
 
+import bulma.Controller
 import bulma.Div
 import bulma.Label
-import bulma.NoContextController
 import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
-import uplot.Line
+import uplot.Size
+import uplot.UPlot
 import kotlin.js.json
 import kotlin.properties.Delegates.observable
 
 data class ChartLine(
-    val label: String, val color: String, val width: Int = 2, val initial: Number
+    val label: String, val initial: Number,
+    val color: String, val fill: String? = null,
+    val width: Int = 2, val dash: List<Int>? = null,
+    val value: ((Number) -> String)? = null
 )
 
 data class Chart(
@@ -26,7 +30,7 @@ class ChartData(
 
 class ChartController(
     val page: BulmaPage, title: String, chart: Chart, size: Pair<Int, Int> = 800 to 400
-): NoContextController<Chart, Div>() {
+): Controller<Chart, Pair<Int, Int>, Div> {
 
     private var chartData = ChartData(1, Array(chart.lines.size) { arrayOf(chart.lines[it].initial) })
 
@@ -36,7 +40,7 @@ class ChartController(
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
-    private var uplot: Line? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
+    private var uplot: UPlot? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
         if (old != null) {
             container.root.removeChild(old.root)
         } else {
@@ -49,11 +53,15 @@ class ChartController(
         }
     }
 
-    var size: Pair<Int, Int> by observable(size) { _, old, new ->
-        if (old != new) {
-            // recreate uPlot
-            uplot = createUPlot(data, new.first, new.second)
-        }
+    var size get() = context; set(value) { context = value }
+
+    override var context: Pair<Int, Int> by observable(size) { _, old, new ->
+        // re-sizes uPlot
+        console.log("Resize to $new")
+        uplot?.setSize(object : Size {
+            override val width = new.first.coerceAtLeast(801)
+            override val height = new.second.coerceAtLeast(400)
+        })
     }
 
     override var data: Chart by observable(chart) { _, old, new ->
@@ -62,7 +70,7 @@ class ChartController(
             resetChartData()
 
             // recreate uPlot
-            uplot = createUPlot(new, size.first, size.second)
+            uplot = createUPlot(new, context.first, context.second)
         } else {
             // the chart is the same but the model was updated, a reset is required
             reset()
@@ -85,36 +93,32 @@ class ChartController(
     override fun refresh() {
     }
 
-    private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): Line? {
+    private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): UPlot? {
         if (chart.lines.isEmpty()) return null
-        val line = Line(
+        val toggled = uplot?.series?.filter{ !it.show }?.map { it.label } ?: emptyList()
+        return UPlot(
             json(
-                "width" to width, "height" to height,
-                "scales" to json(
-                    "x" to json("time" to false),
-                    "y" to json("time" to false, "range" to { _: Number, max: Number -> arrayOf(0, max.toDouble()*1.1) })
-                ),
-                "series" to json(
-                    "x" to json("label" to data.xLabel),
-                    "y" to chart.lines.map {
-                        json(
-                            "type" to false, "label" to it.label,
-                            "color" to it.color, "width" to it.width
-                        )
-                    }.toTypedArray()
-                )
+                "width" to width.coerceAtLeast(800), "height" to height.coerceAtLeast(400),
+                "scales" to json( "x" to json("time" to false)),
+                //"cursor" to json("show" to false),
+                //"legend" to json("show" to false),
+                "series" to arrayOf(
+                    json("label" to data.xLabel)
+                ) + chart.lines.map {
+                    val dataLine = json(
+                        "show" to !toggled.contains(it.label),
+                        "label" to it.label,
+                        "stroke" to it.color,
+                        "width" to it.width
+                    )
+                    if (it.fill != null) dataLine["fill"] = it.fill
+                    if (it.dash != null) dataLine["dash"] = it.dash.toTypedArray()
+                    if (it.value != null) dataLine["value"] = { _: UPlot, raw: Number -> it.value.invoke(raw)}
+                    dataLine
+                }.toTypedArray()
             ),
             arrayOf(xValues, *yValues)
         )
-        /** Toggle series that where toggled */
-        val toggled = uplot?.series?.y?.filter{ !it.show }?.map { it.label } ?: emptyList()
-        val toggledIds = line.series.y
-            .mapIndexed { i, s -> i+1 to (!toggled.contains(s.label)) }
-            .filter{ !it.second}
-            .map { (i, _) -> i }
-        if (toggledIds.isNotEmpty()) line.toggle(toggledIds.toTypedArray())
-
-        return line
     }
 
     private fun resetChartData() {
@@ -125,7 +129,7 @@ class ChartController(
 
     fun reset() {
         resetChartData()
-        uplot?.setData(arrayOf(xValues, *yValues), 0, xValues.lastOrNull() ?: 0)
+        uplot?.setData(arrayOf(xValues, *yValues), true)
     }
 
     fun push(x: Number, ys: Collection<Number>, refresh: Boolean) {
@@ -135,7 +139,7 @@ class ChartController(
     }
 
     fun refreshData() {
-        uplot?.setData(arrayOf(xValues, *yValues), 0, xValues.lastOrNull() ?: 0)
+        uplot?.setData(arrayOf(xValues, *yValues), true)
     }
 
 }

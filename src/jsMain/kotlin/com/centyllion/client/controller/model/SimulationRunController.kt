@@ -27,6 +27,7 @@ import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.stringHref
+import com.centyllion.client.toFixed
 import com.centyllion.client.toggleElementToFullScreen
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
@@ -442,7 +443,11 @@ class SimulationRunController(
         return Chart(
             page.i18n("Step"),
             context.fields.map {
-                ChartLine(label = it.label(true), color = it.color, initial = amounts[it.id] ?: 0)
+                ChartLine(
+                    label = it.label(true), color = it.color,
+                    initial = amounts[it.id] ?: 0,
+                    value = { it.toFixed(3) }
+                )
             }
         )
     }

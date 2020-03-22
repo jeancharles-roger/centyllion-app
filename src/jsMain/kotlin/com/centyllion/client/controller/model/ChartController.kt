@@ -6,9 +6,12 @@ import bulma.Label
 import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
+import uplot.Scale
+import uplot.Series
 import uplot.Size
 import uplot.UPlot
-import kotlin.js.json
+import uplot.UPlotOptions
+import uplot.createUPlot
 import kotlin.properties.Delegates.observable
 
 data class ChartLine(
@@ -16,7 +19,12 @@ data class ChartLine(
     val color: String, val fill: String? = null,
     val width: Int = 2, val dash: List<Int>? = null,
     val value: ((Number) -> String)? = null
-)
+) {
+    internal fun options(show: Boolean) = Series(
+        label = label, stroke = color, fill = fill, width = width, dash = dash,
+        value = value?.let { { _: UPlot, raw: Number -> it(raw)} }, show = show
+    )
+}
 
 data class Chart(
     val xLabel: String,
@@ -40,7 +48,7 @@ class ChartController(
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
-    private var uplot: UPlot? by observable(createUPlot(chart, size.first, size.second)) { _, old, new ->
+    private var uplot: UPlot? by observable(createPlot(chart, size.first, size.second)) { _, old, new ->
         if (old != null) {
             container.root.removeChild(old.root)
         } else {
@@ -58,10 +66,12 @@ class ChartController(
     override var context: Pair<Int, Int> by observable(size) { _, old, new ->
         // re-sizes uPlot
         console.log("Resize to $new")
-        uplot?.setSize(object : Size {
-            override val width = new.first.coerceAtLeast(801)
-            override val height = new.second.coerceAtLeast(400)
-        })
+        uplot?.setSize(
+            Size(
+                new.first.coerceAtLeast(801),
+                new.second.coerceAtLeast(400)
+            )
+        )
     }
 
     override var data: Chart by observable(chart) { _, old, new ->
@@ -70,7 +80,7 @@ class ChartController(
             resetChartData()
 
             // recreate uPlot
-            uplot = createUPlot(new, context.first, context.second)
+            uplot = createPlot(new, context.first, context.second)
         } else {
             // the chart is the same but the model was updated, a reset is required
             reset()
@@ -93,29 +103,16 @@ class ChartController(
     override fun refresh() {
     }
 
-    private fun createUPlot(chart: Chart, width: Int = 800, height: Int = 400): UPlot? {
+    private fun createPlot(chart: Chart, width: Int = 800, height: Int = 400): UPlot? {
         if (chart.lines.isEmpty()) return null
         val toggled = uplot?.series?.filter{ !it.show }?.map { it.label } ?: emptyList()
-        return UPlot(
-            json(
-                "width" to width.coerceAtLeast(800), "height" to height.coerceAtLeast(400),
-                "scales" to json( "x" to json("time" to false)),
-                //"cursor" to json("show" to false),
-                //"legend" to json("show" to false),
-                "series" to arrayOf(
-                    json("label" to data.xLabel)
-                ) + chart.lines.map {
-                    val dataLine = json(
-                        "show" to !toggled.contains(it.label),
-                        "label" to it.label,
-                        "stroke" to it.color,
-                        "width" to it.width
-                    )
-                    if (it.fill != null) dataLine["fill"] = it.fill
-                    if (it.dash != null) dataLine["dash"] = it.dash.toTypedArray()
-                    if (it.value != null) dataLine["value"] = { _: UPlot, raw: Number -> it.value.invoke(raw)}
-                    dataLine
-                }.toTypedArray()
+        val series = mutableListOf(Series(label = data.xLabel, time = false))
+        series += chart.lines.map { it.options(!toggled.contains(it.label)) }
+        return createUPlot(
+            UPlotOptions(
+                width = width.coerceAtLeast(400), height = height.coerceAtLeast(400),
+                scales = mapOf("x" to Scale(time = false)),
+                series = series
             ),
             arrayOf(xValues, *yValues)
         )

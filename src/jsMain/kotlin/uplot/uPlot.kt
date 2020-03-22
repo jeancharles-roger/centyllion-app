@@ -4,77 +4,69 @@ import org.w3c.dom.HTMLElement
 import kotlin.js.Json
 import kotlin.js.json
 
-interface Size {
-    val width: Int
-    val height: Int
-}
+class Size(val width: Int, val height: Int)
 
 internal fun Json.add(name: String, value: Any?) = value?.let { this[name] = it}
+
+class Scale(
+    val time: Boolean = true
+) {
+    val json = json("time" to time)
+}
 
 class Series(
     val label: String,
     val time: Boolean = true,
     val scale: String? = null,
+    val stroke: String? = null,
     val width: Number? = null,
-    val show: Boolean = true
+    val dash: List<Int>? = null,
+    val fill: String? = null,
+    // spanGaps
+    val show: Boolean = true,
+    val value: ((UPlot, Number) -> String)? = null
 ) {
     val json = json(
-        "label" to label, "time" to time, "show" to show
+        "label" to label,  "time" to time, "show" to show
     ).apply {
         add("scale", scale)
+        add("stroke", stroke)
         add("width", width)
+        add("dash", dash)
+        add("fill", fill)
+        add("value", value)
     }
 }
 
 class UPlotOptions(
-    val title: String,
     val width: Int,
     val height: Int,
+    val title: String? = null,
     val id: String? = null,
     val klass: String? = null,
-    val series: List<Series>
+    val cursor: Boolean? = null,
+    val legend: Boolean? = null,
+    val scales: Map<String, Scale>? = null,
+    val series: List<Series>? = null
 ) {
     val json = json(
-        "title" to title, "width" to width, "height" to height
+        "width" to width, "height" to height
     ).apply {
+        add("title", title)
         add("id", id)
         add("class", klass)
-        this["series"] = series.map(Series::json)
+        add("cursor", cursor)
+        add("legend", legend)
+        add("scales", scales?.let { scales ->
+            val result = json()
+            scales.forEach { result.add(it.key, it.value.json) }
+            result
+        })
+        add("series", series?.map(Series::json)?.toTypedArray())
     }
 }
 
-fun createUPlot(options: UPlotOptions, data: Array<Array<Number>>, parent: HTMLElement) =
-    UPlot(options.json, data, parent)
-
-/*
-let opts = {
-  title: "My Chart",
-  id: "chart1",
-  class: "my-chart",
-  width: 800,
-  height: 600,
-  series: [
-    {},
-    {
-      // initial toggled state (optional)
-      show: true,
-
-      spanGaps: false,
-
-      // in-legend display
-      label: "RAM",
-      value: (self, rawValue) => "$" + rawValue.toFixed(2),
-
-      // series style
-      stroke: "red",
-      width: 1,
-      fill: "rgba(255, 0, 0, 0.3)",
-      dash: [10, 5],
-    }
-  ],
-};
-let uplot = new uPlot.Line(opts, data, document.body);
- */
+fun createUPlot(options: UPlotOptions, data: Array<Array<Number>>) = UPlot(options.json, data)
 
 @JsModule("uPlot")
 external class UPlot {
@@ -88,7 +80,6 @@ external class UPlot {
 
     fun setData(data: Array<Array<out Number>>, autoScale: Boolean = definedExternally)
 
-    // u.setSeries(i, {show: !u.series.y[i-1].show})
     fun setSeries(index: Int, options: Json)
 
     fun setSize(size: Size)

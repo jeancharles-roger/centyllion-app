@@ -10,10 +10,10 @@ val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
 val serialization_version: String = "0.20.0"
-val coroutine_version: String = "1.3.3"
+val coroutine_version: String = "1.3.4"
 val clikt_version: String = "2.3.0"
 val logback_version: String = "1.2.3"
-val ktor_version: String = "1.3.0"
+val ktor_version: String = "1.3.2"
 val kotlinx_html_version: String = "0.6.10"
 val bulma_kotlin_version: String = "0.3.1"
 val babylon_kotlin_version: String = "0.2"

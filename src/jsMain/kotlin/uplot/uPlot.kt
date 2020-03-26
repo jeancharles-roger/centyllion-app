@@ -8,6 +8,57 @@ class Size(val width: Int, val height: Int)
 
 internal fun Json.add(name: String, value: Any?) = value?.let { this[name] = it}
 
+class Ticks(
+    val show: Boolean = true,
+    val stroke: String? = null,
+    val width: Int? = null,
+    val dash: List<Int>? = null,
+    val size: Int? = null
+) {
+    val json = json("show" to show).apply {
+        add("stroke", stroke)
+        add("width", width)
+        add("dash", dash)
+        add("size", size)
+    }
+}
+
+class Grid(
+    val show: Boolean = true,
+    val stroke: String? = null,
+    val width: Int? = null,
+    val dash: List<Int>? = null
+) {
+    val json = json("show" to show).apply {
+        add("stroke", stroke)
+        add("width", width)
+        add("dash", dash)
+    }
+}
+
+class Axe(
+   val label: String,
+   val labelSize: Int? = null,
+   val labelFont: String? = null,
+   val font: String? = null,
+   val gap: Int? = null,
+   val size: Int? = null,
+   val stroke: String? = null,
+   val grid: Grid? = null,
+   val ticks: Ticks? = null
+) {
+    val json = json("label" to label).apply {
+        add("labelSize", labelSize)
+        add("labelFont", labelFont)
+        add("font", font)
+        add("gap", gap)
+        add("size", size)
+        add("stroke", stroke)
+        add("grid", grid?.json)
+        add("ticks", ticks?.json)
+    }
+}
+
 class Scale(
     val time: Boolean = true
 ) {
@@ -46,6 +97,7 @@ class UPlotOptions(
     val klass: String? = null,
     val cursor: Boolean? = null,
     val legend: Boolean? = null,
+    val axes: List<Axe>? = null,
     val scales: Map<String, Scale>? = null,
     val series: List<Series>? = null
 ) {
@@ -57,6 +109,7 @@ class UPlotOptions(
         add("class", klass)
         add("cursor", cursor)
         add("legend", legend)
+        add("axes", axes?.map(Axe::json)?.toTypedArray())
         add("scales", scales?.let { scales ->
             val result = json()
             scales.forEach { result.add(it.key, it.value.json) }

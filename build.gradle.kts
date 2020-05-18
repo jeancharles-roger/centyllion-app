@@ -14,7 +14,7 @@ val coroutine_version: String = "1.3.4"
 val clikt_version: String = "2.3.0"
 val logback_version: String = "1.2.3"
 val ktor_version: String = "1.3.2"
-val kotlinx_html_version: String = "0.6.10"
+val kotlinx_html_version: String = "0.7.1"
 val bulma_kotlin_version: String = "0.3.1"
 val babylon_kotlin_version: String = "0.2"
 val exposed_version: String = "0.17.5"
@@ -22,8 +22,8 @@ val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "4.8.0.Final"
 
 plugins {
-    kotlin("multiplatform") version "1.3.70"
-    id("kotlinx-serialization") version "1.3.70"
+    kotlin("multiplatform") version "1.3.72"
+    id("kotlinx-serialization") version "1.3.72"
 }
 
 repositories {
@@ -48,6 +48,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                implementation("com.centyllion:centyllion:0.1.0-dev")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
             }
         }
@@ -57,91 +58,91 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+    }
 
-        // Default source set for JVM-specific sources and dependencies:
-        jvm {
-            compilations["main"].defaultSourceSet {
-                dependencies {
-                    implementation(kotlin("stdlib-jdk8"))
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
+    // Default source set for JVM-specific sources and dependencies:
+    jvm {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation(kotlin("stdlib"))
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
 
-                    implementation("com.github.ajalt:clikt:$clikt_version")
+                implementation("com.github.ajalt:clikt:$clikt_version")
 
-                    // needed by ktor-auth-jwt (strange since it was included at some time ...)
-                    implementation("com.google.guava:guava:27.1-jre")
+                // needed by ktor-auth-jwt (strange since it was included at some time ...)
+                implementation("com.google.guava:guava:27.1-jre")
 
-                    if (d) implementation("ch.qos.logback:logback-classic:$logback_version")
+                if (d) implementation("ch.qos.logback:logback-classic:$logback_version")
 
-                    implementation("io.ktor:ktor-html-builder:$ktor_version")
-                    implementation("io.ktor:ktor-client-apache:$ktor_version")
-                    implementation("io.ktor:ktor-auth:$ktor_version")
-                    implementation("io.ktor:ktor-auth-jwt:$ktor_version")
-                    implementation("io.ktor:ktor-network-tls:$ktor_version")
-                    implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
-                    implementation("io.ktor:ktor-server-netty:$ktor_version")
-                    implementation("io.ktor:ktor-serialization:$ktor_version")
+                implementation("io.ktor:ktor-html-builder:$ktor_version")
+                implementation("io.ktor:ktor-client-apache:$ktor_version")
+                implementation("io.ktor:ktor-auth:$ktor_version")
+                implementation("io.ktor:ktor-auth-jwt:$ktor_version")
+                implementation("io.ktor:ktor-network-tls:$ktor_version")
+                implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
+                implementation("io.ktor:ktor-server-netty:$ktor_version")
+                implementation("io.ktor:ktor-serialization:$ktor_version")
 
-                    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 
-                    // adds dependencies for postgres
-                    implementation("org.jetbrains.exposed:exposed:$exposed_version")
-                    implementation("org.postgresql:postgresql:$postgresql_version")
-                    implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
+                // adds dependencies for postgres
+                implementation("org.jetbrains.exposed:exposed:$exposed_version")
+                implementation("org.postgresql:postgresql:$postgresql_version")
+                implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
 
-                    // adds dependencies to manage keycloak users
-                    implementation("org.jboss.resteasy:resteasy-client:3.6.1.Final")
-                    implementation("org.jboss.resteasy:resteasy-jaxrs:3.6.1.Final")
-                    implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
-                    implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
-                    implementation("org.keycloak:keycloak-admin-client:$keycloak_version")
-                }
+                // adds dependencies to manage keycloak users
+                implementation("org.jboss.resteasy:resteasy-client:3.6.1.Final")
+                implementation("org.jboss.resteasy:resteasy-jaxrs:3.6.1.Final")
+                implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
+                implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
+                implementation("org.keycloak:keycloak-admin-client:$keycloak_version")
             }
-            // JVM-specific tests and their dependencies:
-            compilations["test"].defaultSourceSet {
-                dependencies {
-                    implementation("io.ktor:ktor-server-test-host:$ktor_version")
-                    implementation(kotlin("test-junit"))
-                }
-            }
-
-            compilations.forEach {
-                it.kotlinOptions {
-                    jvmTarget = "11"
-                }
+        }
+        // JVM-specific tests and their dependencies:
+        compilations["test"].defaultSourceSet {
+            dependencies {
+                implementation("io.ktor:ktor-server-test-host:$ktor_version")
+                implementation(kotlin("test-junit"))
             }
         }
 
-        js {
-            compilations["main"].defaultSourceSet {
-                dependencies {
-                    implementation(kotlin("stdlib-js"))
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
-                    implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
-
-                    implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
-                    implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
-
-                }
+        compilations.forEach {
+            it.kotlinOptions {
+                jvmTarget = "11"
             }
-            compilations["test"].defaultSourceSet {
-                dependencies {
-                    implementation(kotlin("test-js"))
-                }
+        }
+    }
+
+    js {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation(kotlin("stdlib-js"))
+
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
+
+                implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
+                implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
             }
-            compilations.forEach {
-                it.kotlinOptions {
-                    moduleKind = "amd"
-                    main = "noCall"
-                    sourceMap = d
-                    sourceMapEmbedSources = if (d) "always" else "never"
-                }
+        }
+        compilations["test"].defaultSourceSet {
+            dependencies {
+                implementation(kotlin("test-js"))
+            }
+        }
+        compilations.forEach {
+            it.kotlinOptions {
+                moduleKind = "amd"
+                main = "noCall"
+                sourceMap = d
+                sourceMapEmbedSources = if (d) "always" else "never"
             }
         }
     }
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
@@ -168,7 +169,6 @@ tasks {
         }
     }
 
-
     val allJs by register<Copy>("allJs") {
         // adds require template file to task input
         val requireTemplate = file("deploy/requirejs.config.template")
@@ -176,14 +176,14 @@ tasks {
         dependsOn(compileKotlinJs)
         group = "build"
 
-        doFirst {
-            delete(jsDir)
-        }
-        from(
-            fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") }
-        )
+        doFirst { delete(jsDir) }
 
-        configurations["jsMainImplementationDependenciesMetadata"].forEach {
+        // includes sources js
+        from(fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") })
+        val t = compileKotlinJs.get()
+        // includes dependencies js
+        val configuration = "jsMainImplementationDependenciesMetadata"
+        configurations[configuration].forEach {
             from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
         }
 
@@ -208,7 +208,7 @@ tasks {
                 }
             }
 
-            val moduleJoined = modules.map { (k, v) -> "'$k': 'centyllion/$v'" }.joinToString(",\n")
+            val moduleJoined = modules.map { (k, v) -> "'$k': 'centyllion/$v'" }.joinToString(",\n\t\t")
 
             fun copyRequireJsConfig(name: String, main: String) {
                 val sourceFile = requireTemplate
@@ -254,7 +254,7 @@ tasks {
 
             // Constructs a css.files
             val cssFiles = file("$cssDir/css.config.json")
-            val content = files.map { "\"/css/centyllion/$it\"" }.joinToString(",")
+            val content = files.joinToString(",") { "\"/css/centyllion/$it\"" }
             cssFiles.writeText("{ \"files\": [$content] }")
         }
     }

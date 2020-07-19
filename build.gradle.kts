@@ -48,7 +48,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("com.centyllion:centyllion:0.1.0-dev")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
             }
         }

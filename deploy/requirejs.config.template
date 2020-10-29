@@ -1,5 +1,5 @@
 requirejs.config({
-    'baseUrl': '/js',
+    'baseUrl': '%BASEURL%',
     paths: {
         'keycloak': 'Keycloak-4.8.0/keycloak',
         'bulmaToast': 'bulma-toast-1.5.0/bulma-toast.min',

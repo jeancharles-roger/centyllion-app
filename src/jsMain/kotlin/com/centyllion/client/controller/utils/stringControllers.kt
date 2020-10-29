@@ -13,9 +13,9 @@ import bulma.TextColor
 import bulma.TextView
 import bulma.iconButton
 import com.centyllion.i18n.Locale
+import kotlinx.browser.document
 import markdownit.MarkdownIt
 import org.w3c.dom.HTMLDivElement
-import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 
 /**

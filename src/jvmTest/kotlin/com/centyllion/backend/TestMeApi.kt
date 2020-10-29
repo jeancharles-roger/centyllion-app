@@ -1,4 +1,3 @@
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.centyllion.model.GrainModel
@@ -9,7 +8,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.contentType
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,18 +23,18 @@ class TestMeApi {
         val result = request.response.content
         assertNotNull(result)
 
-        return Json.parse(User.serializer(), result)
+        return Json.decodeFromString(User.serializer(), result)
     }
 
     private fun TestApplicationEngine.postModel(model: GrainModel, user: User): GrainModelDescription {
-        val content = Json.stringify(GrainModel.serializer(), model)
+        val content = Json.encodeToString(GrainModel.serializer(), model)
         val request = handlePost("/api/model", content, user)
         assertEquals(HttpStatusCode.OK, request.response.status())
 
         val result = request.response.content
         assertNotNull(result)
 
-        val retrieved = Json.parse(GrainModelDescription.serializer(), result)
+        val retrieved = Json.decodeFromString(GrainModelDescription.serializer(), result)
         assertEquals(model, retrieved.model)
         return retrieved
     }
@@ -51,7 +49,7 @@ class TestMeApi {
     private fun TestApplicationEngine.patchModel(
         model: GrainModelDescription, user: User, result: HttpStatusCode = HttpStatusCode.OK
     ) {
-        val content = Json.stringify(GrainModelDescription.serializer(), model)
+        val content = Json.encodeToString(GrainModelDescription.serializer(), model)
         val request = handlePatch("/api/model/${model.id}", content, user)
         assertEquals(result, request.response.status())
     }
@@ -67,7 +65,7 @@ class TestMeApi {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertTrue(response.contentType().match(ContentType.Application.Json))
 
-                val user = Json.parse(User.serializer(), response.content ?: "")
+                val user = Json.decodeFromString(User.serializer(), response.content ?: "")
                 assertEquals(user1.name, user.name)
                 assertEquals(user1.details?.email, user.details?.email)
                 assertEquals(user1.details?.keycloakId, user.details?.keycloakId)

@@ -21,6 +21,7 @@ import bulma.TileSize
 import bulma.columnsController
 import bulma.iconButton
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.createHr
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
@@ -31,9 +32,6 @@ import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
 import com.centyllion.model.Reaction
 import com.centyllion.model.behaviourIcon
-import kotlinx.html.dom.create
-import kotlinx.html.js.hr
-import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
@@ -198,7 +196,7 @@ class BehaviourEditController(
             }
         }
 
-    val fieldSeparator = HtmlWrapper(document.create.hr()).apply {
+    val fieldSeparator = HtmlWrapper(createHr()).apply {
         hidden = context.fields.isEmpty()
     }
 
@@ -220,7 +218,7 @@ class BehaviourEditController(
         HorizontalField(Label(page.i18n("Description")), descriptionController.container),
         HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
         HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
-        HtmlWrapper(document.create.hr()),
+        HtmlWrapper(createHr()),
         Label(page.i18n("Reactions")), reactionsController,
         fieldSeparator,
         fieldsConfiguration

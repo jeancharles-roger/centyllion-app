@@ -54,7 +54,7 @@ class Simulator(
 
     val currentAgents get() = if (step == 0) initialAgents else agents
 
-    val fieldMaxId = model.fields.map { it.id }.max() ?: 0
+    val fieldMaxId = model.fields.map { it.id }.maxOrNull() ?: 0
 
     val fields get() = if (currentFields) fields1 else fields2
     val nextFields get() = if (!currentFields) fields1 else fields2
@@ -86,7 +86,7 @@ class Simulator(
     private val reactiveGrains = allBehaviours.mapNotNull { model.grainForId(it.mainReactiveId) }.toSet()
 
     // Caches an array of Grain placed with their id for fast grain resolution
-    private val grainIdArray = Array((model.grains.map { it.id }.max() ?: -1) + 1) { id -> model.grains.find { it.id == id } }
+    private val grainIdArray = Array((model.grains.map { it.id }.maxOrNull() ?: -1) + 1) { id -> model.grains.find { it.id == id } }
 
     fun grainForId(id: Int): Grain? = if (id < 0) null else grainIdArray[id]
 
@@ -191,7 +191,7 @@ class Simulator(
                                         sum
                                     }
 
-                                    val min = influence.min() ?: 0f
+                                    val min = influence.minOrNull() ?: 0f
                                     var current = 0f
                                     for (index in influence.indices) {
                                         // translates influence to positive float and to the power of 6 for a stronger effect
@@ -225,14 +225,14 @@ class Simulator(
                 var permeableSum = 0f
                 for (allowed in field.allowedDirection) {
                     val index = simulation.moveIndex(i, allowed)
-                    permeableSum += (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                    permeableSum += (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f)
                 }
 
                 if (next != null && current != null) {
                     var diffusionSum = 0f
                     for (opposite in field.oppositeDirections) {
                         val index = simulation.moveIndex(i, opposite)
-                        val permeable = (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f) ?: 1f
+                        val permeable = (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f)
                         diffusionSum += current[index] * field.speed * permeable
                     }
 

@@ -12,11 +12,11 @@ import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.emptyGrainModelDescription
 import com.centyllion.model.emptySimulationDescription
 import keycloak.Keycloak
+import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.asList
 import org.w3c.dom.get
-import kotlin.browser.document
-import kotlin.browser.window
 import kotlin.js.Promise
 
 fun searchAndCreateGrainController(page: BulmaPage, simulationId: String, controller: SimulationRunController) {

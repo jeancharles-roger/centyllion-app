@@ -8,6 +8,9 @@ import bulma.Div
 import bulma.TabItem
 import bulma.Tabs
 import com.centyllion.model.ModelElement
+import kotlinx.browser.document
+import kotlinx.html.dom.create
+import kotlinx.html.js.hr
 import kotlin.properties.Delegates
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -53,3 +56,5 @@ fun editorBox(title: String, icon: String?, vararg body: BulmaElement) = Div(
 fun <T: ModelElement> List<T>.filtered(filter: String) =
     if (filter.isBlank()) this
     else this.filter { it.name.contains(filter, true) || it.description.contains(filter, true) }
+
+fun createHr() = document.create.hr()

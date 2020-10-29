@@ -1,37 +1,31 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import java.security.MessageDigest
-import java.text.SimpleDateFormat
-import java.util.Date
-
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serialization_version: String = "0.20.0"
-val coroutine_version: String = "1.3.4"
-val clikt_version: String = "2.3.0"
+val serialization_version: String = "1.0.0"
+val coroutine_version: String = "1.3.9"
+val clikt_version: String = "2.8.0"
 val logback_version: String = "1.2.3"
-val ktor_version: String = "1.3.2"
+val ktor_version: String = "1.4.0"
 val kotlinx_html_version: String = "0.7.1"
-val bulma_kotlin_version: String = "0.3.1"
-val babylon_kotlin_version: String = "0.2"
+val bulma_kotlin_version: String = "0.4"
+val babylon_kotlin_version: String = "0.4"
 val exposed_version: String = "0.17.5"
 val postgresql_version: String = "42.2.5"
-val keycloak_version: String = "4.8.0.Final"
+val keycloak_version: String = "8.0.2"
 
 plugins {
-    kotlin("multiplatform") version "1.3.72"
-    id("kotlinx-serialization") version "1.3.72"
+    kotlin("multiplatform") version "1.4.10"
+    id("kotlinx-serialization") version "1.4.10"
 }
 
 repositories {
     jcenter()
+    mavenCentral()
     maven("https://kotlin.bintray.com/kotlinx")
     maven("https://jitpack.io")
     maven("https://dl.bintray.com/centyllion/Libraries")
-    mavenCentral()
 }
 
 group = "com.centyllion"
@@ -48,7 +42,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serialization_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version")
             }
         }
         val commonTest by getting {
@@ -63,9 +58,6 @@ kotlin {
     jvm {
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation(kotlin("stdlib"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
-
                 implementation("com.github.ajalt:clikt:$clikt_version")
 
                 // needed by ktor-auth-jwt (strange since it was included at some time ...)
@@ -113,16 +105,30 @@ kotlin {
     }
 
     js {
+        browser {
+            distribution { directory = file("$projectDir/webroot/js/centyllion") }
+            /*
+            webpackTask {
+               outputFileName = "tekdiving-shop.[contenthash].js"
+            }
+             */
+        }
+        binaries.executable()
+
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation(kotlin("stdlib-js"))
-
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutine_version")
                 implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
 
                 implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
                 implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
+
+                implementation(npm("babylonjs", "4.0.3", generateExternals = false))
+                implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
+                implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
+
+                implementation(npm("uplot", "1.2.2", generateExternals = false))
+                implementation(npm("keycloak-js", "8.0.2", generateExternals = false))
+                implementation(npm("markdown-it", "10.0.0", generateExternals = false))
             }
         }
         compilations["test"].defaultSourceSet {
@@ -133,7 +139,7 @@ kotlin {
         compilations.forEach {
             it.kotlinOptions {
                 moduleKind = "amd"
-                main = "noCall"
+                //main = "noCall"
                 sourceMap = d
                 sourceMapEmbedSources = if (d) "always" else "never"
             }
@@ -143,6 +149,7 @@ kotlin {
 
 java.sourceCompatibility = JavaVersion.VERSION_11
 
+/*
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
     val cssDir = "$buildDir/assemble/main/css"
@@ -150,7 +157,8 @@ tasks {
     val deploy = rootProject.file("deploy")
 
     val mainFunction = "index()"
-    val centyllionUrl = "https://app.centyllion.com"
+    val centyllionUrl = "https://127.0.0.1:8443"
+    //val centyllionUrl = "https://app.centyllion.com"
     val externalFunction = "external(\"$centyllionUrl\")"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
@@ -209,14 +217,17 @@ tasks {
 
             val moduleJoined = modules.map { (k, v) -> "'$k': 'centyllion/$v'" }.joinToString(",\n\t\t")
 
-            fun copyRequireJsConfig(name: String, main: String) {
+            fun copyRequireJsConfig(name: String, baseUrl: String, main: String) {
                 val sourceFile = requireTemplate
-                val content = sourceFile.readText().replace("%DEPENDENCIES%", moduleJoined).replace("%MAIN%", main)
+                val content = sourceFile.readText()
+                    .replace("%DEPENDENCIES%", moduleJoined)
+                    .replace("%BASEURL%", baseUrl)
+                    .replace("%MAIN%", main)
                 file(name).writeText(content)
             }
 
-            copyRequireJsConfig("${jsDir}/requirejs.config.json", mainFunction)
-            copyRequireJsConfig("${jsDir}/centyllion.config.json", externalFunction)
+            copyRequireJsConfig("${jsDir}/requirejs.config.json", "/js", mainFunction)
+            copyRequireJsConfig("${jsDir}/centyllion.config.json", "https://127.0.0.1:8443/js", externalFunction)
 
         }
     }
@@ -301,3 +312,4 @@ tasks {
         compression = Compression.GZIP
     }
 }
+*/

@@ -32,8 +32,10 @@ class FloatPredicateController(
         }
     }
 
-    val select = Select(Operator.values().map { Option(it.label, it.name) }, rounded = true) { _: Event, value: String ->
-        data = data.copy(op = Operator.valueOf(value))
+    val select = Select(Operator.values().map { Option(it.label, it.name) }, rounded = true) { _: Event, value: List<Option> ->
+        value.firstOrNull()?.value?.let {
+            data = data.copy(op = Operator.valueOf(it))
+        }
     }
 
     val value = editableFloatController(locale, data.constant, placeHolder, minValue, maxValue)

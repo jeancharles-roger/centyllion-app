@@ -39,10 +39,10 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.behaviourIcon
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
-import kotlin.browser.window
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 

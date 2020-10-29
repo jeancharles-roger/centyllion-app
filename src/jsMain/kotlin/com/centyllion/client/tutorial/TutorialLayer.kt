@@ -10,8 +10,8 @@ import bulma.span
 import bulma.textButton
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.UserOptions
-import kotlin.browser.document
-import kotlin.browser.window
+import kotlinx.browser.document
+import kotlinx.browser.window
 
 class TutorialLayer<P: BulmaPage>(
     initial: Tutorial<P>, val onEnd: (TutorialLayer<P>) -> Unit = {}

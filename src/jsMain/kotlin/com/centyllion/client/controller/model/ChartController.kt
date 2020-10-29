@@ -6,12 +6,9 @@ import bulma.Label
 import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
-import uplot.Scale
-import uplot.Series
 import uplot.Size
-import uplot.UPlot
-import uplot.UPlotOptions
-import uplot.createUPlot
+import uplot.uPlot
+import uplot.uPlot.Series
 import kotlin.properties.Delegates.observable
 
 data class ChartLine(
@@ -20,10 +17,16 @@ data class ChartLine(
     val width: Int = 2, val dash: List<Int>? = null,
     val value: ((Number) -> String)? = null
 ) {
-    internal fun options(show: Boolean) = Series(
-        label = label, stroke = color, fill = fill, width = width, dash = dash,
-        value = value?.let { { _: UPlot, raw: Number -> it(raw)} }, show = show
-    )
+    internal fun options(show: Boolean) = object: Series {
+        override var label: String? = this@ChartLine.label
+        override var stroke: Any? = color
+        override var fill: Any? = this@ChartLine.fill
+        override var width: Any? = this@ChartLine.width
+        override var dash: Array<Number>? = this@ChartLine.dash?.toTypedArray()
+        override var values: ((self: uPlot, seriesIdx: Number, idx: Number) -> Any?)? =
+            value?.let{ v -> { _: uPlot, raw: Number -> v(raw) } }
+        override var show: Boolean? = show
+    }
 }
 
 data class Chart(
@@ -48,7 +51,7 @@ class ChartController(
 
     private val emptyChart = Label(page.i18n("No line to show"))
 
-    private var uplot: UPlot? by observable(createPlot(chart, size.first, size.second)) { _, old, new ->
+    private var uplot: uPlot? by observable(createPlot(chart, size.first, size.second)) { _, old, new ->
         if (old != null) {
             container.root.removeChild(old.root)
         } else {
@@ -66,7 +69,10 @@ class ChartController(
     override var context: Pair<Int, Int> by observable(size) { _, old, new ->
         // re-sizes uPlot
         if (old != new) {
-            uplot?.setSize(Size(new.first, new.second))
+            uplot?.setSize(object: Size {
+                override var width: Number = new.first
+                override var height: Number = new.second
+            })
         }
     }
 
@@ -89,29 +95,38 @@ class ChartController(
     val title = SubTitle(title).apply { root.classList.add("has-text-centered") }
 
     override val container: Div = Div(this.title).apply {
-        if (uplot != null) {
-            uplot?.let { root.appendChild(it.root) }
-        } else {
-            root.appendChild(emptyChart.root)
-        }
+        root.appendChild(uplot?.root ?: emptyChart.root)
     }
 
     override fun refresh() {
     }
 
-    private fun createPlot(chart: Chart, width: Int = 800, height: Int = 400): UPlot? {
+    private fun createPlot(chart: Chart, width: Int = 800, height: Int = 400): uPlot? {
+        return null
+        /*
         if (chart.lines.isEmpty()) return null
-        val toggled = uplot?.series?.filter{ !it.show }?.map { it.label } ?: emptyList()
-        val series = mutableListOf(Series(label = data.xLabel, time = false))
-        series += chart.lines.map { it.options(!toggled.contains(it.label)) }
-        return createUPlot(
-            UPlotOptions(
-                width = width.coerceAtLeast(400), height = height.coerceAtLeast(400),
-                scales = mapOf("x" to Scale(time = false)),
-                series = series
-            ),
+        //val toggled = uplot?.series?.filter { !it.show }?.map { it.label } ?: emptyList()
+        val series = arrayOf<Series>(object : Series {
+            override var label: String? = data.xLabel
+            //override val time = false
+        })
+        //series += chart.lines.map { it.options(!toggled.contains(it.label)) }
+        return uPlot(
+            object: uPlot.Options {
+                override var width: Number = width.coerceAtLeast(400)
+                override var height: Number = height.coerceAtLeast(400)
+                override var scales: Map<String, uPlot.Scale>? = mapOf("x" to
+                    object : uPlot.Scale {
+                        override var time: Boolean? = false
+
+                })
+                override var series: Array<Series> = series
+            },
             arrayOf(xValues, *yValues)
-        )
+        ) { uPlot: uPlot, function: Function<*> ->
+             console.log("init")
+        }
+         */
     }
 
     private fun resetChartData() {

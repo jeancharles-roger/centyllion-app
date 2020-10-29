@@ -1,11 +1,11 @@
 package com.centyllion.client
 
 import bulma.NavBarImageItem
+import kotlinx.browser.document
 import kotlinx.html.dom.create
 import kotlinx.html.js.img
 import kotlinx.serialization.Serializable
 import org.w3c.dom.HTMLElement
-import kotlin.browser.document
 import kotlin.js.Date
 
 @Serializable

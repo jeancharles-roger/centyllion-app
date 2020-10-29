@@ -20,11 +20,11 @@ import ekko.ekkoNow
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
+import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
-import kotlin.browser.document
-import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.js.json
 
@@ -59,7 +59,7 @@ fun startApp(page: Page?, context: AppContext) {
     if (keycloak.tokenParsed != null) {
         val token = keycloak.tokenParsed.asDynamic()
         navBar.end += NavBarLinkItem(
-            token.name as String? ?: token.preferred_username as String ?: context.i18n("Anonymous"),
+            token.name as String? ?: token.preferred_username as String? ?: context.i18n("Anonymous"),
             keycloak.createAccountUrl()
         )
         navBar.end += NavBarLinkItem(context.i18n("Logout"), keycloak.createLogoutUrl())
@@ -118,8 +118,12 @@ fun appendErrorMessage(root: HTMLElement, message: String) {
     console.error("Error: $message")
 }
 
-@JsName("index")
+
+fun main() = index()
+
+//@JsName("index")
 fun index() {
+    console.log("Starting app")
     val root = document.querySelector(contentSelector) as HTMLElement
 
     // creates keycloak instance

@@ -46,6 +46,7 @@ import com.centyllion.model.Asset3d
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
 import com.centyllion.model.minFieldLevel
+import kotlinx.browser.window
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
@@ -55,7 +56,6 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.pointerevents.PointerEvent
 import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
-import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.js.json
 import kotlin.math.PI
@@ -130,8 +130,8 @@ class Simulator3dViewController(
 
     val simulationCanvas: HtmlWrapper<HTMLCanvasElement> = canvas("cent-simulation") {
         val canvasWidth = (window.innerWidth - 40).coerceAtMost(600)
-        width = "$canvasWidth"
-        height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
+        this.width = "$canvasWidth"
+        this.height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
     val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains, page, false)
@@ -744,7 +744,7 @@ class Simulator3dViewController(
         }
     }
 
-    fun  transformMesh(index: Int, newGrainId: Int, force: Boolean = false) {
+    fun transformMesh(index: Int, newGrainId: Int, force: Boolean = false) {
         val mesh = agentMesh[index]
         if (force || newGrainId != mesh?.metadata) {
             // deletes the mesh

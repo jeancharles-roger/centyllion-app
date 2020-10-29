@@ -61,25 +61,23 @@ import com.centyllion.model.emptySimulation
 import com.centyllion.model.emptySimulationDescription
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.html.a
 import kotlinx.html.dom.create
 import kotlinx.html.i
 import kotlinx.html.js.div
 import kotlinx.html.span
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import markdownit.MarkdownIt
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
-import kotlin.browser.document
-import kotlin.browser.window
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
 /** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
-@UseExperimental(UnstableDefault::class)
 class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private var tutorialLayer: TutorialLayer<ShowPage>? = null
@@ -209,7 +207,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     private fun Problem.toBulma() = TableRow(
-        TableCell(body = *arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
+        TableCell(body = arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
     ).also {
         it.root.onclick = {
             modelController.edit(this.source)
@@ -581,7 +579,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun downloadModel() {
-        val href = stringHref(Json.stringify(GrainModel.serializer(), model.model))
+        val href = stringHref(Json.encodeToString(GrainModel.serializer(), model.model))
         download("${model.name}.json", href)
     }
 
@@ -607,7 +605,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun downloadSimulation() {
-        val href = stringHref(Json.stringify(Simulation.serializer(), simulation.simulation))
+        val href = stringHref(Json.encodeToString(Simulation.serializer(), simulation.simulation))
         download("${simulation.name}.json", href)
     }
 

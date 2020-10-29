@@ -1,4 +1,3 @@
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.auth0.jwt.JWT
@@ -21,7 +20,6 @@ import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
@@ -127,7 +125,7 @@ fun <T, R> TestApplicationEngine.testPost(
     uri: String, value: T, inputSerializer: KSerializer<T>,
     outputKSerializer: KSerializer<R>, user: User? = null
 ): R {
-    val content = Json.stringify(inputSerializer, value)
+    val content = Json.encodeToString(inputSerializer, value)
     val request = handlePost(uri, content, user)
     return checkResult(request, outputKSerializer, null)
 }
@@ -138,7 +136,7 @@ private fun <T> checkResult(request: TestApplicationCall, serializer: KSerialize
     val result = request.response.content
     assertNotNull(result)
 
-    val retrieved = Json.parse(serializer, result)
+    val retrieved = Json.decodeFromString(serializer, result)
     if (expected != null) assertEquals(expected, retrieved)
     return retrieved
 }

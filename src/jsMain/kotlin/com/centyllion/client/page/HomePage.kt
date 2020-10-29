@@ -32,10 +32,10 @@ import com.centyllion.model.Description
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
+import kotlinx.browser.document
 import kotlinx.html.div
 import kotlinx.html.dom.create
 import org.w3c.dom.HTMLElement
-import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 
 class HomePage(override val appContext: AppContext) : BulmaPage {

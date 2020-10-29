@@ -42,7 +42,7 @@ fun HTML.centyllionHead(
     }
 
     // Javascript
-    script(src = "/js/require.js") {}
+    //script(src = "/js/require.js") {}
 
     script(src = "https://static.ekko.chat/now/ekkonow.min.js") {}
 
@@ -112,6 +112,7 @@ fun HTML.index(
             div("container")
         }
         centyllionFooter()
-        script(src = "/js/centyllion/requirejs.config.json") {}
+        //script(src = "/js/centyllion/requirejs.config.json") {}
+        script(src = "/js/centyllion/centyllion.js") {}
     }
 }

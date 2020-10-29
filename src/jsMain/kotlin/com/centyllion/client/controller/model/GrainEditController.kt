@@ -18,6 +18,7 @@ import bulma.columnsController
 import bulma.extension.Slider
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.createHr
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.client.controller.utils.editorBox
@@ -28,9 +29,6 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
 import com.centyllion.model.grainIcon
-import kotlinx.html.dom.create
-import kotlinx.html.js.hr
-import kotlin.browser.document
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
@@ -174,7 +172,7 @@ class GrainEditController(
         }
 
 
-    val fieldSeparator = HtmlWrapper(document.create.hr()).apply {
+    val fieldSeparator = HtmlWrapper(createHr()).apply {
         hidden = context.fields.isEmpty()
     }
 

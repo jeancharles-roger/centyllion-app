@@ -1,12 +1,12 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
+import kotlinx.browser.document
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
-import kotlin.browser.document
 
 external fun encodeURI(parameter: String): String
 external fun encodeURIComponent(parameter: String): String

@@ -1,4 +1,3 @@
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
@@ -10,7 +9,6 @@ import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -129,7 +127,7 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
 
     fun toModel(): GrainModelDescription {
         // TODO handle migrations
-        val model = Json.parse(GrainModel.serializer(), model)
+        val model = Json.decodeFromString(GrainModel.serializer(), model)
         return GrainModelDescription(id.toString(), info.toModel(), tags, model)
     }
 
@@ -137,7 +135,7 @@ class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
         info.fromModel(source.info)
         tags = source.tags
         // TODO handle migrations
-        model = Json.stringify(GrainModel.serializer(), source.model)
+        model = Json.encodeToString(GrainModel.serializer(), source.model)
     }
 }
 
@@ -163,14 +161,14 @@ class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {
 
     fun toModel(): SimulationDescription {
         // TODO handle migrations
-        val simulation = Json.parse(Simulation.serializer(), simulation)
+        val simulation = Json.decodeFromString(Simulation.serializer(), simulation)
         return SimulationDescription(id.toString(), info.toModel(), modelId.toString(), thumbnailId?.toString(), simulation)
     }
 
     fun fromModel(source: SimulationDescription) {
         // TODO handle migrations
         info.fromModel(source.info)
-        simulation = Json.stringify(Simulation.serializer(), source.simulation)
+        simulation = Json.encodeToString(Simulation.serializer(), source.simulation)
         modelId = UUID.fromString(source.modelId)
         thumbnailId = if (source.thumbnailId != null) UUID.fromString(source.thumbnailId) else null
     }

@@ -14,28 +14,25 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.centyllion.model.UserOptions
 import keycloak.KeycloakInstance
+import kotlinx.browser.document
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import org.w3c.dom.HTMLLinkElement
 import org.w3c.files.Blob
 import org.w3c.files.File
 import org.w3c.xhr.FormData
 import org.w3c.xhr.XMLHttpRequest
-import kotlin.browser.document
 import kotlin.js.Promise
 
 const val finalState: Short = 4
 const val successStatus: Short = 200
 
 class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
-
-    val json = Json(JsonConfiguration.Companion.Stable)
-
+    
     private fun <T> executeWithRefreshedIdToken(instance: KeycloakInstance?, block: (bearer: String?) -> Promise<T>) =
         Promise<T> { resolve, reject ->
             val result = when {
-                instance == null || !instance.authenticated -> Promise.resolve<String?>(null)
+                instance == null || !instance.authenticated -> Promise.resolve("")
                 else -> instance.updateToken(5).then { instance.idToken }
             }
             result.then { bearer -> block(bearer).then(resolve).catch(reject) }.catch(reject)
@@ -49,7 +46,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
     ): Promise<String> = Promise { resolve, reject ->
             val request = XMLHttpRequest()
             request.open(method, url(path), true)
-            bearer?.let { request.setRequestHeader("Authorization", "Bearer $it") }
+            if (!bearer.isNullOrBlank()) request.setRequestHeader("Authorization", "Bearer $bearer")
             contentType?.let { request.setRequestHeader("Content-Type", it) }
             request.onreadystatechange = {
                 if (request.readyState == finalState) {
@@ -74,64 +71,64 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         }
 
     fun fetchVersion() =
-        fetch("GET", "/version.json").then { json.parse(Version.serializer(), it) }
+        fetch("GET", "/version.json").then { Json.decodeFromString(Version.serializer(), it) }
 
     fun fetchInfo() =
-        fetch("GET", "/api/info").then { json.parse(Info.serializer(), it) }
+        fetch("GET", "/api/info").then { Json.decodeFromString(Info.serializer(), it) }
 
     fun fetchLocales() =
-        fetch("GET", "/locales/locales.json").then { json.parse(Locales.serializer(), it) }
+        fetch("GET", "/locales/locales.json").then { Json.decodeFromString(Locales.serializer(), it) }
 
     fun fetchLocale(locale: String) =
-        fetch("GET", "/locales/$locale.json").then { json.parse(Locale.serializer(), it) }
+        fetch("GET", "/locales/$locale.json").then { Json.decodeFromString(Locale.serializer(), it) }
 
     fun fetchMe(): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("GET", "/api/me", bearer).then { json.parse(User.serializer(), it) }.catch { null }
+            fetch("GET", "/api/me", bearer).then { Json.decodeFromString(User.serializer(), it) }.catch { null }
         }
 
     fun fetchMyTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me/tags?offset=$offset&limit=$limit", bearer)
-            .then { json.parse(ResultPage.serializer(String.serializer()), it) }
+            .then { Json.decodeFromString(ResultPage.serializer(String.serializer()), it) }
         }
 
     fun saveMyOptions(userOptions: UserOptions) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/me", bearer, json.stringify(UserOptions.serializer(), userOptions))
+            fetch("POST", "/api/me", bearer, Json.encodeToString(UserOptions.serializer(), userOptions))
         }
 
     fun fetchUsersInfo() =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user/monitor", bearer).then {
-                json.parse(CollectionInfo.serializer(), it)
+                Json.decodeFromString(CollectionInfo.serializer(), it)
             }
         }
 
     fun fetchGrainModelsInfo() =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/model/monitor", bearer).then {
-                json.parse(CollectionInfo.serializer(), it)
+                Json.decodeFromString(CollectionInfo.serializer(), it)
             }
         }
 
     fun fetchSimulationsInfo() =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/simulation/monitor", bearer).then {
-                json.parse(CollectionInfo.serializer(), it)
+                Json.decodeFromString(CollectionInfo.serializer(), it)
             }
         }
 
     fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user?detailed=$detailed&offset=$offset&limit=$limit", bearer).then {
-                json.parse(ResultPage.serializer(User.serializer()), it)
+                Json.decodeFromString(ResultPage.serializer(User.serializer()), it)
             }
         }
 
     fun fetchUser(id: String, detailed: Boolean = false): Promise<User?> =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user/$id?detailed=$detailed", bearer)
-                .then { json.parse(User.serializer(), it) }.catch { null }
+                .then { Json.decodeFromString(User.serializer(), it) }.catch { null }
         }
 
     fun fetchGrainModels(userId: String? = null, offset: Int = 0, limit: Int = 20) =
@@ -141,19 +138,19 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 "offset=$offset", "limit=$limit"
             )
             fetch("GET", "/api/model?${options.joinToString("&")}", bearer)
-                .then { json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it) }
+                .then { Json.decodeFromString(ResultPage.serializer(GrainModelDescription.serializer()), it) }
         }
 
     fun fetchGrainModel(modelId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/model/$modelId", bearer)
-                .then { json.parse(GrainModelDescription.serializer(), it) }
+                .then { Json.decodeFromString(GrainModelDescription.serializer(), it) }
         }
 
     fun saveGrainModel(model: GrainModel) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/model", bearer, json.stringify(GrainModel.serializer(), model))
-                .then { json.parse(GrainModelDescription.serializer(), it) }
+            fetch("POST", "/api/model", bearer, Json.encodeToString(GrainModel.serializer(), model))
+                .then { Json.decodeFromString(GrainModelDescription.serializer(), it) }
         }
 
     fun deleteGrainModel(model: GrainModelDescription) =
@@ -167,13 +164,13 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 "PATCH",
                 "/api/model/${model.id}",
                 bearer,
-                json.stringify(GrainModelDescription.serializer(), model)
+                Json.encodeToString(GrainModelDescription.serializer(), model)
             )
         }
 
     fun modelTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/model/tags?offset=$offset&limit=$limit", bearer)
-            .then { json.parse(ResultPage.serializer(String.serializer()), it) }
+            .then { Json.decodeFromString(ResultPage.serializer(String.serializer()), it) }
     }
 
     fun searchModel(query: String = "", tags: List<String> = emptyList(), offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
@@ -184,7 +181,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             "offset=$offset", "limit=$limit"
         )
         fetch("GET", "/api/model/search?${options.joinToString("&")}", bearer).then {
-            json.parse(ResultPage.serializer(GrainModelDescription.serializer()), it)
+            Json.decodeFromString(ResultPage.serializer(GrainModelDescription.serializer()), it)
         }
     }
 
@@ -198,19 +195,19 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             val path = "/api/simulation?${options.joinToString("&")}"
 
             fetch("GET", path, bearer)
-                .then { json.parse(ResultPage.serializer(SimulationDescription.serializer()), it) }
+                .then { Json.decodeFromString(ResultPage.serializer(SimulationDescription.serializer()), it) }
         }
 
     fun fetchSimulation(simulationId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/simulation/$simulationId", bearer)
-                .then { json.parse(SimulationDescription.serializer(), it) }
+                .then { Json.decodeFromString(SimulationDescription.serializer(), it) }
         }
 
     fun saveSimulation(modelId: String, simulation: Simulation) =
         executeWithRefreshedIdToken(instance) { bearer ->
-            fetch("POST", "/api/simulation?model=$modelId", bearer, json.stringify(Simulation.serializer(), simulation))
-                .then { json.parse(SimulationDescription.serializer(), it) }
+            fetch("POST", "/api/simulation?model=$modelId", bearer, Json.encodeToString(Simulation.serializer(), simulation))
+                .then { Json.decodeFromString(SimulationDescription.serializer(), it) }
         }
 
     fun saveSimulationThumbnail(simulationId: String, name: String, blob: Blob) =
@@ -232,28 +229,28 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 "PATCH",
                 "/api/simulation/${simulation.id}",
                 bearer,
-                json.stringify(SimulationDescription.serializer(), simulation)
+                Json.encodeToString(SimulationDescription.serializer(), simulation)
             )
         }
 
     fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         val q = encodeURIComponent(query)
         fetch("GET", "/api/simulation/search?q=$q&offset=$offset&limit=$limit", bearer).then {
-            json.parse(ResultPage.serializer(SimulationDescription.serializer()), it)
+            Json.decodeFromString(ResultPage.serializer(SimulationDescription.serializer()), it)
         }
     }
 
     fun fetchAllFeatured(offset: Int = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/featured?offset=$offset&limit=$limit", bearer).then {
-                json.parse(ResultPage.serializer(FeaturedDescription.serializer()), it)
+                Json.decodeFromString(ResultPage.serializer(FeaturedDescription.serializer()), it)
             }
         }
 
     fun saveFeatured(simulationId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("POST", "/api/featured", bearer, simulationId)
-                .then { json.parse(FeaturedDescription.serializer(), it) }
+                .then { Json.decodeFromString(FeaturedDescription.serializer(), it) }
         }
 
 
@@ -267,14 +264,14 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             val options = listOf("offset=$offset", "limit=$limit") + extensions.map { "extension=$it" }
             val path = "/api/asset?${options.joinToString("&")}"
             fetch("GET", path, bearer).then {
-                json.parse(ResultPage.serializer(Asset.serializer()), it)
+                Json.decodeFromString(ResultPage.serializer(Asset.serializer()), it)
             }
         }
 
     fun fetchAssets(id: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/asset/$id", bearer).then {
-                json.parse(Asset.serializer(), it)
+                Json.decodeFromString(Asset.serializer(), it)
             }
         }
 

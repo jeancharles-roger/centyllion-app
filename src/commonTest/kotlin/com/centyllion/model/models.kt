@@ -26,7 +26,7 @@ fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
     return createSimulation("", "", width, height, 1, agents)
 }
 
-fun antsModel()= Json.nonstrict.parse(GrainModel.serializer(), """
+fun antsModel()= Json.decodeFromString(GrainModel.serializer(), """
     {
         "name": "Fourmis Chaotiques",
         "description": "Tableau tout le temps changeant, pour les longs voyages, spatiaux ou temporels.",

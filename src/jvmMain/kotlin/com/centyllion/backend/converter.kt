@@ -1,5 +1,4 @@
 @file:Suppress("UNCHECKED_CAST")
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.centyllion.model.Asset
@@ -26,7 +25,6 @@ import io.ktor.util.pipeline.PipelineContext
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.readText
 import io.ktor.utils.io.readRemaining
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 
@@ -36,43 +34,43 @@ class JsonConverter : ContentConverter {
     ) = TextContent(convertForSend(value), contentType.withCharset(context.call.suitableCharset()))
 
     private fun convertForSend(value: Any?): String = when (value) {
-        is Info -> Json.stringify(Info.serializer(), value)
-        is User -> Json.stringify(User.serializer(), value)
-        is Asset -> Json.stringify(Asset.serializer(), value)
-        is GrainModel -> Json.stringify(GrainModel.serializer(), value)
-        is GrainModelDescription -> Json.stringify(GrainModelDescription.serializer(), value)
-        is Simulation -> Json.stringify(Simulation.serializer(), value)
-        is SimulationDescription -> Json.stringify(SimulationDescription.serializer(), value)
-        is FeaturedDescription -> Json.stringify(FeaturedDescription.serializer(), value)
-        is CollectionInfo -> Json.stringify(CollectionInfo.serializer(), value)
+        is Info -> Json.encodeToString(Info.serializer(), value)
+        is User -> Json.encodeToString(User.serializer(), value)
+        is Asset -> Json.encodeToString(Asset.serializer(), value)
+        is GrainModel -> Json.encodeToString(GrainModel.serializer(), value)
+        is GrainModelDescription -> Json.encodeToString(GrainModelDescription.serializer(), value)
+        is Simulation -> Json.encodeToString(Simulation.serializer(), value)
+        is SimulationDescription -> Json.encodeToString(SimulationDescription.serializer(), value)
+        is FeaturedDescription -> Json.encodeToString(FeaturedDescription.serializer(), value)
+        is CollectionInfo -> Json.encodeToString(CollectionInfo.serializer(), value)
         is ResultPage<*> ->
             when (value.content.firstOrNull()) {
-                is SimulationDescription -> Json.stringify(
+                is SimulationDescription -> Json.encodeToString(
                     ResultPage.serializer(SimulationDescription.serializer()),
                     value as ResultPage<SimulationDescription>
                 )
-                is GrainModelDescription -> Json.stringify(
+                is GrainModelDescription -> Json.encodeToString(
                     ResultPage.serializer(GrainModelDescription.serializer()),
                     value as ResultPage<GrainModelDescription>
                 )
-                is FeaturedDescription -> Json.stringify(
+                is FeaturedDescription -> Json.encodeToString(
                     ResultPage.serializer(FeaturedDescription.serializer()),
                     value as ResultPage<FeaturedDescription>
                 )
-                is User -> Json.stringify(
+                is User -> Json.encodeToString(
                     ResultPage.serializer(User.serializer()),
                     value as ResultPage<User>
                 )
-                is Asset -> Json.stringify(
+                is Asset -> Json.encodeToString(
                     ResultPage.serializer(Asset.serializer()),
                     value as ResultPage<Asset>
                 )
-                is String -> Json.stringify(
+                is String -> Json.encodeToString(
                     ResultPage.serializer(String.serializer()),
                     value as ResultPage<String>
                 )
                 else -> // the page is empty send it using any serializer
-                    Json.stringify(
+                    Json.encodeToString(
                         ResultPage.serializer(String.serializer()),
                         value as ResultPage<String>
                     )
@@ -89,13 +87,13 @@ class JsonConverter : ContentConverter {
         val text = channel.readRemaining().readText(charset)
 
         return when (request.type) {
-            User::class -> Json.parse(User.serializer(), text)
-            GrainModel::class -> Json.parse(GrainModel.serializer(), text)
-            GrainModelDescription::class -> Json.parse(GrainModelDescription.serializer(), text)
-            Simulation::class -> Json.parse(Simulation.serializer(), text)
-            SimulationDescription::class -> Json.parse(SimulationDescription.serializer(), text)
-            FeaturedDescription::class -> Json.parse(FeaturedDescription.serializer(), text)
-            UserOptions::class -> Json.parse(UserOptions.serializer(), text)
+            User::class -> Json.decodeFromString(User.serializer(), text)
+            GrainModel::class -> Json.decodeFromString(GrainModel.serializer(), text)
+            GrainModelDescription::class -> Json.decodeFromString(GrainModelDescription.serializer(), text)
+            Simulation::class -> Json.decodeFromString(Simulation.serializer(), text)
+            SimulationDescription::class -> Json.decodeFromString(SimulationDescription.serializer(), text)
+            FeaturedDescription::class -> Json.decodeFromString(FeaturedDescription.serializer(), text)
+            UserOptions::class -> Json.decodeFromString(UserOptions.serializer(), text)
             else -> throw Exception("Can't transform ${request.type.simpleName} from Json")
         }
     }

@@ -3,7 +3,7 @@ package com.centyllion.client.page
 import bulma.Div
 import com.centyllion.client.AppContext
 import com.centyllion.client.homePage
-import kotlin.browser.window
+import kotlinx.browser.window
 
 class RegisterPage(override val appContext: AppContext) : BulmaPage {
 

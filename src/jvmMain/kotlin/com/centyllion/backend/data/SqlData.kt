@@ -1,4 +1,3 @@
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend.data
 
 import com.centyllion.model.Asset
@@ -11,7 +10,6 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.auth.jwt.JWTPrincipal
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
@@ -155,7 +153,6 @@ class SqlData(
                 user.username = currentUsername
             }
         }
-
         return user.toModel(true)
     }
 
@@ -214,7 +211,7 @@ class SqlData(
         }
         DbModelDescription.new {
             info = newInfo
-            model = Json.stringify(GrainModel.serializer(), sent)
+            model = Json.encodeToString(GrainModel.serializer(), sent)
             version = 0
             type = DbModelType.Grain.toString()
         }.toModel()
@@ -288,7 +285,7 @@ class SqlData(
             DbSimulationDescription.new {
                 info = newInfo
                 this.modelId = UUID.fromString(modelId)
-                simulation = Json.stringify(Simulation.serializer(), sent)
+                simulation = Json.encodeToString(Simulation.serializer(), sent)
                 version = 0
                 type = DbModelType.Grain.toString()
             }.toModel()

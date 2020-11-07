@@ -107,11 +107,10 @@ kotlin {
     js {
         browser {
             distribution { directory = file("$projectDir/webroot/js/centyllion") }
-            /*
             webpackTask {
-               outputFileName = "tekdiving-shop.[contenthash].js"
+
+               //outputFileName = "tekdiving-shop.[contenthash].js"
             }
-             */
         }
         binaries.executable()
 

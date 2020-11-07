@@ -16,7 +16,6 @@ import bulma.span
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.i18n.Locale
 import com.centyllion.model.User
-import ekko.ekkoNow
 import keycloak.Keycloak
 import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
@@ -26,7 +25,6 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.js.Promise
-import kotlin.js.json
 
 interface CssFile {
     val files: Array<String>
@@ -65,6 +63,7 @@ fun startApp(page: Page?, context: AppContext) {
         navBar.end += NavBarLinkItem(context.i18n("Logout"), keycloak.createLogoutUrl())
 
         // starts ekko chat with user info
+        /*
         val applicationId = "b4a4cc68-6134-44a2-81f5-6ec5fa48c8ec"
         ekkoNow("init", applicationId, json(
             "user" to json(
@@ -72,6 +71,7 @@ fun startApp(page: Page?, context: AppContext) {
                 "email" to token.email
             )
         ))
+         */
 
     } else {
         navBar.end += NavBarLinkItem(context.i18n("Register"), keycloak.createRegisterUrl())

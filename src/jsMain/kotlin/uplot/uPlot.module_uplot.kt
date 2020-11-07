@@ -7,51 +7,12 @@ package uplot
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.Path2D
-import uplot.uPlot.Scale
 import kotlin.js.Date
-
-external interface `T$0` {
-    @nativeGetter
-    operator fun get(key: String): Scale?
-    @nativeSetter
-    operator fun set(key: String, value: Scale)
-}
-
-external interface `T$1` {
-    var min: Number
-    var max: Number
-}
-
-external interface `T$2` {
-    var left: Number
-    var top: Number
-}
-
-external interface `T$3` {
-    var show: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
-    var focus: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
-}
-
-external interface `T$4` {
-    var left: Number
-    var top: Number
-    var width: Number
-    var height: Number
-}
-
-external interface Size {
-    var width: Number
-    var height: Number
-}
 
 @JsName("default")
 external open class uPlot {
     constructor(opts: Options, data: AlignedData, targ: HTMLElement = definedExternally)
-    constructor(opts: Options, data: AlignedData, targ: (self: uPlot, init: Function<*>) -> Unit = definedExternally)
+    //constructor(opts: Options, data: AlignedData, targ: (self: uPlot, init: Function<*>) -> Unit = definedExternally)
     open var root: HTMLElement
     open var width: Number
     open var height: Number
@@ -60,7 +21,7 @@ external open class uPlot {
     open var select: BBox
     open var cursor: Cursor
     open var series: Array<Series>
-    open var scales: `T$0`
+    open var scales: Map<String, Scale>
     open var axes: Array<Axis>
     open var hooks: Hooks
     open var data: AlignedData
@@ -68,12 +29,12 @@ external open class uPlot {
     open fun batch(txn: Function<*>)
     open fun destroy()
     open fun setData(data: AlignedData, resetScales: Boolean = definedExternally)
-    open fun setScale(scaleKey: String, limits: `T$1`)
-    open fun setCursor(opts: `T$2`)
-    open fun setSeries(seriesIdx: Number, opts: `T$3`)
+    open fun setScale(scaleKey: String, limits: ScaleLimit)
+    open fun setCursor(opts: Position)
+    open fun setSeries(seriesIdx: Number, opts: SerieOptions)
     open fun addSeries(opts: Series, seriesIdx: Number = definedExternally)
     open fun delSeries(seriesIdx: Number)
-    open fun setSelect(opts: `T$4`, fireHook: Boolean = definedExternally)
+    open fun setSelect(opts: SelectOptions, fireHook: Boolean = definedExternally)
     open fun setSize(opts: Size)
     open fun posToIdx(left: Number): Number
     open fun posToVal(leftTop: Number, scaleKey: String): Number
@@ -108,56 +69,7 @@ external open class uPlot {
             set(value) = definedExternally
         var hooks: PluginHooks
     }
-    interface Options {
-        var title: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var id: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var `class`: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var width: Number
-        var height: Number
-        var data: AlignedData?
-            get() = definedExternally
-            set(value) = definedExternally
-        var tzDate: ((ts: Number) -> Date)?
-            get() = definedExternally
-            set(value) = definedExternally
-        var fmtDate: ((tpl: String) -> (date: Date) -> String)?
-            get() = definedExternally
-            set(value) = definedExternally
-        var series: Array<Series>
-        var scales: Map<String, Scale>?
-            get() = definedExternally
-            set(value) = definedExternally
-        var axes: Array<Axis>?
-            get() = definedExternally
-            set(value) = definedExternally
-        var gutters: `T$7`?
-            get() = definedExternally
-            set(value) = definedExternally
-        var select: Select?
-            get() = definedExternally
-            set(value) = definedExternally
-        var legend: `T$8`?
-            get() = definedExternally
-            set(value) = definedExternally
-        var cursor: Cursor?
-            get() = definedExternally
-            set(value) = definedExternally
-        var focus: Focus?
-            get() = definedExternally
-            set(value) = definedExternally
-        var hooks: Hooks?
-            get() = definedExternally
-            set(value) = definedExternally
-        var plugins: Array<`T$9`>?
-            get() = definedExternally
-            set(value) = definedExternally
-    }
+
     interface Focus {
         var alpha: Number
     }
@@ -253,32 +165,7 @@ external open class uPlot {
             get() = definedExternally
             set(value) = definedExternally
     }
-    interface Scale {
-        var time: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var auto: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var range: dynamic /* dynamic | ((self: uPlot, initMin: Number, initMax: Number, scaleKey: String) -> dynamic)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var from: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var distr: Number? /* 1 | 2 | 3 */
-            get() = definedExternally
-            set(value) = definedExternally
-        var log: Number? /* 10 | 2 */
-            get() = definedExternally
-            set(value) = definedExternally
-        var min: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var max: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-    }
+
     interface `T$14` {
         var stroke: Path2D?
             get() = definedExternally
@@ -307,71 +194,7 @@ external open class uPlot {
             get() = definedExternally
             set(value) = definedExternally
     }
-    interface Series {
-        var show: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var `class`: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var scale: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var auto: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var sorted: dynamic /* Number | Number | String */
-            get() = definedExternally
-            set(value) = definedExternally
-        var spanGaps: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var label: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var value: dynamic /* String? | ((self: uPlot, rawValue: Number, seriesIdx: Number, idx: Number) -> dynamic)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var values: ((self: uPlot, seriesIdx: Number, idx: Number) -> Any?)?
-            get() = definedExternally
-            set(value) = definedExternally
-        var paths: ((self: uPlot, seriesIdx: Number, idx0: Number, idx1: Number) -> `T$14`)?
-            get() = definedExternally
-            set(value) = definedExternally
-        var points: `T$15`?
-            get() = definedExternally
-            set(value) = definedExternally
-        var band: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var stroke: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var width: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var fill: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var fillTo: dynamic /* Number? | ((self: uPlot, seriesIdx: Number, dataMin: Number, dataMax: Number) -> Number)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var dash: Array<Number>?
-            get() = definedExternally
-            set(value) = definedExternally
-        var alpha: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var idxs: dynamic /* JsTuple<Number, Number> */
-            get() = definedExternally
-            set(value) = definedExternally
-        var min: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var max: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-    }
+
     interface `T$16` {
         var show: Boolean?
             get() = definedExternally
@@ -406,62 +229,6 @@ external open class uPlot {
             get() = definedExternally
             set(value) = definedExternally
         var size: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-    }
-    interface Axis {
-        var show: Boolean?
-            get() = definedExternally
-            set(value) = definedExternally
-        var scale: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var side: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var size: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var gap: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var font: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var stroke: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var label: String?
-            get() = definedExternally
-            set(value) = definedExternally
-        var labelSize: Number?
-            get() = definedExternally
-            set(value) = definedExternally
-        var labelFont: Any?
-            get() = definedExternally
-            set(value) = definedExternally
-        var space: dynamic /* Number? | ((self: uPlot, axisIdx: Number, scaleMin: Number, scaleMax: Number, plotDim: Number) -> Number)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var incrs: dynamic /* Array<Number>? | ((self: uPlot, axisIdx: Number, scaleMin: Number, scaleMax: Number, fullDim: Number, minSpace: Number) -> Array<Number>)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var splits: dynamic /* Array<Number>? | ((self: uPlot, axisIdx: Number, scaleMin: Number, scaleMax: Number, foundIncr: Number, pctSpace: Number) -> Array<Number>)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var filter: AxisSplitsFilter?
-            get() = definedExternally
-            set(value) = definedExternally
-        var values: dynamic /* ((self: uPlot, splits: Array<Number>, axisIdx: Number, foundSpace: Number, foundIncr: Number) -> Array<dynamic /* String? | Number? */>)? | Array<Array<dynamic /* String? | Number? */>>? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var rotate: dynamic /* Number? | ((self: uPlot, values: Array<dynamic /* String | Number */>, axisIdx: Number, foundSpace: Number) -> Number)? */
-            get() = definedExternally
-            set(value) = definedExternally
-        var grid: `T$16`?
-            get() = definedExternally
-            set(value) = definedExternally
-        var ticks: `T$17`?
             get() = definedExternally
             set(value) = definedExternally
     }

@@ -16,7 +16,7 @@ import io.ktor.routing.route
 fun Route.featured(data: Data) {
     route("featured") {
         get {
-            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             val allFeatured = data.getAllFeatured(offset, limit)
             context.respond(allFeatured)

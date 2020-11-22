@@ -6,9 +6,7 @@ import bulma.Label
 import bulma.SubTitle
 import com.centyllion.client.controller.utils.push
 import com.centyllion.client.page.BulmaPage
-import uplot.Axis
 import uplot.Options
-import uplot.Scale
 import uplot.Series
 import uplot.Size
 import uplot.uPlot
@@ -17,7 +15,7 @@ import kotlin.properties.Delegates.observable
 data class ChartLine(
     val label: String, val initial: Number,
     val color: String, val fill: String? = null,
-    val width: Int = 2, val dash: List<Int>? = null,
+    val width: Int = 2, val dash: List<Int> = listOf(1),
     val value: ((Number) -> String)? = null
 ) {
     internal fun options(show: Boolean) = Series(
@@ -26,9 +24,10 @@ data class ChartLine(
         stroke = color,
         fill = this@ChartLine.fill,
         width = this@ChartLine.width,
-        //dash = this@ChartLine.dash?.toTypedArray(),
+        dash = this@ChartLine.dash.toTypedArray(),
         values = value?.let{ v -> { _: uPlot, raw: Number, idx: Number -> v(raw) } },
-        show = show
+        show = show,
+        scale = "y"
     )
 
 }
@@ -104,23 +103,22 @@ class ChartController(
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun createPlot(chart: Chart, width: Int = 800, height: Int = 400): uPlot? {
-        //return null
         if (chart.lines.isEmpty()) return null
         //val toggled = uplot?.series?.filter { !it.show }?.map { it.label } ?: emptyList()
 
         val series = buildList {
-            add(Series(label = data.xLabel))
+            add(Series(label = data.xLabel, scale = "x"))
             addAll(chart.lines.map { it.options(true /*!toggled.contains(it.label)*/) })
         }
         return uPlot(
             Options(
                 width = width.coerceAtLeast(400),
                 height = height.coerceAtLeast(400),
-                scales = mapOf("x" to Scale(time = false, log = 10)),
-                axes = arrayOf(Axis(), Axis()),
                 series = series.toTypedArray()
             ),
-            arrayOf(xValues, *yValues))
+            arrayOf(xValues, *yValues)).apply {
+                scales.asDynamic().x?.time = false
+        }
     }
 
     private fun resetChartData() {
@@ -135,7 +133,6 @@ class ChartController(
     }
 
     fun push(x: Number, ys: Collection<Number>, refresh: Boolean) {
-        console.log("Push for $x : $ys")
         xValues.push(x)
         ys.zip(yValues) { y, data -> data.push(y) }
         if (refresh) refreshData()

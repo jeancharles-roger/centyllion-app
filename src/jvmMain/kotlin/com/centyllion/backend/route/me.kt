@@ -36,7 +36,7 @@ fun Route.me(data: Data) {
 
         get("tags") {
             withRequiredPrincipal {
-                val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
                 val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                 val user = data.getOrCreateUserFromPrincipal(it)
                 context.respond(data.modelTags(user.id, offset, limit))
@@ -47,7 +47,7 @@ fun Route.me(data: Data) {
         route("model") {
             get {
                 withRequiredPrincipal {
-                    val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                    val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val user = data.getOrCreateUserFromPrincipal(it)
                     context.respond(data.grainModels(user.id, user.id, offset, limit))
@@ -59,7 +59,7 @@ fun Route.me(data: Data) {
         route("simulation") {
             get {
                 withRequiredPrincipal {
-                    val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+                    val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
                     val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
                     val modelId = call.parameters["model"]
                     val user = data.getOrCreateUserFromPrincipal(it)

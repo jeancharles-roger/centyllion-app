@@ -8,9 +8,9 @@ fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
 
 @Serializable
 data class CollectionInfo(
-    val total: Int,
-    val lastWeek: Int,
-    val lastMonth: Int
+    val total: Long,
+    val lastWeek: Long,
+    val lastMonth: Long
 )
 
 @Serializable
@@ -32,8 +32,8 @@ data class Problem(
 @Serializable
 data class ResultPage<T>(
     val content: List<T>,
-    val offset: Int,
-    val totalSize: Int
+    val offset: Long,
+    val totalSize: Long
 )
 
 @Serializable

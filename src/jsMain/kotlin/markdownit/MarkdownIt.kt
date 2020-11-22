@@ -20,7 +20,7 @@ class MarkdownItOptions(
 )
 
 @JsModule("markdown-it")
-external class MarkdownIt() {
+external class MarkdownIt {
 
     fun enable(option: String, ignoreInvalid: Boolean = definedExternally)
     fun enable(options: Array<String>, ignoreInvalid: Boolean = definedExternally)

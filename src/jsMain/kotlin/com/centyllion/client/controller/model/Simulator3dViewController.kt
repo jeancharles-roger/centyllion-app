@@ -873,7 +873,7 @@ class Simulator3dViewController(
                 l >= 0.1f -> 111 * l + 89f
                 else -> (-100f / log10(l))
             }
-            array[i] = a.toByte()
+            array[i] = a.toInt().toByte()
         }
     }
 }

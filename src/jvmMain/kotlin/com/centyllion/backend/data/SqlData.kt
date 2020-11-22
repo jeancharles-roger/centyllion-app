@@ -14,11 +14,11 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ComparisonOp
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.DateColumnType
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ExpressionWithColumnType
 import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.GreaterEqOp
+import org.jetbrains.exposed.sql.LikeOp
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -27,16 +27,17 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.ByteArrayInputStream
 import java.util.NoSuchElementException
 import java.util.UUID
 import java.util.zip.ZipInputStream
-import javax.sql.rowset.serial.SerialBlob
 
 fun Column<DateTime>.lastWeek() = GreaterEqOp(this, Delay("1 week"))
 fun Column<DateTime>.lastMonth() = GreaterEqOp(this, Delay("1 month"))
@@ -121,7 +122,7 @@ class SqlData(
         )
     }
 
-    override fun getAllUsers(detailed: Boolean, offset: Int, limit: Int): ResultPage<User> = transaction(database) {
+    override fun getAllUsers(detailed: Boolean, offset: Long, limit: Int): ResultPage<User> = transaction(database) {
         val content = DbUser.wrapRows(
             DbUsers.selectAll().orderBy(DbUsers.createdOn, SortOrder.DESC).limit(limit, offset)
         ).map { it -> it.toModel(detailed) }
@@ -186,7 +187,7 @@ class SqlData(
         }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun grainModels(callerId: String?, userId: String?, offset: Int, limit: Int): ResultPage<GrainModelDescription> =
+    override fun grainModels(callerId: String?, userId: String?, offset: Long, limit: Int): ResultPage<GrainModelDescription> =
         transaction(database) {
             val callerUUID = callerId?.let { UUID.fromString(it) }
             val userUUID = userId?.let { UUID.fromString(it) }
@@ -256,7 +257,7 @@ class SqlData(
         }
         .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 
-    override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Int, limit: Int): ResultPage<SimulationDescription> =
+    override fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Long, limit: Int): ResultPage<SimulationDescription> =
         transaction(database) {
             val callerUUID = callerId?.let { UUID.fromString(it) }
             val userUUID = userId?.let { UUID.fromString(it) }
@@ -312,7 +313,7 @@ class SqlData(
         }
     }
 
-    override fun getAllFeatured(offset: Int, limit: Int) = transaction(database) {
+    override fun getAllFeatured(offset: Long, limit: Int) = transaction(database) {
         val content = DbFeatured.all().limit(limit, offset).reversed().map { it.toModel() }
         ResultPage(content, offset, DbFeatured.all().count())
     }
@@ -339,7 +340,7 @@ class SqlData(
         }
 
 
-    override fun searchSimulation(query: String, offset: Int, limit: Int) = transaction {
+    override fun searchSimulation(query: String, offset: Long, limit: Int) = transaction {
         val content = DbSimulationDescription.wrapRows(
             searchSimulationQuery(query)
                 .limit(limit, offset)
@@ -349,7 +350,7 @@ class SqlData(
         ResultPage(content, offset, searchSimulationQuery(query).count())
     }
 
-    override fun modelTags(userId: String?, offset: Int, limit: Int): ResultPage<String> = transaction {
+    override fun modelTags(userId: String?, offset: Long, limit: Int): ResultPage<String> = transaction {
         val request = "SELECT tags_searchable FROM modeldescriptions " +
                 "INNER JOIN infodescriptions ON modeldescriptions.info = infodescriptions.id " +
                 "WHERE " + if (userId != null) "infodescriptions.\"userId\" = ''$userId''" else  "infodescriptions.\"readAccess\""
@@ -357,7 +358,7 @@ class SqlData(
         exec("SELECT word FROM ts_stat('$request') ORDER BY ndoc DESC LIMIT $limit OFFSET $offset") {
             val result = mutableListOf<String>()
             while (it.next()) { result.add(it.getString(1)) }
-            ResultPage(result, offset, result.size)
+            ResultPage(result, offset, result.size.toLong())
         } ?: ResultPage(emptyList(), offset, 0)
     }
 
@@ -368,7 +369,7 @@ class SqlData(
             .fold(DbDescriptionInfos.readAccess eq true) {a, c -> a and c }
     }
 
-    override fun searchModel(query: String, tags: List<String>, offset: Int, limit: Int) = transaction {
+    override fun searchModel(query: String, tags: List<String>, offset: Long, limit: Int) = transaction {
         val content = DbModelDescription.wrapRows(
             searchModelQuery(query, tags)
                 .limit(limit, offset)
@@ -383,10 +384,10 @@ class SqlData(
     private fun assetsRequest(extensions: List<String>) =
         if (extensions.isEmpty()) DbAsset.all() else DbAsset.find {
             val first = assetExtension(extensions.first())
-            extensions.drop(1).fold(first) { a, c -> a or assetExtension(c) }
+            extensions.drop(1).fold(first) { a, c -> LikeOp(a, assetExtension(c)) }
         }
 
-    override fun getAllAssets(offset: Int, limit: Int, extensions: List<String>) = transaction(database) {
+    override fun getAllAssets(offset: Long, limit: Int, extensions: List<String>) = transaction(database) {
         val content = assetsRequest(extensions).limit(limit, offset).reversed().map { it.toModel() }
         ResultPage(content, offset, assetsRequest(extensions).count())
     }
@@ -399,7 +400,7 @@ class SqlData(
     }
 
     override fun getAssetContent(id: String) = transaction(database) {
-        DbAsset.findById(UUID.fromString(id))?.content?.let { it.getBytes(1, it.length().toInt()) }
+        DbAsset.findById(UUID.fromString(id))?.content?.bytes
     }
 
     override fun createAsset(name: String, userId: String, data: ByteArray): Asset = transaction(database) {
@@ -407,7 +408,7 @@ class SqlData(
             this.name = name
             this.entries = if (name.endsWith(".zip")) listZipEntries(data).joinToString(",") else ""
             this.userId = UUID.fromString(userId)
-            this.content = SerialBlob(data)
+            this.content = ExposedBlob(data)
         }.toModel()
     }
 

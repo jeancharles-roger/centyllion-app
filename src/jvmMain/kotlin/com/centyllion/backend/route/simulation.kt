@@ -33,7 +33,7 @@ fun Route.simulation(data: Data) {
             val caller = call.principal<JWTPrincipal>()?.let {
                 data.getOrCreateUserFromPrincipal(it)
             }
-            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             val userId = call.parameters["user"]
             val modelId = call.parameters["model"]
@@ -64,7 +64,7 @@ fun Route.simulation(data: Data) {
         }
 
         get("search") {
-            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             val query = call.parameters["q"]?.decodeURLQueryComponent() ?: ""
             val tsquery = query.split(Regex("\\s+")).filter { it.isNotBlank() }.joinToString("&")

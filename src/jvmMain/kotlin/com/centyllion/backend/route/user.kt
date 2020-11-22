@@ -15,7 +15,7 @@ fun Route.user(data: Data) {
     route("user") {
         get {
             val detailed = call.parameters["detailed"]?.toBoolean() ?: false
-            val offset = (call.parameters["offset"]?.toIntOrNull() ?: 0).coerceAtLeast(0)
+            val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
             val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
             if (!detailed || checkRole(adminRole)) {
                 val users = data.getAllUsers(detailed, offset, limit)

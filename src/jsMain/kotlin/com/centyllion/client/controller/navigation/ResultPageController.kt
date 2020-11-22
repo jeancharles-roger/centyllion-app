@@ -28,7 +28,7 @@ class ResultPageController<
     locale: Locale,
     val contentController: MultipleController<Data, Context, ParentElement, ItemElement, Ctrl>,
     val toHeader: (Pagination) -> ItemElement,
-    var fetch: (offset: Int, Limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
+    var fetch: (offset: Long, limit: Int) -> Promise<ResultPage<Data>> = { _, _ -> Promise.resolve(emptyResultPage()) },
     var error: (Throwable) -> Unit = {},
     initialLimit: Int = 16
 ) : NoContextController<ResultPage<Data>, ParentElement>() {
@@ -43,11 +43,11 @@ class ResultPageController<
     override var readOnly: Boolean = true
 
     var limit: Int by observable(initialLimit) { _, old, new ->
-        if (old != new) fetch(offset, new).then { data = it }.catch { error(it) }
+        if (old != new) fetch(offset.toLong(), new).then { data = it }.catch { error(it) }
     }
 
     var offset: Int by observable(0) { _, old, new ->
-        if (old != new) fetch(new, limit).then { data = it }.catch { error(it) }
+        if (old != new) fetch(new.toLong(), limit).then { data = it }.catch { error(it) }
     }
 
     val next = PaginationAction(locale.i18n("Next")) { offset += limit }
@@ -60,10 +60,10 @@ class ResultPageController<
 
     override val container = contentController.container
 
-    fun refreshFetch() = fetch(offset, limit).then { data = it }.catch { error(it) }
+    fun refreshFetch() = fetch(offset.toLong(), limit).then { data = it }.catch { error(it) }
 
     private fun itemFor(page: Int) = (page * limit).let { pageOffset ->
-        PaginationLink("$page", current = (pageOffset == data.offset)) { offset = pageOffset }
+        PaginationLink("$page", current = (pageOffset == data.offset.toInt())) { offset = pageOffset }
     }
 
     private fun ellipsis() = PaginationLink("...").apply {
@@ -73,8 +73,8 @@ class ResultPageController<
     override fun refresh() {
         val maxItems = 10
         val fix = maxItems / 2
-        val count = (data.totalSize - 1) / limit
-        val current = data.offset / limit
+        val count = (data.totalSize.toInt() - 1) / limit
+        val current = data.offset.toInt() / limit
         pagination.items = when {
             count < maxItems -> // no ellipsis needed
                 (0..count).map(::itemFor)

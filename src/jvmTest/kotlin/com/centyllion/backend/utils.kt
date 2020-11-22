@@ -110,7 +110,7 @@ fun <T> TestApplicationEngine.testGet(uri: String, expected: T, serializer: KSer
     checkResult(request, serializer, expected)
 }
 
-fun <T> TestApplicationEngine.testGetPage(uri: String, expected: List<T>, total: Int, serializer: KSerializer<T>, user: User? = null) {
+fun <T> TestApplicationEngine.testGetPage(uri: String, expected: List<T>, total: Long, serializer: KSerializer<T>, user: User? = null) {
     val request = handleGet(uri, user)
     checkResult(request, ResultPage.serializer(serializer), ResultPage(expected, 0, total))
 }

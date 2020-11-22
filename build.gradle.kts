@@ -3,21 +3,22 @@
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serialization_version: String = "1.0.0"
-val coroutine_version: String = "1.3.9"
+val serialization_version: String = "1.0.1"
+val coroutine_version: String = "1.4.1"
 val clikt_version: String = "2.8.0"
 val logback_version: String = "1.2.3"
-val ktor_version: String = "1.4.0"
-val kotlinx_html_version: String = "0.7.1"
+val ktor_version: String = "1.4.2"
+val kotlinx_html_version: String = "0.7.2"
 val bulma_kotlin_version: String = "0.4"
 val babylon_kotlin_version: String = "0.4"
-val exposed_version: String = "0.17.5"
+val exposed_version: String = "0.28.1"
 val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "8.0.2"
 
 plugins {
-    kotlin("multiplatform") version "1.4.10"
-    id("kotlinx-serialization") version "1.4.10"
+    kotlin("multiplatform").version("1.4.20")
+    id("kotlinx-serialization").version("1.4.20")
+    id("io.gitlab.arturbosch.detekt").version("1.15.0-RC1")
 }
 
 repositories {
@@ -58,7 +59,7 @@ kotlin {
     jvm {
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation("com.github.ajalt:clikt:$clikt_version")
+                implementation("com.github.ajalt.clikt:clikt:$clikt_version")
 
                 // needed by ktor-auth-jwt (strange since it was included at some time ...)
                 implementation("com.google.guava:guava:27.1-jre")
@@ -77,7 +78,10 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
 
                 // adds dependencies for postgres
-                implementation("org.jetbrains.exposed:exposed:$exposed_version")
+                implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+                implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+                implementation("org.jetbrains.exposed:exposed-jodatime:$exposed_version")
+                implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
                 implementation("org.postgresql:postgresql:$postgresql_version")
                 implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
 
@@ -125,7 +129,7 @@ kotlin {
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
 
-                implementation(npm("uplot", "1.2.2", generateExternals = false))
+                implementation(npm("uplot", "1.4.4", generateExternals = false))
                 implementation(npm("keycloak-js", "8.0.2", generateExternals = false))
                 implementation(npm("markdown-it", "10.0.0", generateExternals = false))
             }
@@ -312,3 +316,7 @@ tasks {
     }
 }
 */
+
+detekt {
+   input = files("src/commonMain", "src/jsMain", "src/jvmMain")
+}

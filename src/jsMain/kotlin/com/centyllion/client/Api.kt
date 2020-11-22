@@ -87,7 +87,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             fetch("GET", "/api/me", bearer).then { Json.decodeFromString(User.serializer(), it) }.catch { null }
         }
 
-    fun fetchMyTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun fetchMyTags(offset: Long = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/me/tags?offset=$offset&limit=$limit", bearer)
             .then { Json.decodeFromString(ResultPage.serializer(String.serializer()), it) }
         }
@@ -118,7 +118,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             }
         }
 
-    fun fetchAllUsers(detailed: Boolean = false, offset: Int = 0, limit: Int = 20) =
+    fun fetchAllUsers(detailed: Boolean = false, offset: Long = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/user?detailed=$detailed&offset=$offset&limit=$limit", bearer).then {
                 Json.decodeFromString(ResultPage.serializer(User.serializer()), it)
@@ -131,7 +131,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 .then { Json.decodeFromString(User.serializer(), it) }.catch { null }
         }
 
-    fun fetchGrainModels(userId: String? = null, offset: Int = 0, limit: Int = 20) =
+    fun fetchGrainModels(userId: String? = null, offset: Long = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val options = listOfNotNull(
                 if (userId != null) "user=$userId" else null,
@@ -168,12 +168,12 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             )
         }
 
-    fun modelTags(offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun modelTags(offset: Long = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         fetch("GET", "/api/model/tags?offset=$offset&limit=$limit", bearer)
             .then { Json.decodeFromString(ResultPage.serializer(String.serializer()), it) }
     }
 
-    fun searchModel(query: String = "", tags: List<String> = emptyList(), offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun searchModel(query: String = "", tags: List<String> = emptyList(), offset: Long = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         val q = encodeURIComponent(query)
         val options = listOfNotNull(
             if (q.isNotBlank()) "q=$query" else null,
@@ -185,7 +185,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         }
     }
 
-    fun fetchSimulations(userId: String? = null, modelId: String? = null, offset: Int = 0, limit: Int = 20) =
+    fun fetchSimulations(userId: String? = null, modelId: String? = null, offset: Long = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val options = listOfNotNull(
                 if (userId != null) "user=$userId" else null,
@@ -233,14 +233,14 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             )
         }
 
-    fun searchSimulation(query: String, offset: Int = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
+    fun searchSimulation(query: String, offset: Long = 0, limit: Int = 20) = executeWithRefreshedIdToken(instance) { bearer ->
         val q = encodeURIComponent(query)
         fetch("GET", "/api/simulation/search?q=$q&offset=$offset&limit=$limit", bearer).then {
             Json.decodeFromString(ResultPage.serializer(SimulationDescription.serializer()), it)
         }
     }
 
-    fun fetchAllFeatured(offset: Int = 0, limit: Int = 20) =
+    fun fetchAllFeatured(offset: Long = 0, limit: Int = 20) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/featured?offset=$offset&limit=$limit", bearer).then {
                 Json.decodeFromString(ResultPage.serializer(FeaturedDescription.serializer()), it)
@@ -259,7 +259,7 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
             fetch("DELETE", "/api/featured/${featured.id}", bearer)
         }
 
-    fun fetchAllAssets(offset: Int = 0, limit: Int = 20, vararg extensions: String) =
+    fun fetchAllAssets(offset: Long = 0, limit: Int = 20, vararg extensions: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             val options = listOf("offset=$offset", "limit=$limit") + extensions.map { "extension=$it" }
             val path = "/api/asset?${options.joinToString("&")}"

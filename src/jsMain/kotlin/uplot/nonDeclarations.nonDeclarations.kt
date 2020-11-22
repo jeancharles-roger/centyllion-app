@@ -115,8 +115,8 @@ class Series(
     var width: Any? = null,
     var fill: Any? = null,
     var fillTo: dynamic = null, /* Number? | ((self: uPlot, seriesIdx: Number, dataMin: Number, dataMax: Number) -> Number)? */
-    var dash: Array<Number>? = null,
-    var alpha: Number? = null,
+    var dash: Array<Number>? = arrayOf(1),
+    var alpha: Number? = 1,
     var idxs: dynamic = null, /* JsTuple<Number, Number> */
     var min: Number? = null,
     var max: Number? = null,

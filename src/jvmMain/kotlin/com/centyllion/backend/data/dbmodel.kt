@@ -10,14 +10,15 @@ import com.centyllion.model.SimulationDescription
 import com.centyllion.model.User
 import com.centyllion.model.UserDetails
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
-import org.jetbrains.exposed.dao.UUIDTable
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ColumnType
-import org.jetbrains.exposed.sql.DateColumnType
 import org.jetbrains.exposed.sql.Function
 import org.jetbrains.exposed.sql.QueryBuilder
+import org.jetbrains.exposed.sql.jodatime.DateColumnType
+import org.jetbrains.exposed.sql.jodatime.datetime
 import org.joda.time.DateTime
 import java.util.UUID
 

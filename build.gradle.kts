@@ -15,6 +15,8 @@ val exposed_version: String = "0.28.1"
 val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "8.0.2"
 
+val data2viz_version: String = "0.8.0-RC10"
+
 plugins {
     kotlin("multiplatform").version("1.4.20")
     id("kotlinx-serialization").version("1.4.20")
@@ -125,11 +127,16 @@ kotlin {
                 implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
                 implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
 
+                implementation("io.data2viz.d2v:core-js:$data2viz_version")
+                implementation("io.data2viz.d2v:color-js:$data2viz_version")
+                implementation("io.data2viz.d2v:scale-js:$data2viz_version")
+                implementation("io.data2viz.d2v:viz-js:$data2viz_version")
+                implementation("io.data2viz.d2v:axis:$data2viz_version")
+                
                 implementation(npm("babylonjs", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
 
-                implementation(npm("uplot", "1.4.4", generateExternals = false))
                 implementation(npm("keycloak-js", "8.0.2", generateExternals = false))
                 implementation(npm("markdown-it", "10.0.0", generateExternals = false))
             }

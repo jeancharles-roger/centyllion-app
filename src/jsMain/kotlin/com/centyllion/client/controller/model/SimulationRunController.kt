@@ -26,8 +26,9 @@ import com.centyllion.client.controller.utils.SearchController
 import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.plotter.Plot
+import com.centyllion.client.plotter.toRGB
 import com.centyllion.client.stringHref
-import com.centyllion.client.toFixed
 import com.centyllion.client.toggleElementToFullScreen
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
@@ -39,6 +40,7 @@ import com.centyllion.model.Simulator
 import com.centyllion.model.behaviourIcon
 import com.centyllion.model.fieldIcon
 import com.centyllion.model.grainIcon
+import io.data2viz.geom.size
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
@@ -231,9 +233,9 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val grainChart = ChartController(page, page.i18n("Grains"), createGrainChart(), (window.innerWidth/2 to 400))
+    val grainChart = ChartController(page, page.i18n("Grains"), createGrainChart(), size(window.innerWidth/2.0, 400.0))
 
-    val fieldChart = ChartController(page, page.i18n("Fields"), createFieldChart(), (window.innerWidth/2 to 400))
+    val fieldChart = ChartController(page, page.i18n("Fields"), createFieldChart(), size(window.innerWidth/2.0, 400.0))
 
     val chartContainer = Columns(
         Column(grainChart, size = ColumnSize.Half),
@@ -380,6 +382,10 @@ class SimulationRunController(
                 lastStepTimestamp = timestamp
                 executeStep()
             }
+
+            grainChart.renderRequest()
+            fieldChart.renderRequest()
+
             lastRequestSkipped = refresh
             window.requestAnimationFrame(this::animationCallback)
         }
@@ -400,8 +406,16 @@ class SimulationRunController(
     fun reset() {
         if (!running) {
             currentSimulator.reset()
+
             grainChart.reset()
+            val grainCounts =
+                if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
+                else currentSimulator.lastGrainsCount()
+            grainChart.push(0.0, grainCounts.values.map { it.toDouble() })
+
             fieldChart.reset()
+            fieldChart.push(0.0, currentSimulator.lastFieldAmount().values.map { it.toDouble() })
+
             refresh()
         }
     }
@@ -414,42 +428,30 @@ class SimulationRunController(
             if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
             else currentSimulator.lastGrainsCount()
         grainChart.push(
-            currentSimulator.step,
-            grainCounts.values,
-            presentCharts
+            currentSimulator.step.toDouble(),
+            grainCounts.values.map { it.toDouble() },
         )
         fieldChart.push(
-            currentSimulator.step,
-            currentSimulator.lastFieldAmount().values,
-            presentCharts
+            currentSimulator.step.toDouble(),
+            currentSimulator.lastFieldAmount().values.map { it.toDouble() },
         )
 
         refreshCounts()
     }
 
-    private fun createGrainChart(): Chart {
-        val counts = simulator.grainsCounts()
+    private fun createGrainChart(): List<Plot> {
         val grains =
             if (filterGrainsInChart) context.grains.filter { context.doesGrainCountCanChange(it) }
             else context.grains
-        return Chart(
-            page.i18n("Step"),
-            grains.map { ChartLine(label = it.label(true), color = it.color, initial = counts[it.id] ?: 0) }
-        )
+        return grains.map {
+            Plot(label = it.label(true), stroke = it.color.toRGB())
+        }
     }
 
-    private fun createFieldChart(): Chart {
-        val amounts = simulator.fieldAmounts()
-        return Chart(
-            page.i18n("Step"),
-            context.fields.map { field ->
-                ChartLine(
-                    label = field.label(true), color = field.color,
-                    initial = amounts[field.id] ?: 0,
-                    value = { it.toFixed(3) }
-                )
+    private fun createFieldChart(): List<Plot> {
+        return context.fields.map { field ->
+                Plot(label = field.label(true), stroke = field.color.toRGB() )
             }
-        )
     }
 
     fun toggleCharts() {
@@ -519,12 +521,12 @@ class SimulationRunController(
     fun resizeCharts() {
         val grainParent = grainChart.root.parentElement
         if (grainParent is HTMLElement) {
-            grainChart.size = (grainParent.offsetWidth - 30) to 400
+            grainChart.size = size(grainParent.offsetWidth - 30.0, 400.0)
         }
 
         val fieldParent = fieldChart.root.parentElement
         if (fieldParent is HTMLElement) {
-            fieldChart.size = (fieldParent.offsetWidth - 30) to 400
+            fieldChart.size = size(fieldParent.offsetWidth - 30.0, 400.0)
         }
     }
 

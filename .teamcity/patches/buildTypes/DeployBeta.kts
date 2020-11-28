@@ -39,7 +39,6 @@ changeBuildType(RelativeId("DeployBeta")) {
     }
     steps {
         update<BuildStep>(0) {
-            enabled = false
             clearConditions()
             param("secure:jetbrains.buildServer.deployer.password", "credentialsJSON:5322f3d4-579d-4273-9528-dc144703da7a")
         }

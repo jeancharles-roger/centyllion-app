@@ -1,5 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
+import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.util.Date
+
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
@@ -159,7 +164,6 @@ kotlin {
 
 java.sourceCompatibility = JavaVersion.VERSION_11
 
-/*
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
     val cssDir = "$buildDir/assemble/main/css"
@@ -186,6 +190,7 @@ tasks {
         }
     }
 
+    /*
     val allJs by register<Copy>("allJs") {
         // adds require template file to task input
         val requireTemplate = file("deploy/requirejs.config.template")
@@ -241,6 +246,7 @@ tasks {
 
         }
     }
+    */
 
     val allCss by register<Copy>("allCss") {
         group = "build"
@@ -279,12 +285,14 @@ tasks {
         }
     }
 
+    /*
     val syncJs by register<Sync>("syncJs") {
         dependsOn(allJs)
         group = "build"
         from(jsDir)
         into("$webRoot/js/centyllion")
     }
+    */
 
     val syncCss by register<Sync>("syncCss") {
         dependsOn(allCss)
@@ -301,7 +309,7 @@ tasks {
     }
 
     val jsJar by existing
-    jsJar.get().dependsOn(syncJs, syncCss, syncAssets)
+    jsJar.get().dependsOn(/*syncJs,*/ syncCss, syncAssets)
 
     val assemble by existing
     val jvmJar by existing(Jar::class)
@@ -322,7 +330,6 @@ tasks {
         compression = Compression.GZIP
     }
 }
-*/
 
 detekt {
    input = files("src/commonMain", "src/jsMain", "src/jvmMain")

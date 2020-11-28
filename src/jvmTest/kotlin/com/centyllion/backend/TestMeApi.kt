@@ -4,7 +4,6 @@ import com.centyllion.model.GrainModel
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.User
 import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.contentType
@@ -82,7 +81,6 @@ class TestMeApi {
         testGetPage("/api/me/model", emptyList(), 0, GrainModelDescription.serializer(), user1)
 
         // Test post on /api/model
-        testUnauthorized("/api/me/model", HttpMethod.Post)
         val model1 = postModel(GrainModel("test1"), user1)
         val model2 = postModel(GrainModel("test2"), user1)
         patchModel(model2, user2, HttpStatusCode.Unauthorized)
@@ -91,7 +89,6 @@ class TestMeApi {
         testGetPage("/api/me/model", listOf(model1, model2), 2, GrainModelDescription.serializer(), user1)
 
         // Test delete a model
-        testUnauthorized("/api/me/model/${model1.id}", HttpMethod.Delete)
         deleteModel(model1, user1)
 
         // Checks if delete happened
@@ -99,7 +96,6 @@ class TestMeApi {
 
         // Test patch
         val newModel2 = model2.copy(model = model2.model.copy("Test 2 bis"))
-        testUnauthorized("/api/me/model/${model2.id}", HttpMethod.Patch)
         patchModel(newModel2, user1)
 
         // Checks if patch happened

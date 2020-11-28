@@ -11,6 +11,7 @@ import io.data2viz.scale.Scales
 import io.data2viz.viz.*
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 
 data class Range(val min: Double, val max: Double)
@@ -127,7 +128,13 @@ class LinePlotter(val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Si
     val visual: Viz = viz {
         this.size = this@LinePlotter.size
         build()
-    }.apply { bindRendererOn(canvas) }
+
+        on(KMouseMove) {
+            val step = xScale.invert(it.pos.x).roundToInt()
+        }
+
+        bindRendererOn(canvas)
+    }
 
     private fun findNewMax(current: Double, pushed: Double, tick: Double): Double {
         var newMax = current

@@ -1,4 +1,3 @@
-@file:UseExperimental(UnstableDefault::class)
 package com.centyllion.backend
 
 import com.auth0.jwk.JwkProvider
@@ -41,7 +40,6 @@ import io.ktor.response.respond
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.util.pipeline.PipelineContext
-import kotlinx.serialization.UnstableDefault
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.net.URL

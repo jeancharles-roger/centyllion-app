@@ -25,7 +25,6 @@ val data2viz_version: String = "0.8.0-RC10"
 plugins {
     kotlin("multiplatform").version("1.4.20")
     id("kotlinx-serialization").version("1.4.20")
-    id("io.gitlab.arturbosch.detekt").version("1.15.0-RC1")
 }
 
 repositories {
@@ -121,6 +120,10 @@ kotlin {
             webpackTask {
 
                //outputFileName = "tekdiving-shop.[contenthash].js"
+            }
+
+            testTask {
+
             }
         }
         binaries.executable()
@@ -329,8 +332,4 @@ tasks {
 
         compression = Compression.GZIP
     }
-}
-
-detekt {
-   input = files("src/commonMain", "src/jsMain", "src/jvmMain")
 }

@@ -27,6 +27,7 @@ import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.download
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.plotter.Plot
+import com.centyllion.client.plotter.PlotterController
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.client.stringHref
 import com.centyllion.client.toggleElementToFullScreen
@@ -51,10 +52,8 @@ import bulma.Field as BField
 class SimulationRunController(
     simulation: Simulation, model: GrainModel,
     val page: BulmaPage, readOnly: Boolean = false,
-    val onChangeSpeed: (behaviour: Behaviour, speed: Double, controller: SimulationRunController) -> Unit =
-        { _, _, _ -> },
-    val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit =
-        { _, _, _ -> }
+    val onChangeSpeed: (behaviour: Behaviour, speed: Double, controller: SimulationRunController) -> Unit = { _, _, _ -> },
+    val onUpdate: (old: Simulation, new: Simulation, controller: SimulationRunController) -> Unit = { _, _, _ -> }
 ) : Controller<Simulation, GrainModel, BulmaElement> {
 
     override var data: Simulation by observable(simulation) { _, old, new ->
@@ -233,9 +232,9 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val grainChart = ChartController(page, page.i18n("Grains"), createGrainChart(), size(window.innerWidth/2.0, 400.0))
+    val grainChart = PlotterController(page, page.i18n("Grains"), createGrainChart(), size(window.innerWidth/2.0, 400.0))
 
-    val fieldChart = ChartController(page, page.i18n("Fields"), createFieldChart(), size(window.innerWidth/2.0, 400.0))
+    val fieldChart = PlotterController(page, page.i18n("Fields"), createFieldChart(), size(window.innerWidth/2.0, 400.0))
 
     val chartContainer = Columns(
         Column(grainChart, size = ColumnSize.Half),

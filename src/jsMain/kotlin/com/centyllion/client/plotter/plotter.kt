@@ -24,9 +24,13 @@ class Plot(
     val label: String,
     val stroke: Color = Colors.Web.steelblue,
     val strokeWidth: Double = 1.0,
+    var visible: Boolean = true,
 )
 
-class LinePlotter(val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Size) {
+class LinePlotter(
+    val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Size,
+    val onStepMove: (Int) -> Unit = { }
+) {
 
     var size: Size by observable(size) { _, old, new -> if (old != new) visual.size = new }
 
@@ -110,7 +114,7 @@ class LinePlotter(val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Si
                         group {
                             plotPaths.add(path {
                                 fill = null
-                                stroke = plots[plotIndex].stroke
+                                stroke = if (plots[plotIndex].visible) plots[plotIndex].stroke else null
                                 strokeWidth = plots[plotIndex].strokeWidth
 
                                 moveTo(xScale(labels[0]), yScale(plotPoints[plotIndex][0]))
@@ -125,12 +129,16 @@ class LinePlotter(val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Si
         }
     }
 
+    private var currentStep = -1
+
     val visual: Viz = viz {
         this.size = this@LinePlotter.size
         build()
 
         on(KMouseMove) {
             val step = xScale.invert(it.pos.x).roundToInt()
+            if (step != currentStep) onStepMove(step)
+            currentStep = step
         }
 
         bindRendererOn(canvas)
@@ -169,7 +177,7 @@ class LinePlotter(val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Si
 
         // update paths
         for (i in plots.indices) {
-            plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
+            if (plots[i].visible) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
         }
 
         invalidate()

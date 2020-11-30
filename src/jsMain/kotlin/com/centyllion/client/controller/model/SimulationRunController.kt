@@ -95,12 +95,6 @@ class SimulationRunController(
         }
     }
 
-    var filterGrainsInChart: Boolean by observable(false) { _, old, new ->
-        if (old != new) {
-            grainChart.data = createGrainPlots()
-        }
-    }
-
     private var currentSimulator = Simulator(context, data)
 
     val simulator get() = currentSimulator
@@ -236,7 +230,9 @@ class SimulationRunController(
         page, page.i18n("Grains"),
         createGrainPlots(), size(window.innerWidth/2.0, 400.0),
         roundPoints = true
-    )
+    ).apply {
+        push(0, simulator.grainsCounts().values.map { it.toDouble() })
+    }
 
     val fieldChart = PlotterController(
         page, page.i18n("Fields"),
@@ -411,9 +407,7 @@ class SimulationRunController(
             currentSimulator.reset()
 
             grainChart.reset()
-            val grainCounts =
-                if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
-                else currentSimulator.lastGrainsCount()
+            val grainCounts = currentSimulator.lastGrainsCount()
             grainChart.push(0, grainCounts.values.map { it.toDouble() })
             grainChart.renderRequest()
 
@@ -429,9 +423,7 @@ class SimulationRunController(
         val (applied, dead) = currentSimulator.oneStep()
         simulationViewController.oneStep(applied, dead)
 
-        val grainCounts =
-            if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
-            else currentSimulator.lastGrainsCount()
+        val grainCounts = currentSimulator.lastGrainsCount()
         grainChart.push(
             currentSimulator.step,
             grainCounts.values.map { it.toDouble() },
@@ -447,19 +439,12 @@ class SimulationRunController(
         refreshCounts()
     }
 
-    private fun createGrainPlots(): List<Plot> {
-        val grains =
-            if (filterGrainsInChart) context.grains.filter { context.doesGrainCountCanChange(it) }
-            else context.grains
-        return grains.map {
-            Plot(label = it.label(true), stroke = it.color.toRGB())
-        }
+    private fun createGrainPlots(): List<Plot> = context.grains.map {
+        Plot(label = it.label(true), stroke = it.color.toRGB())
     }
 
-    private fun createFieldPlots(): List<Plot> {
-        return context.fields.map { field ->
-                Plot(label = field.label(true), stroke = field.color.toRGB() )
-            }
+    private fun createFieldPlots(): List<Plot> = context.fields.map { field ->
+        Plot(label = field.label(true), stroke = field.color.toRGB() )
     }
 
     fun toggleCharts() {

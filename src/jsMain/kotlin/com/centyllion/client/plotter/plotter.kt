@@ -33,7 +33,14 @@ class LinePlotter(
     val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Size,
     val onStepMove: (Int) -> Unit = { }
 ) {
-    var size: Size by observable(size) { _, old, new -> if (old != new) visual.size = new }
+    var size: Size by observable(size) { _, old, new ->
+        if (old != new) {
+            visual.size = new
+            xScale = newXScale()
+            yScale = newYScale()
+            rebuild()
+        }
+    }
 
     private val points: MutableList<PlotPoint> = mutableListOf()
 
@@ -72,7 +79,7 @@ class LinePlotter(
 
     private fun newXScale() = Scales.Continuous.linearRound {
         domain = listOf(0.0, xMax.toDouble())
-        range = listOf(.0, chartWidth)
+        range = listOf(0.0, chartWidth)
     }
 
     // linear scale for y

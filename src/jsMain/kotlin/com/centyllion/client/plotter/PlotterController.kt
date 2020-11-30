@@ -6,6 +6,7 @@ import bulma.Controller
 import bulma.Div
 import bulma.HtmlWrapper
 import bulma.Icon
+import bulma.Label
 import bulma.Level
 import bulma.SubTitle
 import bulma.canvas
@@ -51,6 +52,7 @@ class PlotterController(
 
     val title = SubTitle(title).apply { root.classList.add("has-text-centered") }
 
+    private val stepValueSpan = Label("(-)")
     private val legendValueSpans = mutableListOf<HtmlWrapper<HTMLElement>>()
 
     val legend = Columns(multiline = true).apply { columns = createColumns(data) }
@@ -60,11 +62,11 @@ class PlotterController(
     override fun refresh() { }
 
     private fun createPlotter(canvas: HTMLCanvasElement, plots: List<Plot>, size: Size): LinePlotter {
-        return LinePlotter(canvas, plots, size) { step ->
+        return LinePlotter(canvas, plots, size) { label ->
+            val pointsForLabel = plotter.pointsForLabel(label)
+            stepValueSpan.text = "$label"
             legendValueSpans.forEachIndexed { index, valueSpan ->
-                valueSpan.text =
-                    if (step >= 0 && step < plotter.labels.size) "${plotter.plotPoints[index][step]}"
-                    else "-"
+                valueSpan.text = "${pointsForLabel?.get(index) ?: "-"}"
             }
         }
     }
@@ -78,26 +80,29 @@ class PlotterController(
 
     private fun createColumns(plots: List<Plot>): List<Column> {
         legendValueSpans.clear()
-        return plots.map {
-            val valueSpan = span("0")
-            legendValueSpans.add(valueSpan)
-            Column(
-                Level(
-                    center = listOf(
-                        colorIcon(it.stroke.rgbHex), span(it.label),
-                        span(":"), valueSpan
-                    )
-                ),
-                narrow = true
-            )
-        }
+        return listOf(Column(stepValueSpan, narrow = true)) +
+            plots.map { plot ->
+                val valueSpan = span("0")
+                legendValueSpans.add(valueSpan)
+                Column(
+                    Level(
+                        center = listOf(
+                            colorIcon(plot.stroke.rgbHex), span(plot.label),
+                            span(":"), valueSpan
+                        )
+                    ),
+                    narrow = true
+                ).apply {
+                    root.onclick = { plotter.toggleHiddenPlot(plot) }
+                }
+            }
     }
 
     fun reset() {
         plotter.clear()
     }
 
-    fun push(x: Double, ys: List<Double>) {
+    fun push(x: Int, ys: List<Double>) {
         plotter.push(x, ys)
     }
 

@@ -410,10 +410,10 @@ class SimulationRunController(
             val grainCounts =
                 if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
                 else currentSimulator.lastGrainsCount()
-            grainChart.push(0.0, grainCounts.values.map { it.toDouble() })
+            grainChart.push(0, grainCounts.values.map { it.toDouble() })
 
             fieldChart.reset()
-            fieldChart.push(0.0, currentSimulator.lastFieldAmount().values.map { it.toDouble() })
+            fieldChart.push(0, currentSimulator.lastFieldAmount().values.map { it.toDouble() })
 
             refresh()
         }
@@ -427,11 +427,11 @@ class SimulationRunController(
             if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
             else currentSimulator.lastGrainsCount()
         grainChart.push(
-            currentSimulator.step.toDouble(),
+            currentSimulator.step,
             grainCounts.values.map { it.toDouble() },
         )
         fieldChart.push(
-            currentSimulator.step.toDouble(),
+            currentSimulator.step,
             currentSimulator.lastFieldAmount().values.map { it.toDouble() },
         )
 

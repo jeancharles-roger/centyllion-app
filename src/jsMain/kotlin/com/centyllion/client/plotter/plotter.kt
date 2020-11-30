@@ -10,7 +10,6 @@ import io.data2viz.math.pct
 import io.data2viz.scale.Scales
 import io.data2viz.viz.*
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 
@@ -20,23 +19,23 @@ fun range(min: Double, max: Double) = Range(min, max)
 
 fun String.toRGB(): Color = colorNames[this]?.let { Colors.rgb(it.first, it.second, it.third, 100.pct) } ?: Colors.Web.red
 
-class Plot(
+data class Plot(
     val label: String,
     val stroke: Color = Colors.Web.steelblue,
     val strokeWidth: Double = 1.0,
-    var visible: Boolean = true,
+)
+
+private data class PlotPoint(
+    val step: Int, val points: List<Double>
 )
 
 class LinePlotter(
     val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Size,
     val onStepMove: (Int) -> Unit = { }
 ) {
-
     var size: Size by observable(size) { _, old, new -> if (old != new) visual.size = new }
 
-    val labels: MutableList<Double> = mutableListOf()
-
-    val plotPoints: List<MutableList<Double>> = List(plots.size) { mutableListOf() }
+    private val points: MutableList<PlotPoint> = mutableListOf()
 
     // TODO make margins and size mutable
     // TODO checks that margins aren't bigger than size
@@ -45,11 +44,9 @@ class LinePlotter(
     val chartWidth get() = size.width - margins.hMargins
     val chartHeight get() = size.height - margins.vMargins
 
-    var xTick: Double = 1.0
+    var xTick: Int = 1
 
-    var xRange: Range by observable(
-        range(labels.firstOrNull() ?: 0.0, labels.lastOrNull() ?: 0.0)
-    ) { _, old, new ->
+    var xMax: Int by observable(0) { _, old, new ->
         if (old != new) {
             xScale = newXScale()
             rebuild()
@@ -60,8 +57,8 @@ class LinePlotter(
 
     var yRange: Range by observable(
         range(
-            plotPoints.mapNotNull { it.minOrNull() }.minOrNull() ?: 0.0,
-            plotPoints.mapNotNull { it.maxOrNull() }.maxOrNull() ?: 0.0,
+            points.flatMap { it.points }.minOrNull() ?: 0.0,
+            points.flatMap { it.points }.maxOrNull() ?: 0.0,
         )
     ) { _, old, new ->
         if (old != new) {
@@ -73,8 +70,8 @@ class LinePlotter(
     // linear scale for x
     private var xScale = newXScale()
 
-    private fun newXScale() = Scales.Continuous.linear {
-        domain = listOf(xRange.min, xRange.max)
+    private fun newXScale() = Scales.Continuous.linearRound {
+        domain = listOf(0.0, xMax.toDouble())
         range = listOf(.0, chartWidth)
     }
 
@@ -96,6 +93,8 @@ class LinePlotter(
         axis(Orient.LEFT, yScale)
     }
 
+    private val hiddenPlots = mutableSetOf<Plot>()
+
     private var plotPaths = mutableListOf<PathNode>()
 
     private var redraw = false
@@ -109,17 +108,18 @@ class LinePlotter(
 
             group {
                 plotPaths.clear()
-                if (labels.isNotEmpty()) {
+                if (points.isNotEmpty()) {
                     for (plotIndex in plots.indices) {
                         group {
                             plotPaths.add(path {
                                 fill = null
-                                stroke = if (plots[plotIndex].visible) plots[plotIndex].stroke else null
-                                strokeWidth = plots[plotIndex].strokeWidth
+                                val element = plots[plotIndex]
+                                stroke = if (!hiddenPlots.contains(element)) element.stroke else null
+                                strokeWidth = element.strokeWidth
 
-                                moveTo(xScale(labels[0]), yScale(plotPoints[plotIndex][0]))
-                                for (i in 1 until labels.size) {
-                                    lineTo(xScale(labels[i]), yScale(plotPoints[plotIndex][i]))
+                                moveTo(xScale(points[0].step), yScale(points[0].points[plotIndex]))
+                                for (i in 1 until points.size) {
+                                    lineTo(xScale(points[i].step), yScale(points[i].points[plotIndex]))
                                 }
                             })
                         }
@@ -136,12 +136,18 @@ class LinePlotter(
         build()
 
         on(KMouseMove) {
-            val step = xScale.invert(it.pos.x).roundToInt()
+            val step = xScale.invert(it.pos.x-margins.left).roundToInt().coerceIn(0, xMax)
             if (step != currentStep) onStepMove(step)
             currentStep = step
         }
 
         bindRendererOn(canvas)
+    }
+
+    private fun findNewXMax(current: Int, pushed: Int, tick: Int): Int {
+        var newMax = current
+        while (newMax < pushed) newMax += tick
+        return newMax
     }
 
     private fun findNewMax(current: Double, pushed: Double, tick: Double): Double {
@@ -156,28 +162,25 @@ class LinePlotter(
         return newMin
     }
 
-    fun push(x: Double, ys: List<Double>) {
-        labels.add(x)
+    fun push(x: Int, ys: List<Double>) {
+        // register point
+        points.add(PlotPoint(x, ys))
 
         var newMin = yRange.min
         var newMax = yRange.max
         for (i in plots.indices) {
-            val y = ys[i]
-            // registers point
-            plotPoints[i].add(y)
-
             // updates min and max
-            if (y < newMin) newMin = y
-            if (y > newMax) newMax = y
+            if (ys[i] < newMin) newMin = ys[i]
+            if (ys[i] > newMax) newMax = ys[i]
         }
 
         // updates ranges
-        xRange = range(xRange.min, max(xRange.max, findNewMax(xRange.max, x, xTick)))
+        xMax = findNewXMax(xMax, x, xTick)
         yRange = range(findNewMin(yRange.min, newMin, yTick), findNewMax(yRange.max, newMax, yTick))
 
         // update paths
         for (i in plots.indices) {
-            if (plots[i].visible) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
+            if (!hiddenPlots.contains(plots[i])) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
         }
 
         invalidate()
@@ -200,11 +203,17 @@ class LinePlotter(
     }
 
     fun clear() {
-        labels.clear()
-        plotPoints.forEach { it.clear() }
-        xRange = range(0.0, 0.0)
+        points.clear()
+        xMax = 0
         yRange = range(0.0, 0.0)
         rebuild()
+    }
+
+    fun pointsForLabel(step: Int) = points.find { it.step == step }?.points
+
+    fun toggleHiddenPlot(plot: Plot) {
+        if (hiddenPlots.contains(plot)) hiddenPlots.remove(plot)
+        else hiddenPlots.add(plot)
     }
 }
 

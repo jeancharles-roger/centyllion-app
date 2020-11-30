@@ -294,6 +294,10 @@ class Simulator(
             it.value.clear()
             it.value.add(counts.getOrElse(it.key.id) { 0 })
         }
+        fieldAmountHistory.forEach {
+            it.value.clear()
+            it.value.add(0.0f)
+        }
     }
 
     fun idAtIndex(index: Int) = currentAgents[index]

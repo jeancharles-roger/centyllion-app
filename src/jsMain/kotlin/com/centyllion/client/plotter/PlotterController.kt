@@ -12,15 +12,18 @@ import bulma.SubTitle
 import bulma.canvas
 import bulma.span
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.toFixed
 import io.data2viz.geom.Size
 import io.data2viz.geom.size
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLElement
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 
 class PlotterController(
     val page: BulmaPage, title: String,
-    plot: List<Plot>, size: Size = size(800.0, 400.0)
+    plot: List<Plot>, size: Size = size(800.0, 400.0),
+    val roundPoints: Boolean = false
 ): Controller<List<Plot>, Size, Div> {
 
     val canvas = canvas { }
@@ -59,16 +62,17 @@ class PlotterController(
 
     override val container: Div = Div(this.title, canvas, legend)
 
-    override fun refresh() { }
+    override fun refresh() { renderRequest() }
 
     private fun createPlotter(canvas: HTMLCanvasElement, plots: List<Plot>, size: Size): LinePlotter {
         return LinePlotter(canvas, plots, size) { label ->
             val pointsForLabel = plotter.pointsForLabel(label)
             stepValueSpan.text = "$label"
             legendValueSpans.forEachIndexed { index, valueSpan ->
-                valueSpan.text = "${pointsForLabel?.get(index) ?: "-"}"
+                val get = pointsForLabel?.get(index)
+                valueSpan.text = "${if (roundPoints) get?.roundToInt() else get?.toFixed(3) ?: "-"}"
             }
-        }
+        }.apply { xTick = 50 }
     }
 
     private fun colorIcon(color: String) = Icon("").apply {

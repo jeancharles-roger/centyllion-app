@@ -179,10 +179,9 @@ class LinePlotter(
         yRange = range(findNewMin(yRange.min, newMin, yTick), findNewMax(yRange.max, newMax, yTick))
 
         // update paths
-        for (i in plots.indices) {
+        for (i in plotPaths.indices) {
             if (!hiddenPlots[i]) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
         }
-
         invalidate()
     }
 

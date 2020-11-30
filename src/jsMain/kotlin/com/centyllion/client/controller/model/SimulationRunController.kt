@@ -62,8 +62,8 @@ class SimulationRunController(
             simulationViewController.data = currentSimulator
             asset3dController.data = new.assets
             running = false
-            grainChart.data = createGrainChart()
-            fieldChart.data = createFieldChart()
+            grainChart.data = createGrainPlots()
+            fieldChart.data = createFieldPlots()
             onUpdate(old, new, this@SimulationRunController)
             refresh()
         }
@@ -80,8 +80,8 @@ class SimulationRunController(
             currentSimulator = Simulator(new, data)
             behavioursController.context = currentSimulator
             simulationViewController.data = currentSimulator
-            grainChart.data = createGrainChart()
-            fieldChart.data = createFieldChart()
+            grainChart.data = createGrainPlots()
+            fieldChart.data = createFieldPlots()
             running = false
             refresh()
         }
@@ -97,7 +97,7 @@ class SimulationRunController(
 
     var filterGrainsInChart: Boolean by observable(false) { _, old, new ->
         if (old != new) {
-            grainChart.data = createGrainChart()
+            grainChart.data = createGrainPlots()
         }
     }
 
@@ -232,9 +232,16 @@ class SimulationRunController(
         download("counts.csv", stringHref("$header\n$content"))
     }
 
-    val grainChart = PlotterController(page, page.i18n("Grains"), createGrainChart(), size(window.innerWidth/2.0, 400.0))
+    val grainChart = PlotterController(
+        page, page.i18n("Grains"),
+        createGrainPlots(), size(window.innerWidth/2.0, 400.0),
+        roundPoints = true
+    )
 
-    val fieldChart = PlotterController(page, page.i18n("Fields"), createFieldChart(), size(window.innerWidth/2.0, 400.0))
+    val fieldChart = PlotterController(
+        page, page.i18n("Fields"),
+        createFieldPlots(), size(window.innerWidth/2.0, 400.0)
+    )
 
     val chartContainer = Columns(
         Column(grainChart, size = ColumnSize.Half),
@@ -382,9 +389,6 @@ class SimulationRunController(
                 executeStep()
             }
 
-            grainChart.renderRequest()
-            fieldChart.renderRequest()
-
             lastRequestSkipped = refresh
             window.requestAnimationFrame(this::animationCallback)
         }
@@ -411,9 +415,11 @@ class SimulationRunController(
                 if (filterGrainsInChart) currentSimulator.lastGrainsCount().filter { context.doesGrainCountCanChange(it.key) }
                 else currentSimulator.lastGrainsCount()
             grainChart.push(0, grainCounts.values.map { it.toDouble() })
+            grainChart.renderRequest()
 
             fieldChart.reset()
             fieldChart.push(0, currentSimulator.lastFieldAmount().values.map { it.toDouble() })
+            fieldChart.renderRequest()
 
             refresh()
         }
@@ -430,15 +436,18 @@ class SimulationRunController(
             currentSimulator.step,
             grainCounts.values.map { it.toDouble() },
         )
+        grainChart.renderRequest()
+
         fieldChart.push(
             currentSimulator.step,
             currentSimulator.lastFieldAmount().values.map { it.toDouble() },
         )
+        fieldChart.renderRequest()
 
         refreshCounts()
     }
 
-    private fun createGrainChart(): List<Plot> {
+    private fun createGrainPlots(): List<Plot> {
         val grains =
             if (filterGrainsInChart) context.grains.filter { context.doesGrainCountCanChange(it) }
             else context.grains
@@ -447,7 +456,7 @@ class SimulationRunController(
         }
     }
 
-    private fun createFieldChart(): List<Plot> {
+    private fun createFieldPlots(): List<Plot> {
         return context.fields.map { field ->
                 Plot(label = field.label(true), stroke = field.color.toRGB() )
             }

@@ -55,17 +55,17 @@ class LinePlotter(
 
     var yTick: Double = 1.0
 
-    var yRange: Range by observable(
-        range(
-            points.flatMap { it.points }.minOrNull() ?: 0.0,
-            points.flatMap { it.points }.maxOrNull() ?: 0.0,
-        )
-    ) { _, old, new ->
+    var yRange: Range by observable(computeYRange()) { _, old, new ->
         if (old != new) {
             yScale = newYScale()
             rebuild()
         }
     }
+
+    private fun computeYRange() = range(
+        points.flatMap { it.points.filterIndexed { index, d -> !hiddenPlots[index] } }.minOrNull() ?: 0.0,
+        points.flatMap { it.points.filterIndexed { index, d -> !hiddenPlots[index] } }.maxOrNull() ?: 0.0,
+    )
 
     // linear scale for x
     private var xScale = newXScale()
@@ -93,7 +93,7 @@ class LinePlotter(
         axis(Orient.LEFT, yScale)
     }
 
-    private val hiddenPlots = mutableSetOf<Plot>()
+    private val hiddenPlots = Array(plots.size) { false }
 
     private var plotPaths = mutableListOf<PathNode>()
 
@@ -114,7 +114,7 @@ class LinePlotter(
                             plotPaths.add(path {
                                 fill = null
                                 val element = plots[plotIndex]
-                                stroke = if (!hiddenPlots.contains(element)) element.stroke else null
+                                stroke = if (!hiddenPlots[plotIndex]) element.stroke else null
                                 strokeWidth = element.strokeWidth
 
                                 moveTo(xScale(points[0].step), yScale(points[0].points[plotIndex]))
@@ -180,7 +180,7 @@ class LinePlotter(
 
         // update paths
         for (i in plots.indices) {
-            if (!hiddenPlots.contains(plots[i])) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
+            if (!hiddenPlots[i]) plotPaths[i].lineTo(xScale(x), yScale(ys[i]))
         }
 
         invalidate()
@@ -211,9 +211,20 @@ class LinePlotter(
 
     fun pointsForLabel(step: Int) = points.find { it.step == step }?.points
 
-    fun toggleHiddenPlot(plot: Plot) {
-        if (hiddenPlots.contains(plot)) hiddenPlots.remove(plot)
-        else hiddenPlots.add(plot)
+    fun isHidden(plot: Plot) = plots.indexOf(plot).let {
+        if (it >= 0) hiddenPlots[it] else false
+    }
+    
+    fun toggleHiddenPlot(plot: Plot): Boolean {
+        val index = plots.indexOf(plot)
+        return if (index >= 0) {
+            val new = !hiddenPlots[index]
+            hiddenPlots[index] = new
+            yRange = computeYRange()
+            rebuild()
+            renderRequest()
+            new
+        } else false
     }
 }
 

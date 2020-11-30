@@ -85,15 +85,15 @@ class PlotterController(
                 val valueSpan = span("0")
                 legendValueSpans.add(valueSpan)
                 Column(
-                    Level(
-                        center = listOf(
-                            colorIcon(plot.stroke.rgbHex), span(plot.label),
-                            span(":"), valueSpan
-                        )
-                    ),
+                    Level(center = listOf(colorIcon(plot.stroke.rgbHex), span(plot.label), span(":"), valueSpan)),
                     narrow = true
                 ).apply {
-                    root.onclick = { plotter.toggleHiddenPlot(plot) }
+                    if (plotter.isHidden(plot)) root.style.textTransform = "line-through"
+                    root.onclick = {
+                        val hidden = plotter.toggleHiddenPlot(plot)
+                        root.style.textDecorationLine = if (hidden) "line-through" else ""
+                        Unit
+                    }
                 }
             }
     }

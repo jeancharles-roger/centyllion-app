@@ -82,7 +82,7 @@ object Build : BuildType({
     steps {
         gradle {
             buildFile = "build.gradle.kts"
-            tasks = "build distribution"
+            tasks = "jvmTest distribution"
             jdkHome = "%env.JDK_11%"
         }
     }

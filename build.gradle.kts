@@ -20,7 +20,7 @@ val exposed_version: String = "0.28.1"
 val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "8.0.2"
 
-val data2viz_version: String = "0.8.0-RC10"
+val data2viz_version: String = "0.8.0-RC12"
 
 plugins {
     kotlin("multiplatform").version("1.4.20")

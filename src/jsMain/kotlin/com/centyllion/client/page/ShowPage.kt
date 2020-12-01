@@ -155,23 +155,18 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val modelUserLabel = Help()
 
-    val modelDescriptionController =
-        EditableMarkdownController(model.model.description, i18n("Model Description")) { _, new, _ ->
-            model = model.copy(model = model.model.copy(description = new))
-        }
+    val modelDescriptionController = EditableMarkdownController(model.model.description, i18n("Model Description"))
+    { _, new, _ -> model = model.copy(model = model.model.copy(description = new)) }
 
-    val tagsController =
-        TagsController(model.tags, appContext) { old, new, _ -> if (old != new) model = model.copy(tags = new) }
+    val tagsController = TagsController(model.tags, appContext)
+    { old, new, _ -> if (old != new) model = model.copy(tags = new) }
 
     val simulationNameController = EditableStringController(simulation.simulation.name, i18n("Simulation Name"), isSimulationReadOnly)
-    { _, new, _ ->
-        simulation = simulation.copy(simulation = simulation.simulation.copy(name = new))
-    }
+    { _, new, _ -> simulation = simulation.copy(simulation = simulation.simulation.copy(name = new)) }
 
-    val simulationDescriptionController = EditableStringController(simulation.simulation.description, i18n("Simulation Description"), isSimulationReadOnly)
-    { _, new, _ ->
-        simulation = simulation.copy(simulation = simulation.simulation.copy(description = new))
-    }
+    val simulationDescriptionController = EditableMarkdownController(
+        simulation.simulation.description, i18n("Simulation Description"), isSimulationReadOnly
+    ) { _, new, _ -> simulation = simulation.copy(simulation = simulation.simulation.copy(description = new)) }
 
     val simulationUserLabel = Help()
 

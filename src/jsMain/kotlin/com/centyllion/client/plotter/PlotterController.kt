@@ -69,8 +69,8 @@ class PlotterController(
             val pointsForLabel = plotter.pointsForLabel(label)
             stepValueSpan.text = "$label"
             legendValueSpans.forEachIndexed { index, valueSpan ->
-                val get = pointsForLabel?.get(index)
-                valueSpan.text = "${if (roundPoints) get?.roundToInt() else get?.toFixed(3) ?: "-"}"
+                val get = pointsForLabel?.get(index)?.let { if (roundPoints) it.roundToInt() else it.toFixed(3) }
+                valueSpan.text = "${get ?: "-"}"
             }
         }.apply { xTick = 50 }
     }
@@ -86,7 +86,7 @@ class PlotterController(
         legendValueSpans.clear()
         return listOf(Column(stepValueSpan, narrow = true)) +
             plots.map { plot ->
-                val valueSpan = span("0")
+                val valueSpan = span("0", "is-italic")
                 legendValueSpans.add(valueSpan)
                 Column(
                     Level(center = listOf(colorIcon(plot.stroke.rgbHex), span(plot.label), span(":"), valueSpan)),

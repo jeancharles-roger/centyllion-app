@@ -143,6 +143,7 @@ class LinePlotter(
         build()
 
         on(KMouseMove) {
+            // TODO there is a DPI problem with the position, it needs to be solved
             val step = xScale.invert(it.pos.x-margins.left).roundToInt().coerceIn(0, xMax)
             if (step != currentStep) onStepMove(step)
             currentStep = step

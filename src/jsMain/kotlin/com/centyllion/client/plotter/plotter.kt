@@ -177,9 +177,11 @@ class LinePlotter(
         var newMin = yRange.min
         var newMax = yRange.max
         for (i in plots.indices) {
-            // updates min and max
-            if (ys[i] < newMin) newMin = ys[i]
-            if (ys[i] > newMax) newMax = ys[i]
+            // updates min and max if not hidden
+            if (!hiddenPlots[i]) {
+                if (ys[i] < newMin) newMin = ys[i]
+                if (ys[i] > newMax) newMax = ys[i]
+            }
         }
 
         // updates ranges

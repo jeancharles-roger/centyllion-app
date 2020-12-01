@@ -103,6 +103,7 @@ fun BODY.centyllionFooter() {
 
 @HtmlTagMarker
 fun HTML.index(
+    rootJs: String,
     title: String = "Centyllion", description: String = "", path: String? = null,
     image: String = "https://centyllion.com/assets/images/logo-square.png", thumbnail: Boolean = true
 ) {
@@ -112,7 +113,6 @@ fun HTML.index(
             div("container")
         }
         centyllionFooter()
-        //script(src = "/js/centyllion/requirejs.config.json") {}
-        script(src = "/js/centyllion/centyllion.js") {}
+        script(src = rootJs) {}
     }
 }

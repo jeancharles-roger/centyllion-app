@@ -62,6 +62,8 @@ class TestConfig: ServerConfig {
     override val data: Data = MemoryData()
 
     override val webroot = "webroot"
+
+    override var rootJs: String = "/js/centyllion/centyllion.js"
 }
 
 /** Execute tests with the Centyllion API testing rig */

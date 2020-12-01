@@ -38,8 +38,9 @@ repositories {
 group = "com.centyllion"
 version = "0.0.1"
 
+val centyllionWebroot = file("$projectDir/webroot/js/centyllion")
+
 kotlin {
-    
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
@@ -116,15 +117,8 @@ kotlin {
 
     js {
         browser {
-            distribution { directory = file("$projectDir/webroot/js/centyllion") }
-            webpackTask {
-
-               //outputFileName = "tekdiving-shop.[contenthash].js"
-            }
-
-            testTask {
-
-            }
+            //distribution { directory = file(centyllionWebroot) }
+            //webpackTask { outputFileName = "centyllion.[contenthash].js" }
         }
         binaries.executable()
 
@@ -193,64 +187,6 @@ tasks {
         }
     }
 
-    /*
-    val allJs by register<Copy>("allJs") {
-        // adds require template file to task input
-        val requireTemplate = file("deploy/requirejs.config.template")
-        inputs.file(requireTemplate)
-        dependsOn(compileKotlinJs)
-        group = "build"
-
-        doFirst { delete(jsDir) }
-
-        // includes sources js
-        from(fileTree(compileKotlinJs.get().destinationDir).matching { include("*.js", "*.map") })
-        val t = compileKotlinJs.get()
-        // includes dependencies js
-        val configuration = "jsMainImplementationDependenciesMetadata"
-        configurations[configuration].forEach {
-            from(zipTree(it.absolutePath).matching { include("*.js", "*.map") })
-        }
-
-        into(jsDir)
-
-        doLast {
-            val modules = mutableMapOf<String, String>()
-
-            // Adds md5 sum in file name for cache purposes
-            file(jsDir).listFiles()?.forEach {
-                val base = it.nameWithoutExtension
-                val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
-                val builder = StringBuilder()
-                for (b in bytes) builder.append(String.format("%02x", b))
-                val sum = builder.toString()
-
-                val extension = it.extension
-                if (extension == "js" && !name.contains(sum)) {
-                    val newBase = "$base.$sum"
-                    modules[base] = newBase
-                    it.renameTo(file("${it.parent}/$newBase.$extension"))
-                }
-            }
-
-            val moduleJoined = modules.map { (k, v) -> "'$k': 'centyllion/$v'" }.joinToString(",\n\t\t")
-
-            fun copyRequireJsConfig(name: String, baseUrl: String, main: String) {
-                val sourceFile = requireTemplate
-                val content = sourceFile.readText()
-                    .replace("%DEPENDENCIES%", moduleJoined)
-                    .replace("%BASEURL%", baseUrl)
-                    .replace("%MAIN%", main)
-                file(name).writeText(content)
-            }
-
-            copyRequireJsConfig("${jsDir}/requirejs.config.json", "/js", mainFunction)
-            copyRequireJsConfig("${jsDir}/centyllion.config.json", "https://127.0.0.1:8443/js", externalFunction)
-
-        }
-    }
-    */
-
     val allCss by register<Copy>("allCss") {
         group = "build"
 
@@ -288,14 +224,31 @@ tasks {
         }
     }
 
-    /*
-    val syncJs by register<Sync>("syncJs") {
-        dependsOn(allJs)
+    val jsBrowserWebpack by existing
+
+    val syncJs by register("syncJs") {
+        dependsOn(jsBrowserWebpack)
         group = "build"
-        from(jsDir)
-        into("$webRoot/js/centyllion")
+        doLast {
+            // find js distributed file
+            val jsFile = project.buildDir.resolve("distributions/centyllion.js")
+            val mapFile = project.buildDir.resolve("distributions/centyllion.js.map")
+
+            // Adds md5 sum in file name for cache purposes
+            val base = jsFile.nameWithoutExtension
+            val bytes = MessageDigest.getInstance("MD5").digest(jsFile.readBytes())
+            val builder = StringBuilder()
+            for (b in bytes) builder.append(String.format("%02x", b))
+            val sum = builder.toString()
+
+            // prepare and clear destination
+            centyllionWebroot.deleteRecursively()
+            centyllionWebroot.mkdirs()
+
+            jsFile.copyTo(centyllionWebroot.resolve("$base.$sum.js"))
+            mapFile.copyTo(centyllionWebroot.resolve("$base.$sum.js.map"))
+        }
     }
-    */
 
     val syncCss by register<Sync>("syncCss") {
         dependsOn(allCss)
@@ -312,7 +265,7 @@ tasks {
     }
 
     val jsJar by existing
-    jsJar.get().dependsOn(/*syncJs,*/ syncCss, syncAssets)
+    jsJar.get().dependsOn(syncJs, syncCss, syncAssets)
 
     val assemble by existing
     val jvmJar by existing(Jar::class)

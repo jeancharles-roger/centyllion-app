@@ -21,9 +21,17 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
+import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
+import java.nio.file.WatchService
 import java.security.KeyStore
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 private fun certificateKeystore(): KeyStore {
     return if (Files.exists(certificatePath)) Files.newInputStream(certificatePath).use {
@@ -50,8 +58,11 @@ interface ServerConfig {
     val data: Data
 
     val webroot: String
+    
+    var rootJs: String 
 }
 
+@OptIn(ExperimentalPathApi::class)
 data class CliServerConfig(
     override val debug: Boolean, override val dry: Boolean,
     val host: String, val port: Int,
@@ -59,7 +70,6 @@ data class CliServerConfig(
     val dbName: String, val dbUser: String, val dbPassword: String,
     val keycloakPassword: String,
     override val webroot: String = "webroot"
-
 ): ServerConfig {
 
     override val authorization: AuthorizationManager = KeycloakAuthorizationManager(keycloakPassword)
@@ -70,6 +80,53 @@ data class CliServerConfig(
 
     override val verifier: JWTVerifier? = null
 
+    val centyllionJsPath = Paths.get(webroot).resolve("js/centyllion")
+
+    internal var rootJsWatchService: WatchService? = null
+    internal var rootJsPathKey: WatchKey? = null
+
+    internal fun initializeRootJsWatch() {
+        rootJsWatchService = FileSystems.getDefault().newWatchService()
+        rootJsPathKey = Paths.get(webroot).resolve("js/centyllion").register(
+            rootJsWatchService,
+            StandardWatchEventKinds.ENTRY_CREATE,
+            StandardWatchEventKinds.ENTRY_MODIFY,
+        )
+    }
+
+    @OptIn(ExperimentalPathApi::class)
+    internal fun updateRootJs() {
+        val watchKey = rootJsWatchService?.poll()
+        val pollEvents = watchKey?.pollEvents()
+        if (pollEvents?.isNotEmpty() == true) {
+            val created = pollEvents.first().context() as Path
+            val name = created.name
+            if (name.startsWith("centyllion.") && name.endsWith(".js")) {
+                println("Updated rootJs to $created")
+                rootJs = "/js/centyllion/${created}"
+            }
+        }
+        watchKey?.reset()
+    }
+
+    internal fun cancelRootJsWatch() {
+        rootJsPathKey?.cancel()
+        rootJsWatchService?.close()
+    }
+
+
+    override var rootJs: String = "js/centyllion/centyllion.js"
+        get() {
+            updateRootJs()
+            return field
+        }
+    
+    init {
+        centyllionJsPath.listDirectoryEntries("centyllion.*.js").forEach {
+            rootJs = "/js/centyllion/${it.fileName}"
+        }
+        if (debug) initializeRootJsWatch() 
+    }
 }
 
 class ServerCommand : CliktCommand("Start the server") {

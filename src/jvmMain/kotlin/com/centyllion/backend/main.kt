@@ -173,7 +173,7 @@ fun Application.centyllion(config: ServerConfig) {
     }
 
     routing {
-        html(config.data)
+        html(config)
 
         // Static files
         Files.list(Paths.get(config.webroot)).forEach {
@@ -218,3 +218,4 @@ suspend fun PipelineContext<Unit, ApplicationCall>.withRequiredPrincipal(
     if (it != null && (requiredRole == null || it.hasRole(requiredRole))) block(it)
     else context.respond(HttpStatusCode.Unauthorized)
 }
+

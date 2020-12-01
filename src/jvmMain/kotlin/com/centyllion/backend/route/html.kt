@@ -1,6 +1,6 @@
 package com.centyllion.backend.route
 
-import com.centyllion.backend.data.Data
+import com.centyllion.backend.ServerConfig
 import com.centyllion.backend.index
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -48,28 +48,28 @@ suspend fun ApplicationCall.respondHtml(status: HttpStatusCode = HttpStatusCode.
     respond(HtmlContent(status, block))
 }
 
-fun Route.html(data: Data) {
+fun Route.html(config: ServerConfig) {
     get("/show") {
         val path = call.request.uri
         val modelId = call.parameters["model"]
         val simulationId = call.parameters["simulation"]
         when {
             simulationId != null -> {
-                val simulation = data.getSimulation(simulationId)
+                val simulation = config.data.getSimulation(simulationId)
                 val name = simulation?.name ?: ""
                 val description = simulation?.simulation?.description ?: ""
                 val image = "https://app.centyllion.com/api/simulation/${simulationId}/thumbnail"
-                context.respondHtml { index("Simulation $name", description, path, image, true) }
+                context.respondHtml { index(config.rootJs, "Simulation $name", description, path, image, true) }
             }
             modelId != null -> {
-                val model = data.getGrainModel(modelId)
+                val model = config.data.getGrainModel(modelId)
                 val name = model?.name ?: ""
                 val description = model?.model?.description ?: ""
-                context.respondHtml { index("Model $name", description, path) }
+                context.respondHtml { index(config.rootJs, "Model $name", description, path) }
             }
-            else -> context.respondHtml { index(path = path) }
+            else -> context.respondHtml { index(rootJs = config.rootJs, path = path) }
         }
     }
 
-    get("/{page?}") { context.respondHtml { index() } }
+    get("/{page?}") { context.respondHtml { index(config.rootJs) } }
 }

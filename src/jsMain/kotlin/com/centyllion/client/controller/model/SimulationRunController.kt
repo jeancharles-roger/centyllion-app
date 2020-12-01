@@ -227,15 +227,15 @@ class SimulationRunController(
     }
 
     val grainChart = PlotterController(
-        page, page.i18n("Grains"),
+        page.i18n("Grains"), page.i18n("Step"),
         createGrainPlots(), size(window.innerWidth/2.0, 400.0),
-        roundPoints = true
+        roundPoints = true,
     ).apply {
         push(0, simulator.grainsCounts().values.map { it.toDouble() })
     }
 
     val fieldChart = PlotterController(
-        page, page.i18n("Fields"),
+        page.i18n("Fields"), page.i18n("Step"),
         createFieldPlots(), size(window.innerWidth/2.0, 400.0)
     )
 
@@ -440,7 +440,7 @@ class SimulationRunController(
     }
 
     private fun createGrainPlots(): List<Plot> = context.grains.map {
-        Plot(label = it.label(true), stroke = it.color.toRGB())
+        Plot(label = it.label(true), stroke = it.color.toRGB(), startHidden = !context.doesGrainCountCanChange(it))
     }
 
     private fun createFieldPlots(): List<Plot> = context.fields.map { field ->

@@ -23,6 +23,7 @@ data class Plot(
     val label: String,
     val stroke: Color = Colors.Web.steelblue,
     val strokeWidth: Double = 1.0,
+    val startHidden: Boolean = false
 )
 
 private data class PlotPoint(
@@ -30,7 +31,8 @@ private data class PlotPoint(
 )
 
 class LinePlotter(
-    val canvas: HTMLCanvasElement, val plots: List<Plot>, size: Size,
+    val canvas: HTMLCanvasElement,
+    val plots: List<Plot>, size: Size,
     val onStepMove: (Int) -> Unit = { }
 ) {
     var size: Size by observable(size) { _, old, new ->
@@ -100,7 +102,7 @@ class LinePlotter(
         axis(Orient.LEFT, yScale)
     }
 
-    private val hiddenPlots = Array(plots.size) { false }
+    private val hiddenPlots = Array(plots.size) { plots[it].startHidden }
 
     private var plotPaths = mutableListOf<PathNode>()
 

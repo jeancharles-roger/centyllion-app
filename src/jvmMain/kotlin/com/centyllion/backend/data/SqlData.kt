@@ -27,11 +27,13 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.wrap
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
+import org.jetbrains.exposed.sql.stringParam
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.ByteArrayInputStream
@@ -334,9 +336,14 @@ class SqlData(
 
     private fun searchSimulationQuery(query: String) = DbSimulationDescriptions
         .innerJoin(DbDescriptionInfos)
+        .innerJoin(DbUsers, { DbDescriptionInfos.userId }, { DbUsers.id } )
         .select {
             val q = if (query.isNotBlank()) "$query:*" else ""
-            (DbDescriptionInfos.readAccess eq true) and (DbSimulationDescriptions.searchable fullTextSearchEnglish q)
+                (DbDescriptionInfos.readAccess eq true) and
+                    (
+                        (DbSimulationDescriptions.searchable fullTextSearchEnglish q) or
+                        (DbUsers.name.regexp(stringParam(".*$query.*"), false))
+                    )
         }
 
 
@@ -362,12 +369,17 @@ class SqlData(
         } ?: ResultPage(emptyList(), offset, 0)
     }
 
-    private fun searchModelQuery(query: String, tags: List<String>) = DbModelDescriptions.innerJoin(DbDescriptionInfos).select {
-        val op = if (query.isNotBlank()) DbModelDescriptions.searchable fullTextSearchEnglish "$query:*" else null
-        (tags.map { DbModelDescriptions.tags_searchable fullTextSearch it } + op)
-            .filterNotNull()
-            .fold(DbDescriptionInfos.readAccess eq true) {a, c -> a and c }
-    }
+    private fun searchModelQuery(query: String, tags: List<String>) = DbModelDescriptions
+        .innerJoin(DbDescriptionInfos)
+        .innerJoin(DbUsers, { DbDescriptionInfos.userId }, { DbUsers.id } )
+        .select {
+            val userSearch = DbUsers.name.regexp(stringParam(".*$query.*"), false)
+            val descriptionSearch = DbModelDescriptions.searchable fullTextSearchEnglish "$query:*"
+            val op = if (query.isNotBlank()) (descriptionSearch or userSearch) else null
+            (tags.map { DbModelDescriptions.tags_searchable fullTextSearch it } + op)
+                .filterNotNull()
+                .fold(DbDescriptionInfos.readAccess eq true) {a, c -> a and c }
+        }
 
     override fun searchModel(query: String, tags: List<String>, offset: Long, limit: Int) = transaction {
         val content = DbModelDescription.wrapRows(

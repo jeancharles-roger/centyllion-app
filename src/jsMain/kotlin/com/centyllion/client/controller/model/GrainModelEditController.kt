@@ -119,7 +119,7 @@ class GrainModelEditController(
             }
         }
 
-    val emptyEditor = SubTitle(page.i18n("uplot.Select a element to edit it"))
+    val emptyEditor = SubTitle(page.i18n("Select a element to edit it"))
         .also { it.root.classList.add("has-text-centered") }
 
     val editorColumn = Column(emptyEditor, size = ColumnSize.TwoThirds)

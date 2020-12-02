@@ -78,13 +78,13 @@ class Asset3dEditController(
     val zController = editableDoubleController(page.appContext.locale, data.z, page.i18n("Position z"))
     { _, new, _ -> data = data.copy(z = new) }
 
-    val xScaleController = editableDoubleController(page.appContext.locale, data.xScale, page.i18n("uplot.Scale x"))
+    val xScaleController = editableDoubleController(page.appContext.locale, data.xScale, page.i18n("Scale x"))
     { _, new, _ -> data = data.copy(xScale = new) }
 
-    val yScaleController = editableDoubleController(page.appContext.locale, data.yScale, page.i18n("uplot.Scale y"))
+    val yScaleController = editableDoubleController(page.appContext.locale, data.yScale, page.i18n("Scale y"))
     { _, new, _ -> data = data.copy(yScale = new) }
 
-    val zScaleController = editableDoubleController(page.appContext.locale, data.zScale, page.i18n("uplot.Scale z"))
+    val zScaleController = editableDoubleController(page.appContext.locale, data.zScale, page.i18n("Scale z"))
     { _, new, _ -> data = data.copy(zScale = new) }
 
     val xRotationController = editableDoubleController(page.appContext.locale, data.xRotation, page.i18n("Rotation x"))
@@ -115,7 +115,7 @@ class Asset3dEditController(
                 Column(xController, size = ColumnSize.OneThird),
                 Column(yController, size = ColumnSize.OneThird),
                 Column(zController, size = ColumnSize.OneThird),
-                Column(Label(page.i18n("uplot.Scale (x,y,z)")), size = ColumnSize.Full),
+                Column(Label(page.i18n("Scale (x,y,z)")), size = ColumnSize.Full),
                 Column(xScaleController, size = ColumnSize.OneThird),
                 Column(yScaleController, size = ColumnSize.OneThird),
                 Column(zScaleController, size = ColumnSize.OneThird),

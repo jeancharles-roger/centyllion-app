@@ -87,7 +87,7 @@ class FieldTutorial(
             { page.model.model.grains[1].fieldProductions[0] ?: 0f >= 1f }
         ),
         TutorialStep(
-            i18n("uplot.Select the bacteria grain"), listOf(span(i18n("Make the bacterias attracted to sugar."))),
+            i18n("Select the bacteria grain"), listOf(span(i18n("Make the bacterias attracted to sugar."))),
             { page.modelController.grainsController.dataControllers.first().root },
             { page.modelController.editor.let { it is GrainEditController && it.data == page.model.model.grains.first() } }
         ),
@@ -101,7 +101,7 @@ class FieldTutorial(
             { page.model.model.grains[0].fieldInfluences[0] ?: 0f >= 0.5f }
         ),
         TutorialStep(
-            i18n("uplot.Select the behavior"), listOf(span(i18n("Let's constrain the division with the 'sugar' field."))),
+            i18n("Select the behavior"), listOf(span(i18n("Let's constrain the division with the 'sugar' field."))),
             { page.modelController.behavioursController.dataControllers.first().root },
             { page.modelController.editor is BehaviourEditController }
         ),
@@ -129,7 +129,7 @@ class FieldTutorial(
             { page.editionTab.selectedPage == page.simulationPage }
         ),
         TutorialStep(
-            i18n("uplot.Select the source grain"), listOf(span(i18n("Let's add some sources.", sourceDraw + 5))),
+            i18n("Select the source grain"), listOf(span(i18n("Let's add some sources.", sourceDraw + 5))),
             { page.simulationController.simulationViewController.selectedGrainController.root },
             { page.simulationController.simulationViewController.selectedGrainController.data?.id == sourceGrainId }
         ),

@@ -101,7 +101,7 @@ class BacteriasTutorial(
             { page.model.model.behaviours.isNotEmpty() }
         ),
         TutorialStep(
-            i18n("First product"), listOf(span(i18n("uplot.Select the bacteria grain as first product."))),
+            i18n("First product"), listOf(span(i18n("Select the bacteria grain as first product."))),
             {
                 val editor = page.modelController.editor
                 if (editor is BehaviourEditController) editor.mainProductController.root
@@ -124,7 +124,7 @@ class BacteriasTutorial(
             { (page.model.model.behaviours.firstOrNull()?.reaction?.size ?: 0) > 0 }
         ),
         TutorialStep(
-            i18n("Second product"), listOf(span(i18n("uplot.Select the bacteria grain as second product."))),
+            i18n("Second product"), listOf(span(i18n("Select the bacteria grain as second product."))),
             {
                 page.modelController.editor?.let {
                     if (it is BehaviourEditController)

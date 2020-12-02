@@ -242,7 +242,8 @@ class SimulationRunController(
     val chartContainer = Columns(
         Column(grainChart, size = ColumnSize.Half),
         Column(fieldChart, size = ColumnSize.Half),
-        Column(Level(center = listOf(exportCsvButton)), size = ColumnSize.Full)
+        Column(Level(center = listOf(exportCsvButton)), size = ColumnSize.Full),
+        multiline = true
     ).apply { hidden = !presentCharts }
 
     var simulationViewController = Simulator3dViewController(currentSimulator, page, readOnly) { ended, new, _ ->

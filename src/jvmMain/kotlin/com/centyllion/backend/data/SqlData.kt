@@ -279,7 +279,7 @@ class SqlData(
             .select {
                 DbDescriptionInfos.readAccess eq true and
                 // Simulation json must start with a name and a description
-                not(DbSimulationDescriptions.simulation regexp "^{\"name\":\"\",\"description\":\"\"")
+                not(DbSimulationDescriptions.simulation regexp "^{\"name\":\".*\",\"description\":\"\"")
             }
             .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
 

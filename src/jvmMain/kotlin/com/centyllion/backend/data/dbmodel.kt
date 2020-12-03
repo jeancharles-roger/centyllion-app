@@ -16,14 +16,25 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ColumnType
 import org.jetbrains.exposed.sql.Function
+import org.jetbrains.exposed.sql.LiteralOp
 import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.jodatime.DateColumnType
 import org.jetbrains.exposed.sql.jodatime.datetime
 import org.joda.time.DateTime
 import java.util.UUID
 
+private val defaultSearchable = LiteralOp(TsVectorColumnType(), "")
+
 class TsVectorColumnType : ColumnType()  {
     override fun sqlType() = "tsvector"
+
+    /*
+    override fun notNullValueToDB(value: Any): Any {
+        return "'$value'::tsvector"
+    }
+    */
+
+    override fun nonNullValueToString(value: Any): String = "'$value'"
 }
 
 class MinInfinity : Function<DateTime>(DateColumnType(false)) {
@@ -110,11 +121,11 @@ enum class DbModelType { Grain }
 object DbModelDescriptions : UUIDTable("modelDescriptions") {
     val info = reference("info", DbDescriptionInfos)
     val tags = text("tags").default("")
-    val tags_searchable = registerColumn<Any>("tags_searchable", TsVectorColumnType())
+    val tags_searchable = registerColumn<Any>("tags_searchable", TsVectorColumnType()).default(defaultSearchable)
     val model = text("model")
     val type = text("type")
     val version = integer("version")
-    val searchable = registerColumn<Any>("searchable", TsVectorColumnType())
+    val searchable = registerColumn<Any>("searchable", TsVectorColumnType()).default(defaultSearchable)
 }
 
 class DbModelDescription(id: EntityID<UUID>) : UUIDEntity(id) {
@@ -147,7 +158,7 @@ object DbSimulationDescriptions : UUIDTable("simulationDescriptions") {
     val simulation = text("simulation")
     val type = text("type")
     val version = integer("version")
-    val searchable = registerColumn<Any>("searchable", TsVectorColumnType())
+    val searchable = registerColumn<Any>("searchable", TsVectorColumnType()).default(defaultSearchable)
 }
 
 class DbSimulationDescription(id: EntityID<UUID>) : UUIDEntity(id) {

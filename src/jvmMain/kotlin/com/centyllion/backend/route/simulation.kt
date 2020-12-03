@@ -57,6 +57,12 @@ fun Route.simulation(data: Data) {
             }
         }
 
+        get("selection") {
+            val offset = (call.parameters["offset"]?.toLongOrNull() ?: 0).coerceAtLeast(0)
+            val limit = (call.parameters["limit"]?.toIntOrNull() ?: 50).coerceIn(0, 50)
+            context.respond(data.simulationsSelection(offset, limit))
+        }
+
         get("monitor") {
             withRequiredPrincipal(adminRole) {
                 context.respond(data.simulationsInfo())

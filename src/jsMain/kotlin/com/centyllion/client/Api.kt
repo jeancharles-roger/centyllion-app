@@ -198,6 +198,13 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
                 .then { Json.decodeFromString(ResultPage.serializer(SimulationDescription.serializer()), it) }
         }
 
+
+    fun fetchSimulationsSelection(offset: Long = 0, limit: Int = 20) =
+        executeWithRefreshedIdToken(instance) { bearer ->
+            fetch("GET", "/api/simulation/selection?offset=$offset&limit=$limit", bearer)
+                .then { Json.decodeFromString(ResultPage.serializer(SimulationDescription.serializer()), it) }
+        }
+
     fun fetchSimulation(simulationId: String) =
         executeWithRefreshedIdToken(instance) { bearer ->
             fetch("GET", "/api/simulation/$simulationId", bearer)

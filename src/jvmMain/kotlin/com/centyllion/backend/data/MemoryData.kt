@@ -159,6 +159,9 @@ class MemoryData(
         )
     }
 
+    override fun simulationsSelection(offset: Long, limit: Int): ResultPage<SimulationDescription> =
+        simulations(null, null, null, offset, limit)
+
     override fun getSimulation(id: String) = simulations[id] ?: backend?.getSimulation(id)
 
     override fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription {

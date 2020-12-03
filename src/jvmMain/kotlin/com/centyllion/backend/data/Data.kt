@@ -31,6 +31,8 @@ interface Data {
 
     fun simulationsInfo(): CollectionInfo
     fun simulations(callerId: String?, userId: String?, modelId: String?, offset: Long = 0, limit: Int = 20): ResultPage<SimulationDescription>
+    /** Returns the last modified simulations that contains a name and a description of a minimum size */
+    fun simulationsSelection(offset: Long, limit: Int): ResultPage<SimulationDescription>
     fun searchSimulation(query: String, offset: Long = 0, limit: Int = 20): ResultPage<SimulationDescription>
     fun getSimulation(id: String): SimulationDescription?
     fun createSimulation(userId: String, modelId: String, sent: Simulation): SimulationDescription

@@ -29,6 +29,7 @@ import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.jodatime.DateColumnType
+import org.jetbrains.exposed.sql.not
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -271,6 +272,20 @@ class SqlData(
             ).map { it.toModel() }
             ResultPage(content, offset, simulationsQuery(callerUUID, userUUID, modelUUID).count())
         }
+
+
+    override fun simulationsSelection(offset: Long, limit: Int): ResultPage<SimulationDescription> = transaction {
+        val query = DbSimulationDescriptions.innerJoin(DbDescriptionInfos)
+            .select {
+                DbDescriptionInfos.readAccess eq true and
+                // Simulation json must start with a name and a description
+                not(DbSimulationDescriptions.simulation regexp "^{\"name\":\"\",\"description\":\"\"")
+            }
+            .orderBy(DbDescriptionInfos.lastModifiedOn, SortOrder.DESC)
+
+        val content = DbSimulationDescription.wrapRows(query.limit(limit, offset)).map { it.toModel() }
+        ResultPage(content, offset, query.count())
+    }
 
     override fun getSimulation(id: String) = transaction(database) {
         DbSimulationDescription.findById(UUID.fromString(id))?.toModel()

@@ -3,6 +3,7 @@ package com.centyllion.model
 import kotlinx.serialization.Serializable
 
 val emptyUser = User("", "", "", null)
+val emptyAsset = Asset("", "", emptyList(), "")
 
 fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
 

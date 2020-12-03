@@ -8,11 +8,14 @@ import bulma.CardFooterContentItem
 import bulma.Column
 import bulma.ColumnSize
 import bulma.Columns
+import bulma.Control
 import bulma.Delete
 import bulma.Div
 import bulma.ElementColor
+import bulma.Field
 import bulma.FileInput
 import bulma.Icon
+import bulma.Input
 import bulma.Label
 import bulma.Level
 import bulma.SubTitle
@@ -34,6 +37,7 @@ import com.centyllion.client.controller.navigation.ResultPageController
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
+import com.centyllion.model.emptyAsset
 import com.centyllion.model.emptySimulationDescription
 import org.w3c.dom.HTMLElement
 import org.w3c.files.get
@@ -122,7 +126,6 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
             api.createAsset(file.name, file)
                 .then {
                     button.loading = false
-                    assetsPageController.refreshFetch()
                     assetSendResult.text = i18n("Asset created with id %0.", it)
                 }
                 .catch {
@@ -135,6 +138,12 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val assetSendResult = Label()
 
+    val assetSearchInput = Input(placeholder = "Asset uuid") { _, value ->
+        api.fetchAssets(value).then { assetController.data = it }.catch { assetController.data = emptyAsset }
+    }
+
+    val assetController = AssetAdministrationController(emptyAsset)
+
     val assetsPageController = ResultPageController(
         appContext.locale,
         noContextColumnsController(emptyList()) { data, previous ->
@@ -146,7 +155,19 @@ class AdministrationPage(override val appContext: AppContext) : BulmaPage {
 
     val assetPage = TabPage(
         TabItem(i18n("Assets"), "file-code"),
-        Div(Level(center = listOf(assetInput, assetSend, assetSendResult)), assetsPageController)
+        Columns(
+            Column(
+                Level(center = listOf(assetInput, assetSend, assetSendResult)),
+                Field(Label(i18n("Asset")), Control(assetSearchInput)),
+                assetController,
+                size = ColumnSize.Half
+            ),
+            Column(
+                assetsPageController,
+                size = ColumnSize.Half
+            ),
+            multiline = true
+        )
     )
 
     val onTabChange: (TabPage) -> Unit = {

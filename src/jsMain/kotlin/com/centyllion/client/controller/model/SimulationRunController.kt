@@ -246,9 +246,11 @@ class SimulationRunController(
         multiline = true
     ).apply { hidden = !presentCharts }
 
-    var simulationViewController = Simulator3dViewController(currentSimulator, page, readOnly) { ended, new, _ ->
-        updatedSimulatorFromView(ended, new)
-    }
+    var simulationViewController = Simulator3dViewController(
+        currentSimulator, page, readOnly,
+        onPointerMove = ::pickValuesAt,
+        onUpdate = { ended, new, _ -> updatedSimulatorFromView(ended, new) }
+    )
 
     val simulationView = Column(simulationViewController.container, size = ColumnSize.Full)
 
@@ -477,6 +479,31 @@ class SimulationRunController(
         stopButton.disabled = !running
 
         exportCsvButton.disabled = running || currentSimulator.step <= 0
+    }
+
+    fun pickValuesAt(x: Int, y: Int) {
+        // refreshes grain counts for x,y if valid other the total count
+        val counts =
+            if (x < 0 || y < 0) currentSimulator.lastGrainsCount().values
+            else currentSimulator.let {
+                val grainId = it.idAtIndex(it.simulation.toIndex(x,y))
+                it.model.grains.map { if (it.id == grainId) 1 else 0 }
+            }
+
+        grainsController.dataControllers.zip(counts) { controller, count ->
+            val source = controller.source
+            if (source is GrainRunController) source.count = count
+        }
+
+        // refresh fields count for x,y if valid otherwise the total field value
+        val amounts: Collection<Float> =
+            if (x < 0 || y < 0) currentSimulator.lastFieldAmount().values
+            else currentSimulator.let { it.fieldsAtIndex(it.simulation.toIndex(x,y)) }.map { it.second }
+
+        fieldsController.dataControllers.zip(amounts) { controller, amount ->
+            val source = controller.source
+            if (source is FieldRunController) source.amount = amount
+        }
     }
 
     fun refreshCounts() {

@@ -1,6 +1,7 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
+import com.centyllion.model.minFieldLevel
 import kotlinx.browser.document
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
@@ -11,7 +12,29 @@ import org.w3c.files.Blob
 external fun encodeURI(parameter: String): String
 external fun encodeURIComponent(parameter: String): String
 
-external fun <T> require(dependencies: Array<String>, block: (T) -> Unit)
+private val fieldFloatRegex = Regex("(0\\.(0*)([0-9]+))|(([1-9])\\.([0-9]+)e-([0-9]+))")
+
+fun Float.toFieldString(): String = when {
+    this < minFieldLevel -> ""
+    this < 1e-3 -> {
+        val output = this.toString()
+        val match = fieldFloatRegex.matchEntire(output)
+        when {
+            match == null -> output
+            output.startsWith("0") -> {
+                val exponent = "-${match.groupValues[2].length+1}"
+                val mantissa = match.groupValues[3].substring(0,1)
+                "${mantissa}e${exponent}"
+            }
+            else -> {
+                val exponent = "-${match.groupValues[7]}"
+                val mantissa = match.groupValues[5]
+                "${mantissa}e${exponent}"
+            }
+        }
+    }
+    else -> this.toFixed(3)
+}
 
 fun Number.toFixed(size: Int = 3): String = toDouble().toFixed(size)
 fun Double.toFixed(size: Int = 3): String = asDynamic().toFixed(size) as String

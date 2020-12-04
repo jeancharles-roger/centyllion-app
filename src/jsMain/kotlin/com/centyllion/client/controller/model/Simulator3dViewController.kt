@@ -68,6 +68,7 @@ import kotlin.random.Random
 
 class Simulator3dViewController(
     simulator: Simulator, val page: BulmaPage, readOnly: Boolean = true,
+    val onPointerMove: (x: Int, y: Int) -> Unit = { _, _ -> },
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
@@ -510,21 +511,25 @@ class Simulator3dViewController(
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerMove(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
-        if (ray != null && selectedTool != EditTools.Move) {
+        if (ray != null ) {
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
-            if (info.hit && info.pickedMesh == plane) {
-                val x = toSimulation(info.pickedPoint?.x)
-                val y = toSimulation(info.pickedPoint?.z)
 
-                positionPointer(x, y)
-                if (drawStep > 0) {
+            val x = toSimulation(info.pickedPoint?.x)
+            val y = toSimulation(info.pickedPoint?.z)
+            positionPointer(x, y)
+
+            if (info.hit && info.pickedMesh == plane) {
+                if (selectedTool != EditTools.Move && drawStep > 0) {
                     simulationX = x + 50
                     simulationY = y + 50
                     updatePointer()
                     drawOnSimulation()
                     drawStep += 1
                 }
+                onPointerMove(x + 50 , y + 50)
+            } else {
+                onPointerMove(-1, -1)
             }
 
         }

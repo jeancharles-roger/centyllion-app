@@ -28,15 +28,11 @@ class ApplicableBehaviourController(
         if (old != new) {
             title.text = new.behaviour.name
             visual.build()
-            invalidate()
         }
     }
 
     override var context by observable(simulator) { _, old, new ->
-        if (old != new) {
-            visual.build()
-            invalidate()
-        }
+        if (old != new) visual.build()
     }
 
     override var readOnly: Boolean = true
@@ -160,9 +156,7 @@ class ApplicableBehaviourController(
     fun switchState() {
         // change state
         state = state.next
-        // rebuild
         visual.build()
-        invalidate()
     }
 
     fun renderRequest() {

@@ -20,11 +20,11 @@ val exposed_version: String = "0.28.1"
 val postgresql_version: String = "42.2.5"
 val keycloak_version: String = "8.0.2"
 
-val data2viz_version: String = "0.8.0-RC12"
+val data2viz_version: String = "0.8.9"
 
 plugins {
-    kotlin("multiplatform").version("1.4.20")
-    id("kotlinx-serialization").version("1.4.20")
+    kotlin("multiplatform").version("1.4.21")
+    id("kotlinx-serialization").version("1.4.21")
 }
 
 repositories {

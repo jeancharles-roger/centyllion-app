@@ -8,6 +8,18 @@ import kotlin.math.pow
 enum class Direction {
     Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown;
 
+    val deltaX get() = when (this) {
+        Left, LeftUp, LeftDown -> -1
+        Right, RightUp, RightDown -> 1
+        else -> 0
+    }
+
+    val deltaY get() = when (this) {
+        Up, LeftUp, RightUp -> -1
+        Down, LeftDown, RightDown -> 1
+        else -> 0
+    }
+
     val opposite get() = when (this) {
         Left -> Right
         Right -> Left
@@ -229,7 +241,6 @@ data class Behaviour(
     fun updateReaction(old: Reaction, new: Reaction): Behaviour {
         val index = reactionIndex(old)
         if (index < 0) return this
-
 
         val newBehaviours = reaction.toMutableList()
         newBehaviours[index] = new
@@ -476,7 +487,7 @@ data class GrainModel(
     }
 }
 
-fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }
+private fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }
 
 fun createSimulation(
     name: String = "",

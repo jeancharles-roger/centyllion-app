@@ -31,6 +31,7 @@ import com.centyllion.client.plotter.PlotterController
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.client.stringHref
 import com.centyllion.client.toggleElementToFullScreen
+import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Asset3d
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
@@ -60,6 +61,7 @@ class SimulationRunController(
         if (old != new) {
             currentSimulator = Simulator(context, new)
             simulationViewController.data = currentSimulator
+            applicables.context = currentSimulator
             asset3dController.data = new.assets
             running = false
             grainChart.data = createGrainPlots()
@@ -78,6 +80,7 @@ class SimulationRunController(
             selectedGrainController.context = new.grains
             selectedGrainController.data = new.grains.firstOrNull()
             currentSimulator = Simulator(new, data)
+            applicables.context = currentSimulator
             behavioursController.context = currentSimulator
             simulationViewController.data = currentSimulator
             grainChart.data = createGrainPlots()
@@ -103,7 +106,6 @@ class SimulationRunController(
         if (old != new) {
             simulationViewController.running = new
             if (new) {
-                window.requestAnimationFrame(this::animationCallback)
                 refreshButtons()
             } else {
                 lastStepTimestamp = 0.0
@@ -113,6 +115,10 @@ class SimulationRunController(
     }
 
     val isRunning get() = running
+
+    private var disposed = false
+
+    private var lastApplicableSwitchTimestamp = 0.0
 
     private var fps = 50.0
     private var lastStepTimestamp = 0.0
@@ -331,9 +337,14 @@ class SimulationRunController(
 
     val simulationColumn = Column(simulationColumns, size = ColumnSize.TwoThirds)
 
+    val applicables = columnsController(
+        emptyList<ApplicableBehavior>(), simulator
+    ) { applicable, previous -> previous ?: ApplicableBehaviourController(applicable, simulator) }
+
     override val container = Columns(
         selectorColumn,
         simulationColumn,
+        Column(applicables, size = ColumnSize.Full),
         Column(chartContainer, size = ColumnSize.Full),
         assetsColumn,
         multiline = true, centered = true
@@ -389,8 +400,18 @@ class SimulationRunController(
             }
 
             lastRequestSkipped = refresh
-            window.requestAnimationFrame(this::animationCallback)
         }
+
+
+        val delta = timestamp - lastApplicableSwitchTimestamp
+        if (delta > 1000) {
+            applicables.dataControllers
+                .filterIsInstance<ApplicableBehaviourController>()
+                .forEach { it.switchState() }
+            lastApplicableSwitchTimestamp = timestamp
+        }
+
+        if (!disposed) window.requestAnimationFrame(this::animationCallback)
     }
 
     fun step() {
@@ -504,6 +525,11 @@ class SimulationRunController(
             val source = controller.source
             if (source is FieldRunController) source.amount = amount
         }
+
+        applicables.data =
+            if (x < 0 || y < 0) emptyList()
+            else simulator.applicableBehaviours(simulator.simulation.toIndex(x,y))
+
     }
 
     fun refreshCounts() {
@@ -552,6 +578,7 @@ class SimulationRunController(
     }
 
     fun dispose() {
+        disposed = true
         stop()
         simulationViewController.dispose()
     }

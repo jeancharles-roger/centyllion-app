@@ -99,6 +99,7 @@ fun Application.centyllion(config: ServerConfig) {
         options {
             val type = it.contentType
             when {
+                config.debug -> null
                 type == null -> null
                 type.match(ContentType.Application.Json) -> CachingOptions(CacheControl.MaxAge(5))
                 type.match(ContentType.Application.JavaScript) -> CachingOptions(CacheControl.MaxAge(31536000 /* one year */))

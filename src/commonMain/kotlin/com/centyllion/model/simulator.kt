@@ -9,14 +9,14 @@ const val minFieldLevel = 1e-14f
 
 val emptyFloatArray = FloatArray(0)
 
-class Agent(val index: Int, val id: Int, val age: Int, val fields: FloatArray)
+class Agent(val index: Int, val direction: Direction, val id: Int, val age: Int, val fields: FloatArray)
 
 class ApplicableBehavior(
     /** Index in the data where to apply the behavior */
     val index: Int, val age: Int,
     /** The behaviour to apply */
     val behaviour: Behaviour,
-    /** */
+    /** List of used neighbours  */
     val usedNeighbours: List<Agent>
 ) {
 
@@ -105,6 +105,36 @@ class Simulator(
         speeds[behaviour] = speed
     }
 
+    fun applicableBehaviours(index: Int): List<ApplicableBehavior> {
+        // computes applicable behaviour for index
+        val grain = grainAtIndex(index)
+        return if (grain != null && reactiveGrains.contains(grain)) {
+            // a grain is present, a behaviour can be triggered
+            val age = ageAtIndex(index)
+            val fieldValues = fieldsAtIndex(index)
+
+            // find all neighbours
+            val neighbours = neighbours(index)
+            val applicable = allBehaviours.filter { it.applicable(grain, age, fieldValues, neighbours) }
+
+            // selects behaviour if any is applicable
+            applicable.flatMap { behaviour ->
+                // for each reactions, find all possible reactives
+                val possibleReactions = behaviour.reaction
+                    .map { reaction ->
+                        neighbours.filter { (d, a) ->
+                            reaction.reactiveId == a.id && reaction.allowedDirection.contains(d)
+                        }
+                    }
+
+                possibleReactions
+                    .allCombinations()
+                    .map { ApplicableBehavior(index, age, behaviour, it.map { it.second }) }
+            }
+        } else emptyList()
+    }
+
+
     /** Executes one step and returns the applied behaviours and the dead indexes. */
     fun oneStep(): Pair<Collection<ApplicableBehavior>, Collection<Int>> {
         // applies agents dying process
@@ -126,7 +156,7 @@ class Simulator(
             if (grain != null) {
                 // does the grain dies ?
                 if (grain.halfLife > 0.0 && random.nextDouble() <= grain.deathProbability) {
-                    // it dies, does't count
+                    // it dies, doesn't count
                     transform(i, i, null)
                     dead.add(i)
 
@@ -134,15 +164,6 @@ class Simulator(
                     currentCount[grain] = currentCount.getOrElse(grain) { 0 } + 1
                     ageGrain(i)
 
-                    val selected = all[i].let {
-                        if (it == null) {
-                            val new = mutableListOf<ApplicableBehavior>()
-                            all[i] = new
-                            new
-                        } else {
-                            it
-                        }
-                    }
                     if (reactiveGrains.contains(grain)) {
                         // a grain is present, a behaviour can be triggered
                         val age = ageAtIndex(i)
@@ -206,10 +227,9 @@ class Simulator(
                                     influence.indexOfFirst { probability < it }
                                 }
                             }
-                            // registers behaviour for for concurrency
+                            // registers behaviour for concurrency
                             val usedNeighbours = allCombinations[chosenCombination].map { it.second }
                             val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)
-                            selected.add(behavior)
                             usedNeighbours.forEach { all.getOrPut(it.index) { mutableListOf() }.add(behavior) }
                         }
                     }
@@ -337,7 +357,7 @@ class Simulator(
             val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->
                 val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {field(it)[id] }
-                Agent(id, currentAgents[id], ages[id], fieldValues)
+                Agent(id, direction, currentAgents[id], ages[id], fieldValues)
             }
         }
     }

@@ -96,8 +96,7 @@ data class CliServerConfig(
 
     @OptIn(ExperimentalPathApi::class)
     internal fun updateRootJs() {
-        val watchKey = rootJsWatchService?.poll()
-        val pollEvents = watchKey?.pollEvents()
+        val pollEvents = rootJsPathKey?.pollEvents()
         if (pollEvents?.isNotEmpty() == true) {
             val created = pollEvents.first().context() as Path
             val name = created.name
@@ -106,7 +105,7 @@ data class CliServerConfig(
                 rootJs = "/js/centyllion/${created}"
             }
         }
-        watchKey?.reset()
+        rootJsPathKey?.reset()
     }
 
     internal fun cancelRootJsWatch() {

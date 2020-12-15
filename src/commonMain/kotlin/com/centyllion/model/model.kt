@@ -300,7 +300,7 @@ data class Behaviour(
         // checks reactions
         for (r in reaction) {
             if (r.allowedDirection.none { d ->
-                neighbours.any { it.first == d && it.second.id == r.reactiveId }
+                neighbours.any { it.first == d && it.second.reactiveId == r.reactiveId }
             }) return false
         }
         return true

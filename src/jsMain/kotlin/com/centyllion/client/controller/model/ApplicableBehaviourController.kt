@@ -7,6 +7,7 @@ import bulma.Help
 import bulma.canvas
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.model.ApplicableBehavior
+import com.centyllion.model.Direction
 import com.centyllion.model.Simulator
 import io.data2viz.color.Color
 import io.data2viz.color.Colors
@@ -101,15 +102,14 @@ class ApplicableBehaviourController(
                     val grain = context.grainAtIndex(data.index)
                     if (grain != null) path { drawGrain(1, 1, grain.color.toRGB()) }
 
-                    data.usedNeighbours.forEach { agent ->
-                        val agentGrain = context.model.grainForId(agent.id)
-                        if (agentGrain != null) {
+                    // presents all grains from simulation for context
+                    Direction.values().forEach { direction ->
+                        val index = context.simulation.moveIndex(data.index, direction)
+                        val id = context.idAtIndex(index)
+                        val grain = context.model.grainForId(id)
+                        if (grain != null ) {
                             path {
-                                drawGrain(
-                                    1 + agent.direction.deltaX,
-                                    1 + agent.direction.deltaY,
-                                    agentGrain.color.toRGB()
-                                )
+                                drawGrain(1 + direction.deltaX, 1 + direction.deltaY, grain.color.toRGB())
                             }
                         }
                     }
@@ -119,9 +119,10 @@ class ApplicableBehaviourController(
                     val grain = context.model.grainForId(data.behaviour.mainProductId)
                     if (grain != null) path { drawGrain(1, 1, grain.color.toRGB()) }
 
-                    val reactives = data.usedNeighbours.sortedBy { it.id }
+                    // first draw products
+                    val reactives = data.usedNeighbours.sortedBy { it.reactiveId }
                     val reactions = data.behaviour.reaction.sortedBy { it.reactiveId }
-                    reactions.zip(reactives).forEach { (reaction, reactive) ->
+                    val drawn = reactions.zip(reactives).map { (reaction, reactive) ->
                         val agentGrain = context.model.grainForId(reaction.productId)
                         if (agentGrain != null) {
                             path {
@@ -130,6 +131,27 @@ class ApplicableBehaviourController(
                                     1 + reactive.direction.deltaY,
                                     agentGrain.color.toRGB()
                                 )
+                            }
+                        }
+                        reactive.direction
+                    }
+
+                    // draws the rest if not already done
+                    Direction.values()
+                        .filter { !drawn.contains(it) }
+                        .forEach { direction ->
+
+                        // finds index
+                        val index = context.simulation.moveIndex(data.index, direction)
+                        // searches if current direction is used by reaction
+                        val reactionNeighbour = data.usedNeighbours.find { it.direction == direction }
+                        val grainId = reactionNeighbour?.reactiveId?.let { data.behaviour.reaction }
+                        // finds the grain to show either the product if used, the original if not
+                        val grain = context.model.grainForId(reactionNeighbour?.reactiveId ?: context.idAtIndex(index))
+
+                        if (grain != null ) {
+                            path {
+                                drawGrain(1 + direction.deltaX, 1 + direction.deltaY, grain.color.toRGB())
                             }
                         }
                     }

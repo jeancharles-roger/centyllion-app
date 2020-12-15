@@ -9,7 +9,7 @@ const val minFieldLevel = 1e-14f
 
 val emptyFloatArray = FloatArray(0)
 
-class Agent(val index: Int, val direction: Direction, val id: Int, val age: Int, val fields: FloatArray)
+class Agent(val index: Int, val direction: Direction, val reactiveId: Int, val age: Int, val fields: FloatArray)
 
 class ApplicableBehavior(
     /** Index in the data where to apply the behavior */
@@ -31,7 +31,7 @@ class ApplicableBehavior(
         simulator.transform(index, index, behaviour.mainProductId, ageForSource(behaviour.sourceReactive))
 
         // applies other reaction find each neighbour for each reaction
-        val reactives = usedNeighbours.sortedBy { it.id }
+        val reactives = usedNeighbours.sortedBy { it.reactiveId }
         val reactions = behaviour.reaction.sortedBy { it.reactiveId }
 
         // applies reactions
@@ -123,7 +123,7 @@ class Simulator(
                 val possibleReactions = behaviour.reaction
                     .map { reaction ->
                         neighbours.filter { (d, a) ->
-                            reaction.reactiveId == a.id && reaction.allowedDirection.contains(d)
+                            reaction.reactiveId == a.reactiveId && reaction.allowedDirection.contains(d)
                         }
                     }
 
@@ -186,7 +186,7 @@ class Simulator(
                             val possibleReactions = behaviour.reaction
                                 .map { reaction ->
                                     neighbours.filter { (d, a) ->
-                                        reaction.reactiveId == a.id && reaction.allowedDirection.contains(d)
+                                        reaction.reactiveId == a.reactiveId && reaction.allowedDirection.contains(d)
                                     }
                                 }
 

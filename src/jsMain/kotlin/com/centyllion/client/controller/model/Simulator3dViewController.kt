@@ -779,7 +779,7 @@ class Simulator3dViewController(
 
             // applies secondary reactions
             // TODO find if the sort can be avoided
-            val reactives = one.usedNeighbours.sortedBy { it.id }
+            val reactives = one.usedNeighbours.sortedBy { it.reactiveId }
             val reactions = one.behaviour.reaction.sortedBy { it.reactiveId }
             reactions.zip(reactives).forEach { (reaction, reactive) ->
                 transformMesh(reactive.index, reaction.productId)

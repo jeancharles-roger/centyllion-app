@@ -339,7 +339,7 @@ class SimulationRunController(
 
     val applicables = columnsController(
         emptyList<ApplicableBehavior>(), simulator
-    ) { applicable, previous -> previous ?: ApplicableBehaviourController(applicable, simulator) }
+    ) { applicable, previous -> previous ?: ApplicableBehaviourController(applicable, simulator, page.appContext) }
 
     override val container = Columns(
         selectorColumn,

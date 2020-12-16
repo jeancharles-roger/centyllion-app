@@ -5,6 +5,7 @@ import bulma.Column
 import bulma.Controller
 import bulma.Help
 import bulma.canvas
+import com.centyllion.client.AppContext
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.model.ApplicableBehavior
 import com.centyllion.model.Direction
@@ -19,7 +20,7 @@ import kotlinx.browser.window
 import kotlin.properties.Delegates.observable
 
 class ApplicableBehaviourController(
-    initial: ApplicableBehavior, simulator: Simulator
+    initial: ApplicableBehavior, simulator: Simulator, val appContext: AppContext
 ): Controller<ApplicableBehavior, Simulator, Column> {
 
     private val width: Int = 100
@@ -38,23 +39,31 @@ class ApplicableBehaviourController(
 
     override var readOnly: Boolean = true
 
-    val title: Help = Help(data.behaviour.name)
+    val title: Help = Help(data.behaviour.name).apply {
+        root.classList.add("has-text-centered")
+    }
 
     val canvas = canvas {
         width = "${this@ApplicableBehaviourController.width}px"
         height = "${this@ApplicableBehaviourController.height}px"
     }
 
-    override val container: Column = Column(Box(title, canvas), narrow = true)
-
     private var redraw = false
 
     private enum class State {
-        Reactive, Product;
-        val next get() = if (this == Reactive) Product else Reactive
+        Reactives, Products;
+
+
+        val next get() = if (this == Reactives) Products else Reactives
     }
 
-    private var state = State.Reactive
+    private var state = State.Reactives
+
+    val stateLabel: Help = Help(appContext.i18n(state.name)).apply {
+        root.classList.add("has-text-centered")
+    }
+
+    override val container: Column = Column(Box(title, canvas, stateLabel), narrow = true)
 
     private fun Viz.build() {
         clear()
@@ -93,11 +102,10 @@ class ApplicableBehaviourController(
             path { drawGrid() }
         }
 
-        // source grains
+        // grains
         group {
-
             when (state) {
-                State.Reactive -> {
+                State.Reactives -> {
                     // presents source of the behaviour
                     val grain = context.grainAtIndex(data.index)
                     if (grain != null) path { drawGrain(1, 1, grain.color.toRGB()) }
@@ -114,7 +122,7 @@ class ApplicableBehaviourController(
                         }
                     }
                 }
-                State.Product -> {
+                State.Products -> {
                     // presents target of the behaviour
                     val grain = context.model.grainForId(data.behaviour.mainProductId)
                     if (grain != null) path { drawGrain(1, 1, grain.color.toRGB()) }
@@ -178,6 +186,7 @@ class ApplicableBehaviourController(
     fun switchState() {
         // change state
         state = state.next
+        stateLabel.text = appContext.i18n(state.name)
         visual.build()
     }
 

@@ -90,11 +90,12 @@ class ApplicableBehaviourController(
 
         fun PathNode.drawGrain(x: Int, y: Int, color: Color) {
             fill = color
-            moveTo(x * stepX, y * stepY)
-            lineTo(x * stepX + stepX, y * stepY)
-            lineTo(x * stepX + stepX, y * stepY + stepY)
-            lineTo(x * stepX, y * stepY + stepY)
-            lineTo(x * stepX, y * stepY)
+            val delta = 2
+            moveTo(x * stepX + delta, y * stepY + delta)
+            lineTo(x * stepX + stepX - delta, y * stepY + delta)
+            lineTo(x * stepX + stepX - delta, y * stepY + stepY - delta)
+            lineTo(x * stepX + delta, y * stepY + stepY - delta)
+            lineTo(x * stepX + delta, y * stepY + delta)
         }
 
         // grid

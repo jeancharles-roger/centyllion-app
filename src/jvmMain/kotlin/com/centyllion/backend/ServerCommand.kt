@@ -153,7 +153,7 @@ class ServerCommand : CliktCommand("Start the server") {
     val keycloakPassword by option("--keycloak-password", help = "Keycloak password")
 
     val keystore by option(help = "Keystore for passwords and keys")
-        .path(exists = true, readable = true)
+        .path(mustExist = true, mustBeReadable = true)
         .default(Paths.get("centyllion.jks"))
 
     val password by option(help = "Keystore password", envvar = "KEYSTORE_PASSWORD")

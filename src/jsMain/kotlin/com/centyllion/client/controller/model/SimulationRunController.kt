@@ -506,9 +506,9 @@ class SimulationRunController(
         // refreshes grain counts for x,y if valid other the total count
         val counts =
             if (x < 0 || y < 0) currentSimulator.lastGrainsCount().values
-            else currentSimulator.let {
-                val grainId = it.idAtIndex(it.simulation.toIndex(x,y))
-                it.model.grains.map { if (it.id == grainId) 1 else 0 }
+            else currentSimulator.let { simulator ->
+                val grainId = simulator.idAtIndex(simulator.simulation.toIndex(x,y))
+                simulator.model.grains.map { if (it.id == grainId) 1 else 0 }
             }
 
         grainsController.dataControllers.zip(counts) { controller, count ->

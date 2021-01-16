@@ -8,19 +8,19 @@ import java.util.Date
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serialization_version: String = "1.0.1"
-val coroutine_version: String = "1.4.2"
-val clikt_version: String = "3.1.0"
-val logback_version: String = "1.2.3"
-val ktor_version: String = "1.5.0"
-val kotlinx_html_version: String = "0.7.2"
-val bulma_kotlin_version: String = "0.4"
-val babylon_kotlin_version: String = "0.4"
-val exposed_version: String = "0.28.1"
-val postgresql_version: String = "42.2.5"
-val keycloak_version: String = "8.0.2"
+val serializationVersion: String = "1.0.1"
+val coroutineVersion: String = "1.4.2"
+val cliktVersion: String = "3.1.0"
+val logbackVersion: String = "1.2.3"
+val ktorVersion: String = "1.5.0"
+val kotlinxHtmlVersion: String = "0.7.2"
+val bulmaKotlinVersion: String = "0.4"
+val babylonKotlinVersion: String = "0.4"
+val exposedVersion: String = "0.28.1"
+val postgresqlVersion: String = "42.2.5"
+val keycloakVersion: String = "8.0.2"
 
-val data2viz_version: String = "0.8.9"
+val data2vizVersion: String = "0.8.9"
 
 plugins {
     kotlin("multiplatform").version("1.4.21")
@@ -50,8 +50,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serialization_version")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
             }
         }
         val commonTest by getting {
@@ -66,30 +66,30 @@ kotlin {
     jvm {
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation("com.github.ajalt.clikt:clikt:$clikt_version")
+                implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
 
                 // needed by ktor-auth-jwt (strange since it was included at some time ...)
                 implementation("com.google.guava:guava:27.1-jre")
 
-                if (d) implementation("ch.qos.logback:logback-classic:$logback_version")
+                if (d) implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
-                implementation("io.ktor:ktor-html-builder:$ktor_version")
-                implementation("io.ktor:ktor-client-apache:$ktor_version")
-                implementation("io.ktor:ktor-auth:$ktor_version")
-                implementation("io.ktor:ktor-auth-jwt:$ktor_version")
-                implementation("io.ktor:ktor-network-tls:$ktor_version")
-                implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
-                implementation("io.ktor:ktor-server-netty:$ktor_version")
-                implementation("io.ktor:ktor-serialization:$ktor_version")
+                implementation("io.ktor:ktor-html-builder:$ktorVersion")
+                implementation("io.ktor:ktor-client-apache:$ktorVersion")
+                implementation("io.ktor:ktor-auth:$ktorVersion")
+                implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+                implementation("io.ktor:ktor-network-tls:$ktorVersion")
+                implementation("io.ktor:ktor-network-tls-certificates:$ktorVersion")
+                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+                implementation("io.ktor:ktor-serialization:$ktorVersion")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
 
                 // adds dependencies for postgres
-                implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-                implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
-                implementation("org.jetbrains.exposed:exposed-jodatime:$exposed_version")
-                implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-                implementation("org.postgresql:postgresql:$postgresql_version")
+                implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-jodatime:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+                implementation("org.postgresql:postgresql:$postgresqlVersion")
                 implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
 
                 // adds dependencies to manage keycloak users
@@ -97,13 +97,13 @@ kotlin {
                 implementation("org.jboss.resteasy:resteasy-jaxrs:3.6.1.Final")
                 implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
                 implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
-                implementation("org.keycloak:keycloak-admin-client:$keycloak_version")
+                implementation("org.keycloak:keycloak-admin-client:$keycloakVersion")
             }
         }
         // JVM-specific tests and their dependencies:
         compilations["test"].defaultSourceSet {
             dependencies {
-                implementation("io.ktor:ktor-server-test-host:$ktor_version")
+                implementation("io.ktor:ktor-server-test-host:$ktorVersion")
                 implementation(kotlin("test-junit"))
             }
         }
@@ -124,16 +124,16 @@ kotlin {
 
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinx_html_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinxHtmlVersion")
 
-                implementation("com.centyllion:bulma-kotlin:$bulma_kotlin_version")
-                implementation("com.centyllion:babylon-kotlin:$babylon_kotlin_version")
+                implementation("com.centyllion:bulma-kotlin:$bulmaKotlinVersion")
+                implementation("com.centyllion:babylon-kotlin:$babylonKotlinVersion")
 
-                implementation("io.data2viz.d2v:core-js:$data2viz_version")
-                implementation("io.data2viz.d2v:color-js:$data2viz_version")
-                implementation("io.data2viz.d2v:scale-js:$data2viz_version")
-                implementation("io.data2viz.d2v:viz-js:$data2viz_version")
-                implementation("io.data2viz.d2v:axis:$data2viz_version")
+                implementation("io.data2viz.d2v:core-js:$data2vizVersion")
+                implementation("io.data2viz.d2v:color-js:$data2vizVersion")
+                implementation("io.data2viz.d2v:scale-js:$data2vizVersion")
+                implementation("io.data2viz.d2v:viz-js:$data2vizVersion")
+                implementation("io.data2viz.d2v:axis:$data2vizVersion")
                 
                 implementation(npm("babylonjs", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))

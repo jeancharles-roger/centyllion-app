@@ -2,6 +2,7 @@ package com.centyllion.backend.route
 
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
+import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
@@ -50,7 +51,7 @@ fun Route.simulation(data: Data) {
                 context.respond(
                     when {
                         model == null -> HttpStatusCode.NotFound
-                        !hasReadAccess(model.info, user) -> HttpStatusCode.Unauthorized
+                        !hasReadAccess(model.info, user) && !it.hasRole(adminRole) -> HttpStatusCode.Unauthorized
                         else -> data.createSimulation(user.id, modelId, newSimulation)
                     }
                 )
@@ -104,7 +105,7 @@ fun Route.simulation(data: Data) {
                             simulation.id != simulationId -> HttpStatusCode.Forbidden
                             // TODO block private model, need some writes
                             !simulation.info.readAccess -> HttpStatusCode.Forbidden
-                            !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
+                            !isOwner(simulation.info, user) && !it.hasRole(adminRole) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveSimulation(simulation)
                                 HttpStatusCode.OK
@@ -123,7 +124,7 @@ fun Route.simulation(data: Data) {
                     context.respond(
                         when {
                             simulation == null -> HttpStatusCode.NotFound
-                            !isOwner(simulation.info, user) -> HttpStatusCode.Unauthorized
+                            !isOwner(simulation.info, user) && !it.hasRole(adminRole) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.deleteSimulation(simulationId)
                                 if (simulation.thumbnailId != null) {
@@ -160,7 +161,7 @@ fun Route.simulation(data: Data) {
 
                         when {
                             simulation == null -> context.respond(HttpStatusCode.NotFound)
-                            !isOwner(simulation.info, user) -> context.respond(HttpStatusCode.Unauthorized)
+                            !isOwner(simulation.info, user) && !it.hasRole(adminRole) -> context.respond(HttpStatusCode.Unauthorized)
                             else -> {
                                 // gets all parts
                                 val multipart = call.receiveMultipart()

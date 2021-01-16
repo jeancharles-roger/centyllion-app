@@ -2,6 +2,7 @@ package com.centyllion.backend.route
 
 import com.centyllion.backend.data.Data
 import com.centyllion.backend.hasReadAccess
+import com.centyllion.backend.hasRole
 import com.centyllion.backend.isOwner
 import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
@@ -93,7 +94,7 @@ fun Route.model(data: Data) {
                             model.id != id -> HttpStatusCode.Forbidden
                             // TODO block private model, need some writes
                             !model.info.readAccess -> HttpStatusCode.Forbidden
-                            !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
+                            !isOwner(model.info, user) && !it.hasRole(adminRole) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.saveGrainModel(model)
                                 HttpStatusCode.OK
@@ -112,7 +113,7 @@ fun Route.model(data: Data) {
                     context.respond(
                         when {
                             model == null -> HttpStatusCode.NotFound
-                            !isOwner(model.info, user) -> HttpStatusCode.Unauthorized
+                            !isOwner(model.info, user) && !it.hasRole(adminRole) -> HttpStatusCode.Unauthorized
                             else -> {
                                 data.deleteGrainModel(id)
                                 HttpStatusCode.OK

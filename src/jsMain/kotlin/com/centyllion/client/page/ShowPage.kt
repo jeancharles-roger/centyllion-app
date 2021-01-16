@@ -45,6 +45,7 @@ import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.client.twitterHref
+import com.centyllion.common.adminRole
 import com.centyllion.model.Behaviour
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
@@ -84,8 +85,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val api = appContext.api
 
-    val isModelReadOnly
-        get() = model.id.isNotEmpty() && model.info.user?.id != appContext.me?.id
+    val isModelReadOnly get() =
+        model.id.isNotEmpty() &&
+        model.info.user?.id != appContext.me?.id &&
+        !appContext.hasRole(adminRole)
 
     private var problems: List<Problem> = emptyList()
 
@@ -122,8 +125,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
-    val isSimulationReadOnly
-        get() = simulation.id.isNotEmpty() && simulation.info.user?.id != appContext.me?.id
+    val isSimulationReadOnly get() =
+        simulation.id.isNotEmpty() &&
+        simulation.info.user?.id != appContext.me?.id &&
+        !appContext.hasRole(adminRole)
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
@@ -652,7 +657,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
-                setReadonlyControls(isModelReadOnly)
+                setReadonlyControls(isSimulationReadOnly)
                 undoControl.body = simulationUndoRedo.undoButton
                 redoControl.body = simulationUndoRedo.redoButton
             }

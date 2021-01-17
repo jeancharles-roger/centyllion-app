@@ -132,8 +132,8 @@ fun index() {
     val api = Api(keycloak)
     api.addCss()
 
-    api.fetchLocales().then {
-        val localeName = it.resolve(window.navigator.language)
+    api.fetchLocales().then { locales ->
+        val localeName = locales.resolve(window.navigator.language)
         console.log("Loading locale $localeName for ${window.navigator.language}")
         api.fetchLocale(localeName).then { locale ->
 
@@ -145,7 +145,7 @@ fun index() {
                 promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
             )
             keycloak.init(options)
-                .then { _ -> api.fetchMe() }
+                .then { api.fetchMe() }
                 .then { user ->
                     // creates context
                     val context = BrowserContext(locale, navBar, keycloak, user, api)

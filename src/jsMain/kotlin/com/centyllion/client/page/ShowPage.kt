@@ -1,67 +1,18 @@
 package com.centyllion.client.page
 
-import bulma.BulmaElement
-import bulma.Button
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
-import bulma.Control
-import bulma.Div
-import bulma.Dropdown
-import bulma.ElementColor
-import bulma.FieldElement
-import bulma.Help
-import bulma.Icon
-import bulma.Level
-import bulma.Message
-import bulma.Size
-import bulma.TabItem
-import bulma.TabPage
-import bulma.TabPages
-import bulma.Table
-import bulma.TableCell
-import bulma.TableHeaderCell
-import bulma.TableHeaderRow
-import bulma.TableRow
-import bulma.Tabs
-import bulma.TextColor
-import bulma.iconButton
-import bulma.p
-import bulma.span
-import bulma.textButton
-import com.centyllion.client.AppContext
+import bulma.*
+import com.centyllion.client.*
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.model.TagsController
 import com.centyllion.client.controller.utils.EditableMarkdownController
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
-import com.centyllion.client.download
-import com.centyllion.client.facebookHref
-import com.centyllion.client.homePage
-import com.centyllion.client.linkedInHref
-import com.centyllion.client.stringHref
-import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
-import com.centyllion.client.twitterHref
 import com.centyllion.common.adminRole
-import com.centyllion.model.Behaviour
+import com.centyllion.model.*
 import com.centyllion.model.Field
-import com.centyllion.model.Grain
-import com.centyllion.model.GrainModel
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.ModelElement
-import com.centyllion.model.Problem
-import com.centyllion.model.Simulation
-import com.centyllion.model.SimulationDescription
-import com.centyllion.model.behaviourIcon
-import com.centyllion.model.emptyGrainModelDescription
-import com.centyllion.model.emptyModel
-import com.centyllion.model.emptySimulation
-import com.centyllion.model.emptySimulationDescription
-import com.centyllion.model.fieldIcon
-import com.centyllion.model.grainIcon
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.html.a
@@ -470,15 +421,16 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         else appContext.api.fetchSimulations(modelId, limit = limit)
 
     fun saveCurrentThumbnail() {
-        simulationController.simulationViewController.screenshot().then {
-            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.png", it).catch { error(it) }
-            message("Current state saved as thumbnail.")
+        simulationController.simulationViewController.screenshot(400, 267).then {
+            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.webp", it)
+                .then { message("Current state saved as thumbnail.") }
+                .catch { error(it) }
         }
     }
 
     fun downloadScreenshot() {
         simulationController.simulationViewController.screenshotURL().then {
-            val name = "${model.label} - ${simulation.label} - screenshot.png"
+            val name = "${model.label} - ${simulation.label} - screenshot.webp"
             download(name, it)
         }
     }

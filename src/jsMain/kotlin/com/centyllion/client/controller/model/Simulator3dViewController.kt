@@ -1,51 +1,12 @@
 package com.centyllion.client.controller.model
 
-import babylonjs.AbstractMesh
-import babylonjs.Animation
-import babylonjs.ArcRotateCamera
-import babylonjs.AssetsManager
-import babylonjs.Axis
-import babylonjs.BoxOptions
-import babylonjs.Color3
-import babylonjs.CylinderOptions
-import babylonjs.Engine
-import babylonjs.EngineOptions
-import babylonjs.HemisphericLight
-import babylonjs.Mesh
-import babylonjs.MeshBuilder
-import babylonjs.PickingInfo
-import babylonjs.PlaneOptions
-import babylonjs.PointerEventTypes
-import babylonjs.Quaternion
-import babylonjs.RawTexture
-import babylonjs.Scene
-import babylonjs.SceneOptions
-import babylonjs.StandardMaterial
-import babylonjs.Texture
-import babylonjs.Tools
-import babylonjs.Vector3
+import babylonjs.*
 import babylonjs.loaders.GLTFFileLoader
 import babylonjs.materials.GridMaterial
-import bulma.BulmaElement
-import bulma.Control
-import bulma.Div
-import bulma.Dropdown
-import bulma.DropdownSimpleItem
-import bulma.ElementColor
+import bulma.*
 import bulma.Field
-import bulma.HtmlWrapper
-import bulma.Icon
-import bulma.Input
-import bulma.Level
-import bulma.NoContextController
-import bulma.canvas
-import bulma.iconButton
 import com.centyllion.client.page.BulmaPage
-import com.centyllion.model.ApplicableBehavior
-import com.centyllion.model.Asset3d
-import com.centyllion.model.Simulator
-import com.centyllion.model.colorNames
-import com.centyllion.model.minFieldLevel
+import com.centyllion.model.*
 import kotlinx.browser.window
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
@@ -58,11 +19,7 @@ import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import kotlin.js.Promise
 import kotlin.js.json
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.log10
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.properties.Delegates.observable
 import kotlin.random.Random
 
@@ -589,16 +546,16 @@ class Simulator3dViewController(
         window.addEventListener("resize", resizeCallback)
     }
 
-    fun screenshot() = screenshotURL().then {
+    fun screenshot(width: Int, height: Int) = screenshotURL(width, height).then {
         val buffer = Tools.DecodeBase64(it)
-        Blob(arrayOf(buffer), object: BlobPropertyBag { override var type: String? = "image/png" })
+        Blob(arrayOf(buffer), object: BlobPropertyBag { override var type: String? = "image/webp" })
     }
 
-    fun screenshotURL() = Promise<String> { resolve, _ ->
+    fun screenshotURL(width: Int = 1200, height: Int = 800) = Promise<String> { resolve, _ ->
         animated = true
         Tools.CreateScreenshotUsingRenderTarget(
-            engine, camera, json("width" to 1200, "height" to 800), { resolve(it) },
-            "image/png", null, true, null
+            engine, camera, json("width" to width, "height" to height), { resolve(it) },
+            "image/webp", null, true, null
         )
         window.setTimeout( { animated = false }, 1000)
     }

@@ -3,7 +3,7 @@
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
@@ -15,7 +15,7 @@ val logbackVersion: String = "1.2.3"
 val ktorVersion: String = "1.5.0"
 val kotlinxHtmlVersion: String = "0.7.2"
 val bulmaKotlinVersion: String = "0.4"
-val babylonKotlinVersion: String = "0.4"
+val babylonKotlinVersion: String = "0.4.1"
 val exposedVersion: String = "0.28.1"
 val postgresqlVersion: String = "42.2.5"
 val keycloakVersion: String = "8.0.2"

@@ -47,7 +47,7 @@ class CombinationTest {
 
     @Test
     fun testCombinationPerformances() {
-        repeat(50) {
+        repeat(5) {
             randomList().allCombinations()
         }
     }

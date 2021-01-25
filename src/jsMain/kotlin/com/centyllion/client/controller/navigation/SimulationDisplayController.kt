@@ -1,13 +1,6 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.Card
-import bulma.CardContent
-import bulma.CardImage
-import bulma.Help
-import bulma.Image
-import bulma.ImageSize
-import bulma.Label
-import bulma.NoContextController
+import bulma.*
 import com.centyllion.client.Api
 import com.centyllion.model.SimulationDescription
 import kotlin.properties.Delegates.observable
@@ -33,7 +26,11 @@ class SimulationDisplayController(
     val description = Help(data.simulation.description)
     val author = Help(data.info.user?.name?.let {"by $it"} ?: "")
 
-    val thumbnail = Image("/api/simulation/${data.id}/thumbnail", ImageSize.S3by2)
+    val thumbnail = Image(
+        data.thumbnailId?.let { "/api/simulation/${data.id}/thumbnail" }
+            ?: "/images/empty_thumbnail.png",
+        ImageSize.S3by2
+    )
 
     override val container = Card(
         CardImage(thumbnail),
@@ -46,6 +43,8 @@ class SimulationDisplayController(
         name.text =getName()
         description.text = data.simulation.description
         author.text = data.info.user?.name?.let {"by $it"} ?: ""
-        thumbnail.src = "/api/simulation/${data.id}/thumbnail"
+        thumbnail.src =
+            data.thumbnailId?.let { "/api/simulation/${data.id}/thumbnail" }
+                ?: "/images/empty_thumbnail.png"
     }
 }

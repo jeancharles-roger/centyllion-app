@@ -8,25 +8,14 @@ import com.centyllion.backend.withRequiredPrincipal
 import com.centyllion.common.adminRole
 import com.centyllion.model.Simulation
 import com.centyllion.model.SimulationDescription
-import io.ktor.application.call
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.principal
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.PartData
-import io.ktor.http.content.readAllParts
-import io.ktor.http.content.streamProvider
-import io.ktor.http.decodeURLQueryComponent
-import io.ktor.request.receive
-import io.ktor.request.receiveMultipart
-import io.ktor.response.respond
-import io.ktor.response.respondBytes
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.patch
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.auth.jwt.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
 
 fun Route.simulation(data: Data) {
     route("simulation") {
@@ -144,7 +133,7 @@ fun Route.simulation(data: Data) {
                     if (simulation?.thumbnailId != null) {
                         val asset = data.getAssetContent(simulation.thumbnailId)
                         if (asset != null) {
-                            context.respondBytes(asset, ContentType.Image.PNG)
+                            context.respondBytes(asset, ContentType.Image.Any)
                         } else {
                             context.respond(HttpStatusCode.NotFound)
                         }

@@ -1,14 +1,6 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.Card
-import bulma.CardContent
-import bulma.CardImage
-import bulma.Div
-import bulma.Image
-import bulma.ImageSize
-import bulma.Label
-import bulma.NoContextController
-import bulma.SubTitle
+import bulma.*
 import com.centyllion.model.FeaturedDescription
 import markdownit.MarkdownIt
 import kotlin.properties.Delegates.observable
@@ -29,7 +21,7 @@ class FeaturedController(featured: FeaturedDescription) : NoContextController<Fe
     val author = Label(data.authorName)
 
     val thumbnail = Image(
-        if (data.thumbnailId != null) "/api/simulation/${data.simulationId}/thumbnail" else "/images/480x480.png",
+        if (data.thumbnailId != null) "/api/simulation/${data.simulationId}/thumbnail" else "/images/empty_thumbnail.png",
         ImageSize.S3by2
     )
 

@@ -546,6 +546,8 @@ class Simulator3dViewController(
         window.addEventListener("resize", resizeCallback)
     }
 
+    fun thumbnail() = screenshot(400, 267)
+
     fun screenshot(width: Int, height: Int) = screenshotURL(width, height).then {
         val buffer = Tools.DecodeBase64(it)
         Blob(arrayOf(buffer), object: BlobPropertyBag { override var type: String? = "image/webp" })

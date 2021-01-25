@@ -421,7 +421,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         else appContext.api.fetchSimulations(modelId, limit = limit)
 
     fun saveCurrentThumbnail() {
-        simulationController.simulationViewController.screenshot(400, 267).then {
+        // saves thumbnail retrieved on last stop click if exists.
+        simulationController.currentThumbnail?.let {
             api.saveSimulationThumbnail(simulation.id, "${simulation.label}.webp", it)
                 .then { message("Current state saved as thumbnail.") }
                 .catch { error(it) }

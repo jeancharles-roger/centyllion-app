@@ -1,27 +1,7 @@
 package com.centyllion.client.controller.model
 
-import bulma.Box
-import bulma.BulmaElement
-import bulma.Button
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
-import bulma.Control
-import bulma.Controller
-import bulma.ElementColor
-import bulma.Icon
-import bulma.Label
-import bulma.Level
-import bulma.MultipleController
-import bulma.TextSize
-import bulma.Title
-import bulma.WrappedController
-import bulma.columnsController
+import bulma.*
 import bulma.extension.Slider
-import bulma.iconButton
-import bulma.noContextColumnsController
-import bulma.textButton
-import bulma.wrap
 import com.centyllion.client.controller.utils.SearchController
 import com.centyllion.client.controller.utils.filtered
 import com.centyllion.client.download
@@ -31,22 +11,14 @@ import com.centyllion.client.plotter.PlotterController
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.client.stringHref
 import com.centyllion.client.toggleElementToFullScreen
-import com.centyllion.model.ApplicableBehavior
-import com.centyllion.model.Asset3d
-import com.centyllion.model.Behaviour
+import com.centyllion.model.*
 import com.centyllion.model.Field
-import com.centyllion.model.Grain
-import com.centyllion.model.GrainModel
-import com.centyllion.model.Simulation
-import com.centyllion.model.Simulator
-import com.centyllion.model.behaviourIcon
-import com.centyllion.model.fieldIcon
-import com.centyllion.model.grainIcon
 import io.data2viz.geom.size
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
+import org.w3c.files.Blob
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
@@ -126,6 +98,10 @@ class SimulationRunController(
     private var lastFpsColorRefresh = 0
 
     private var presentCharts = false
+
+    private var lastThumbnail: Blob? = null
+
+    val currentThumbnail: Blob? get() = lastThumbnail
 
     // simulation execution controls
     val rewindButton = iconButton(Icon("fast-backward"), ElementColor.Danger, rounded = true) { reset() }
@@ -423,6 +399,8 @@ class SimulationRunController(
     }
 
     fun stop() {
+        // creates thumbnail with last stop click for better thumbnails.
+        simulationViewController.thumbnail().then { lastThumbnail = it }
         running = false
     }
 

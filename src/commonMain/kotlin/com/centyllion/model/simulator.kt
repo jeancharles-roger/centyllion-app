@@ -230,6 +230,9 @@ class Simulator(
                             // registers behaviour for concurrency
                             val usedNeighbours = allCombinations[chosenCombination].map { it.second }
                             val behavior = ApplicableBehavior(i, ages[i], behaviour, usedNeighbours)
+                            // adds applicable to current agent
+                            all.getOrPut(i) { mutableListOf() }.add(behavior)
+                            // adds applicable to neighbours
                             usedNeighbours.forEach { all.getOrPut(it.index) { mutableListOf() }.add(behavior) }
                         }
                     }

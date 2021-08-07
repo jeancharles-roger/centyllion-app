@@ -18,7 +18,7 @@ val logbackVersion: String = "1.2.3"
 val ktorVersion: String = "1.5.0"
 val kotlinxHtmlVersion: String = "0.7.3"
 val bulmaKotlinVersion: String = "0.4.2"
-val babylonKotlinVersion: String = "0.4.1"
+val babylonKotlinVersion: String = "0.5"
 val exposedVersion: String = "0.32.1"
 val postgresqlVersion: String = "42.2.5"
 val keycloakVersion: String = "8.0.2"
@@ -35,6 +35,13 @@ repositories {
 
     maven {
         url = uri("https://maven.pkg.github.com/centyllion/bulma-kotlin")
+        credentials {
+            username = grpUser
+            password = grpToken
+        }
+    }
+    maven {
+        url = uri("https://maven.pkg.github.com/centyllion/babylon-kotlin")
         credentials {
             username = grpUser
             password = grpToken

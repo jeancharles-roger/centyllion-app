@@ -24,7 +24,7 @@ class SimulationTest {
         }
 
         // runs the simulator
-        repeat(100) { simulator.oneStep() }
+        simulator.oneStep()
 
         simulator.grainsCounts().let { counts ->
             assertEquals(0, counts[0] ?: 0)

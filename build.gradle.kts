@@ -5,6 +5,9 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
+val grpUser: String by project
+val grpToken: String by project
+
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
@@ -13,26 +16,33 @@ val coroutineVersion: String = "1.4.2"
 val cliktVersion: String = "3.1.0"
 val logbackVersion: String = "1.2.3"
 val ktorVersion: String = "1.5.0"
-val kotlinxHtmlVersion: String = "0.7.2"
-val bulmaKotlinVersion: String = "0.4"
+val kotlinxHtmlVersion: String = "0.7.3"
+val bulmaKotlinVersion: String = "0.4.2"
 val babylonKotlinVersion: String = "0.4.1"
-val exposedVersion: String = "0.28.1"
+val exposedVersion: String = "0.32.1"
 val postgresqlVersion: String = "42.2.5"
 val keycloakVersion: String = "8.0.2"
 
-val data2vizVersion: String = "0.8.9"
+val data2vizVersion: String = "0.8.12"
 
 plugins {
-    kotlin("multiplatform").version("1.4.21")
-    id("kotlinx-serialization").version("1.4.21")
+    kotlin("multiplatform") version "1.5.21"
+    kotlin("plugin.serialization") version "1.5.21"
 }
 
 repositories {
-    jcenter()
     mavenCentral()
-    maven("https://kotlin.bintray.com/kotlinx")
-    maven("https://jitpack.io")
-    maven("https://dl.bintray.com/centyllion/Libraries")
+
+    maven {
+        url = uri("https://maven.pkg.github.com/centyllion/bulma-kotlin")
+        credentials {
+            username = grpUser
+            password = grpToken
+        }
+    }
+
+    maven { url = uri("https://maven.pkg.jetbrains.space/data2viz/p/maven/public") }
+    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") }
 }
 
 group = "com.centyllion"
@@ -41,27 +51,6 @@ version = "0.0.1"
 val centyllionWebroot = file("$projectDir/webroot/js/centyllion")
 
 kotlin {
-    sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-        }
-
-        // commonMain is required for reflection name resolution
-        val commonMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-common"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-            }
-        }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
-    }
-
     // Default source set for JVM-specific sources and dependencies:
     jvm {
         compilations["main"].defaultSourceSet {
@@ -108,14 +97,14 @@ kotlin {
             }
         }
 
-        compilations.forEach {
-            it.kotlinOptions {
+        compilations.all {
+            kotlinOptions {
                 jvmTarget = "11"
             }
         }
     }
 
-    js {
+    js(IR) {
         browser {
             //distribution { directory = file(centyllionWebroot) }
             //webpackTask { outputFileName = "centyllion.[contenthash].js" }
@@ -154,6 +143,26 @@ kotlin {
                 //main = "noCall"
                 sourceMap = d
                 sourceMapEmbedSources = if (d) "always" else "never"
+            }
+        }
+    }
+
+    sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+        }
+
+        // commonMain is required for reflection name resolution
+        val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
             }
         }
     }

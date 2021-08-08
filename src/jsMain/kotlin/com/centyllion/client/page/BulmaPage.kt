@@ -1,22 +1,13 @@
 package com.centyllion.client.page
 
-import bulma.BulmaElement
-import bulma.Button
-import bulma.Dropdown
-import bulma.DropdownDivider
-import bulma.DropdownSimpleItem
-import bulma.ElementColor
-import bulma.Icon
-import bulma.ModalCard
-import bulma.NavBarItem
-import bulma.TextColor
-import bulma.extension.ToastAnimation
+import bulma.*
 import bulma.extension.ToastOptions
 import bulma.extension.bulmaToast
 import com.centyllion.client.AppContext
 import com.centyllion.client.ClientEvent
 import kotlin.js.Date
 import kotlin.js.Promise
+import kotlin.js.json
 
 interface BulmaPage : BulmaElement {
     val appContext: AppContext
@@ -82,10 +73,19 @@ private fun notification(content: String, color: ElementColor = ElementColor.Non
         else -> console.log(content)
     }
 
-    val animation = ToastAnimation("fadeIn", "fadeOut")
-    val options = ToastOptions(
-        content, color.className, 2000, "bottom-center",
-        false, true, true, 0.8, animation
-    )
+    val options = json(
+        "message" to content,
+        "type" to color.className,
+        "duration" to 2000,
+        "position" to "bottom-center",
+        "dismissible" to false,
+        "pauseOnHover" to true,
+        "closeOnClick" to true,
+        "opacity" to 0.8,
+        "animation" to json(
+            "in" to "fadeIn",
+            "out" to "fadeOut",
+        ),
+    ) as ToastOptions
     bulmaToast.toast(options)
 }

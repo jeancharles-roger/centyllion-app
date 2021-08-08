@@ -11,16 +11,16 @@ val grpToken: String by project
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serializationVersion: String = "1.0.1"
+val serializationVersion: String = "1.2.2"
 val coroutineVersion: String = "1.4.2"
-val cliktVersion: String = "3.1.0"
+val cliktVersion: String = "3.2.0"
 val logbackVersion: String = "1.2.3"
-val ktorVersion: String = "1.5.0"
+val ktorVersion: String = "1.6.2"
 val kotlinxHtmlVersion: String = "0.7.3"
 val bulmaKotlinVersion: String = "0.4.3"
 val babylonKotlinVersion: String = "0.5"
 val exposedVersion: String = "0.32.1"
-val postgresqlVersion: String = "42.2.5"
+val postgresqlVersion: String = "42.2.23"
 val keycloakVersion: String = "8.0.2"
 
 val data2vizVersion: String = "0.8.12"

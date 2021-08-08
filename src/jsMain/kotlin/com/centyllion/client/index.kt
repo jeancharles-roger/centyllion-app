@@ -131,8 +131,11 @@ fun index() {
             document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
             val page = findPageInUrl()
-            val options = KeycloakInitOptions(
-                promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
+            val options = BasicKeycloakInitOptions(
+                promiseType = "native",
+                onLoad = if (page?.needUser == true) "login-required" else "check-sso",
+                //checkLoginIframe = false,
+                timeSkew = 10
             )
             val t = keycloak.init(options)
             console.log(t)

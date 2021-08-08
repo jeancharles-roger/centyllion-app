@@ -754,7 +754,7 @@ class Simulator3dViewController(
         // applies deaths
         dead.forEach { transformMesh(it, -1) }
 
-        // updates fields
+        // updates field
         fieldSupports.forEach {
             it.value?.let { support ->
                 data.field(it.key).alpha(support.alpha)

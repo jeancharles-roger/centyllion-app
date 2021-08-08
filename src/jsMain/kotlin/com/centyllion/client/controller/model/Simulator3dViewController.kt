@@ -177,7 +177,13 @@ class Simulator3dViewController(
 
     private var animated = false
 
-    val sceneOptions = SceneOptions(true, true, true)
+    val sceneOptions = BasicSceneOptions(
+        useGeometryUniqueIdsMap = true,
+        useMaterialMeshMap = true,
+        useClonedMeshMap = true,
+        virtual = null
+    )
+    
     val scene = Scene(engine, sceneOptions).apply {
         autoClear = true
         clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
@@ -226,7 +232,7 @@ class Simulator3dViewController(
         attachControl(simulationCanvas.root, false)
     }
 
-    val plane = MeshBuilder.CreatePlane("ground", PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
+    val plane = MeshBuilder.CreatePlane("ground", BasicPlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
         rotate(Axis.X, -PI/2)
         alphaIndex = 0
 
@@ -234,7 +240,7 @@ class Simulator3dViewController(
     }
 
     val pointer = MeshBuilder.CreateBox(
-        "pointer", BoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
+        "pointer", BasicBoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
     ).apply {
         isVisible = false
     }
@@ -324,7 +330,7 @@ class Simulator3dViewController(
 
             val child = MeshBuilder.CreateCylinder(
                 "inner pointer",
-                CylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
+                BasicCylinderOptions(height = height, diameter = diameter, faceColors = Array(3) { color4 }),
                 scene
             )
             child.visibility = when (selectedTool) {
@@ -590,22 +596,22 @@ class Simulator3dViewController(
         val mesh = when (grain.icon) {
             "square" -> MeshBuilder.CreateBox(
                 grain.name,
-                BoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) { color4 }),
+                BasicBoxOptions(width = 0.8, depth = 0.8, height = height, faceColors = Array(6) { color4 }),
                 scene
             )
             "square-full" -> MeshBuilder.CreateBox(
                 grain.name,
-                BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
+                BasicBoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
                 scene
             )
             "circle" -> MeshBuilder.CreateCylinder(
                 grain.name,
-                CylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) { color4 }),
+                BasicCylinderOptions(height = height, diameter = 1.0, faceColors = Array(3) { color4 }),
                 scene
             )
             else -> MeshBuilder.CreateBox(
                 grain.name,
-                BoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
+                BasicBoxOptions(width = 1, depth = 1, height = height, faceColors = Array(6) { color4 }),
                 scene
             )
         }.apply {
@@ -637,7 +643,7 @@ class Simulator3dViewController(
 
             val mesh = MeshBuilder.CreatePlane(
                 "${field.name} mesh",
-                PlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE),
+                BasicPlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE),
                 scene
             )
             mesh.material = material

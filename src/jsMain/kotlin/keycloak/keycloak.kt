@@ -3,7 +3,7 @@ package keycloak
 
 import kotlin.js.Promise
 
-class KeycloakInitOptions(
+external interface KeycloakInitOptions {
     /**
      * @private Undocumented.
      */
@@ -16,46 +16,46 @@ class KeycloakInitOptions(
      * - {string} cordova - using cordova plugins
      * - {function} - allows to provide custom function as adapter.
      */
-    var adapter: String = "default",
+    var adapter: String
 
     /**
      * Specifies an action to do on load. 'login-required'|'check-sso'
      */
-    var onLoad: String? = null,
+    var onLoad: String?
 
     /**
      * Set an initial value for the token.
      */
-    var token: String? = null,
+    var token: String?
 
     /**
      * Set an initial value for the refresh token.
      */
-    var refreshToken: String? = null,
+    var refreshToken: String?
 
     /**
      * Set an initial value for the id token (only together with `token` or
      * `refreshToken`).
      */
-    var idToken: String? = null,
+    var idToken: String?
 
     /**
      * Set an initial value for skew between local time and Keycloak server in
      * seconds (only together with `token` or `refreshToken`).
      */
-    var timeSkew: Number? = null,
+    var timeSkew: Number?
 
     /**
      * Set to enable/disable monitoring login state.
      * @default true
      */
-    var checkLoginIframe: Boolean = true,
+    var checkLoginIframe: Boolean
 
     /**
      * Set the interval to check login state (in seconds).
      * @default 5
      */
-    var checkLoginIframeInterval: Number = 5,
+    var checkLoginIframeInterval: Number
 
     /**
      * Set the OpenID Connect response mode to send to Keycloak upon login.
@@ -65,22 +65,35 @@ class KeycloakInitOptions(
      *                   added in URL fragment. This is generally safer and
      *                   recommended over query.
      */
-    var responseMode: String = "fragment",
+    var responseMode: String
 
     /**
      * Set the OpenID Connect flow ('standard'|'implicit'|'hybrid')
      * @default standard
      */
-    var flow: String = "standard",
+    var flow: String
 
     /**
      * If set to native all methods returning a promise will return a native JavaScript promise. If not set will return Keycloak specific promise objects.
      */
-    var promiseType: String? = null
+    var promiseType: String?
+}
 
-)
+class BasicKeycloakInitOptions(
+    override var adapter: String = "default",
+    override var onLoad: String? = null,
+    override var token: String? = null,
+    override var refreshToken: String? = null,
+    override var idToken: String? = null,
+    override var timeSkew: Number? = null,
+    override var checkLoginIframe: Boolean = true,
+    override var checkLoginIframeInterval: Number = 5,
+    override var responseMode: String = "fragment",
+    override var flow: String = "standard",
+    override var promiseType: String? = null
+): KeycloakInitOptions
 
-interface KeycloakLoginOptions {
+external interface KeycloakLoginOptions {
     /**
      * @private Undocumented.
      */

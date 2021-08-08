@@ -1,34 +1,24 @@
 package com.centyllion.client
 
-import bulma.BulmaElement
-import bulma.Button
-import bulma.ElementColor
-import bulma.Icon
-import bulma.Message
-import bulma.NavBar
-import bulma.NavBarContentItem
-import bulma.NavBarIconItem
-import bulma.NavBarImageItem
-import bulma.NavBarLinkItem
-import bulma.Position
-import bulma.Size
-import bulma.span
+import bulma.*
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.i18n.Locale
 import com.centyllion.model.User
+import keycloak.BasicKeycloakInitOptions
 import keycloak.Keycloak
-import keycloak.KeycloakInitOptions
 import keycloak.KeycloakInstance
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.serialization.Serializable
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.js.Promise
 
-interface CssFile {
-    val files: Array<String>
-}
+@Serializable
+data class CssFile(
+    val files: List<String>
+)
 
 fun createNavBar(locale: Locale) = NavBar(
     brand = listOf(
@@ -144,8 +134,9 @@ fun index() {
             val options = KeycloakInitOptions(
                 promiseType = "native", onLoad = if (page?.needUser == true) "login-required" else "check-sso", timeSkew = 10
             )
-            keycloak.init(options)
-                .then { api.fetchMe() }
+            val t = keycloak.init(options)
+            console.log(t)
+            t.then { api.fetchMe() }
                 .then { user ->
                     // creates context
                     val context = BrowserContext(locale, navBar, keycloak, user, api)

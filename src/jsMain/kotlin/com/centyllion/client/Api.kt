@@ -2,17 +2,7 @@ package com.centyllion.client
 
 import com.centyllion.i18n.Locale
 import com.centyllion.i18n.Locales
-import com.centyllion.model.Asset
-import com.centyllion.model.CollectionInfo
-import com.centyllion.model.FeaturedDescription
-import com.centyllion.model.GrainModel
-import com.centyllion.model.GrainModelDescription
-import com.centyllion.model.Info
-import com.centyllion.model.ResultPage
-import com.centyllion.model.Simulation
-import com.centyllion.model.SimulationDescription
-import com.centyllion.model.User
-import com.centyllion.model.UserOptions
+import com.centyllion.model.*
 import keycloak.KeycloakInstance
 import kotlinx.browser.document
 import kotlinx.serialization.builtins.serializer
@@ -61,8 +51,8 @@ class Api(val instance: KeycloakInstance?, val baseUrl: String = "") {
         }
 
     /** Fetches css config and includes css files */
-    fun addCss() = fetch("GET", "/css/centyllion/css.config.json").then {path ->
-            JSON.parse<CssFile>(path).files.forEach {
+    fun addCss() = fetch("GET", "/css/centyllion/css.config.json").then { content ->
+        Json.decodeFromString(CssFile.serializer(), content).files.forEach {
                 val link = document.createElement("link") as HTMLLinkElement
                 link.rel = "stylesheet"
                 link.href = url(it)

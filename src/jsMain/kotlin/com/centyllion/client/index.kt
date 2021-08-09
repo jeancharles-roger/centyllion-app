@@ -51,18 +51,6 @@ fun startApp(page: Page?, context: AppContext) {
             keycloak.createAccountUrl()
         )
         navBar.end += NavBarLinkItem(context.i18n("Logout"), keycloak.createLogoutUrl())
-
-        // starts ekko chat with user info
-        /*
-        val applicationId = "b4a4cc68-6134-44a2-81f5-6ec5fa48c8ec"
-        ekkoNow("init", applicationId, json(
-            "user" to json(
-                "username" to token.name,
-                "email" to token.email
-            )
-        ))
-         */
-
     } else {
         navBar.end += NavBarLinkItem(context.i18n("Register"), keycloak.createRegisterUrl())
         navBar.end += NavBarLinkItem(context.i18n("Log In"), keycloak.createLoginUrl())

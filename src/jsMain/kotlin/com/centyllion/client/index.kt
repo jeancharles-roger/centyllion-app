@@ -122,7 +122,7 @@ fun index() {
             val options = BasicKeycloakInitOptions(
                 promiseType = "native",
                 onLoad = if (page?.needUser == true) "login-required" else "check-sso",
-                //checkLoginIframe = false,
+                checkLoginIframe = false,
                 timeSkew = 10
             )
             val t = keycloak.init(options)

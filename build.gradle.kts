@@ -24,6 +24,7 @@ val postgresqlVersion: String = "42.2.23"
 val keycloakVersion: String = "8.0.2"
 
 val data2vizVersion: String = "0.8.12"
+val markdownVersion: String = "0.2.4"
 
 plugins {
     kotlin("multiplatform") version "1.5.21"
@@ -130,13 +131,14 @@ kotlin {
                 implementation("io.data2viz.d2v:scale-js:$data2vizVersion")
                 implementation("io.data2viz.d2v:viz-js:$data2vizVersion")
                 implementation("io.data2viz.d2v:axis:$data2vizVersion")
-                
+
+                implementation("org.jetbrains:markdown:$markdownVersion")
+
                 implementation(npm("babylonjs", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
 
                 implementation(npm("keycloak-js", "8.0.2", generateExternals = false))
-                implementation(npm("markdown-it", "10.0.0", generateExternals = false))
             }
         }
         compilations["test"].defaultSourceSet {

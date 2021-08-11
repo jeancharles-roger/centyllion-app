@@ -1,15 +1,8 @@
 package com.centyllion.client.controller.navigation
 
-import bulma.Card
-import bulma.CardContent
-import bulma.Div
-import bulma.Help
-import bulma.Label
-import bulma.NoContextController
-import bulma.Tag
-import bulma.Tags
+import bulma.*
+import com.centyllion.client.renderMarkdown
 import com.centyllion.model.GrainModelDescription
-import markdownit.MarkdownIt
 import kotlin.properties.Delegates.observable
 
 class GrainModelDisplayController(modelDescription: GrainModelDescription) :
@@ -23,10 +16,8 @@ class GrainModelDisplayController(modelDescription: GrainModelDescription) :
 
     override var readOnly = false
 
-    private val renderer = MarkdownIt()
-
     val name = Label(data.model.name)
-    val description = Div().apply { root.innerHTML = renderer.render(data.model.description) }
+    val description = Div().apply { root.innerHTML = renderMarkdown(data.model.description) }
     val tags = Tags(createTags(modelDescription.tags))
     val author = Help(data.info.user?.name?.let {"by $it"} ?: "")
 
@@ -35,7 +26,7 @@ class GrainModelDisplayController(modelDescription: GrainModelDescription) :
 
     override fun refresh() {
         name.text = data.name
-        description.root.innerHTML = renderer.render(data.model.description)
+        description.root.innerHTML = renderMarkdown(data.model.description)
         tags.tags = createTags(data.tags)
         author.text = data.info.user?.name?.let {"by $it"} ?: ""
     }

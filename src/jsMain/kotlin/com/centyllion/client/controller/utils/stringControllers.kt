@@ -1,20 +1,9 @@
 package com.centyllion.client.controller.utils
 
-import bulma.Button
-import bulma.Control
-import bulma.ControlElement
-import bulma.ElementColor
-import bulma.Field
-import bulma.Icon
-import bulma.Input
-import bulma.NoContextController
-import bulma.TextArea
-import bulma.TextColor
-import bulma.TextView
-import bulma.iconButton
+import bulma.*
+import com.centyllion.client.renderMarkdown
 import com.centyllion.i18n.Locale
 import kotlinx.browser.document
-import markdownit.MarkdownIt
 import org.w3c.dom.HTMLDivElement
 import kotlin.properties.Delegates.observable
 
@@ -191,8 +180,6 @@ class EditableMarkdownController(
         { _, _, _ -> }
 ) : NoContextController<String, Field>() {
 
-    val renderer = MarkdownIt()
-
     override var data by observable(initialData) { _, old, new ->
         if (old != new) {
             onUpdate(old, new, this@EditableMarkdownController)
@@ -280,6 +267,6 @@ class EditableMarkdownController(
     }
 
     fun transform(source: String) =
-        if (source.isNotBlank()) renderer.render(source)
+        if (source.isNotBlank()) renderMarkdown(source)
         else "<div class='has-text-grey-lighter'>$placeHolder</div>"
 }

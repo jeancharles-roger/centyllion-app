@@ -21,7 +21,6 @@ import kotlinx.html.i
 import kotlinx.html.js.div
 import kotlinx.html.span
 import kotlinx.serialization.json.Json
-import markdownit.MarkdownIt
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -390,7 +389,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     /** Retrieves simulation description or model description instead if blank and strips the markdown */
-    fun descriptionText() = MarkdownIt().render(
+    fun descriptionText() = renderMarkdown(
         if (simulationDescriptionController.data.isNotBlank()) simulationDescriptionController.data
         else modelDescriptionController.data
     ).replace(Regex("<[^>]*>"), "").trim()

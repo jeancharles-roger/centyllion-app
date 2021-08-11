@@ -5,6 +5,9 @@ import com.centyllion.model.minFieldLevel
 import kotlinx.browser.document
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
+import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
@@ -96,3 +99,11 @@ fun facebookHref() = "https://facebook.com/sharer/sharer.php?u=${myUrl()}"
 
 fun linkedInHref(description: String) =
     "https://www.linkedin.com/shareArticle?mini=true&url=${myUrl()}&title=${encodeURI(document.title)}&summary=${encodeURI(description)}&source=${myHost()}"
+
+private val markdownFlavour = CommonMarkFlavourDescriptor()
+private val markdownParser = MarkdownParser(markdownFlavour)
+
+fun renderMarkdown(source: String): String {
+    val parsedTree = markdownParser.buildMarkdownTreeFromString(source)
+    return HtmlGenerator(source, parsedTree, markdownFlavour).generateHtml()
+}

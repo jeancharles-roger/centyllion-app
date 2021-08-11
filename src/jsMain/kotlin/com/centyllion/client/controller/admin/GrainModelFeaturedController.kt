@@ -1,22 +1,11 @@
 package com.centyllion.client.controller.admin
 
-import bulma.Box
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
-import bulma.Controller
-import bulma.Div
-import bulma.Dropdown
-import bulma.DropdownSimpleItem
-import bulma.Icon
-import bulma.Size
-import bulma.SubTitle
-import bulma.TextColor
+import bulma.*
 import com.centyllion.client.page.BulmaPage
+import com.centyllion.client.renderMarkdown
 import com.centyllion.model.FeaturedDescription
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.SimulationDescription
-import markdownit.MarkdownIt
 import kotlin.properties.Delegates.observable
 
 class GrainModelFeaturedController(
@@ -35,8 +24,6 @@ class GrainModelFeaturedController(
 
     override var context: List<FeaturedDescription> = allFeatured
 
-    private val renderer = MarkdownIt()
-
     private fun dotColumns() =
         data.model.grains.map {
             Column(Icon("circle").apply { root.style.color = it.color }, size = ColumnSize.S1)
@@ -45,7 +32,7 @@ class GrainModelFeaturedController(
     val dots = Columns(multiline = true, mobile = true).apply { columns = dotColumns() }
 
     val name = SubTitle(data.model.name)
-    val description = Div().apply { root.innerHTML = renderer.render(model.model.description) }
+    val description = Div().apply { root.innerHTML = renderMarkdown(model.model.description) }
 
     fun featured(simulation: SimulationDescription) = context.find {
         it.modelId == data.id && it.simulationId == simulation.id
@@ -77,6 +64,6 @@ class GrainModelFeaturedController(
     override fun refresh() {
         dots.columns = dotColumns()
         name.text = data.model.name
-        description.root.innerHTML = renderer.render(data.model.description)
+        description.root.innerHTML = renderMarkdown(data.model.description)
     }
 }

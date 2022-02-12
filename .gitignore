@@ -1,6 +1,6 @@
 .idea/**
 .gradle/**
-build/**
+**/build/**
 
 node_modules
 package-lock.json

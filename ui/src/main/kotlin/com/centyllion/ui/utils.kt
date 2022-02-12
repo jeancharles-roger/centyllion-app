@@ -1,0 +1,140 @@
+package com.centyllion.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.icons.twotone.Info
+import androidx.compose.material.icons.twotone.Warning
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.centyllion.model.*
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.*
+import org.jetbrains.compose.splitpane.SplitPaneScope
+import java.awt.Cursor
+import java.awt.FileDialog
+import java.io.File
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun SplitPaneScope.horizontalSplitter() {
+    splitter {
+        visiblePart {
+            Box(
+                Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colors.background)
+            )
+        }
+        handle {
+            Box(
+                Modifier
+                    .markAsHandle()
+                    .pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
+                    .background(SolidColor(Color.Gray), alpha = 0.50f)
+                    .width(10.dp)
+                    .fillMaxHeight()
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun SplitPaneScope.verticalSplitter() {
+    splitter {
+        visiblePart {
+            Box(
+                Modifier
+                    .height(1.dp)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.background)
+            )
+        }
+        handle {
+            Box(
+                Modifier
+                    .markAsHandle()
+                    .pointerHoverIcon(PointerIcon(Cursor(Cursor.N_RESIZE_CURSOR)))
+                    .background(SolidColor(Color.Gray), alpha = 0.50f)
+                    .height(10.dp)
+                    .fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+fun RowScope.Label(text: String, color: Color) {
+    Text(
+        text = text, fontSize = 12.sp, color = color,
+        modifier = Modifier.padding(6.dp).align(Alignment.CenterVertically)
+    )
+}
+
+fun openFileDialog(
+    window: ComposeWindow, title: String,
+    allowedExtensions: List<String>, allowMultiSelection: Boolean = false
+): Set<File> {
+    return FileDialog(window, title, FileDialog.LOAD).apply {
+        isMultipleMode = allowMultiSelection
+
+        // windows
+        file = allowedExtensions.joinToString(";") { "*$it" } // e.g. '*.jpg'
+
+        // linux
+        setFilenameFilter { _, name ->
+            allowedExtensions.any {
+                name.endsWith(it)
+            }
+        }
+
+        isVisible = true
+    }.files.toSet()
+}
+
+fun newFileDialog(
+    window: ComposeWindow, title: String,
+    preselectedFile: String? = null,
+    allowedExtensions: List<String> = emptyList(),
+    allowMultiSelection: Boolean = false
+): Set<File> {
+    return FileDialog(window, title, FileDialog.SAVE).apply {
+        isMultipleMode = allowMultiSelection
+
+        // windows
+        preselectedFile?.let { file = it }
+
+        // linux
+        setFilenameFilter { _, name ->
+            allowedExtensions.any { name.endsWith(it) }
+        }
+
+        isVisible = true
+    }.files.toSet()
+}
+
+val ModelElement.icon get() = when (this) {
+    is GrainModel -> FontAwesomeIcons.Solid.ProjectDiagram
+    is Field -> FontAwesomeIcons.Solid.Podcast
+    is Grain -> FontAwesomeIcons.Solid.SquareFull
+    is Behaviour -> FontAwesomeIcons.Solid.ExchangeAlt
+    else -> FontAwesomeIcons.Solid.Question
+}
+
+
+val Severity.icon get() = when (this) {
+    Severity.Info -> androidx.compose.material.icons.Icons.TwoTone.Info
+    Severity.Warning -> androidx.compose.material.icons.Icons.TwoTone.Warning
+    Severity.Severe -> androidx.compose.material.icons.Icons.TwoTone.Warning
+}

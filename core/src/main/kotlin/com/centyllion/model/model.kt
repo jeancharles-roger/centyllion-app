@@ -38,11 +38,7 @@ val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direc
 val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
 
 val emptyModel = GrainModel("")
-val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, tags = "", model = emptyModel)
 val emptySimulation = createSimulation("")
-val emptySimulationDescription =
-    SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 fun <T> List<T>.identityFirstIndexOf(value: T): Int {
     val identity = this.indexOfFirst { it === value }
@@ -347,12 +343,12 @@ data class Position(
 
 @Serializable
 data class GrainModel(
-    val name: String = "",
-    val description: String = "",
+    override val name: String = "",
+    override val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList()
-) {
+): ModelElement {
     fun grainForId(id: Int) = grains.find { it.id == id }
 
     fun fieldForId(id: Int) = fields.find { it.id == id }
@@ -613,72 +609,4 @@ data class Simulation(
         }
         return if (newAgents != agents) copy(agents = newAgents) else this
     }
-}
-
-interface Description: Ided {
-    val name: String
-    val icon: String
-
-    val label get() = if (name.isNotEmpty()) name else id.drop(id.lastIndexOf("-") + 1)
-}
-
-@Serializable
-data class DescriptionInfo(
-    val user: User? = null,
-    val createdOn: String = "",
-    val lastModifiedOn: String = "",
-    val readAccess: Boolean = true
-)
-
-@Serializable
-data class GrainModelDescription(
-    override val id: String,
-    val info: DescriptionInfo,
-    val tags: String,
-    val model: GrainModel
-) : Description {
-
-    @Transient
-    override val name = model.name
-
-    @Transient
-    override val icon = "boxes"
-}
-
-@Serializable
-data class SimulationDescription(
-    override val id: String,
-    val info: DescriptionInfo,
-    val modelId: String,
-    val thumbnailId: String?,
-    val simulation: Simulation
-) : Description {
-
-    @Transient
-    override val name = simulation.name
-
-    @Transient
-    override val icon = "play"
-
-    fun cleaned(model: GrainModelDescription): SimulationDescription {
-        val new = simulation.cleaned(model.model)
-        return if (new != simulation) copy(simulation = new) else this
-    }
-}
-
-@Serializable
-data class FeaturedDescription(
-    override val id: String,
-    val date: String,
-    val thumbnailId: String?,
-    val modelId: String,
-    val simulationId: String,
-    val authorId: String,
-    override val name: String,
-    val description: String,
-    val authorName: String
-) : Description {
-
-    @Transient
-    override val icon = "star"
 }

@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Colors
 import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
@@ -13,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.centyllion.i18n.Locale
 import com.centyllion.model.GrainModel
 import com.centyllion.model.ModelElement
+import com.centyllion.model.Problem
 import com.centyllion.model.Simulation
 import com.centyllion.ui.tabs.Tab
 import kotlinx.coroutines.CoroutineScope
@@ -39,9 +42,8 @@ interface AppContext {
 
     fun showPrimarySelection()
 
-    // TODO use diagnostic from components
-    //val diagnostics : List<Diagnostic>
-    //var selectedDiagnostic: Diagnostic?
+    val problems : List<Problem>
+    var selectedProblem: Problem?
 
     val logs: List<AppLog>
 
@@ -69,6 +71,9 @@ class AppTheme(
     val colors: Colors = themeColors,
     val warning: Color = Color(237, 162, 0)
 ) {
+    @Composable
+    fun checkboxColors() = CheckboxDefaults.colors(colors.primary)
+
     val iconPadding get() = 8.dp
 
     val toolbarIconSize get() = 24.dp + iconPadding

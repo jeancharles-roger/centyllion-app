@@ -1,8 +1,8 @@
 package com.centyllion.model
 
-import com.centyllion.i18n.Locale
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import java.util.*
 import kotlin.math.pow
 
 enum class Direction {
@@ -73,12 +73,14 @@ data class Asset3d(
 )
 
 interface ModelElement {
+    val uuid: String
     val name: String
     val description: String
 }
 
 @Serializable
 data class Field(
+    override val uuid: String = UUID.randomUUID().toString(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "SkyBlue",
@@ -104,6 +106,7 @@ data class Field(
 
 @Serializable
 data class Grain(
+    override val uuid: String = UUID.randomUUID().toString(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "red",
@@ -161,40 +164,6 @@ data class Grain(
         )
         else null
 
-    fun diagnose(model: GrainModel, locale: Locale): List<Problem> =
-        listOfNotNull(
-            (halfLife < 0).orNull { Problem(this, locale.i18n("Half-life must be positive or zero")) },
-            (movementProbability < 0.0 || movementProbability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) }
-        ) +
-        fieldProductions.map { entry ->
-            listOfNotNull(
-                (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field production for %0 must be between -1 and 1", field?.name ?: ""))
-                },
-                ((fieldPermeable[entry.key] ?: 1f) <= 0f && entry.value != 0f).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field permeability will prevent production for %0", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        fieldInfluences.map { entry ->
-            listOfNotNull(
-                (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field influence for %0 must be between -1 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        fieldPermeable.map {entry ->
-            listOfNotNull(
-                (entry.value < 0 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field permeability for %0 must be between 0 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten()
-
 }
 
 @Serializable
@@ -203,22 +172,11 @@ data class Reaction(
     val productId: Int = -1,
     val sourceReactive: Int = -1,
     val allowedDirection: Set<Direction> = defaultDirection
-) {
-    fun diagnose(model: GrainModel, behaviour: Behaviour, index: Int, locale: Locale): List<Problem> = listOfNotNull(
-        (reactiveId >= 0 && model.grainForId(reactiveId) == null).orNull {
-            Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist for reactive %1", reactiveId, index))
-        },
-        (productId >= 0 && model.grainForId(productId) == null).orNull {
-            Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist for reactive %1", productId, index))
-        },
-        (allowedDirection.isEmpty()).orNull {
-            Problem(behaviour, locale.i18n("No direction allowed for reactive %0", index))
-        }
-    )
-}
+)
 
 @Serializable
 data class Behaviour(
+    override val uuid: String = UUID.randomUUID().toString(),
     override val name: String = "",
     override val description: String = "",
     val probability: Double = 1.0,
@@ -318,23 +276,6 @@ data class Behaviour(
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
             .filter { it >= 0 }.mapNotNull { model.grainForId(it) }.toSet()
 
-    fun diagnose(model: GrainModel, locale: Locale): List<Problem> =
-        listOfNotNull(
-            (mainReactiveId < 0).orNull { Problem(this, locale.i18n("Behaviour must have a main reactive")) },
-            (probability < 0.0 || probability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) },
-            (agePredicate.constant < 0).orNull { Problem(this, locale.i18n("Age predicate value must be positive or zero")) }
-        ) +
-        fieldPredicates.map { predicate ->
-            listOfNotNull(
-                (predicate.second.constant < 0f || predicate.second.constant > 1f).orNull {
-                    val field = model.fieldForId(predicate.first)
-                    Problem(this, locale.i18n("Field threshold value for %0 must be between 0 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        reaction
-            .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
-            .flatten()
 }
 
 @Serializable
@@ -355,12 +296,21 @@ data class Position(
 
 @Serializable
 data class GrainModel(
+    override val uuid: String = UUID.randomUUID().toString(),
     override val name: String = "",
     override val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList()
 ): ModelElement {
+
+    fun findWithUuid(uuid: String): ModelElement? {
+        if (this.uuid == uuid) return this
+        fields.find { it.uuid == uuid }?.let { return it }
+        grains.find { it.uuid == uuid }?.let { return it }
+        behaviours.find { it.uuid == uuid }?.let { return it }
+        return null
+    }
 
     fun grainForId(id: Int) = grains.find { it.id == id }
 
@@ -374,7 +324,11 @@ data class GrainModel(
 
     fun grainIndex(grain: Grain) = grains.identityFirstIndexOf(grain)
 
-    fun newGrain(prefix: String = "Grain") = Grain(availableGrainId(), availableGrainName(prefix), availableColor())
+    fun newGrain(prefix: String = "Grain") = Grain(
+        id = availableGrainId(),
+        name = availableGrainName(prefix),
+        color = availableColor()
+    )
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
         val grainIndex = grainIndex(old)
@@ -416,7 +370,11 @@ data class GrainModel(
 
     fun availableFieldName(prefix: String = "Field"): String = availableName(fields.map(Field::name), prefix)
 
-    fun newField(prefix: String = "Field") = Field(availableFieldId(), availableFieldName(prefix), availableColor())
+    fun newField(prefix: String = "Field") = Field(
+        id = availableFieldId(),
+        name = availableFieldName(prefix),
+        color = availableColor()
+    )
 
     fun fieldIndex(field: Field) = fields.identityFirstIndexOf(field)
 
@@ -479,10 +437,6 @@ data class GrainModel(
 
         return copy(behaviours = newBehaviours)
     }
-
-    fun diagnose(locale: Locale): List<Problem> =
-        grains.flatMap { it.diagnose(this, locale) } +
-        behaviours.flatMap { it.diagnose(this, locale) }
 
     /**
      * Does the given [grain] may change count over the course of a simulation ?

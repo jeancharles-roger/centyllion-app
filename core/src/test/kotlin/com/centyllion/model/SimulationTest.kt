@@ -10,7 +10,7 @@ class SimulationTest {
         // creates the simulations
         val one2oneModel = GrainModel(
             "one2one", "Test one 2 one behaviour",
-            grains = listOf(Grain(0, "Source", movementProbability = 0.0), Grain(1, "Target")),
+            grains = listOf(Grain(id = 0, name = "Source", movementProbability = 0.0), Grain(id = 1, name = "Target")),
             behaviours = listOf(Behaviour("one2one", mainReactiveId = 0, mainProductId = 1))
         )
 

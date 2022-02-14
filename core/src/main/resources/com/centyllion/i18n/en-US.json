@@ -128,6 +128,8 @@
     "Behaviours": "Behaviours",
     "Name": "Name",
     "Display": "Display",
+    "Icon": "Icon",
+    "Color": "Color",
     "Invisible": "Invisible",
     "Speed": "Speed",
     "Half-life": "Half-life",

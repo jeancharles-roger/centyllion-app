@@ -149,3 +149,5 @@ val colorNames = mapOf(
     "Ivory" to Triple(255, 255, 240),
     "White" to Triple(255, 255, 255)
 )
+
+val colorNameList = colorNames.keys.toList()

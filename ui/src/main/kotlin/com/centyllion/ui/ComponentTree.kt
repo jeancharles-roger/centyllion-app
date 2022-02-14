@@ -205,7 +205,8 @@ fun BehaviourItem(
                 text = "${behaviour.probability}",
                 fontSize = 12.sp,
                 modifier = Modifier
-                    .background(Color.Green, shape = RoundedCornerShape(10.dp))
+                    .padding(5.dp)
+                    .background(Color.Green, shape = RoundedCornerShape(16.dp))
                     .padding(3.dp)
             )
 
@@ -324,7 +325,6 @@ fun TreeItem(
         )
 
         Spacer(modifier = Modifier.width(8.dp))
-
     }
 
 }

@@ -27,7 +27,8 @@ interface Ided {
 
 data class Problem(
     val source: ModelElement,
-    val message: String
+    val property: String,
+    val message: String,
 )
 
 @Serializable

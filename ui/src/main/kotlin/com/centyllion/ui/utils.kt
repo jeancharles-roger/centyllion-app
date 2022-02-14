@@ -75,9 +75,9 @@ fun SplitPaneScope.verticalSplitter() {
 }
 
 @Composable
-fun RowScope.Label(text: String, color: Color) {
+fun RowScope.Label(text: String) {
     Text(
-        text = text, fontSize = 12.sp, color = color,
+        text = text, fontSize = 12.sp,
         modifier = Modifier.padding(6.dp).align(Alignment.CenterVertically)
     )
 }

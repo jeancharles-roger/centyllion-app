@@ -91,7 +91,10 @@ class AppState(
                 // sets values
                 modelState.value = value
 
-                syncModelWithFile()
+                // updates selection
+                selection = selection.mapNotNull { value.findWithUuid(it.uuid) }
+
+                refresh()
             }
         }
 
@@ -150,6 +153,8 @@ class AppState(
 
             // set new model (not using property set the manages undo/redo
             modelState.value = restored
+
+            refresh()
         }
     }
 
@@ -167,6 +172,8 @@ class AppState(
 
             // set new model (not using property set the manages undo/redo
             modelState.value = restored
+
+            refresh()
         }
     }
 
@@ -179,9 +186,22 @@ class AppState(
             }
         }
 
+    private val problemsState = mutableStateOf<List<Problem>>(emptyList())
+    override val problems: List<Problem>
+        get() = problemsState.value
+
+    private val selectedProblemState = mutableStateOf<Problem?>(null)
+    override var selectedProblem: Problem?
+        get() = selectedProblemState.value
+        set(value) { selectedProblemState.value = value }
+
+    private fun updateProblems() {
+        problemsState.value = model.diagnose(locale)
+    }
+
     override fun showPrimarySelection() {
         selection.firstOrNull()?.let { primary ->
-            TODO("Not impemented yet")
+            TODO("Not implemented yet")
             /*
             componentExpanded = componentExpanded.toMutableSet().also { new ->
                 model.parentsFor(primary).forEach {
@@ -223,7 +243,6 @@ class AppState(
         get() = centerSelectedTabState.value
         set(value) { centerSelectedTabState.value = value }
 
-
     override val southTabs: List<Tab> = listOf(LogsTab)
 
     private val southSelectedTabState = mutableStateOf<Tab>(LogsTab)
@@ -233,6 +252,11 @@ class AppState(
             southSelectedTabState.value = value
             //if (value == LogTab) unseenLogsState.value = 0
         }
+
+    private fun refresh() {
+        updateProblems()
+        syncModelWithFile()
+    }
 
     init {
         updateWindowName()

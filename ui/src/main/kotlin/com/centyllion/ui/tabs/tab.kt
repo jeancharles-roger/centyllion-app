@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.centyllion.ui.AppContext
 
 sealed interface Tab {
-    val name: String
+    val nameKey: String
     val icon: ImageVector
 
     @Composable
@@ -29,14 +29,14 @@ sealed interface Tab {
         Icon(
             imageVector = icon,
             tint = LocalContentColor.current,
-            contentDescription = name,
+            contentDescription = appContext.locale.i18n(nameKey),
             modifier = Modifier
                 .size(24.dp)
                 .padding(4.dp)
         )
 
         Text(
-            name,
+            appContext.locale.i18n(nameKey),
             color = LocalContentColor.current,
             fontSize = 12.sp,
             modifier = Modifier.padding(horizontal = 4.dp)

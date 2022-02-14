@@ -44,7 +44,6 @@ interface AppContext {
     //var selectedDiagnostic: Diagnostic?
 
     val logs: List<AppLog>
-    val unseenLogs: Int
 
     fun log(message: String)
     fun warn(message: String)

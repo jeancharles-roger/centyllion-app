@@ -23,15 +23,8 @@ import java.text.DateFormat
 import java.util.*
 
 object LogsTab : Tab {
-    override val name = "Logs"
+    override val nameKey = "Logs"
     override val icon = FontAwesomeIcons.Solid.AlignJustify
-
-    @Composable
-    override fun header(appContext: AppContext) {
-        super.header(appContext)
-        val count = appContext.unseenLogs
-        if (count > 0) Text( text = "($count)", fontSize = 12.sp)
-    }
 
     @Composable
     override fun content(appContext: AppContext) {

@@ -238,13 +238,24 @@ fun BehaviourItem(
 @Composable
 fun RowScope.GrainSquareRow(appState: AppState, ids: List<Int>) {
     Row(
-        modifier = Modifier.weight(.5f),
+        modifier = Modifier.weight(.5f).padding(8.dp),
         horizontalArrangement = Arrangement.Center
     ) {
+        var first = true
+
         ids.map { appState.model.grainForId(it) }
             .forEach {
+                if (!first) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = FontAwesomeIcons.Solid.Plus,
+                        contentDescription = null,
+                        modifier = Modifier.height(10.dp).align(Alignment.CenterVertically),
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 GrainSquare(it)
+                first = false
             }
     }
 }

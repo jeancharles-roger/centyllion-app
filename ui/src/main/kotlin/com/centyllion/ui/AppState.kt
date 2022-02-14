@@ -6,7 +6,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import com.centyllion.i18n.loadLocales
 import com.centyllion.model.*
 import com.centyllion.ui.tabs.LogsTab
-import com.centyllion.ui.tabs.ModelTab
+import com.centyllion.ui.tabs.PropertiesTab
 import com.centyllion.ui.tabs.Tab
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,9 +36,6 @@ class AppState(
     /** Logs state (in first place to be ready if any log is provided during init) */
     private val logsState = mutableStateOf(listOf<AppLog>())
     override val logs: List<AppLog> get() = logsState.value
-
-    private val unseenLogsState = mutableStateOf(0)
-    override val unseenLogs get() = unseenLogsState.value
 
     override val path: Path?
         get() = pathState.value
@@ -209,7 +206,6 @@ class AppState(
 
     fun clearLogs() {
         logsState.value = emptyList()
-        unseenLogsState.value = 0
     }
 
     private fun updateWindowName() {
@@ -220,12 +216,13 @@ class AppState(
         }
     }
 
-    override val centerTabs = listOf<Tab>(ModelTab)
+    override val centerTabs = listOf<Tab>(PropertiesTab)
 
-    private val centerSelectedTabState = mutableStateOf<Tab>(ModelTab)
+    private val centerSelectedTabState = mutableStateOf<Tab>(PropertiesTab)
     override var centerSelectedTab: Tab
         get() = centerSelectedTabState.value
         set(value) { centerSelectedTabState.value = value }
+
 
     override val southTabs: List<Tab> = listOf(LogsTab)
 

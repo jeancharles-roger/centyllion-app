@@ -19,8 +19,8 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.ProjectDiagram
 
-object ModelTab : Tab {
-    override val name = "Model"
+object PropertiesTab : Tab {
+    override val nameKey = "Properties"
     override val icon = FontAwesomeIcons.Solid.ProjectDiagram
 
     @Composable

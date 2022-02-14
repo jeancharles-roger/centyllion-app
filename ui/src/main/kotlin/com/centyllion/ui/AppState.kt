@@ -3,6 +3,7 @@ package com.centyllion.ui
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.awt.ComposeWindow
+import com.centyllion.i18n.loadLocales
 import com.centyllion.model.*
 import com.centyllion.ui.tabs.LogsTab
 import com.centyllion.ui.tabs.ModelTab
@@ -24,6 +25,13 @@ class AppState(
 ) : AppContext {
 
     override val theme: AppTheme = AppTheme()
+
+    val locales = loadLocales()
+
+    // TODO search local from system
+    private val localeState = mutableStateOf(locales.locale(locales.system))
+    override var locale get() = localeState.value
+        set(value) { localeState.value = value }
 
     /** Logs state (in first place to be ready if any log is provided during init) */
     private val logsState = mutableStateOf(listOf<AppLog>())
@@ -165,7 +173,7 @@ class AppState(
         }
     }
 
-    val selectionState = mutableStateOf<List<ModelElement>>(listOf(model))
+    val selectionState = mutableStateOf<List<ModelElement>>(listOf())
     override var selection
         get() = selectionState.value
         set(value) {

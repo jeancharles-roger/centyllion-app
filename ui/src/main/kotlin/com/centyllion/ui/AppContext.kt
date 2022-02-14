@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.centyllion.i18n.Locale
 import com.centyllion.model.GrainModel
 import com.centyllion.model.ModelElement
 import com.centyllion.model.Simulation
@@ -19,6 +20,8 @@ import org.jetbrains.skia.Font
 import java.nio.file.Path
 
 interface AppContext {
+    val locale: Locale
+
     val theme: AppTheme
 
     val window: ComposeWindow

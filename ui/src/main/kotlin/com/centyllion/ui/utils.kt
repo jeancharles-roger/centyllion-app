@@ -125,7 +125,7 @@ fun newFileDialog(
 }
 
 val ModelElement.icon get() = when (this) {
-    is GrainModel -> FontAwesomeIcons.Solid.ProjectDiagram
+    is GrainModel -> FontAwesomeIcons.Solid.Boxes
     is Field -> FontAwesomeIcons.Solid.Podcast
     is Grain -> FontAwesomeIcons.Solid.SquareFull
     is Behaviour -> FontAwesomeIcons.Solid.ExchangeAlt

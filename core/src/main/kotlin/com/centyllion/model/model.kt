@@ -230,6 +230,18 @@ data class Behaviour(
 ): ModelElement {
 
     @Transient
+    val reactiveGrainIds = buildList {
+        add(mainReactiveId)
+        reaction.forEach { add(it.reactiveId) }
+    }
+
+    @Transient
+    val productGrainIds = buildList {
+        add(mainProductId)
+        reaction.forEach { add(it.productId) }
+    }
+
+    @Transient
     val fieldInfluenced = fieldInfluences.any { it.value != 0f }
 
     fun reactionIndex(reaction: Reaction) = this.reaction.identityFirstIndexOf(reaction)
@@ -349,6 +361,7 @@ data class GrainModel(
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList()
 ): ModelElement {
+
     fun grainForId(id: Int) = grains.find { it.id == id }
 
     fun fieldForId(id: Int) = fields.find { it.id == id }

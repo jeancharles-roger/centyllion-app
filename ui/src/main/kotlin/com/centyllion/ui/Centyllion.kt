@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,7 +24,7 @@ fun main() = application {
         onCloseRequest = { exitApplication() },
     ) {
         val scope = rememberCoroutineScope()
-        val appState = AppState(window, scope, mutableStateOf<Path?>(null))
+        val appState = remember { AppState(window, scope, mutableStateOf<Path?>(null)) }
         MenuBar(appState)
         App(appState)
     }

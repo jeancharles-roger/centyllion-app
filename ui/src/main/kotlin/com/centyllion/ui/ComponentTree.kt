@@ -8,15 +8,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.centyllion.model.ModelElement
+import com.centyllion.model.*
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.*
 
 @Composable
 fun ComponentTree(appState: AppState) {
@@ -24,13 +31,16 @@ fun ComponentTree(appState: AppState) {
         val listState = rememberLazyListState()
 
         LazyColumn(state = listState) {
-            item {
-                TreeItem(appState, appState.model)
-            }
+            item { TreeItem(appState, appState.model) }
 
-            items(appState.model.grains) {
-                TreeItem(appState, it)
-            }
+            item { SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") }
+            items(appState.model.fields) { FieldItem(appState, it) }
+
+            item { SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") }
+            items(appState.model.grains) { GrainItem(appState, it) }
+
+            item { SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") }
+            items(appState.model.behaviours) { BehaviourItem(appState, it) }
         }
 
         VerticalScrollbar(
@@ -40,29 +50,237 @@ fun ComponentTree(appState: AppState) {
     }
 }
 
+@Composable
+fun SectionItem(appState: AppState, icon: ImageVector, titleKey: String) {
+    Row(
+        modifier = Modifier
+            .background(appState.theme.colors.surface)
+            .padding(6.dp)
+    ) {
+        Icon(
+            imageVector = icon, contentDescription = null,
+            modifier = Modifier.height(22.dp).align(Alignment.CenterVertically),
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            color = appState.theme.colors.onSurface,
+            text = AnnotatedString(appState.locale.i18n(titleKey)),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+    }
+}
+
+@Composable
+fun FieldItem(
+    appState: AppState,
+    field: Field,
+) {
+    val selected = appState.selection.contains(field)
+    val color = when {
+        selected -> appState.theme.colors.onPrimary
+        else -> appState.theme.colors.onSurface
+    }
+
+    Row(
+        modifier = Modifier
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .clickable { appState.selection = listOf(field) }
+            .padding(6.dp)
+    ) {
+        Spacer(modifier = Modifier.width(8.dp))
+        ColoredSquare(field.color)
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            color = color,
+            text = AnnotatedString(field.name),
+            fontSize = 12.sp,
+            maxLines = 1,
+            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Icon(
+            imageVector = FontAwesomeIcons.Solid.TimesCircle,
+            contentDescription = null, tint = Color.LightGray,
+            modifier = Modifier
+                .height(14.dp).align(Alignment.CenterVertically)
+                .clickable { appState.model = appState.model.dropField(field) }
+        )
+    }
+}
+
+@Composable
+fun GrainItem(
+    appState: AppState,
+    grain: Grain,
+) {
+    val selected = appState.selection.contains(grain)
+    val color = when {
+        selected -> appState.theme.colors.onPrimary
+        else -> appState.theme.colors.onSurface
+    }
+
+    Row(
+        modifier = Modifier
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .clickable { appState.selection = listOf(grain) }
+            .padding(6.dp)
+    ) {
+        Spacer(modifier = Modifier.width(8.dp))
+        val squareColor = colorNames[grain.color]
+            ?.let { Color(it.first, it.second, it.third) }
+            ?: Color.Red
+
+        Icon(
+            imageVector = FontAwesomeIcons.Solid.SquareFull,
+            contentDescription = null, tint = squareColor,
+            modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            color = color,
+            text = AnnotatedString(grain.name),
+            fontSize = 12.sp,
+            maxLines = 1,
+            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Icon(
+            imageVector = FontAwesomeIcons.Solid.TimesCircle,
+            contentDescription = null, tint = Color.LightGray,
+            modifier = Modifier
+                .height(14.dp).align(Alignment.CenterVertically)
+                .clickable { appState.model = appState.model.dropGrain(grain) }
+        )
+
+    }
+}
+
+@Composable
+fun BehaviourItem(
+    appState: AppState,
+    behaviour: Behaviour,
+) {
+    val selected = appState.selection.contains(behaviour)
+    val color = when {
+        selected -> appState.theme.colors.onPrimary
+        else -> appState.theme.colors.onSurface
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .clickable { appState.selection = listOf(behaviour) }
+            .padding(6.dp)
+    ) {
+
+        Row {
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                color = color,
+                text = AnnotatedString(behaviour.name),
+                fontSize = 12.sp,
+                maxLines = 1,
+                modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "${behaviour.probability}",
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .background(Color.Green, shape = RoundedCornerShape(10.dp))
+                    .padding(3.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.TimesCircle,
+                contentDescription = null, tint = Color.LightGray,
+                modifier = Modifier
+                    .height(14.dp).align(Alignment.CenterVertically)
+                    .clickable { appState.model = appState.model.dropBehaviour(behaviour) }
+            )
+        }
+
+        Row(Modifier.fillMaxWidth()) {
+            GrainSquareRow(appState, behaviour.reactiveGrainIds)
+
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.ArrowRight,
+                contentDescription = null,
+                modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+            )
+
+            GrainSquareRow(appState, behaviour.productGrainIds)
+        }
+
+    }
+}
+
+@Composable
+fun RowScope.GrainSquareRow(appState: AppState, ids: List<Int>) {
+    Row(
+        modifier = Modifier.weight(.5f),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        ids.map { appState.model.grainForId(it) }
+            .forEach {
+                Spacer(modifier = Modifier.width(8.dp))
+                GrainSquare(it)
+            }
+    }
+}
+
+@Composable
+fun RowScope.GrainSquare(grain: Grain?) = if (grain != null) ColoredSquare(grain.color) else EmptyGrain()
+
+@Composable
+fun RowScope.ColoredSquare(color: String) {
+    val squareColor = colorNames[color]
+        ?.let { Color(it.first, it.second, it.third) }
+        ?: Color.Red
+
+    Icon(
+        imageVector = FontAwesomeIcons.Solid.SquareFull,
+        contentDescription = null, tint = squareColor,
+        modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+    )
+}
+
+@Composable
+fun RowScope.EmptyGrain() {
+    Icon(
+        imageVector = FontAwesomeIcons.Solid.TimesCircle,
+        contentDescription = null,
+        modifier = Modifier.height(16.dp).align(Alignment.CenterVertically),
+    )
+}
 
 @Composable
 fun TreeItem(
     appState: AppState,
     element: ModelElement,
 ) {
-    /*
-    val leaf = when (element) {
-        is Project -> true
-        is Component -> element.components.isEmpty() && element.connection.provided.isEmpty()
-        else -> true
-    }
-    */
     val selected = appState.selection.contains(element)
-    /*
-    val expanded = appState.componentExpanded.contains(element.id)
-
-    val diagnostic = appState.diagnostics.filter { it.source == element.id }.maxByOrNull { it.severity }
-    val severity = diagnostic?.severity
-    */
-
     val colorWithError = when {
-        //severity != null -> appState.theme.severityColor(severity)
         selected -> appState.theme.colors.onPrimary
         else -> appState.theme.colors.onSurface
     }
@@ -78,34 +296,6 @@ fun TreeItem(
             .clickable { appState.selection = listOf(element) }
             .padding(6.dp)
     ) {
-        /*
-        Spacer(modifier = Modifier.width(16.dp * parents.size))
-
-        val stateIcon = when {
-            leaf -> Icons.TreeLeaf
-            expanded -> Icons.TreeExpanded
-            else -> Icons.TreeFolded
-        }
-
-        Icon(
-            imageVector = stateIcon, contentDescription = null,
-            tint = color,
-            modifier = Modifier
-                .padding(2.dp)
-                .height(16.dp)
-                .align(Alignment.CenterVertically)
-                .clickable {
-                    // expand or collapse item
-                    if (!leaf) {
-                        if (expanded) appState.componentExpanded -= element.id
-                        else appState.componentExpanded += element.id
-                    }
-                }
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-        */
-
         Icon(
             imageVector = element.icon, contentDescription = null,
             tint = colorWithError,
@@ -124,25 +314,6 @@ fun TreeItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        /*
-        diagnostic?.let {
-            Icon(
-                imageVector = it.severity.icon, contentDescription = null,
-                tint = appState.theme.severityColor(it.severity),
-                modifier = Modifier
-                    .height(16.dp).align(Alignment.CenterVertically)
-                    .clickable { appState.selectedDiagnostic = it }
-            )
-        }
-         */
     }
 
-    /*
-    if (element is Component && expanded) {
-        (element.components + element.connection.provided).forEach {
-            TreeItem(appState, parents + element, it)
-        }
-        Divider()
-    }
-     */
 }

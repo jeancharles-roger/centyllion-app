@@ -1,5 +1,6 @@
 {
   "name": "en-US",
+  "label": "English - US",
   "translations": {
     "Grain with id %0 doesn't exist": "Grain with id %0 doesn't exist",
     "Behaviour must have a main reactive": "Behaviour must have a main reactive",
@@ -27,6 +28,18 @@
     "Show": "Show",
     "Subscribe": "Subscribe",
     "Administration": "Administration",
+
+    "Project": "Project",
+    "New model": "New model",
+    "Open model\u2026": "Open model\u2026",
+    "Save model\u2026": "Save model\u2026",
+
+    "Edit": "Edit",
+    "Undo": "Undo",
+    "Redo": "Redo",
+
+    "View": "View",
+    "Clear logs": "Clear logs",
 
     "Documentation": "Documentation",
     "Contact Us": "Contact Us",

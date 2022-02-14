@@ -44,7 +44,7 @@ fun ToolBar(appState: AppState) {
 
         IconButton(
             onClick = {
-                val files = openFileDialog(appState.window, "Open model", listOf(".components"), false)
+                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion"), false)
                 if (files.isNotEmpty()) appState.openPath(files.first().toPath())
             },
             modifier = appState.theme.toolBarIconModifier

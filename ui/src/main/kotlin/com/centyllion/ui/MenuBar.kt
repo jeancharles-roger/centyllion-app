@@ -7,36 +7,42 @@ import androidx.compose.ui.window.MenuBar
 @Composable
 fun FrameWindowScope.MenuBar(appState: AppState) {
     MenuBar {
-        Menu("Project", 'p') {
-            Item(text = "New model", mnemonic = 'n') {
+        Menu(appState.locale.i18n("Project"), 'p') {
+            Item(appState.locale.i18n("New model"), mnemonic = 'n') {
                 // TODO add dialog bow to confirm
                 appState.newModel()
             }
-            Item(text = "Save model\u2026", mnemonic = 's') {
+            Item(appState.locale.i18n("Save model\u2026"), mnemonic = 's') {
                 val files = newFileDialog(
                     window = appState.window,
                     title = "Select file to save",
-                    preselectedFile = "${appState.model}.components",
-                    allowedExtensions = listOf(".components"),
+                    preselectedFile = "${appState.model}.centyllion",
+                    allowedExtensions = listOf(".centyllion"),
                     allowMultiSelection = false,
                 )
                 if (files.isNotEmpty()) appState.setPath(files.first().toPath())
             }
-            Item(text = "Open model\u2026", mnemonic = 'o') {
-                val files = openFileDialog(appState.window, "Open model", listOf(".components"), false)
+            Item(text = appState.locale.i18n("Open model\u2026"), mnemonic = 'o') {
+                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion"), false)
                 if (files.isNotEmpty()) appState.openPath(files.first().toPath())
             }
         }
 
-        Menu("Edit", 'e') {
-            Item(text = "Undo", enabled = appState.canUndo, mnemonic = 'u') { appState.undo() }
-            Item(text = "Redo", enabled = appState.canRedo, mnemonic = 'r') { appState.redo() }
+        Menu(appState.locale.i18n("Edit"), 'e') {
+            Item(text = appState.locale.i18n("Undo"), enabled = appState.canUndo, mnemonic = 'u') { appState.undo() }
+            Item(text = appState.locale.i18n("Redo"), enabled = appState.canRedo, mnemonic = 'r') { appState.redo() }
             Separator()
         }
 
-        Menu("View", 'v') {
-            Item(text = "Clear logs", mnemonic = 'c') { appState.clearLogs() }
+        Menu(appState.locale.i18n("View"), 'v') {
+            Item(text = appState.locale.i18n("Clear logs"), mnemonic = 'c') { appState.clearLogs() }
             Separator()
+
+            val locales = appState.locales
+            locales.locales.zip(locales.labels).forEach { (id, label) ->
+                CheckboxItem(text = label, checked = id == appState.locale.name)
+                    { appState.locale = locales.locale(id) }
+            }
         }
     }
 }

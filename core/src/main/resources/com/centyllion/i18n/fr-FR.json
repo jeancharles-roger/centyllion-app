@@ -1,5 +1,6 @@
 {
   "name": "fr-FR",
+  "label": "Francais - France",
   "translations": {
     "Grain with id %0 doesn't exist": "Le grain avec l'id %0 n'existe pas",
     "Behaviour must have a main reactive": "Le comportement doit avoir un réactif principal",
@@ -27,6 +28,18 @@
     "Show": "Présenter",
     "Subscribe": "S'abonner",
     "Administration": "Administration",
+
+    "Project": "Projet",
+    "New model": "Nouveau modèle",
+    "Open model\u2026": "Ouvrir modèle\u2026",
+    "Save model\u2026": "Enregistrer modèle\u2026",
+
+    "Edit": "Edition",
+    "Undo": "Annuler",
+    "Redo": "Refaire",
+
+    "View": "Présentation",
+    "Clear logs": "Effacer le journal",
 
     "Documentation": "Documentation",
     "Contact Us": "Contactez-nous",

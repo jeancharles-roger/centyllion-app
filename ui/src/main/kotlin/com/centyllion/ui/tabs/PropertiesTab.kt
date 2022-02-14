@@ -76,7 +76,7 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
 
                 TitleRow(appContext.locale.i18n("Display"))
 
-                ComboRow(appContext, grain, "Icon", grain.icon,
+                ComboRow(appContext, grain, "Icon", grain.iconName,
                     FontAwesomeIcons.Solid.AllIcons.map { it.name }, { iconName ->
                         val icon = FontAwesomeIcons.AllIcons.find { it.name == iconName }
                         if (icon != null) Icon(icon) else Icon(FontAwesomeIcons.Solid.QuestionCircle, Color.Red)

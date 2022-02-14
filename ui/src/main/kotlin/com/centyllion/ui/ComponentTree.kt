@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.*
 import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.AllIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
 
@@ -136,16 +137,7 @@ fun GrainItem(
             .padding(6.dp)
     ) {
         Spacer(modifier = Modifier.width(8.dp))
-        val squareColor = colorNames[grain.color]
-            ?.let { Color(it.first, it.second, it.third) }
-            ?: Color.Red
-
-        Icon(
-            imageVector = FontAwesomeIcons.Solid.SquareFull,
-            contentDescription = null, tint = squareColor,
-            modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
-        )
-
+        GrainSquare(grain)
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
@@ -262,7 +254,33 @@ fun RowScope.GrainSquareRow(appState: AppState, ids: List<Int>) {
 }
 
 @Composable
-fun RowScope.GrainSquare(grain: Grain?) = if (grain != null) ColoredSquare(grain.color) else EmptyGrain()
+fun RowScope.GrainSquare(grain: Grain?) = if (grain != null) ColoredGrain(grain) else EmptyGrain()
+
+@Composable
+fun RowScope.ColoredGrain(grain: Grain) {
+    val color = colorNames[grain.color]
+        ?.let { Color(it.first, it.second, it.third) }
+        ?: Color.Red
+
+    val iconName = grain.iconName
+    val icon = FontAwesomeIcons.Solid.AllIcons.find { it.name.equals(iconName, true)}
+        ?: FontAwesomeIcons.Solid.SquareFull
+
+    Icon(
+        imageVector = icon,
+        contentDescription = null, tint = color,
+        modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+    )
+}
+
+@Composable
+fun RowScope.EmptyGrain() {
+    Icon(
+        imageVector = FontAwesomeIcons.Solid.TimesCircle,
+        contentDescription = null,
+        modifier = Modifier.height(16.dp).align(Alignment.CenterVertically),
+    )
+}
 
 @Composable
 fun RowScope.ColoredSquare(color: String) {
@@ -277,14 +295,6 @@ fun RowScope.ColoredSquare(color: String) {
     )
 }
 
-@Composable
-fun RowScope.EmptyGrain() {
-    Icon(
-        imageVector = FontAwesomeIcons.Solid.TimesCircle,
-        contentDescription = null,
-        modifier = Modifier.height(16.dp).align(Alignment.CenterVertically),
-    )
-}
 
 @Composable
 fun TreeItem(

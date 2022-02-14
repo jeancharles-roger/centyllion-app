@@ -121,6 +121,8 @@ data class Grain(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap()
 ): ModelElement {
+
+    val iconName get() = icon.replace("-", "")
     /** Label for grain */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description

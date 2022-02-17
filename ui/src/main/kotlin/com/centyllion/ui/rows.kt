@@ -8,13 +8,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Warning
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,6 +90,76 @@ fun TextEditRow(
             isError = problems.isNotEmpty(),
             singleLine = maxLines <= 1,
             maxLines = maxLines
+        )
+    }
+    problems.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun IntEditRow(
+    appContext: AppContext, element: ModelElement,
+    property: String,
+    value: Int,
+    validationProperty: String = property,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: (Int) -> Unit,
+) {
+    val problems = problems(appContext, element, validationProperty)
+    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
+
+        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
+        val newValue = if (textFieldValueState.text.toIntOrNull() != value) value.toString() else textFieldValueState.text
+        val textFieldValue = textFieldValueState.copy(text = newValue)
+
+        TextField(
+            label = { Text(appContext.locale.i18n(property)) },
+            value = textFieldValue,
+            trailingIcon = trailingIcon,
+            onValueChange = {
+                textFieldValueState = it
+                val new = it.text.toIntOrNull()
+                if (new != null && value != new) {
+                    onValueChange(new)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = textFieldValue.text.toIntOrNull() == null || problems.isNotEmpty(),
+            singleLine = true,
+        )
+    }
+    problems.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun DoubleEditRow(
+    appContext: AppContext, element: ModelElement,
+    property: String,
+    value: Double,
+    validationProperty: String = property,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: (Double) -> Unit,
+) {
+    val problems = problems(appContext, element, validationProperty)
+    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
+
+        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
+        val newValue = if (textFieldValueState.text.toDoubleOrNull() != value) value.toString() else textFieldValueState.text
+        val textFieldValue = textFieldValueState.copy(text = newValue)
+
+        TextField(
+            label = { Text(appContext.locale.i18n(property)) },
+            value = textFieldValue,
+            trailingIcon = trailingIcon,
+            onValueChange = {
+                textFieldValueState = it
+                val new = it.text.toDoubleOrNull()
+                if (new != null && value != new) {
+                    onValueChange(new)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = textFieldValue.text.toDoubleOrNull() == null || problems.isNotEmpty(),
+            singleLine = true,
         )
     }
     problems.forEach { ProblemItemRow(appContext, it) }

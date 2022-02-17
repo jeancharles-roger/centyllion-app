@@ -138,3 +138,15 @@ val Severity.icon get() = when (this) {
     Severity.Warning -> androidx.compose.material.icons.Icons.TwoTone.Warning
     Severity.Severe -> androidx.compose.material.icons.Icons.TwoTone.Warning
 }
+
+
+val Direction.icon get() = when (this) {
+    Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
+    Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
+    Direction.Up -> FontAwesomeIcons.Solid.ArrowUp
+    Direction.Down -> FontAwesomeIcons.Solid.ArrowDown
+    Direction.LeftUp -> FontAwesomeIcons.Solid.Question
+    Direction.LeftDown -> FontAwesomeIcons.Solid.Question
+    Direction.RightUp -> FontAwesomeIcons.Solid.Question
+    Direction.RightDown -> FontAwesomeIcons.Solid.Question
+}

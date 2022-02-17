@@ -1,21 +1,23 @@
 package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.centyllion.model.Grain
-import com.centyllion.model.colorNameList
-import com.centyllion.model.colorNames
+import com.centyllion.model.*
 import com.centyllion.ui.*
 import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
@@ -74,12 +76,74 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
                     appContext.model = appContext.model.updateGrain(grain, grain.copy(description = it))
                 }
 
+                IntEditRow(appContext, grain, "Half-life", grain.halfLife) {
+                    appContext.model = appContext.model.updateGrain(grain, grain.copy(halfLife = it))
+                }
+
+                DoubleEditRow(appContext, grain, "Speed", grain.movementProbability,
+                    trailingIcon = {
+                        Row {
+                            firstDirections.forEachIndexed { index, direction ->
+                                val selected = grain.allowedDirection.contains(direction)
+                                val shape = when (index) {
+                                    0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                                    firstDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                                    else -> RectangleShape
+                                }
+                                Icon(
+                                    imageVector = direction.icon, contentDescription = null,
+                                    tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                                    modifier = Modifier.size(28.dp)
+                                        .background(
+                                            color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                                            shape = shape
+                                        )
+                                        .padding(5.dp, 2.dp)
+                                        .clickable {
+                                            val directions = if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
+                                           appContext.model = appContext.model.updateGrain(grain, grain.copy(allowedDirection = directions))
+                                        },
+                                )
+                            }
+
+                            Spacer(Modifier.width(12.dp))
+
+                            extendedDirections.forEachIndexed { index, direction ->
+                                val selected = grain.allowedDirection.contains(direction)
+                                val shape = when (index) {
+                                    0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                                    extendedDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                                    else -> RectangleShape
+                                }
+                                Icon(
+                                    imageVector = direction.icon, contentDescription = null,
+                                    tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                                    modifier = Modifier.size(28.dp)
+                                        .background(
+                                            color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                                            shape = shape
+                                        )
+                                        .padding(5.dp, 2.dp)
+                                        .clickable {
+                                            val directions = if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
+                                            appContext.model = appContext.model.updateGrain(grain, grain.copy(allowedDirection = directions))
+                                        },
+                                )
+                            }
+
+                            Spacer(Modifier.width(12.dp))
+                        }
+                    }
+                ) {
+                    appContext.model = appContext.model.updateGrain(grain, grain.copy(movementProbability = it))
+                }
+
                 TitleRow(appContext.locale.i18n("Display"))
 
                 ComboRow(appContext, grain, "Icon", grain.iconName,
                     FontAwesomeIcons.Solid.AllIcons.map { it.name }, { iconName ->
                         val icon = FontAwesomeIcons.AllIcons.find { it.name == iconName }
-                        if (icon != null) Icon(icon) else Icon(FontAwesomeIcons.Solid.QuestionCircle, Color.Red)
+                        if (icon != null) SimpleIcon(icon) else SimpleIcon(FontAwesomeIcons.Solid.QuestionCircle, Color.Red)
                         Spacer(Modifier.width(4.dp))
                         Text(iconName)
                     }
@@ -101,7 +165,7 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
 
                 // TODO filter problems
                 CustomRow(appContext, emptyList()) {
-                    Label(appContext.locale.i18n("Size"))
+                    Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
                     Label(((grain.size * 10.0).roundToInt()/10.0).toString())
                     Slider(
                         value = grain.size.toFloat(),
@@ -115,7 +179,7 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
                 }
 
                 CustomRow(appContext, emptyList()) {
-                    Label(appContext.locale.i18n("Invisible"))
+                    Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))
                     Checkbox(
                         checked = grain.invisible,
                         colors = appContext.theme.checkboxColors(),
@@ -132,6 +196,8 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
 }
 
 
+
+
 @Composable
 private fun ColoredSquare(color: String) {
     val squareColor = colorNames[color]
@@ -146,7 +212,7 @@ private fun ColoredSquare(color: String) {
 }
 
 @Composable
-private fun Icon(icon: ImageVector, color: Color = Color.Black) {
+private fun SimpleIcon(icon: ImageVector, color: Color = Color.Black, ) {
     Icon(
         imageVector = icon, contentDescription = null,
         modifier = Modifier.height(20.dp), tint = color

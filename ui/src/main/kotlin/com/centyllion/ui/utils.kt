@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
@@ -124,7 +125,7 @@ fun newFileDialog(
     }.files.toSet()
 }
 
-val ModelElement.icon get() = when (this) {
+fun ModelElement.icon(): ImageVector = when (this) {
     is GrainModel -> FontAwesomeIcons.Solid.Boxes
     is Field -> FontAwesomeIcons.Solid.Podcast
     is Grain -> FontAwesomeIcons.Solid.SquareFull
@@ -132,21 +133,19 @@ val ModelElement.icon get() = when (this) {
     else -> FontAwesomeIcons.Solid.Question
 }
 
-
-val Severity.icon get() = when (this) {
+fun Severity.icon(): ImageVector = when (this) {
     Severity.Info -> androidx.compose.material.icons.Icons.TwoTone.Info
     Severity.Warning -> androidx.compose.material.icons.Icons.TwoTone.Warning
     Severity.Severe -> androidx.compose.material.icons.Icons.TwoTone.Warning
 }
 
-
-val Direction.icon get() = when (this) {
-    Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
-    Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
-    Direction.Up -> FontAwesomeIcons.Solid.ArrowUp
-    Direction.Down -> FontAwesomeIcons.Solid.ArrowDown
-    Direction.LeftUp -> FontAwesomeIcons.Solid.Question
-    Direction.LeftDown -> FontAwesomeIcons.Solid.Question
-    Direction.RightUp -> FontAwesomeIcons.Solid.Question
-    Direction.RightDown -> FontAwesomeIcons.Solid.Question
+fun com.centyllion.model.Direction.icon(): ImageVector = when (this) {
+    com.centyllion.model.Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
+    com.centyllion.model.Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
+    com.centyllion.model.Direction.Up -> FontAwesomeIcons.Solid.ArrowUp
+    com.centyllion.model.Direction.Down -> FontAwesomeIcons.Solid.ArrowDown
+    com.centyllion.model.Direction.LeftUp -> FontAwesomeIcons.Solid.Question
+    com.centyllion.model.Direction.LeftDown -> FontAwesomeIcons.Solid.Question
+    com.centyllion.model.Direction.RightUp -> FontAwesomeIcons.Solid.Question
+    com.centyllion.model.Direction.RightDown -> FontAwesomeIcons.Solid.Question
 }

@@ -166,6 +166,41 @@ fun DoubleEditRow(
 }
 
 @Composable
+fun FloatEditRow(
+    appContext: AppContext, element: ModelElement,
+    property: String,
+    value: Float,
+    validationProperty: String = property,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: (Float) -> Unit,
+) {
+    val problems = problems(appContext, element, validationProperty)
+    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
+
+        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
+        val newValue = if (textFieldValueState.text.toFloatOrNull() != value) value.toString() else textFieldValueState.text
+        val textFieldValue = textFieldValueState.copy(text = newValue)
+
+        TextField(
+            label = { Text(appContext.locale.i18n(property)) },
+            value = textFieldValue,
+            trailingIcon = trailingIcon,
+            onValueChange = {
+                textFieldValueState = it
+                val new = it.text.toFloatOrNull()
+                if (new != null && value != new) {
+                    onValueChange(new)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            isError = textFieldValue.text.toFloatOrNull() == null || problems.isNotEmpty(),
+            singleLine = true,
+        )
+    }
+    problems.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
 fun CheckRow(
     appContext: AppContext, element: ModelElement,
     property: String, checked: Boolean,

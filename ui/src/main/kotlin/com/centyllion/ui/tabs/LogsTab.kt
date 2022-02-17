@@ -40,7 +40,7 @@ object LogsTab : Tab {
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Icon(
-                            imageVector = log.severity.icon, contentDescription = null,
+                            imageVector = log.severity.icon(), contentDescription = null,
                             tint = appContext.theme.severityColor(log.severity),
                             modifier = Modifier.fillMaxHeight().align(Alignment.CenterVertically),
                         )

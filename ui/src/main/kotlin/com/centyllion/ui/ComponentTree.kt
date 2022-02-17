@@ -319,7 +319,7 @@ fun TreeItem(
             .padding(6.dp)
     ) {
         Icon(
-            imageVector = element.icon, contentDescription = null,
+            imageVector = element.icon(), contentDescription = null,
             tint = colorWithError,
             modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
         )

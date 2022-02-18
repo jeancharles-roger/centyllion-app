@@ -110,7 +110,7 @@ data class Grain(
     val id: Int = 0,
     override val name: String = "",
     val color: String = "red",
-    val icon: String = "square-full",
+    val icon: String = "SquareFull",
     val invisible: Boolean = false,
     val size: Double = 1.0,
     override val description: String = "",

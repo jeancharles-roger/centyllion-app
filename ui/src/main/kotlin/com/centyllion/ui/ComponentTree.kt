@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,13 +35,28 @@ fun ComponentTree(appState: AppState) {
         LazyColumn(state = listState) {
             item { TreeItem(appState, appState.model) }
 
-            item { SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") }
+            item {
+                SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
+                    val field = appState.model.newField()
+                    appState.model = appState.model.copy(fields = appState.model.fields + field)
+                }
+            }
             items(appState.model.fields) { FieldItem(appState, it) }
 
-            item { SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") }
+            item {
+                SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") {
+                    val grain = appState.model.newGrain()
+                    appState.model = appState.model.copy(grains = appState.model.grains + grain)
+                }
+            }
             items(appState.model.grains) { GrainItem(appState, it) }
 
-            item { SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") }
+            item {
+                SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") {
+                    val behaviour = appState.model.newBehaviour()
+                    appState.model = appState.model.copy(behaviours = appState.model.behaviours + behaviour)
+                }
+            }
             items(appState.model.behaviours) { BehaviourItem(appState, it) }
         }
 
@@ -52,7 +68,10 @@ fun ComponentTree(appState: AppState) {
 }
 
 @Composable
-fun SectionItem(appState: AppState, icon: ImageVector, titleKey: String) {
+fun SectionItem(
+    appState: AppState, icon: ImageVector, titleKey: String,
+    addCallback: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .background(appState.theme.colors.surface)
@@ -73,6 +92,19 @@ fun SectionItem(appState: AppState, icon: ImageVector, titleKey: String) {
             maxLines = 1,
             modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
         )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        IconButton(
+            //modifier = appState.theme.buttonIconModifier,
+            onClick = addCallback
+        ) {
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.Plus,
+                contentDescription = "Add $titleKey",
+                modifier = appState.theme.buttonIconModifier
+            )
+        }
 
         Spacer(modifier = Modifier.width(8.dp))
     }

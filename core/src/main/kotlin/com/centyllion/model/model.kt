@@ -37,7 +37,8 @@ val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Dire
 val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
 
-val emptyModel = GrainModel("")
+fun newModel(name: String) = GrainModel(name = name)
+
 val emptySimulation = createSimulation("")
 
 fun <T> List<T>.identityFirstIndexOf(value: T): Int {
@@ -415,7 +416,7 @@ data class GrainModel(
     fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(behaviours.map(Behaviour::name), prefix)
 
     fun newBehaviour(prefix: String = "Behaviour") = (grains.firstOrNull()?.id ?: -1).let {
-        Behaviour(availableBehaviourName(prefix), mainReactiveId = it, mainProductId = it, sourceReactive = 0)
+        Behaviour(name = availableBehaviourName(prefix), mainReactiveId = it, mainProductId = it, sourceReactive = 0)
     }
 
     fun behaviourIndex(behaviour: Behaviour) = behaviours.identityFirstIndexOf(behaviour)

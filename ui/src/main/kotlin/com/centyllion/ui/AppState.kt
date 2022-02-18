@@ -40,7 +40,7 @@ class AppState(
     override val path: Path?
         get() = pathState.value
 
-    fun newModel(model: GrainModel = emptyModel) {
+    fun newModel(model: GrainModel = newModel(locale.i18n("Model"))) {
         pathState.value = null
         this.model = model
         selection = listOf(model)
@@ -72,7 +72,7 @@ class AppState(
     val canRedo get() = canRedoState.value
 
     private var lastModelModification: Long = Long.MIN_VALUE
-    val modelState = mutableStateOf(path?.let { loadModel(it) } ?: emptyModel)
+    val modelState = mutableStateOf(path?.let { loadModel(it) } ?: newModel(locale.i18n("Model")))
 
     override var model: GrainModel
         get() = modelState.value
@@ -111,7 +111,7 @@ class AppState(
         }
         catch (e: Throwable) {
             alert("Couldn't load model: $e")
-            emptyModel
+            newModel(locale.i18n("Model"))
         }
 
     private fun syncModelWithFile() {

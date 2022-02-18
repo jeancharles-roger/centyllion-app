@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
+import com.centyllion.model.GrainModel
 import com.centyllion.model.colorNames
 import com.centyllion.ui.AppContext
 import compose.icons.FontAwesomeIcons
@@ -40,6 +41,7 @@ object PropertiesTab : Tab {
                 if (selectedComponents.isNotEmpty()) {
                     items(selectedComponents) { element ->
                         when (element) {
+                            is GrainModel -> Row { GrainModelEdit(appContext, element) }
                             is Grain -> Row { GrainEdit(appContext, element) }
                             is Field -> Row { FieldEdit(appContext, element) }
                         }

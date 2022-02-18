@@ -37,7 +37,7 @@ fun ComponentTree(appState: AppState) {
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
-                    val field = appState.model.newField()
+                    val field = appState.model.newField(appState.locale.i18n("Field"))
                     appState.model = appState.model.copy(fields = appState.model.fields + field)
                 }
             }
@@ -45,7 +45,7 @@ fun ComponentTree(appState: AppState) {
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") {
-                    val grain = appState.model.newGrain()
+                    val grain = appState.model.newGrain(appState.locale.i18n("Grain"))
                     appState.model = appState.model.copy(grains = appState.model.grains + grain)
                 }
             }
@@ -53,7 +53,7 @@ fun ComponentTree(appState: AppState) {
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") {
-                    val behaviour = appState.model.newBehaviour()
+                    val behaviour = appState.model.newBehaviour(appState.locale.i18n("Behaviour"))
                     appState.model = appState.model.copy(behaviours = appState.model.behaviours + behaviour)
                 }
             }

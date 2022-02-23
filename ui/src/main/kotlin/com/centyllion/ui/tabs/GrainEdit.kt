@@ -16,9 +16,7 @@ import com.centyllion.model.colorNameList
 import com.centyllion.model.extendedDirections
 import com.centyllion.model.firstDirections
 import com.centyllion.ui.*
-import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
-import compose.icons.fontawesomeicons.AllIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.QuestionCircle
 import kotlin.math.roundToInt
@@ -111,8 +109,8 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
                 TitleRow(appContext.locale.i18n("Display"))
 
                 ComboRow(appContext, grain, "Icon", grain.iconName,
-                    FontAwesomeIcons.Solid.AllIcons.map { it.name }, { iconName ->
-                        val icon = FontAwesomeIcons.AllIcons.find { it.name == iconName }
+                    allIcons.map { it.name }, { iconName ->
+                        val icon = allIcons.find { it.name == iconName }
                         if (icon != null) SimpleIcon(icon) else SimpleIcon(
                             FontAwesomeIcons.Solid.QuestionCircle,
                             Color.Red

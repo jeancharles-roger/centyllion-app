@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.*
+import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
@@ -148,4 +149,12 @@ fun com.centyllion.model.Direction.icon(): ImageVector = when (this) {
     com.centyllion.model.Direction.LeftDown -> FontAwesomeIcons.Solid.Question
     com.centyllion.model.Direction.RightUp -> FontAwesomeIcons.Solid.Question
     com.centyllion.model.Direction.RightDown -> FontAwesomeIcons.Solid.Question
+}
+
+
+val allIcons = buildList {
+    add(FontAwesomeIcons.Solid.Square)
+    add(FontAwesomeIcons.Solid.SquareFull)
+    add(FontAwesomeIcons.Solid.Circle)
+    addAll(FontAwesomeIcons.AllIcons.sortedBy { it.name })
 }

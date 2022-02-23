@@ -27,140 +27,196 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
         Box(modifier = Modifier.padding(4.dp)) {
             Column {
                 MainTitleRow(appContext.locale.i18n("Grain"))
-
-                SingleLineTextEditRow(appContext, grain, "Name", grain.name) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(name = it))
-                }
-
-                MultiLineTextEditRow(appContext, grain, "Description", grain.description) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(description = it))
-                }
-
                 IntEditRow(appContext, grain, "Half-life", grain.halfLife) {
                     appContext.model = appContext.model.updateGrain(grain, grain.copy(halfLife = it))
                 }
+                SpeedAndDirection(appContext, grain)
 
-                DoubleEditRow(appContext, grain, "Speed", grain.movementProbability,
-                    trailingIcon = {
-                        Row {
-                            firstDirections.forEachIndexed { index, direction ->
-                                val selected = grain.allowedDirection.contains(direction)
-                                val shape = when (index) {
-                                    0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                                    firstDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                                    else -> RectangleShape
-                                }
-                                Icon(
-                                    imageVector = direction.icon(), contentDescription = null,
-                                    tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
-                                    modifier = Modifier.size(28.dp)
-                                        .background(
-                                            color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
-                                            shape = shape
-                                        )
-                                        .padding(5.dp, 2.dp)
-                                        .clickable {
-                                            val directions =
-                                                if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
-                                            appContext.model = appContext.model.updateGrain(
-                                                grain,
-                                                grain.copy(allowedDirection = directions)
-                                            )
-                                        },
+                GrainDisplay(appContext, grain)
+
+                FieldInteractions(appContext, grain)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
+    DoubleEditRow(appContext, grain, "Speed", grain.movementProbability,
+        trailingIcon = {
+            Row {
+                firstDirections.forEachIndexed { index, direction ->
+                    val selected = grain.allowedDirection.contains(direction)
+                    val shape = when (index) {
+                        0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        firstDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                        else -> RectangleShape
+                    }
+                    Icon(
+                        imageVector = direction.icon(), contentDescription = null,
+                        tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                        modifier = Modifier.size(28.dp)
+                            .background(
+                                color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                                shape = shape
+                            )
+                            .padding(5.dp, 2.dp)
+                            .clickable {
+                                val directions =
+                                    if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
+                                appContext.model = appContext.model.updateGrain(
+                                    grain,
+                                    grain.copy(allowedDirection = directions)
                                 )
-                            }
+                            },
+                    )
+                }
 
-                            Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(12.dp))
 
-                            extendedDirections.forEachIndexed { index, direction ->
-                                val selected = grain.allowedDirection.contains(direction)
-                                val shape = when (index) {
-                                    0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                                    extendedDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                                    else -> RectangleShape
-                                }
-                                Icon(
-                                    imageVector = direction.icon(), contentDescription = null,
-                                    tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
-                                    modifier = Modifier.size(28.dp)
-                                        .background(
-                                            color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
-                                            shape = shape
-                                        )
-                                        .padding(5.dp, 2.dp)
-                                        .clickable {
-                                            val directions =
-                                                if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
-                                            appContext.model = appContext.model.updateGrain(
-                                                grain,
-                                                grain.copy(allowedDirection = directions)
-                                            )
-                                        },
+                extendedDirections.forEachIndexed { index, direction ->
+                    val selected = grain.allowedDirection.contains(direction)
+                    val shape = when (index) {
+                        0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                        extendedDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                        else -> RectangleShape
+                    }
+                    Icon(
+                        imageVector = direction.icon(), contentDescription = null,
+                        tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                        modifier = Modifier.size(28.dp)
+                            .background(
+                                color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                                shape = shape
+                            )
+                            .padding(5.dp, 2.dp)
+                            .clickable {
+                                val directions =
+                                    if (selected) grain.allowedDirection - direction else grain.allowedDirection + direction
+                                appContext.model = appContext.model.updateGrain(
+                                    grain,
+                                    grain.copy(allowedDirection = directions)
                                 )
-                            }
-
-                            Spacer(Modifier.width(12.dp))
-                        }
-                    }
-                ) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(movementProbability = it))
+                            },
+                    )
                 }
 
-                TitleRow(appContext.locale.i18n("Display"))
+                Spacer(Modifier.width(12.dp))
+            }
+        }
+    ) {
+        appContext.model = appContext.model.updateGrain(grain, grain.copy(movementProbability = it))
+    }
+}
 
-                ComboRow(appContext, grain, "Icon", grain.iconName,
-                    allIcons.map { it.name }, { iconName ->
-                        val icon = allIcons.find { it.name == iconName }
-                        if (icon != null) SimpleIcon(icon) else SimpleIcon(
-                            FontAwesomeIcons.Solid.QuestionCircle,
-                            Color.Red
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(iconName)
-                    }
-                ) {
-                    val new = grain.copy(icon = it)
-                    appContext.model = appContext.model.updateGrain(grain, new)
-                }
+@Composable
+private fun GrainDisplay(appContext: AppContext, grain: Grain) {
+    TitleRow(appContext.locale.i18n("Display"))
 
-                ComboRow(appContext, grain, "Color", grain.color,
-                    colorNameList, {
-                        ColoredSquare(it)
-                        Spacer(Modifier.width(4.dp))
-                        Text(it)
-                    }
-                ) {
-                    val new = grain.copy(color = it)
-                    appContext.model = appContext.model.updateGrain(grain, new)
-                }
+    ComboRow(appContext, grain, "Icon", grain.iconName,
+        allIcons.map { it.name }, { iconName ->
+            val icon = allIcons.find { it.name == iconName }
+            if (icon != null) SimpleIcon(icon) else SimpleIcon(
+                FontAwesomeIcons.Solid.QuestionCircle,
+                Color.Red
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(iconName)
+        }
+    ) {
+        val new = grain.copy(icon = it)
+        appContext.model = appContext.model.updateGrain(grain, new)
+    }
 
-                // TODO filter problems
-                CustomRow(appContext, emptyList()) {
-                    Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
-                    Label(((grain.size * 10.0).roundToInt() / 10.0).toString())
+    ComboRow(appContext, grain, "Color", grain.color,
+        colorNameList, {
+            ColoredSquare(it)
+            Spacer(Modifier.width(4.dp))
+            Text(it)
+        }
+    ) {
+        val new = grain.copy(color = it)
+        appContext.model = appContext.model.updateGrain(grain, new)
+    }
+
+    // TODO filter problems
+    CustomRow(appContext, emptyList()) {
+        Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
+        Label(((grain.size * 10.0).roundToInt() / 10.0).toString())
+        Slider(
+            value = grain.size.toFloat(),
+            valueRange = 0f.rangeTo(5f),
+            steps = 60,
+            onValueChange = {
+                val new = grain.copy(size = it.toDouble())
+                appContext.model = appContext.model.updateGrain(grain, new)
+            }
+        )
+    }
+
+    CustomRow(appContext, emptyList()) {
+        Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))
+        Checkbox(
+            checked = grain.invisible,
+            colors = appContext.theme.checkboxColors(),
+            onCheckedChange = {
+                val new = grain.copy(invisible = it)
+                appContext.model = appContext.model.updateGrain(grain, new)
+            }
+        )
+    }
+}
+
+@Composable
+private fun FieldInteractions(appContext: AppContext, grain: Grain) {
+    if (appContext.model.fields.isNotEmpty()) {
+        TitleRow(appContext.locale.i18n("Field Interactions"))
+
+        Row {
+            Column(Modifier.weight(.15f)) {  }
+            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Productions"), Modifier.align(Alignment.CenterHorizontally)) }
+            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Influences"), Modifier.align(Alignment.CenterHorizontally)) }
+            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Permeability"), Modifier.align(Alignment.CenterHorizontally)) }
+        }
+        appContext.model.fields.forEach { field ->
+            Row {
+                Column(Modifier.weight(.15f).align(Alignment.CenterVertically)) { Text(field.name) }
+                Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
                     Slider(
-                        value = grain.size.toFloat(),
-                        valueRange = 0f.rangeTo(5f),
-                        steps = 60,
+                        value = grain.fieldProductions[field.id] ?: 0f,
+                        valueRange = (-1f).rangeTo(1f),
+                        steps = 200,
                         onValueChange = {
-                            val new = grain.copy(size = it.toDouble())
+                            val updated = grain.fieldProductions.toMutableMap().apply { this[field.id] = it }
+                            val new = grain.copy(fieldProductions = updated)
                             appContext.model = appContext.model.updateGrain(grain, new)
                         }
                     )
                 }
-
-                CustomRow(appContext, emptyList()) {
-                    Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))
-                    Checkbox(
-                        checked = grain.invisible,
-                        colors = appContext.theme.checkboxColors(),
-                        onCheckedChange = {
-                            val new = grain.copy(invisible = it)
+                Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
+                    Slider(
+                        value = grain.fieldInfluences[field.id] ?: 0f,
+                        valueRange = (-1f).rangeTo(1f),
+                        steps = 200,
+                        onValueChange = {
+                            val updated = grain.fieldInfluences.toMutableMap().apply { this[field.id] = it }
+                            val new = grain.copy(fieldInfluences = updated)
                             appContext.model = appContext.model.updateGrain(grain, new)
                         }
                     )
                 }
-
+                Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
+                    Slider(
+                        value = grain.fieldPermeable[field.id] ?: 0f,
+                        valueRange = 0f.rangeTo(1f),
+                        steps = 100,
+                        onValueChange = {
+                            val updated = grain.fieldPermeable.toMutableMap().apply { this[field.id] = it }
+                            val new = grain.copy(fieldPermeable = updated)
+                            appContext.model = appContext.model.updateGrain(grain, new)
+                        }
+                    )
+                }
             }
         }
     }

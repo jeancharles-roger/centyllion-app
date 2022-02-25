@@ -226,7 +226,7 @@ fun BehaviourItem(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "${behaviour.probability}",
+                text = behaviour.probability.toFixedString(3),
                 fontSize = 12.sp,
                 modifier = Modifier
                     .padding(5.dp)

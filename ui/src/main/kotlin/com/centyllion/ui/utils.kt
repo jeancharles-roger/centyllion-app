@@ -158,3 +158,7 @@ val allIcons = buildList {
     add(FontAwesomeIcons.Solid.Circle)
     addAll(FontAwesomeIcons.AllIcons.sortedBy { it.name })
 }
+
+fun Double.toFixedString(decimals: Int = 2): String = String.format("%.${decimals}f", this)
+
+fun Float.toFixedString(decimals: Int = 2): String = toDouble().toFixedString(decimals)

@@ -19,7 +19,6 @@ import com.centyllion.ui.*
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.QuestionCircle
-import kotlin.math.roundToInt
 
 @Composable
 fun GrainEdit(appContext: AppContext, grain: Grain) {
@@ -27,6 +26,15 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
         Box(modifier = Modifier.padding(4.dp)) {
             Column {
                 MainTitleRow(appContext.locale.i18n("Grain"))
+
+                SingleLineTextEditRow(appContext, grain, "Name", grain.name) {
+                    appContext.model = appContext.model.updateGrain(grain, grain.copy(name = it))
+                }
+
+                MultiLineTextEditRow(appContext, grain, "Description", grain.description) {
+                    appContext.model = appContext.model.updateGrain(grain, grain.copy(description = it))
+                }
+
                 IntEditRow(appContext, grain, "Half-life", grain.halfLife) {
                     appContext.model = appContext.model.updateGrain(grain, grain.copy(halfLife = it))
                 }
@@ -142,7 +150,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     // TODO filter problems
     CustomRow(appContext, emptyList()) {
         Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
-        Label(((grain.size * 10.0).roundToInt() / 10.0).toString())
+        Label(grain.size.toFixedString(1))
         Slider(
             value = grain.size.toFloat(),
             valueRange = 0f.rangeTo(5f),

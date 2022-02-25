@@ -4,7 +4,7 @@
   "translations": {
     "Grain with id %0 doesn't exist": "Le grain avec l'id %0 n'existe pas",
     "Behaviour must have a main reactive": "Le comportement doit avoir un réactif principal",
-    "Probability must be between 0 and 1": "La vitesse doit être entre 0 et 1",
+    "Speed must be between 0 and 1": "La vitesse doit être entre 0 et 1",
     "No direction allowed for reactive %0": "Aucune direction autorisée pour le réactif %0",
     "Grain with id %0 doesn't exist for reactive %1": "Le grain avec l'id %0 n'existe pas pour le réactif %1",
     "Half-life must be positive or zero": "La demi-vie doit être positive ou zéro",

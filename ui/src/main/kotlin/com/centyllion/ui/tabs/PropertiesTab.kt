@@ -18,10 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.centyllion.model.Field
-import com.centyllion.model.Grain
-import com.centyllion.model.GrainModel
-import com.centyllion.model.colorNames
+import com.centyllion.model.*
 import com.centyllion.ui.AppContext
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -42,6 +39,7 @@ object PropertiesTab : Tab {
                     items(selectedComponents) { element ->
                         when (element) {
                             is GrainModel -> Row { GrainModelEdit(appContext, element) }
+                            is Behaviour -> Row { BehaviourEdit(appContext, element) }
                             is Grain -> Row { GrainEdit(appContext, element) }
                             is Field -> Row { FieldEdit(appContext, element) }
                         }

@@ -22,10 +22,20 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
                 )
                 if (files.isNotEmpty()) appState.setPath(files.first().toPath())
             }
+
             Item(text = appState.locale.i18n("Open model\u2026"), mnemonic = 'o') {
-                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion"), false)
+                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion", ".json"), false)
                 if (files.isNotEmpty()) appState.openPath(files.first().toPath())
             }
+
+            Separator()
+
+            Item(text = appState.locale.i18n("Import simulation\u2026")) {
+                val files = openFileDialog(appState.window, "Open simulation", listOf(".json"), false)
+                if (files.isNotEmpty()) appState.importSimulation(files.first().toPath())
+            }
+
+
         }
 
         Menu(appState.locale.i18n("Edit"), 'e') {

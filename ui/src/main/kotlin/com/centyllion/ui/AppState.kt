@@ -51,11 +51,8 @@ class AppState(
     }
 
     fun openPath(path: Path) {
-        pathState.value = path
-        model = loadModel(path)
-        selection = listOf(model)
-        clearPastAndFuture()
-        updateWindowName()
+        // TODO implement specific file for model+simulation
+        importModel(path)
     }
 
     fun setPath(path: Path) {
@@ -63,6 +60,18 @@ class AppState(
         // keep model as is to be saved in new path
         syncModelWithFile()
         updateWindowName()
+    }
+
+    fun importModel(path: Path) {
+        pathState.value = path
+        model = loadModel(path)
+        selection = listOf(model)
+        clearPastAndFuture()
+        updateWindowName()
+    }
+
+    fun importSimulation(path: Path) {
+        simulation = loadSimulation(path)
     }
 
     private var past: List<GrainModel> = emptyList()
@@ -164,6 +173,17 @@ class AppState(
         catch (e: Throwable) {
             alert("Couldn't load model: $e")
             newModel(locale.i18n("Model"))
+        }
+
+    /** Load model for given path. */
+    private fun loadSimulation(path: Path): Simulation =
+        try {
+            val source = path.readText(Charsets.UTF_8)
+            Json.decodeFromString(Simulation.serializer(), source)
+        }
+        catch (e: Throwable) {
+            alert("Couldn't load simulation: $e")
+            emptySimulation
         }
 
     private fun syncModelWithFile() {

@@ -164,3 +164,5 @@ fun Double.toFixedString(decimals: Int = 2): String = String.format("%.${decimal
 fun Float.toFixedString(decimals: Int = 2): String = toDouble().toFixedString(decimals)
 
 val Triple<Int, Int, Int>.color get() = Color(first, second, third)
+
+fun Triple<Int, Int, Int>.alphaColor(alpha: Int) = Color(first, second, third, alpha)

@@ -60,6 +60,7 @@ class Simulator(
     val nextFields get() = if (!currentFields) fields1 else fields2
 
     fun field(id: Int) = fields[id] ?: emptyFloatArray
+    fun fieldAt(id: Int, index: Int) = fields[id]?.get(index) ?: 0f
 
     private var currentFields: Boolean = true
 

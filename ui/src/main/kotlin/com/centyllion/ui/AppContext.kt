@@ -13,10 +13,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.centyllion.i18n.Locale
-import com.centyllion.model.GrainModel
-import com.centyllion.model.ModelElement
-import com.centyllion.model.Problem
-import com.centyllion.model.Simulation
+import com.centyllion.model.*
 import com.centyllion.ui.tabs.Tab
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.skia.Font
@@ -38,6 +35,9 @@ interface AppContext {
     val path: Path?
     var model: GrainModel
     var simulation: Simulation
+    var running: Boolean
+    val step: Int
+    var simulator: Simulator
     var selection: List<ModelElement>
 
     fun showPrimarySelection()

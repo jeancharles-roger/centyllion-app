@@ -162,3 +162,5 @@ val allIcons = buildList {
 fun Double.toFixedString(decimals: Int = 2): String = String.format("%.${decimals}f", this)
 
 fun Float.toFixedString(decimals: Int = 2): String = toDouble().toFixedString(decimals)
+
+val Triple<Int, Int, Int>.color get() = Color(first, second, third)

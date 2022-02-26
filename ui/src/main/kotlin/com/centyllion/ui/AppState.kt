@@ -7,6 +7,7 @@ import com.centyllion.i18n.loadLocales
 import com.centyllion.model.*
 import com.centyllion.ui.tabs.LogsTab
 import com.centyllion.ui.tabs.PropertiesTab
+import com.centyllion.ui.tabs.SimulationTab
 import com.centyllion.ui.tabs.Tab
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ import kotlinx.serialization.json.Json
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import kotlin.math.roundToLong
 import kotlin.system.measureTimeMillis
 
 class AppState(
@@ -72,7 +74,7 @@ class AppState(
     val canRedo get() = canRedoState.value
 
     private var lastModelModification: Long = Long.MIN_VALUE
-    val modelState = mutableStateOf(path?.let { loadModel(it) } ?: newModel(locale.i18n("Model")))
+    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: newModel(locale.i18n("Model")))
 
     override var model: GrainModel
         get() = modelState.value
@@ -94,15 +96,65 @@ class AppState(
                 // updates selection
                 selection = selection.mapNotNull { value.findWithUuid(it.uuid) }
 
+                simulator = Simulator(model, simulation)
+
                 refresh()
             }
         }
 
-    val simulationState = mutableStateOf(emptySimulation)
+    private val simulationState = mutableStateOf(emptySimulation)
     override var simulation: Simulation
         get() = simulationState.value
-        set(value) { simulationState.value = value }
+        set(value) {
+            simulationState.value = value
+            simulator = Simulator(model, simulation)
+        }
 
+    private val runningState = mutableStateOf(false)
+    override var running get() = runningState.value
+        set(value) { runningState.value = value }
+
+    private val stepState = mutableStateOf(0)
+    override val step get() = stepState.value
+
+    private val stepPauseState = mutableStateOf(.25f)
+    var stepPause get() = stepPauseState.value
+        set(value) { stepPauseState.value = value }
+
+    private val simulatorState = mutableStateOf(Simulator(model, simulation))
+    override var simulator: Simulator
+        get() = simulatorState.value
+        set(value) {
+            running = false
+            simulatorState.value = value
+        }
+
+    fun startStopSimulation() {
+        if (running) stopSimulation()
+        else startSimulation()
+    }
+
+    fun startSimulation() {
+        if (!running) {
+            running = true
+            scope.launch(Dispatchers.IO) {
+                while (running) {
+                    simulator.oneStep()
+                    stepState.value += 1
+                    if (stepPause > 0f) delay((250*stepPause).roundToLong())
+                }
+            }
+        }
+    }
+
+    fun stopSimulation() {
+        running = false
+    }
+
+    fun resetSimulation() {
+        stepState.value = 0
+        simulator.reset()
+    }
     /** Load model for given path. */
     private fun loadModel(path: Path): GrainModel =
         try {
@@ -236,7 +288,7 @@ class AppState(
         }
     }
 
-    override val centerTabs = listOf<Tab>(PropertiesTab)
+    override val centerTabs = listOf(PropertiesTab, SimulationTab)
 
     private val centerSelectedTabState = mutableStateOf<Tab>(PropertiesTab)
     override var centerSelectedTab: Tab

@@ -92,7 +92,7 @@ class Simulator(
 
     fun grainAtIndex(index: Int): Grain? {
         val id = idAtIndex(index)
-        return if (id < 0) null else grainIdArray[id]
+        return if (id < 0 || id >= grainIdArray.size) null else grainIdArray[id]
     }
 
     fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()

@@ -2,15 +2,19 @@ package com.centyllion.ui
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Slider
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.centyllion.model.Grain
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
+import kotlin.random.Random
 
 @Composable
 fun ToolBar(appState: AppState) {
@@ -44,7 +48,7 @@ fun ToolBar(appState: AppState) {
 
         IconButton(
             onClick = {
-                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion"), false)
+                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion", ".json"), false)
                 if (files.isNotEmpty()) appState.openPath(files.first().toPath())
             },
             modifier = appState.theme.toolBarIconModifier
@@ -76,5 +80,61 @@ fun ToolBar(appState: AppState) {
             )
         }
 
+        Spacer(modifier = appState.theme.toolbarSpacerModifier)
+
+        IconButton(
+            enabled = appState.selection.filterIsInstance<Grain>().isNotEmpty(),
+            onClick = {
+                val grain = appState.selection.filterIsInstance<Grain>().first()
+                val grainId = grain.id
+                val count = 30
+                repeat(count) {
+                    // try at most 5 times to find a free place
+                    for (i in 0 until 5) {
+                        val index = Random.nextInt(appState.simulation.dataSize)
+                        if (appState.simulator.idAtIndex(index) < 0) {
+                            appState.simulator.setIdAtIndex(index, grainId)
+                            break
+                        }
+                    }
+                }
+            },
+            modifier = appState.theme.toolBarIconModifier
+        ) {
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.Random,
+                contentDescription = null,
+            )
+        }
+
+        Spacer(modifier = appState.theme.toolbarSpacerModifier)
+
+        IconButton(
+            enabled = true,
+            onClick = { appState.startStopSimulation() },
+            modifier = appState.theme.toolBarIconModifier
+        ) {
+            Icon(
+                imageVector = if (appState.running) FontAwesomeIcons.Solid.Stop else FontAwesomeIcons.Solid.Play,
+                contentDescription = null,
+            )
+        }
+
+        IconButton(
+            enabled = appState.step > 0,
+            onClick = { appState.resetSimulation() },
+            modifier = appState.theme.toolBarIconModifier
+        ) {
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.History,
+                contentDescription = null,
+            )
+        }
+
+        Slider(
+            value = appState.stepPause,
+            onValueChange = { appState.stepPause = it },
+            modifier = Modifier.width(100.dp)
+        )
     }
 }

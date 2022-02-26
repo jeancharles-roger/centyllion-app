@@ -369,9 +369,7 @@ class Simulator(
     fun grainsCounts(): Map<Int, Int> {
         val result = mutableMapOf<Int, Int>()
         for (i in currentAgents) {
-            if (i >= 0) {
-                result[i] = 1 + (result[i] ?: 0)
-            }
+            if (i >= 0) result[i] = 1 + (result[i] ?: 0)
         }
         return result
     }

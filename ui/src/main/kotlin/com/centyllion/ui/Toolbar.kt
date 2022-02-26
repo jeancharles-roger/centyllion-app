@@ -3,10 +3,7 @@ package com.centyllion.ui
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Slider
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -88,16 +85,18 @@ fun ToolBar(appState: AppState) {
                 val grain = appState.selection.filterIsInstance<Grain>().first()
                 val grainId = grain.id
                 val count = 30
+                val newAgents = appState.simulation.agents.toMutableList()
                 repeat(count) {
                     // try at most 5 times to find a free place
                     for (i in 0 until 5) {
                         val index = Random.nextInt(appState.simulation.dataSize)
-                        if (appState.simulator.idAtIndex(index) < 0) {
-                            appState.simulator.setIdAtIndex(index, grainId)
+                        if (newAgents[index] < 0) {
+                            newAgents[index] = grainId
                             break
                         }
                     }
                 }
+                appState.simulation = appState.simulation.copy(agents = newAgents)
             },
             modifier = appState.theme.toolBarIconModifier
         ) {
@@ -132,9 +131,12 @@ fun ToolBar(appState: AppState) {
         }
 
         Slider(
-            value = appState.stepPause,
-            onValueChange = { appState.stepPause = it },
+            value = appState.speed,
+            onValueChange = { appState.speed = it },
             modifier = Modifier.width(100.dp)
         )
+
+        Spacer(Modifier.width(2.dp))
+        Text("${appState.step}")
     }
 }

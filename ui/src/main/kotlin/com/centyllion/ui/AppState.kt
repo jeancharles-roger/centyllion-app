@@ -117,6 +117,8 @@ class AppState(
         set(value) {
             simulationState.value = value
             simulator = Simulator(model, simulation)
+            grainCountsState.value = simulator.grainsCounts()
+            fieldAmountsState.value = simulator.fieldAmounts()
         }
 
     private val runningState = mutableStateOf(false)
@@ -126,9 +128,9 @@ class AppState(
     private val stepState = mutableStateOf(0)
     override val step get() = stepState.value
 
-    private val stepPauseState = mutableStateOf(.25f)
-    var stepPause get() = stepPauseState.value
-        set(value) { stepPauseState.value = value }
+    private val speedState = mutableStateOf(.75f)
+    var speed get() = speedState.value
+        set(value) { speedState.value = value }
 
     private val simulatorState = mutableStateOf(Simulator(model, simulation))
     override var simulator: Simulator
@@ -137,6 +139,12 @@ class AppState(
             running = false
             simulatorState.value = value
         }
+
+    private val grainCountsState = mutableStateOf(simulator.grainsCounts())
+    val grainCounts get() = grainCountsState.value
+
+    private val fieldAmountsState = mutableStateOf(simulator.fieldAmounts())
+    val fieldAmounts get() = fieldAmountsState.value
 
     fun startStopSimulation() {
         if (running) stopSimulation()
@@ -149,8 +157,10 @@ class AppState(
             scope.launch(Dispatchers.IO) {
                 while (running) {
                     simulator.oneStep()
+                    grainCountsState.value = simulator.grainsCounts()
+                    fieldAmountsState.value = simulator.fieldAmounts()
                     stepState.value += 1
-                    if (stepPause > 0f) delay((250*stepPause).roundToLong())
+                    if (speed < 1f) delay((250*(1f-speed)).roundToLong().coerceAtMost(250))
                 }
             }
         }
@@ -163,6 +173,8 @@ class AppState(
     fun resetSimulation() {
         stepState.value = 0
         simulator.reset()
+        grainCountsState.value = simulator.grainsCounts()
+        fieldAmountsState.value = simulator.fieldAmounts()
     }
     /** Load model for given path. */
     private fun loadModel(path: Path): GrainModel =

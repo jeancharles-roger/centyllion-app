@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.*
+import com.centyllion.ui.tabs.SimulationTab
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.AllIcons
 import compose.icons.fontawesomeicons.Solid
@@ -141,6 +142,19 @@ fun FieldItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
+        // if simulation tab is shown
+        if (appState.centerSelectedTab == SimulationTab) {
+            val text = appState.fieldAmounts[field.id]?.toFixedString(1) ?: "0.0"
+            Text(
+                text = text,
+                fontSize = 12.sp,
+                maxLines = 1,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+
         Icon(
             imageVector = FontAwesomeIcons.Solid.TimesCircle,
             contentDescription = null, tint = Color.LightGray,
@@ -181,6 +195,18 @@ fun GrainItem(
         )
 
         Spacer(modifier = Modifier.width(8.dp))
+
+        // if simulation tab is shown
+        if (appState.centerSelectedTab == SimulationTab) {
+            val text = appState.grainCounts[grain.id]?.toString() ?: "0"
+            Text(
+                text = text,
+                fontSize = 12.sp,
+                maxLines = 1,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
         Icon(
             imageVector = FontAwesomeIcons.Solid.TimesCircle,
@@ -367,6 +393,7 @@ fun TreeItem(
         )
 
         Spacer(modifier = Modifier.width(8.dp))
+
     }
 
 }

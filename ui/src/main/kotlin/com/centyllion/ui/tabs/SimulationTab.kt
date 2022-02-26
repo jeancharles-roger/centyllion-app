@@ -46,7 +46,7 @@ object SimulationTab : Tab {
                 }
 
                 // updates coordinates
-                if (x >= simulation.width) {
+                if (x >= simulation.width-1) {
                     x = 0
                     y += 1
                 } else {

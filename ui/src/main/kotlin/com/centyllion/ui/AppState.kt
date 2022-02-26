@@ -117,6 +117,7 @@ class AppState(
         set(value) {
             simulationState.value = value
             simulator = Simulator(model, simulation)
+            stepState.value = 0
             grainCountsState.value = simulator.grainsCounts()
             fieldAmountsState.value = simulator.fieldAmounts()
         }

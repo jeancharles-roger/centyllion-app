@@ -157,14 +157,18 @@ class AppState(
             running = true
             scope.launch(Dispatchers.IO) {
                 while (running) {
-                    simulator.oneStep()
-                    grainCountsState.value = simulator.grainsCounts()
-                    fieldAmountsState.value = simulator.fieldAmounts()
-                    stepState.value += 1
+                    step()
                     if (speed < 1f) delay((250*(1f-speed)).roundToLong().coerceAtMost(250))
                 }
             }
         }
+    }
+
+    fun step() {
+        simulator.oneStep()
+        grainCountsState.value = simulator.grainsCounts()
+        fieldAmountsState.value = simulator.fieldAmounts()
+        stepState.value += 1
     }
 
     fun stopSimulation() {

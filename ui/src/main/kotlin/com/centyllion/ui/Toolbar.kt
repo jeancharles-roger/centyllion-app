@@ -105,8 +105,33 @@ fun ToolBar(appState: AppState) {
                 contentDescription = null,
             )
         }
+         IconButton(
+            enabled = true,
+            onClick = {
+                val simulation = appState.simulation
+                appState.simulation = simulation.copy(agents = List(simulation.agents.size) { -1 })
+            },
+            modifier = appState.theme.toolBarIconModifier
+        ) {
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.Trash,
+                contentDescription = null,
+            )
+        }
 
         Spacer(modifier = appState.theme.toolbarSpacerModifier)
+
+
+        IconButton(
+            enabled = appState.step > 0,
+            onClick = { appState.resetSimulation() },
+            modifier = appState.theme.toolBarIconModifier
+        ) {
+            Icon(
+                imageVector = FontAwesomeIcons.Solid.FastBackward,
+                contentDescription = null,
+            )
+        }
 
         IconButton(
             enabled = true,
@@ -120,12 +145,12 @@ fun ToolBar(appState: AppState) {
         }
 
         IconButton(
-            enabled = appState.step > 0,
-            onClick = { appState.resetSimulation() },
+            enabled = !appState.running,
+            onClick = { appState.step() },
             modifier = appState.theme.toolBarIconModifier
         ) {
             Icon(
-                imageVector = FontAwesomeIcons.Solid.History,
+                imageVector = FontAwesomeIcons.Solid.StepForward,
                 contentDescription = null,
             )
         }

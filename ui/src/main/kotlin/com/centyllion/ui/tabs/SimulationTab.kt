@@ -7,16 +7,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.vector.VectorPainter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.centyllion.model.colorNames
 import com.centyllion.model.minFieldLevel
 import com.centyllion.ui.AppContext
+import com.centyllion.ui.allIcons
 import com.centyllion.ui.alphaColor
 import com.centyllion.ui.color
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Play
+import compose.icons.fontawesomeicons.solid.SquareFull
 import org.jetbrains.skia.Font
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.TextLine
@@ -29,23 +34,37 @@ object SimulationTab : Tab {
     override val nameKey = "Simulation"
     override val icon = FontAwesomeIcons.Solid.Play
 
+    class GrainInfo(
+        val color: Color,
+        val painter: VectorPainter?,
+        val tint: ColorFilter = ColorFilter.tint(color)
+    )
+
+    val defaultInfo = GrainInfo(Color.Red, null)
+
     val font = Font().also { it.size = 20f }
+
 
     @Composable
     override fun content(appContext: AppContext) {
+        val model = appContext.model
+        val grainInfos = model.grains.associate {
+            val color = colorNames[it.color]?.color ?: Color.Red
+            val icon = allIcons[it.iconName] ?: FontAwesomeIcons.Solid.SquareFull
+            it.id to GrainInfo(color, rememberVectorPainter(icon))
+        }
+
         Canvas(Modifier.fillMaxSize()) {
             val simulator = appContext.simulator
-            val model = appContext.model
             val simulation = appContext.simulation
 
             val step = min(size.width/simulation.width, size.height/simulation.height)
             val sixthStep = step/6
 
-            // draws background
+            // draws background TODO configurable background color or image
             drawRect(Color.Gray)
 
             var x = 0
-            var y = 0
             for (i in 0 until simulation.dataSize) {
                 // draw fields
                 for (pair in appContext.simulator.fields) {
@@ -56,7 +75,7 @@ object SimulationTab : Tab {
                         if (alpha > 0f) {
                             // TODO search for field color only once
                             val color = colorNames[field.color]?.alphaColor(alpha) ?: Color.Red
-                            drawRect(color, Offset(x * step, y * step), Size(step, step))
+                            drawRect(color, Offset.Zero, Size(step, step))
                         }
                     }
                 }
@@ -65,22 +84,27 @@ object SimulationTab : Tab {
                 val id = simulator.idAtIndex(i)
                 val grain = appContext.model.grainForId(id)
                 if (grain != null) {
+                    val info = grainInfos[grain.id] ?: defaultInfo
+
                     // TODO search for grain color only once
-                    val color = colorNames[grain.color]?.color ?: Color.Red
                     when (grain.iconName) {
-                        "square" -> drawRect(color, Offset(x*step + sixthStep, y*step + sixthStep), Size(4*sixthStep, 4*sixthStep))
-                        "squarefull" -> drawRect(color, Offset(x*step, y*step), Size(step, step))
-                        "circle" -> drawCircle(color, step/2f, Offset(x*step + 3*sixthStep, y*step + 3*sixthStep))
-                        else -> drawRect(color, Offset(x*step, y*step), Size(step, step))
+                        "square" -> drawRect(info.color, Offset(sixthStep, sixthStep), Size(4*sixthStep, 4*sixthStep))
+                        "squarefull" -> drawRect(info.color, Offset.Zero, Size(step, step))
+                        "circle" -> drawCircle(info.color, step/2f, Offset(3*sixthStep, 3*sixthStep))
+                        else -> {
+                            info.painter?.apply { draw(Size(step, step), colorFilter = info.tint) }
+                                ?: drawRect(info.color, Offset.Zero, Size(step, step))
+                        }
                     }
                 }
 
                 // updates coordinates
                 if (x >= simulation.width-1) {
                     x = 0
-                    y += 1
+                    drawContext.transform.translate(-step*(simulation.width-1), step)
                 } else {
                     x += 1
+                    drawContext.transform.translate(step, 0f)
                 }
             }
 
@@ -88,7 +112,6 @@ object SimulationTab : Tab {
             drawIntoCanvas { it.nativeCanvas.drawTextLine(line, 0f, 0f, Paint()) }
         }
     }
-
 }
 
 val Float.alpha get() = when {

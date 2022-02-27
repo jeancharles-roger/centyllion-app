@@ -50,7 +50,7 @@ private fun MainView(appState: AppState) {
         modifier = Modifier.padding(bottom = 20.dp)
     ) {
         first {
-            HorizontalSplitPane(splitPaneState = rememberSplitPaneState(.2f)) {
+            HorizontalSplitPane(splitPaneState = rememberSplitPaneState(.4f)) {
                 first {
                     ComponentTree(appState)
                 }

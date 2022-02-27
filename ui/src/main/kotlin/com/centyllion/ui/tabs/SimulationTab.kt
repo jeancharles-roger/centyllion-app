@@ -39,7 +39,10 @@ object SimulationTab : Tab {
             val simulation = appContext.simulation
 
             val step = min(size.width/simulation.width, size.height/simulation.height)
+            val sixthStep = step/6
 
+            // draws background
+            drawRect(Color.Gray)
 
             var x = 0
             var y = 0
@@ -64,7 +67,12 @@ object SimulationTab : Tab {
                 if (grain != null) {
                     // TODO search for grain color only once
                     val color = colorNames[grain.color]?.color ?: Color.Red
-                    drawRect(color, Offset(x*step, y*step), Size(step, step))
+                    when (grain.iconName) {
+                        "square" -> drawRect(color, Offset(x*step + sixthStep, y*step + sixthStep), Size(4*sixthStep, 4*sixthStep))
+                        "squarefull" -> drawRect(color, Offset(x*step, y*step), Size(step, step))
+                        "circle" -> drawCircle(color, step/2f, Offset(x*step + 3*sixthStep, y*step + 3*sixthStep))
+                        else -> drawRect(color, Offset(x*step, y*step), Size(step, step))
+                    }
                 }
 
                 // updates coordinates

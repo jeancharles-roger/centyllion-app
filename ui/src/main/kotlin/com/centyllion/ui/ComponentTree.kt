@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.centyllion.model.*
 import com.centyllion.ui.tabs.SimulationTab
 import compose.icons.FontAwesomeIcons
-import compose.icons.fontawesomeicons.AllIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
 
@@ -320,9 +319,7 @@ fun RowScope.ColoredGrain(grain: Grain) {
         ?.let { Color(it.first, it.second, it.third) }
         ?: Color.Red
 
-    val iconName = grain.iconName
-    val icon = FontAwesomeIcons.Solid.AllIcons.find { it.name.equals(iconName, true)}
-        ?: FontAwesomeIcons.Solid.SquareFull
+    val icon = allIcons[grain.iconName] ?: FontAwesomeIcons.Solid.SquareFull
 
     Icon(
         imageVector = icon,

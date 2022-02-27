@@ -23,12 +23,13 @@ import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
+import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.SplitPaneScope
 import java.awt.Cursor
 import java.awt.FileDialog
 import java.io.File
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 fun SplitPaneScope.horizontalSplitter() {
     splitter {
         visiblePart {
@@ -52,7 +53,7 @@ fun SplitPaneScope.horizontalSplitter() {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 fun SplitPaneScope.verticalSplitter() {
     splitter {
         visiblePart {
@@ -152,11 +153,13 @@ fun com.centyllion.model.Direction.icon(): ImageVector = when (this) {
 }
 
 
-val allIcons = buildList {
-    add(FontAwesomeIcons.Solid.Square)
-    add(FontAwesomeIcons.Solid.SquareFull)
-    add(FontAwesomeIcons.Solid.Circle)
-    addAll(FontAwesomeIcons.AllIcons.sortedBy { it.name })
+val allIcons = buildMap {
+    put("square", FontAwesomeIcons.Solid.Square)
+    put("squarefull", FontAwesomeIcons.Solid.SquareFull)
+    put("circle", FontAwesomeIcons.Solid.Circle)
+    FontAwesomeIcons.AllIcons
+        .sortedBy { it.name }
+        .forEach { put(it.name.lowercase(), it) }
 }
 
 fun Double.toFixedString(decimals: Int = 2): String = String.format("%.${decimals}f", this)

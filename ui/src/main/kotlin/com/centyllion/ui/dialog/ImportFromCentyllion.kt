@@ -16,9 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.ModelResultPage
@@ -39,14 +36,21 @@ object ImportFromCentyllion: Dialog {
 
     override val titleKey: String = "Import from Centyllion\u2026"
 
-    @OptIn(ExperimentalComposeUiApi::class)
+    data class SimulationItem(
+        val model: GrainModelDescription,
+        val simulation: SimulationDescription,
+    ) {
+        val isNameNotBlank get() = model.name.isNotBlank() || simulation.name.isNotBlank()
+    }
+
     @Composable
+    @OptIn(ExperimentalComposeUiApi::class)
     override fun content(appContext: AppContext) {
         Box {
             val offset = remember { mutableStateOf<Long>(0) }
             val searchText = remember { mutableStateOf("") }
             val foundSimulations = remember {
-                mutableStateOf(listOf<Pair<GrainModelDescription, SimulationDescription>>())
+                mutableStateOf(listOf<SimulationItem>())
             }
             val listState = rememberLazyListState()
 
@@ -57,37 +61,36 @@ object ImportFromCentyllion: Dialog {
                         TextField(
                             label = { Text(appContext.locale.i18n("Search")) },
                             value = searchText.value,
-                            onValueChange = { newTextSearch -> searchText.value = newTextSearch },
-                            modifier = Modifier.fillMaxWidth().onKeyEvent { event ->
-                                if (event.key == Key.Enter) {
-                                    foundSimulations.value = emptyList()
-                                    appContext.scope.launch(Dispatchers.IO) {
-                                        val added = searchSimulations(searchText.value, offset.value, 20).content
-                                            .map { simulation -> getModel(simulation.modelId) to simulation }
-                                            .filter { (model, simulation) -> model.name.isNotBlank() || simulation.name.isNotBlank() }
-                                        synchronized(foundSimulations) { foundSimulations.value += added }
-                                    }
-                                    true
-                                } else false
+                            onValueChange = {
+                                newTextSearch -> searchText.value = newTextSearch
+                                foundSimulations.value = emptyList()
+                                appContext.scope.launch(Dispatchers.IO) {
+                                    val added = searchSimulations(searchText.value, offset.value, 20).content
+                                        .map { simulation -> SimulationItem(getModel(simulation.modelId), simulation) }
+                                        .filter { it.isNameNotBlank }
+                                    synchronized(foundSimulations) { foundSimulations.value += added }
+                                }
                             },
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                         )
                     }
                 }
 
-                items(foundSimulations.value) { (model, simulation) ->
+                items(foundSimulations.value) { item ->
                     Row(Modifier.fillParentMaxWidth().padding(vertical = 8.dp, horizontal = 18.dp)) {
+
                         Text(
-                            "${model.name} - ${simulation.name} by ${model.info.user?.name}",
-                            Modifier.weight(1f)
+                            "${item.model.name} - ${item.simulation.name} by ${item.model.info.user?.name}",
+                            Modifier.weight(1f).align(Alignment.CenterVertically)
                         )
 
                         IconButton(
                             onClick = {
-                                appContext.importModelAndSimulation(model.model, simulation.simulation)
+                                appContext.importModelAndSimulation(item.model.model, item.simulation.simulation)
                                 appContext.currentDialog = null
                             },
-                            modifier = appContext.theme.buttonIconModifier,
+                            modifier = appContext.theme.buttonIconModifier.align(Alignment.CenterVertically),
                         ) {
                             Icon(imageVector = FontAwesomeIcons.Solid.FileImport, contentDescription = null)
                         }
@@ -107,7 +110,7 @@ object ImportFromCentyllion: Dialog {
     val hostBase = "https://app.centyllion.com/api"
 
     val client = HttpClient {
-        expectSuccess = true
+        //expectSuccess = true
         install(JsonFeature) {
             serializer = KotlinxSerializer()
         }
@@ -122,8 +125,10 @@ object ImportFromCentyllion: Dialog {
     suspend fun searchModels(query: String, offset: Long, limit: Long): ModelResultPage =
         client.get("$hostBase/model/search?q=$query&offset=$offset&limit=$limit")
 
-    suspend fun getSimulation(id: String): SimulationDescription = client.get("$hostBase/simulation/$id")
+    suspend fun getSimulation(id: String): SimulationDescription =
+        client.get("$hostBase/simulation/$id")
 
-    suspend fun getModel(id: String): GrainModelDescription = client.get("$hostBase/model/$id")
+    suspend fun getModel(id: String): GrainModelDescription =
+        client.get("$hostBase/model/$id")
 
 }

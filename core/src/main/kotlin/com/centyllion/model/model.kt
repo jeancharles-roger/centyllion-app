@@ -123,7 +123,8 @@ data class Grain(
     val fieldPermeable: Map<Int, Float> = emptyMap()
 ): ModelElement {
 
-    val iconName get() = icon.replace("-", "")
+    @Transient
+    val iconName = icon.replace("-", "").lowercase()
     /** Label for grain */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description

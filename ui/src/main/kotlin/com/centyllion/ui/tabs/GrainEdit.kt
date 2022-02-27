@@ -122,8 +122,8 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     TitleRow(appContext.locale.i18n("Display"))
 
     ComboRow(appContext, grain, "Icon", grain.iconName,
-        allIcons.map { it.name }, { iconName ->
-            val icon = allIcons.find { it.name == iconName }
+        allIcons.keys.toList(), { iconName ->
+            val icon = allIcons[iconName]
             if (icon != null) SimpleIcon(icon) else SimpleIcon(
                 FontAwesomeIcons.Solid.QuestionCircle,
                 Color.Red

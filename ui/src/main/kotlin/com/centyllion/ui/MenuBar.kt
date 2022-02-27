@@ -35,6 +35,10 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
                 if (files.isNotEmpty()) appState.importSimulation(files.first().toPath())
             }
 
+            Separator()
+
+            Item(text = appState.locale.i18n("Import from Centyllion\u2026")) {
+            }
 
         }
 

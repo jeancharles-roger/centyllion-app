@@ -10,8 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.singleWindowApplication
 import com.centyllion.ui.tabs.Tabs
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
@@ -19,15 +18,12 @@ import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import java.nio.file.Path
 
-fun main() = application {
-    Window(
-        onCloseRequest = { exitApplication() },
-    ) {
-        val scope = rememberCoroutineScope()
-        val appState = remember { AppState(window, scope, mutableStateOf<Path?>(null)) }
-        MenuBar(appState)
-        App(appState)
-    }
+
+fun main() = singleWindowApplication {
+    val scope = rememberCoroutineScope()
+    val appState = remember { AppState(window, scope, mutableStateOf<Path?>(null)) }
+    MenuBar(appState)
+    App(appState)
 }
 
 

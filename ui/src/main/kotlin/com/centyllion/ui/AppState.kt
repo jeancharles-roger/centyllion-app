@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.awt.ComposeWindow
 import com.centyllion.i18n.loadLocales
 import com.centyllion.model.*
+import com.centyllion.ui.dialog.Dialog
 import com.centyllion.ui.tabs.LogsTab
 import com.centyllion.ui.tabs.PropertiesTab
 import com.centyllion.ui.tabs.SimulationTab
@@ -62,6 +63,15 @@ class AppState(
         updateWindowName()
     }
 
+    override fun importModelAndSimulation(model: GrainModel, simulation: Simulation) {
+        pathState.value = null
+        this.model = model
+        this.simulation = simulation
+        selection = listOf(model)
+        clearPastAndFuture()
+        updateWindowName()
+    }
+
     fun importModel(path: Path) {
         pathState.value = path
         model = loadModel(path)
@@ -116,7 +126,7 @@ class AppState(
         get() = simulationState.value
         set(value) {
             simulationState.value = value
-            simulator = Simulator(model, simulation)
+            simulator = Simulator(model, value)
             stepState.value = 0
             grainCountsState.value = simulator.grainsCounts()
             fieldAmountsState.value = simulator.fieldAmounts()
@@ -341,6 +351,10 @@ class AppState(
             southSelectedTabState.value = value
             //if (value == LogTab) unseenLogsState.value = 0
         }
+
+    private val currentDialogState = mutableStateOf<Dialog?>(null)
+    override var currentDialog get() = currentDialogState.value
+        set(value) { currentDialogState.value = value }
 
     private fun refresh() {
         updateProblems()

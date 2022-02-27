@@ -8,8 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.window.singleWindowApplication
 import com.centyllion.ui.tabs.Tabs
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -17,7 +21,6 @@ import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import java.nio.file.Path
-
 
 fun main() = singleWindowApplication {
     val scope = rememberCoroutineScope()
@@ -29,8 +32,20 @@ fun main() = singleWindowApplication {
 
 @Composable
 @Preview
-fun App(appState: AppState, ) {
+fun App(appState: AppState) {
     MaterialTheme(colors = themeColors) {
+
+        appState.currentDialog?.let { currentDialog ->
+            Dialog(
+                title = appState.locale.i18n(currentDialog.titleKey),
+                onCloseRequest = { appState.currentDialog = null },
+                state = rememberDialogState(position = WindowPosition(Alignment.Center))
+            ) {
+                currentDialog.content(appState)
+            }
+        }
+
+
         Column {
             ToolBar(appState = appState)
             MainView(appState)

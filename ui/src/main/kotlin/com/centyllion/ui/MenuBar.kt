@@ -3,6 +3,7 @@ package com.centyllion.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
+import com.centyllion.ui.dialog.ImportFromCentyllion
 
 @Composable
 fun FrameWindowScope.MenuBar(appState: AppState) {
@@ -37,7 +38,9 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
 
             Separator()
 
+
             Item(text = appState.locale.i18n("Import from Centyllion\u2026")) {
+                appState.currentDialog = ImportFromCentyllion
             }
 
         }

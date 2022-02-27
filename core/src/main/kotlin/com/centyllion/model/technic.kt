@@ -1,25 +1,7 @@
 package com.centyllion.model
 
 import kotlinx.serialization.Serializable
-
-val emptyUser = User("", "", "", null)
-val emptyAsset = Asset("", "", emptyList(), "")
-
-fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
-
-@Serializable
-data class CollectionInfo(
-    val total: Long,
-    val lastWeek: Long,
-    val lastMonth: Long
-)
-
-@Serializable
-data class Info(
-    val app: String,
-    val debug: Boolean,
-    val dry: Boolean
-)
+import kotlinx.serialization.Transient
 
 interface Ided {
     val id: String
@@ -29,13 +11,6 @@ data class Problem(
     val source: ModelElement,
     val property: String,
     val message: String,
-)
-
-@Serializable
-data class ResultPage<T>(
-    val content: List<T>,
-    val offset: Long,
-    val totalSize: Long
 )
 
 @Serializable
@@ -53,15 +28,67 @@ data class UserDetails(
     val tutorialDone: Boolean = false
 )
 
+interface Description: Ided {
+    val name: String
+    val icon: String
+
+    val label get() = if (name.isNotEmpty()) name else id.drop(id.lastIndexOf("-") + 1)
+}
+
 @Serializable
-data class UserOptions(
-    val tutorialDone: Boolean = false
+data class DescriptionInfo(
+    val user: User? = null,
+    val createdOn: String = "",
+    val lastModifiedOn: String = "",
+    val readAccess: Boolean = true
 )
 
 @Serializable
-class Asset(
+data class GrainModelDescription(
     override val id: String,
-    val name: String,
-    val entries: List<String>,
-    val userId: String
-): Ided
+    val info: DescriptionInfo,
+    val tags: String,
+    val model: GrainModel
+) : Description {
+
+    @Transient
+    override val name = model.name
+
+    @Transient
+    override val icon = "boxes"
+}
+
+@Serializable
+data class SimulationDescription(
+    override val id: String,
+    val info: DescriptionInfo,
+    val modelId: String,
+    val thumbnailId: String?,
+    val simulation: Simulation
+) : Description {
+
+    @Transient
+    override val name = simulation.name
+
+    @Transient
+    override val icon = "play"
+
+    fun cleaned(model: GrainModelDescription): SimulationDescription {
+        val new = simulation.cleaned(model.model)
+        return if (new != simulation) copy(simulation = new) else this
+    }
+}
+
+@Serializable
+data class SimulationResultPage(
+    val content: List<SimulationDescription>,
+    val offset: Long,
+    val totalSize: Long
+)
+
+@Serializable
+data class ModelResultPage(
+    val content: List<GrainModelDescription>,
+    val offset: Long,
+    val totalSize: Long
+)

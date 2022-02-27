@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.centyllion.i18n.Locale
 import com.centyllion.model.*
+import com.centyllion.ui.dialog.Dialog
 import com.centyllion.ui.tabs.Tab
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.skia.Font
@@ -31,6 +32,10 @@ interface AppContext {
     var centerSelectedTab: Tab
     val southTabs: List<Tab>
     var southSelectedTab: Tab
+
+    var currentDialog: Dialog?
+
+    fun importModelAndSimulation(model: GrainModel, simulation: Simulation)
 
     val path: Path?
     var model: GrainModel

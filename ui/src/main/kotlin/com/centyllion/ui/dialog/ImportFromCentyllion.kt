@@ -1,5 +1,6 @@
 package com.centyllion.ui.dialog
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.centyllion.model.GrainModelDescription
 import com.centyllion.model.ModelResultPage
@@ -25,6 +27,7 @@ import com.centyllion.ui.AppContext
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.FileImport
+import compose.icons.fontawesomeicons.solid.RedoAlt
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
@@ -47,6 +50,7 @@ object ImportFromCentyllion: Dialog {
     @OptIn(ExperimentalComposeUiApi::class)
     override fun content(appContext: AppContext) {
         Box {
+            val searching = remember { mutableStateOf(false) }
             val offset = remember { mutableStateOf<Long>(0) }
             val searchText = remember { mutableStateOf("") }
             val foundSimulations = remember {
@@ -64,15 +68,35 @@ object ImportFromCentyllion: Dialog {
                             onValueChange = {
                                 newTextSearch -> searchText.value = newTextSearch
                                 foundSimulations.value = emptyList()
+                                searching.value = true
                                 appContext.scope.launch(Dispatchers.IO) {
-                                    val added = searchSimulations(searchText.value, offset.value, 20).content
-                                        .map { simulation -> SimulationItem(getModel(simulation.modelId), simulation) }
-                                        .filter { it.isNameNotBlank }
-                                    synchronized(foundSimulations) { foundSimulations.value += added }
+                                    searchSimulations(searchText.value, offset.value, 20).content
+                                        .forEach { simulation ->
+                                            val item = SimulationItem(getModel(simulation.modelId), simulation)
+                                            synchronized(foundSimulations) { foundSimulations.value += item }
+                                        }
+                                    searching.value = false
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
+                            trailingIcon = {
+                                if (searching.value) {
+                                    val infiniteTransition = rememberInfiniteTransition()
+                                    val angle = infiniteTransition.animateFloat(
+                                        initialValue = 0F,
+                                        targetValue = 360F,
+                                        animationSpec = infiniteRepeatable(
+                                            animation = tween(2000, easing = LinearEasing)
+                                        )
+                                    )
+                                    Icon(
+                                        FontAwesomeIcons.Solid.RedoAlt,
+                                        null,
+                                        modifier = Modifier.size(24.dp).rotate(angle.value)
+                                    )
+                                }
+                            }
                         )
                     }
                 }

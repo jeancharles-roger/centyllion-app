@@ -360,7 +360,7 @@ class Simulator(
         return List(all.size) { i ->
             val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->
-                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {field(it)[id] }
+                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) { fieldAt(it, index) }
                 Agent(id, direction, currentAgents[id], ages[id], fieldValues)
             }
         }

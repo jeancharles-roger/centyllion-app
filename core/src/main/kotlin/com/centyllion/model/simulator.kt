@@ -1,6 +1,7 @@
 package com.centyllion.model
 
 import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -64,18 +65,18 @@ class Simulator(
 
     private var currentFields: Boolean = true
 
-    private val fields1: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
+    private val fields1: Map<Int, FloatArray> =
+        model.fields.associate { it.id to FloatArray(simulation.agents.size) { minField } }
 
-    private val fields2: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
+    private val fields2: Map<Int, FloatArray> =
+        model.fields.associate { it.id to FloatArray(simulation.agents.size) { minField } }
 
     val grainCountHistory = grainsCounts().let { counts ->
-        model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
+        model.grains.associateWith { mutableListOf(counts[it.id] ?: 0) }
     }
 
     val fieldAmountHistory = fieldAmounts().let { amounts ->
-        model.fields.map { it to mutableListOf(amounts[it.id] ?: 0f) }.toMap()
+        model.fields.associateWith { mutableListOf(amounts[it.id] ?: 0f) }
     }
 
     var step = 0
@@ -139,16 +140,16 @@ class Simulator(
     /** Executes one step and returns the applied behaviours and the dead indexes. */
     fun oneStep(): Pair<Collection<ApplicableBehavior>, Collection<Int>> {
         // applies agents dying process
-        val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
-        val currentFieldAmounts = model.fields.map { it to 0f }.toMap().toMutableMap()
+        val currentCount = model.grains.associateWith { 0 }.toMutableMap()
+        val currentFieldAmounts = model.fields.associateWith { 0f }.toMutableMap()
 
-        // defines values for fields to avoid dynamic call each time
+        // define values for fields to avoid dynamic call each time
         val fields = fields
         val nextFields = nextFields
 
         val dead = mutableListOf<Int>()
 
-        // all will contains index of agents as keys associated to a list of applicable behaviors
+        // all will contain index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
@@ -183,7 +184,7 @@ class Simulator(
                             // selects one at random
                             val behaviour = applicable[random.nextInt(applicable.size)]
 
-                            // for each reactions, find all possible reactives
+                            // for each reaction, find all possible reactives
                             val possibleReactions = behaviour.reaction
                                 .map { reaction ->
                                     neighbours.filter { (d, a) ->
@@ -282,15 +283,24 @@ class Simulator(
 
         toExecute.forEach { it.apply(this) }
 
-        // stores count for each grain
-        currentCount.forEach {
-            grainCountHistory[it.key]?.add(it.value)
+        // stores count for each grain (synchronized to avoid concurrent modification exception while showing the graph)
+        synchronized(this) {
+            currentCount.forEach {
+                grainCountHistory[it.key]?.add(it.value)
+            }
         }
+
+        grainsCounts().forEach { (k, v) ->
+            maxGrainCount[k] = max(maxGrainCount.getOrDefault(k, 0), v)
+        }
+
 
         // stores field amounts
         currentFieldAmounts.forEach {
             fieldAmountHistory[it.key]?.add(it.value)
         }
+
+        currentFieldAmounts.values.maxOrNull()?.let { maxFieldAmount = max(maxFieldAmount, it) }
 
         // swap fields
         currentFields = !currentFields
@@ -318,10 +328,15 @@ class Simulator(
             it.value.clear()
             it.value.add(counts.getOrElse(it.key.id) { 0 })
         }
+
+        maxGrainCount.clear()
+        grainsCounts().forEach { (k, v) -> maxGrainCount[k] = v }
+
         fieldAmountHistory.forEach {
             it.value.clear()
-            it.value.add(0.0f)
+            it.value.add(0f)
         }
+        maxFieldAmount = 0f
     }
 
     fun idAtIndex(index: Int) = currentAgents[index]
@@ -366,13 +381,12 @@ class Simulator(
         }
     }
 
-    fun grainsCounts(): Map<Int, Int> {
-        val result = mutableMapOf<Int, Int>()
-        for (i in currentAgents) {
-            if (i >= 0) result[i] = 1 + (result[i] ?: 0)
-        }
-        return result
-    }
+    fun grainsCounts(): MutableMap<Int, Int> = mutableMapOf<Int, Int>()
+        .apply { for (i in currentAgents) if (i >= 0) this[i] = 1 + (this[i] ?: 0) }
 
     fun fieldAmounts(): Map<Int, Float> = fields.map { it.key to it.value.sum() }.toMap()
+
+    val maxGrainCount: MutableMap<Int, Int> = grainsCounts()
+
+    var maxFieldAmount: Float = 0f
 }

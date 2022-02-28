@@ -6,10 +6,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import com.centyllion.i18n.loadLocales
 import com.centyllion.model.*
 import com.centyllion.ui.dialog.Dialog
-import com.centyllion.ui.tabs.LogsTab
-import com.centyllion.ui.tabs.PropertiesTab
-import com.centyllion.ui.tabs.SimulationTab
-import com.centyllion.ui.tabs.Tab
+import com.centyllion.ui.tabs.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -335,7 +332,7 @@ class AppState(
         }
     }
 
-    override val centerTabs = listOf(PropertiesTab, SimulationTab)
+    override val centerTabs = listOf(PropertiesTab, SimulationTab, PlotterTab)
 
     private val centerSelectedTabState = mutableStateOf<Tab>(PropertiesTab)
     override var centerSelectedTab: Tab

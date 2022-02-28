@@ -8,7 +8,6 @@ val ktorVersion: String = "1.6.2"
 val cliktVersion: String = "3.4.0"
 val fontAwesomeVersion: String = "1.0.0"
 
-val data2vizVersion: String = "0.8.12"
 val markdownVersion: String = "0.2.4"
 
 plugins {

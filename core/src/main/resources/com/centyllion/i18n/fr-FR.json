@@ -45,7 +45,8 @@
 
     "Logs": "Journaux",
     "Properties": "Propriétés",
-    "Plotter": "Graphique",
+    "Grains Plotter": "Graphique des Grains",
+    "Fields Plotter": "Graphique des Champs",
 
     "Documentation": "Documentation",
     "Contact Us": "Contactez-nous",

@@ -287,20 +287,16 @@ class Simulator(
         synchronized(this) {
             currentCount.forEach {
                 grainCountHistory[it.key]?.add(it.value)
+                maxGrainCount[it.key.id] = max(maxGrainCount.getOrDefault(it.key.id, 0), it.value)
+            }
+
+            // stores field amounts
+            currentFieldAmounts.forEach {
+                fieldAmountHistory[it.key]?.add(it.value)
+                maxFieldAmount[it.key.id] = max(maxFieldAmount.getOrDefault(it.key.id, 0f), it.value)
             }
         }
 
-        grainsCounts().forEach { (k, v) ->
-            maxGrainCount[k] = max(maxGrainCount.getOrDefault(k, 0), v)
-        }
-
-
-        // stores field amounts
-        currentFieldAmounts.forEach {
-            fieldAmountHistory[it.key]?.add(it.value)
-        }
-
-        currentFieldAmounts.values.maxOrNull()?.let { maxFieldAmount = max(maxFieldAmount, it) }
 
         // swap fields
         currentFields = !currentFields
@@ -336,7 +332,7 @@ class Simulator(
             it.value.clear()
             it.value.add(0f)
         }
-        maxFieldAmount = 0f
+        maxFieldAmount.forEach { (k, v) -> maxFieldAmount[k] = 0f }
     }
 
     fun idAtIndex(index: Int) = currentAgents[index]
@@ -388,5 +384,6 @@ class Simulator(
 
     val maxGrainCount: MutableMap<Int, Int> = grainsCounts()
 
-    var maxFieldAmount: Float = 0f
+    var maxFieldAmount: MutableMap<Int, Float> = fields.map { it.key to 0f }.toMap().toMutableMap()
+
 }

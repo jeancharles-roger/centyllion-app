@@ -2,6 +2,7 @@ package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,36 +21,33 @@ import compose.icons.fontawesomeicons.solid.ChartLine
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.TextLine
 
-object PlotterTab : Tab {
+object FieldsPlotterTab : Tab {
 
-    override val nameKey = "Plotter"
+    override val nameKey = "Fields Plotter"
     override val icon = FontAwesomeIcons.Solid.ChartLine
 
     @Composable
     override fun content(appContext: AppContext) {
         val simulator = appContext.simulator
 
-        val visibleGrains = remember { mutableStateOf(
-            appContext.model.grains
-                .filter { appContext.model.doesGrainCountCanChange(it) }
-                .map { it.id }
-                .toSet()
+        val visibleFields = remember { mutableStateOf(
+            appContext.model.fields.map { it.id }.toSet()
         ) }
 
         Canvas(Modifier.fillMaxSize()) {
             val height = size.height
             if (appContext.step > 0) {
                 val xStep = size.width / appContext.step
-                val maxGrainCount = simulator.maxGrainCount
-                    .filterKeys { visibleGrains.value.contains(it) }
-                    .values.maxOrNull() ?: 0
+                val maxFieldAmount = simulator.maxFieldAmount
+                    .filterKeys { visibleFields.value.contains(it) }
+                    .values.maxOrNull() ?: 0f
 
-                if (maxGrainCount > 0) {
-                    val yStep = height / maxGrainCount
+                if (maxFieldAmount > 0f) {
+                    val yStep = height / maxFieldAmount
 
-                    simulator.grainCountHistory
-                        .filter { visibleGrains.value.contains(it.key.id) }
-                        .forEach { (grain, values) ->
+                    simulator.fieldAmountHistory
+                        .filter { visibleFields.value.contains(it.key.id) }
+                        .forEach { (field, values) ->
                             val path = Path()
 
                             // synchronized to avoid concurrent modification
@@ -60,7 +58,7 @@ object PlotterTab : Tab {
                                 }
                             }
 
-                            val color = colorNames[grain.color]?.color ?: Color.Red
+                            val color = colorNames[field.color]?.color ?: Color.Red
                             drawPath(path, color, style = Stroke(2f))
                         }
                 }
@@ -69,5 +67,7 @@ object PlotterTab : Tab {
                 drawIntoCanvas { it.nativeCanvas.drawTextLine(line, 0f, height, Paint()) }
             }
         }
+
+        Text(appContext.locale.i18n("Grains"))
     }
 }

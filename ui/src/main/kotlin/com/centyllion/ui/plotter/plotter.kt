@@ -17,6 +17,7 @@ import kotlin.math.roundToInt
 
 class Plotter {
 
+    // TODO find a way to avoid the creation of a second list and directly use the existing one
     class PlotLine(
         val color: Color,
         val values: List<Number>

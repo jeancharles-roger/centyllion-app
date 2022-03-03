@@ -30,7 +30,7 @@ class Plotter {
     val bottomMargin: Float = 20f
 
     fun ticksFor(max: Int): List<Int> {
-        val floatSteps = max.toFloat()
+        val floatSteps = max.coerceAtLeast(1).toFloat()
         val digits = floor(log(floatSteps, 10f)).roundToInt()
         val ticks = (floatSteps / 10f.pow(digits)).roundToInt()
         return List(ticks + 1) { it * 10f.pow(digits).roundToInt() }
@@ -39,7 +39,7 @@ class Plotter {
 
     fun plot(scope: DrawScope, maxStep: Int, maxY: Number, lines: List<PlotLine>) = with(scope) {
         val innerHeight = size.height - bottomMargin
-        val xStep = size.width / maxStep
+        val xStep = size.width / maxStep.coerceAtLeast(1)
 
         // draw step scale
         val paint = Paint()

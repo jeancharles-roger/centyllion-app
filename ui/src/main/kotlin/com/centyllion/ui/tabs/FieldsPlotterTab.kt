@@ -32,21 +32,17 @@ object FieldsPlotterTab : Tab {
         ) }
 
         Canvas(Modifier.fillMaxSize()) {
-            if (appContext.step > 0) {
-                val maxFieldAmount = simulator.maxFieldAmount
-                    .filterKeys { visibleFields.value.contains(it) }
-                    .values.maxOrNull() ?: 0f
+            val maxFieldAmount = simulator.maxFieldAmount
+                .filterKeys { visibleFields.value.contains(it) }
+                .values.maxOrNull() ?: 0f
 
-                if (maxFieldAmount > 0f) {
-                    val lines = simulator.fieldAmountHistory
-                        .filter { visibleFields.value.contains(it.key.id) }
-                        .map { (field, values) ->
-                            val color = colorNames[field.color]?.color ?: Color.Red
-                            Plotter.PlotLine(color, values.size) { values[it] }
-                        }
-                    plotter.plot(this, appContext.step, maxFieldAmount, lines)
+            val lines = simulator.fieldAmountHistory
+                .filter { visibleFields.value.contains(it.key.id) }
+                .map { (field, values) ->
+                    val color = colorNames[field.color]?.color ?: Color.Red
+                    Plotter.PlotLine(color, values.size) { values[it] }
                 }
-            }
+            plotter.plot(this, appContext.step, maxFieldAmount, lines)
         }
 
         Text(appContext.locale.i18n("Grains"))

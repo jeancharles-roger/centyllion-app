@@ -17,10 +17,10 @@ import kotlin.math.roundToInt
 
 class Plotter {
 
-    // TODO find a way to avoid the creation of a second list and directly use the existing one
     class PlotLine(
         val color: Color,
-        val values: List<Number>
+        val size: Int,
+        val valueAt: (Int) -> Float
     )
 
     val stepsCache = mutableMapOf<Int, TextLine>()
@@ -37,7 +37,7 @@ class Plotter {
     }
 
 
-    fun plot(scope: DrawScope,maxStep: Int, maxY: Number, lines: List<PlotLine>) = with(scope) {
+    fun plot(scope: DrawScope, maxStep: Int, maxY: Number, lines: List<PlotLine>) = with(scope) {
         val innerHeight = size.height - bottomMargin
         val xStep = size.width / maxStep
 
@@ -63,8 +63,8 @@ class Plotter {
             val yStep = innerHeight / maxYfloat
             lines.forEach { line ->
                 val path = Path()
-                line.values.forEachIndexed { step, value ->
-                    val valueFloat = value.toFloat()
+                repeat(line.size) { step ->
+                    val valueFloat = line.valueAt(step)
                     if (step == 0) path.moveTo(0f, innerHeight - valueFloat * yStep)
                     else path.lineTo(step * xStep, innerHeight - valueFloat * yStep)
                 }

@@ -45,9 +45,9 @@ object GrainsPlotterTab : Tab {
                         .filter { visibleGrains.value.contains(it.key.id) }
                         .map { (grain, values) ->
                             val color = colorNames[grain.color]?.color ?: Color.Red
-                            Plotter.PlotLine(color, values.toList())
+                            Plotter.PlotLine(color, values.size) { values[it].toFloat() }
                         }
-                    FieldsPlotterTab.plotter.plot(this, appContext.step, maxGrainCount, lines)
+                    plotter.plot(this, appContext.step, maxGrainCount, lines)
                 }
             }
         }

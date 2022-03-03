@@ -42,7 +42,7 @@ object FieldsPlotterTab : Tab {
                         .filter { visibleFields.value.contains(it.key.id) }
                         .map { (field, values) ->
                             val color = colorNames[field.color]?.color ?: Color.Red
-                            Plotter.PlotLine(color, values.toList())
+                            Plotter.PlotLine(color, values.size) { values[it] }
                         }
                     plotter.plot(this, appContext.step, maxFieldAmount, lines)
                 }

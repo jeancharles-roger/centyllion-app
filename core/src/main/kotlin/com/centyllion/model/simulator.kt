@@ -61,7 +61,6 @@ class Simulator(
     val nextFields get() = if (!currentFields) fields1 else fields2
 
     fun field(id: Int) = fields[id] ?: emptyFloatArray
-    fun fieldAt(id: Int, index: Int) = fields[id]?.get(index) ?: 0f
 
     private var currentFields: Boolean = true
 
@@ -283,18 +282,16 @@ class Simulator(
 
         toExecute.forEach { it.apply(this) }
 
-        // stores count for each grain (synchronized to avoid concurrent modification exception while showing the graph)
-        synchronized(this) {
-            currentCount.forEach {
-                grainCountHistory[it.key]?.add(it.value)
-                maxGrainCount[it.key.id] = max(maxGrainCount.getOrDefault(it.key.id, 0), it.value)
-            }
+        // stores count for each grain
+        currentCount.forEach {
+            grainCountHistory[it.key]?.add(it.value)
+            maxGrainCount[it.key.id] = max(maxGrainCount.getOrDefault(it.key.id, 0), it.value)
+        }
 
-            // stores field amounts
-            currentFieldAmounts.forEach {
-                fieldAmountHistory[it.key]?.add(it.value)
-                maxFieldAmount[it.key.id] = max(maxFieldAmount.getOrDefault(it.key.id, 0f), it.value)
-            }
+        // stores field amounts
+        currentFieldAmounts.forEach {
+            fieldAmountHistory[it.key]?.add(it.value)
+            maxFieldAmount[it.key.id] = max(maxFieldAmount.getOrDefault(it.key.id, 0f), it.value)
         }
 
 
@@ -332,6 +329,7 @@ class Simulator(
             it.value.clear()
             it.value.add(0f)
         }
+        maxFieldAmount.clear()
         maxFieldAmount.forEach { (k, v) -> maxFieldAmount[k] = 0f }
     }
 
@@ -371,7 +369,7 @@ class Simulator(
         return List(all.size) { i ->
             val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->
-                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) { fieldAt(it, index) }
+                val fieldValues = if (model.fields.isEmpty()) emptyFloatArray else FloatArray(fieldMaxId + 1) {field(it)[id] }
                 Agent(id, direction, currentAgents[id], ages[id], fieldValues)
             }
         }

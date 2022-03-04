@@ -2,7 +2,6 @@ package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +46,6 @@ object GrainsPlotterTab : Tab {
                 }
             plotter.plot(this, appContext.step, maxGrainCount, lines)
         }
-        Text(appContext.locale.i18n("Grains"))
     }
 
 }

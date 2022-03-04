@@ -70,7 +70,7 @@ object SimulationTab : Tab {
                 for (pair in appContext.simulator.fields) {
                     val field = model.fieldForId(pair.key)
                     if (field != null && !field.invisible) {
-                        val fieldValue = simulator.fieldAt(field.id, i)
+                        val fieldValue = simulator.field(field.id)[i]
                         val alpha = fieldValue.alpha
                         if (alpha > 0f) {
                             // TODO search for field color only once

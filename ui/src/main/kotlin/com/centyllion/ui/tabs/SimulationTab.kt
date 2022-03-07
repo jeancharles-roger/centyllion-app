@@ -83,7 +83,7 @@ object SimulationTab : Tab {
                 // draw grains
                 val id = simulator.idAtIndex(i)
                 val grain = appContext.model.grainForId(id)
-                if (grain != null) {
+                if (grain != null && !grain.invisible) {
                     val info = grainInfos[grain.id] ?: defaultInfo
 
                     // TODO search for grain color only once

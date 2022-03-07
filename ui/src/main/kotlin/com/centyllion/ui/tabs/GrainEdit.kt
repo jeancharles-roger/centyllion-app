@@ -147,8 +147,8 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
         appContext.model = appContext.model.updateGrain(grain, new)
     }
 
-    // TODO filter problems
-    CustomRow(appContext, emptyList()) {
+    /*
+    CustomRow(appContext, appContext.problems.filter { it.property == "Size" && it.source == grain }) {
         Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
         Label(grain.size.toFixedString(1))
         Slider(
@@ -161,6 +161,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
             }
         )
     }
+     */
 
     CustomRow(appContext, emptyList()) {
         Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))

@@ -18,6 +18,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.ModelElement
+import com.centyllion.model.Operator
+import com.centyllion.model.Predicate
 import com.centyllion.model.Problem
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -105,29 +107,38 @@ fun IntEditRow(
     onValueChange: (Int) -> Unit,
 ) {
     val problems = problems(appContext, element, validationProperty)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-
-        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
-        val newValue = if (textFieldValueState.text.toIntOrNull() != value) value.toString() else textFieldValueState.text
-        val textFieldValue = textFieldValueState.copy(text = newValue)
-
-        TextField(
-            label = { Text(appContext.locale.i18n(property)) },
-            value = textFieldValue,
-            trailingIcon = trailingIcon,
-            onValueChange = {
-                textFieldValueState = it
-                val new = it.text.toIntOrNull()
-                if (new != null && value != new) {
-                    onValueChange(new)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = textFieldValue.text.toIntOrNull() == null || problems.isNotEmpty(),
-            singleLine = true,
-        )
+    CustomRow(appContext, element, property) {
+        IntEdit(appContext, property, value, problems.isNotEmpty(), trailingIcon, onValueChange)
     }
     problems.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun IntEdit(
+    appContext: AppContext, property: String,
+    value: Int, hasProblem: Boolean,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: (Int) -> Unit,
+) {
+    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
+    val newValue = if (textFieldValueState.text.toIntOrNull() != value) value.toString() else textFieldValueState.text
+    val textFieldValue = textFieldValueState.copy(text = newValue)
+
+    TextField(
+        label = { Text(appContext.locale.i18n(property)) },
+        value = textFieldValue,
+        trailingIcon = trailingIcon,
+        onValueChange = {
+            textFieldValueState = it
+            val new = it.text.toIntOrNull()
+            if (new != null && value != new) {
+                onValueChange(new)
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        isError = textFieldValue.text.toIntOrNull() == null || hasProblem,
+        singleLine = true,
+    )
 }
 
 @Composable
@@ -286,6 +297,59 @@ fun CustomRow(
     diagnostics.forEach { ProblemItemRow(appContext, it) }
 }
 
+@Composable
+fun IntPredicateRow(
+    appContext: AppContext, element: ModelElement,
+    predicate: Predicate<Int>, property: String,
+    onValueChange: (Predicate<Int>) -> Unit
+) {
+    val diagnostics = problems(appContext, element, property)
+    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
+        Text(appContext.locale.i18n(property), modifier = Modifier.align(Alignment.CenterVertically))
+        Spacer(Modifier.width(20.dp))
+        PredicateOpCombo(predicate.op) {
+            onValueChange(predicate.copy(op = it))
+        }
+        IntEdit(appContext, "", predicate.constant, diagnostics.isNotEmpty()) {
+            onValueChange(predicate.copy(constant = it))
+        }
+    }
+    diagnostics.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun RowScope.PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
+    val expanded = remember { mutableStateOf(false) }
+    Text(op.label, Modifier.align(Alignment.CenterVertically))
+    Icon(
+        FontAwesomeIcons.Solid.AngleDown,
+        "Expand",
+        modifier =
+        Modifier
+            .size(20.dp).align(Alignment.CenterVertically)
+            .clickable { expanded.value = !expanded.value }
+    )
+
+    DropdownMenu(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false }
+    ) {
+        val lazyListState = rememberLazyListState()
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.size(300.dp, 300.dp)
+        ) {
+            items(Operator.values()) { value ->
+                DropdownMenuItem(
+                    onClick = {
+                        onValueChange(value)
+                        expanded.value = false
+                    }
+                ) { Text(value.label) }
+            }
+        }
+    }
+}
 
 fun problems(appContext: AppContext, element: ModelElement, name: String) =
     appContext.problems.filter { it.source == element && it.property.equals(name, true) }

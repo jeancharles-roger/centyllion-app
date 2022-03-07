@@ -8,7 +8,7 @@ val ktorVersion: String = "1.6.2"
 val cliktVersion: String = "3.4.0"
 val fontAwesomeVersion: String = "1.0.0"
 
-val markdownVersion: String = "0.2.4"
+val markdownVersion: String = "0.3.1"
 
 plugins {
     kotlin("jvm")
@@ -30,6 +30,7 @@ dependencies {
 
     implementation("com.github.ajalt.clikt","clikt", cliktVersion)
 
+    //implementation("org.jetbrains", "markdown", markdownVersion)
     testImplementation(kotlin("test-common"))
     testImplementation(kotlin("test-annotations-common"))
     testImplementation(kotlin("test-junit"))

@@ -42,6 +42,11 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     )
                 }
 
+                IntPredicateRow(appContext, behaviour, behaviour.agePredicate, "When age") {
+                    val new = behaviour.copy(agePredicate = it)
+                    appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                }
+
             }
         }
     }

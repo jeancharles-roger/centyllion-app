@@ -148,7 +148,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     }
 
     /*
-    CustomRow(appContext, appContext.problems.filter { it.property == "Size" && it.source == grain }) {
+    CustomRow(appContext, problems(appContext, grain, "Size")) {
         Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
         Label(grain.size.toFixedString(1))
         Slider(

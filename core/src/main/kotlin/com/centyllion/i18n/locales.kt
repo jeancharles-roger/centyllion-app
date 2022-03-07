@@ -51,7 +51,7 @@ class LoadedLocale(
 
     override fun i18n(key: String, vararg parameters: Any): String {
         val result = translations[key]
-        if (result == null) println("Translation missing for '$key' in $name")
+        if (key.isNotBlank() && result == null) println("Translation missing for '$key' in $name")
         return parameterRegex.replace(result ?: key) {
             it.groups[1]?.value?.toIntOrNull()?.let { parameters.getOrNull(it)?.toString() } ?: "%$it"
         }

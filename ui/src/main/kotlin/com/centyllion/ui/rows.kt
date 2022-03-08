@@ -125,7 +125,7 @@ fun IntEdit(
     val textFieldValue = textFieldValueState.copy(text = newValue)
 
     TextField(
-        label = { Text(appContext.locale.i18n(property)) },
+        label = if (property.isBlank()) null else { { Text(appContext.locale.i18n(property)) } },
         value = textFieldValue,
         trailingIcon = trailingIcon,
         onValueChange = {
@@ -239,43 +239,52 @@ fun ComboRow(
     extension: @Composable RowScope.() -> Unit = {},
     onValueChange: (String) -> Unit,
 ) {
-    val expanded = remember { mutableStateOf(false) }
     val diagnostics = problems(appContext, element, property)
     Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
         Text(appContext.locale.i18n(property), modifier = Modifier.align(Alignment.CenterVertically))
         Spacer(Modifier.width(20.dp))
-        valueContent(selected)
-        Icon(
-            FontAwesomeIcons.Solid.AngleDown,
-            "Expand",
-            modifier =
-            Modifier
-                .size(20.dp).align(Alignment.CenterVertically)
-                .clickable { expanded.value = !expanded.value }
-        )
-
-        DropdownMenu(
-            expanded = expanded.value,
-            onDismissRequest = { expanded.value = false }
-        ) {
-            val lazyListState = rememberLazyListState()
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier.size(300.dp, 300.dp)
-            ) {
-                items(values) { value ->
-                    DropdownMenuItem(
-                        onClick = {
-                            onValueChange(value)
-                            expanded.value = false
-                        }
-                    ) { valueContent(value) }
-                }
-            }
-        }
+        Combo(selected, values, valueContent, onValueChange)
         extension()
     }
     diagnostics.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun RowScope.Combo(
+    selected: String, values: List<String>,
+    valueContent: @Composable (String) -> Unit = { Text(it) },
+    onValueChange: (String) -> Unit,
+) {
+    val expanded = remember { mutableStateOf(false) }
+    valueContent(selected)
+    Icon(
+        FontAwesomeIcons.Solid.AngleDown,
+        "Expand",
+        modifier =
+        Modifier
+            .size(20.dp).align(Alignment.CenterVertically)
+            .clickable { expanded.value = !expanded.value }
+    )
+
+    DropdownMenu(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false }
+    ) {
+        val lazyListState = rememberLazyListState()
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.size(300.dp, 300.dp)
+        ) {
+            items(values) { value ->
+                DropdownMenuItem(
+                    onClick = {
+                        onValueChange(value)
+                        expanded.value = false
+                    }
+                ) { valueContent(value) }
+            }
+        }
+    }
 }
 
 @Composable

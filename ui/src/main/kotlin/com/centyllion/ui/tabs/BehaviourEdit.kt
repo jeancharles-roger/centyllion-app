@@ -2,6 +2,7 @@ package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Slider
 import androidx.compose.material.Surface
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.centyllion.model.Behaviour
 import com.centyllion.ui.*
 
@@ -45,6 +47,19 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                 IntPredicateRow(appContext, behaviour, behaviour.agePredicate, "When age") {
                     val new = behaviour.copy(agePredicate = it)
                     appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                }
+
+                MainTitleRow(appContext.locale.i18n("Reactions"))
+
+                Row {
+                    Text(appContext.locale.i18n("Reactives"), Modifier.weight(.25f), fontSize = 12.sp)
+                    Text(appContext.locale.i18n("Directions"), Modifier.weight(.25f), fontSize = 12.sp)
+                    Text(appContext.locale.i18n("Products"), Modifier.weight(.25f), fontSize = 12.sp)
+                    Text(appContext.locale.i18n("Sources"), Modifier.weight(.25f), fontSize = 12.sp)
+                }
+
+                Row {
+
                 }
 
             }

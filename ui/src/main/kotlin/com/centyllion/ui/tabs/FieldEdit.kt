@@ -111,7 +111,7 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                         ColoredSquare(it)
                         Spacer(Modifier.width(4.dp))
                         Text(it)
-                    }
+                    }, lazy = true
                 ) {
                     val new = field.copy(color = it)
                     appContext.model = appContext.model.updateField(field, new)

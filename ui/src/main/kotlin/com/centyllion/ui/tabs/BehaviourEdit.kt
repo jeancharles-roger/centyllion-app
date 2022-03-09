@@ -1,9 +1,6 @@
 package com.centyllion.ui.tabs
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Slider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -13,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.Behaviour
+import com.centyllion.model.Grain
+import com.centyllion.model.GrainModel
 import com.centyllion.ui.*
 
 @Composable
@@ -58,11 +57,48 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     Text(appContext.locale.i18n("Sources"), Modifier.weight(.25f), fontSize = 12.sp)
                 }
 
-                Row {
+                CustomRow(appContext, emptyList()) {
+                    val mainReactive = appContext.model.grainForId(behaviour.mainReactiveId)
+                    GrainCombo(mainReactive, appContext.model, Modifier.weight(.25f)) {
+                        if (it != null) {
+                            val new = behaviour.copy(mainReactiveId = it.id)
+                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                        }
+                    }
 
+                    Text("", Modifier.weight(.25f), fontSize = 12.sp)
+
+                    val mainProduct = appContext.model.grainForId(behaviour.mainProductId)
+                    GrainCombo(mainProduct, appContext.model, Modifier.weight(.25f)) {
+                        if (it != null) {
+                            val new = behaviour.copy(mainProductId = it.id)
+                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                        }
+                    }
+
+                    Text("", Modifier.weight(.25f), fontSize = 12.sp)
                 }
-
             }
         }
     }
+}
+
+@Composable
+fun RowScope.GrainCombo(
+    grain: Grain?, model: GrainModel,
+    modifier: Modifier = Modifier,
+    onValueChange: (Grain?) -> Unit
+) {
+    val content: @Composable (Grain?) -> Unit = {
+        if (it != null) {
+            ColoredGrain(it)
+            Spacer(Modifier.width(2.dp))
+            Text(it.name)
+        } else {
+            EmptyGrain()
+            Spacer(Modifier.width(2.dp))
+            Text("none")
+        }
+    }
+    Combo(grain, model.grains, modifier, content, onValueChange)
 }

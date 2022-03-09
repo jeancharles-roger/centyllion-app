@@ -130,7 +130,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
             )
             Spacer(Modifier.width(4.dp))
             Text(iconName)
-        }
+        }, lazy = true
     ) {
         val new = grain.copy(icon = it)
         appContext.model = appContext.model.updateGrain(grain, new)
@@ -141,7 +141,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
             ColoredSquare(it)
             Spacer(Modifier.width(4.dp))
             Text(it)
-        }
+        }, lazy = true
     ) {
         val new = grain.copy(color = it)
         appContext.model = appContext.model.updateGrain(grain, new)

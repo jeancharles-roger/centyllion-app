@@ -236,6 +236,7 @@ fun ComboRow(
     appContext: AppContext, element: ModelElement,
     property: String, selected: String, values: List<String>,
     valueContent: @Composable (String) -> Unit = { Text(it) },
+    lazy: Boolean = false,
     extension: @Composable RowScope.() -> Unit = {},
     onValueChange: (String) -> Unit,
 ) {
@@ -243,25 +244,26 @@ fun ComboRow(
     Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
         Text(appContext.locale.i18n(property), modifier = Modifier.align(Alignment.CenterVertically))
         Spacer(Modifier.width(20.dp))
-        Combo(selected, values, valueContent, onValueChange)
+        if (lazy) LazyCombo(selected, values, Modifier, valueContent, onValueChange)
+        else Combo(selected, values, Modifier, valueContent, onValueChange)
         extension()
     }
     diagnostics.forEach { ProblemItemRow(appContext, it) }
 }
 
 @Composable
-fun RowScope.Combo(
-    selected: String, values: List<String>,
-    valueContent: @Composable (String) -> Unit = { Text(it) },
-    onValueChange: (String) -> Unit,
+fun <T> RowScope.LazyCombo(
+    selected: T, values: List<T>,
+    modifier: Modifier = Modifier,
+    valueContent: @Composable (T) -> Unit,
+    onValueChange: (T) -> Unit,
 ) {
     val expanded = remember { mutableStateOf(false) }
     valueContent(selected)
     Icon(
         FontAwesomeIcons.Solid.AngleDown,
         "Expand",
-        modifier =
-        Modifier
+        modifier = modifier
             .size(20.dp).align(Alignment.CenterVertically)
             .clickable { expanded.value = !expanded.value }
     )
@@ -283,6 +285,38 @@ fun RowScope.Combo(
                     }
                 ) { valueContent(value) }
             }
+        }
+    }
+}
+
+@Composable
+fun <T> RowScope.Combo(
+    selected: T, values: List<T>,
+    modifier: Modifier = Modifier,
+    valueContent: @Composable (T) -> Unit,
+    onValueChange: (T) -> Unit,
+) {
+    val expanded = remember { mutableStateOf(false) }
+    valueContent(selected)
+    Icon(
+        FontAwesomeIcons.Solid.AngleDown,
+        "Expand",
+        modifier = modifier
+            .size(20.dp).align(Alignment.CenterVertically)
+            .clickable { expanded.value = !expanded.value }
+    )
+
+    DropdownMenu(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false }
+    ) {
+        for (value in values) {
+            DropdownMenuItem(
+                onClick = {
+                    onValueChange(value)
+                    expanded.value = false
+                }
+            ) { valueContent(value) }
         }
     }
 }

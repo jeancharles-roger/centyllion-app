@@ -55,7 +55,7 @@ fun Tabs(
     Box {
         Column {
             Row(
-                Modifier
+                modifier = Modifier
                     .padding(top = 4.dp)
                     .horizontalScroll(rememberScrollState())
             ) {

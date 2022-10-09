@@ -1,26 +1,27 @@
 package com.centyllion.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.centyllion.model.ModelElement
-import com.centyllion.model.Operator
-import com.centyllion.model.Predicate
-import com.centyllion.model.Problem
+import com.centyllion.model.*
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.AngleDown
@@ -297,12 +298,12 @@ fun <T> RowScope.Combo(
     onValueChange: (T) -> Unit,
 ) {
     val expanded = remember { mutableStateOf(false) }
-    valueContent(selected)
+    Row(modifier.fillMaxWidth()) { valueContent(selected) }
     Icon(
         FontAwesomeIcons.Solid.AngleDown,
         "Expand",
         modifier = modifier
-            .size(20.dp).align(Alignment.CenterVertically)
+            .height(20.dp).align(Alignment.CenterVertically)
             .clickable { expanded.value = !expanded.value }
     )
 
@@ -393,6 +394,65 @@ fun RowScope.PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
         }
     }
 }
+
+@Composable
+fun Directions(
+    appContext: AppContext, allowedDirection: Set<Direction>,
+    size: Dp = 28.dp,
+    onValueChange: (Set<Direction>) -> Unit
+) {
+
+    firstDirections.forEachIndexed { index, direction ->
+        val selected = allowedDirection.contains(direction)
+        val shape = when (index) {
+            0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+            firstDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+            else -> RectangleShape
+        }
+        Icon(
+            imageVector = direction.icon(), contentDescription = null,
+            tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+            modifier = Modifier.size(size)
+                .background(
+                    color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                    shape = shape
+                )
+                .padding(5.dp, 2.dp)
+                .clickable {
+                    val directions = if (selected) allowedDirection - direction else allowedDirection + direction
+                    onValueChange(directions)
+                },
+        )
+    }
+
+    Spacer(Modifier.width(12.dp))
+
+    extendedDirections.forEachIndexed { index, direction ->
+        val selected = allowedDirection.contains(direction)
+        val shape = when (index) {
+            0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+            extendedDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+            else -> RectangleShape
+        }
+        Icon(
+            imageVector = direction.icon(), contentDescription = null,
+            tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+            modifier = Modifier.size(size)
+                .background(
+                    color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                    shape = shape
+                )
+                .padding(5.dp, 2.dp)
+                .clickable {
+                    val directions = if (selected) allowedDirection - direction else allowedDirection + direction
+                    onValueChange(directions)
+                },
+        )
+    }
+
+    Spacer(Modifier.width(12.dp))
+}
+
 
 fun problems(appContext: AppContext, element: ModelElement, name: String) =
     appContext.problems.filter { it.source == element && it.property.equals(name, true) }

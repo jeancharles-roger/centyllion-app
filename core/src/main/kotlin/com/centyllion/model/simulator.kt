@@ -74,9 +74,10 @@ class Simulator(
         model.grains.associateWith { mutableListOf(counts[it.id] ?: 0) }
     }
 
-    val fieldAmountHistory = fieldAmounts().let { amounts ->
-        model.fields.associateWith { mutableListOf(amounts[it.id] ?: 0f) }
-    }
+    val fieldAmountHistory: Map<Field, MutableList<Float>> =
+        fieldAmounts().let { amounts ->
+            model.fields.associateWith { mutableListOf(amounts[it.id] ?: 0f) }
+        }
 
     var step = 0
 

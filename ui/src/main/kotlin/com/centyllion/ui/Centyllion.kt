@@ -66,9 +66,12 @@ private fun MainView(appState: AppState) {
                     ComponentTree(appState)
                 }
                 second {
-                    Tabs(appState, appState.centerTabs, appState.centerSelectedTab) {
-                        appState.centerSelectedTab = it
-                    }
+                    Tabs(
+                        appContext = appState,
+                        tabs = appState.centerTabs,
+                        selected = appState.centerSelectedTab,
+                        onTabSelection = { appState.centerSelectedTab = it }
+                    )
                 }
                 horizontalSplitter()
             }

@@ -11,9 +11,9 @@ val data2vizVersion: String = "0.8.12"
 val markdownVersion: String = "0.2.4"
 
 plugins {
-    kotlin("jvm") version "1.6.10" apply false
-    kotlin("plugin.serialization") version "1.6.10" apply false
-    id("org.jetbrains.compose") version "1.0.1" apply false
+    kotlin("jvm") version "1.7.20" apply false
+    kotlin("plugin.serialization") version "1.7.20" apply false
+    id("org.jetbrains.compose") version "1.2.0" apply false
 }
 
 allprojects {

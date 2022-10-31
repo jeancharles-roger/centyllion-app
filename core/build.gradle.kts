@@ -9,8 +9,7 @@ plugins {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm", "1.5.2")
-
+    api("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm", coroutineVersion)
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-core", serializationVersion)
     api("org.jetbrains.kotlinx", "kotlinx-serialization-json", serializationVersion)
 

@@ -1,11 +1,9 @@
 package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Checkbox
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.centyllion.model.Field
@@ -48,7 +46,7 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                 TitleRow(appContext.locale.i18n("Display"))
 
                 ComboRow(appContext, field, "Color", field.color,
-                    colorNameList, {
+                    colorNameList, valueContent = {
                         ColoredSquare(it)
                         Spacer(Modifier.width(4.dp))
                         Text(it)
@@ -58,18 +56,10 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                     appContext.model = appContext.model.updateField(field, new)
                 }
 
-                CustomRow(appContext, emptyList()) {
-                    Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))
-                    Checkbox(
-                        checked = field.invisible,
-                        colors = appContext.theme.checkboxColors(),
-                        onCheckedChange = {
-                            val new = field.copy(invisible = it)
-                            appContext.model = appContext.model.updateField(field, new)
-                        }
-                    )
+                CheckRow(appContext, field, "Invisible", field.invisible) {
+                    val new = field.copy(invisible = it)
+                    appContext.model = appContext.model.updateField(field, new)
                 }
-
             }
         }
     }

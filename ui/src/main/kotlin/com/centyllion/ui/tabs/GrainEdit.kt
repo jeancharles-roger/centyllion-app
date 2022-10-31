@@ -1,7 +1,6 @@
 package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Checkbox
 import androidx.compose.material.Slider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -10,12 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.centyllion.model.Grain
 import com.centyllion.model.colorNameList
 import com.centyllion.ui.*
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.QuestionCircle
+import kotlin.math.abs
 
 @Composable
 fun GrainEdit(appContext: AppContext, grain: Grain) {
@@ -67,7 +68,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     TitleRow(appContext.locale.i18n("Display"))
 
     ComboRow(appContext, grain, "Icon", grain.iconName,
-        allIcons.keys.toList(), { iconName ->
+        allIcons.keys.toList(), valueContent = { iconName ->
             val icon = allIcons[iconName]
             if (icon != null) SimpleIcon(icon) else SimpleIcon(
                 FontAwesomeIcons.Solid.QuestionCircle,
@@ -82,7 +83,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     }
 
     ComboRow(appContext, grain, "Color", grain.color,
-        colorNameList, {
+        colorNameList, valueContent = {
             ColoredSquare(it)
             Spacer(Modifier.width(4.dp))
             Text(it)
@@ -92,32 +93,9 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
         appContext.model = appContext.model.updateGrain(grain, new)
     }
 
-    /*
-    CustomRow(appContext, problems(appContext, grain, "Size")) {
-        Text(appContext.locale.i18n("Size"), Modifier.align(Alignment.CenterVertically))
-        Label(grain.size.toFixedString(1))
-        Slider(
-            value = grain.size.toFloat(),
-            valueRange = 0f.rangeTo(5f),
-            steps = 60,
-            onValueChange = {
-                val new = grain.copy(size = it.toDouble())
-                appContext.model = appContext.model.updateGrain(grain, new)
-            }
-        )
-    }
-     */
-
-    CustomRow(appContext, emptyList()) {
-        Text(appContext.locale.i18n("Invisible"), Modifier.align(Alignment.CenterVertically))
-        Checkbox(
-            checked = grain.invisible,
-            colors = appContext.theme.checkboxColors(),
-            onCheckedChange = {
-                val new = grain.copy(invisible = it)
-                appContext.model = appContext.model.updateGrain(grain, new)
-            }
-        )
+    CheckRow(appContext, grain, "Invisible", grain.invisible) {
+        val new = grain.copy(invisible = it)
+        appContext.model = appContext.model.updateGrain(grain, new)
     }
 }
 
@@ -136,42 +114,56 @@ private fun FieldInteractions(appContext: AppContext, grain: Grain) {
             Row {
                 Column(Modifier.weight(.15f).align(Alignment.CenterVertically)) { Text(field.name) }
                 Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
-                    Slider(
-                        value = grain.fieldProductions[field.id] ?: 0f,
-                        valueRange = (-1f).rangeTo(1f),
-                        steps = 200,
-                        onValueChange = {
-                            val updated = grain.fieldProductions.toMutableMap().apply { this[field.id] = it }
-                            val new = grain.copy(fieldProductions = updated)
-                            appContext.model = appContext.model.updateGrain(grain, new)
-                        }
-                    )
+                    fieldInteraction(appContext, grain.fieldProductions[field.id] ?: 0f) {
+                        val value = if (abs(it) < .1f) 0f else it
+                        val updated = grain.fieldProductions.toMutableMap().apply { this[field.id] = value }
+                        val new = grain.copy(fieldProductions = updated)
+                        appContext.model = appContext.model.updateGrain(grain, new)
+                    }
                 }
                 Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
-                    Slider(
-                        value = grain.fieldInfluences[field.id] ?: 0f,
-                        valueRange = (-1f).rangeTo(1f),
-                        steps = 200,
-                        onValueChange = {
-                            val updated = grain.fieldInfluences.toMutableMap().apply { this[field.id] = it }
-                            val new = grain.copy(fieldInfluences = updated)
-                            appContext.model = appContext.model.updateGrain(grain, new)
-                        }
-                    )
+                    fieldInteraction(appContext, grain.fieldInfluences[field.id] ?: 0f) {
+                        val value = if (abs(it) < .1f) 0f else it
+                        val updated = grain.fieldInfluences.toMutableMap().apply { this[field.id] = value }
+                        val new = grain.copy(fieldInfluences = updated)
+                        appContext.model = appContext.model.updateGrain(grain, new)
+                    }
                 }
                 Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
-                    Slider(
-                        value = grain.fieldPermeable[field.id] ?: 0f,
-                        valueRange = 0f.rangeTo(1f),
-                        steps = 100,
-                        onValueChange = {
-                            val updated = grain.fieldPermeable.toMutableMap().apply { this[field.id] = it }
-                            val new = grain.copy(fieldPermeable = updated)
-                            appContext.model = appContext.model.updateGrain(grain, new)
-                        }
-                    )
+                    fieldInteraction(appContext, grain.fieldPermeable[field.id] ?: 0f, 0f.rangeTo(1f)) {
+                        val updated = grain.fieldPermeable.toMutableMap().apply { this[field.id] = it }
+                        val new = grain.copy(fieldPermeable = updated)
+                        appContext.model = appContext.model.updateGrain(grain, new)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun fieldInteraction(
+    appContext: AppContext,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float> = (-1f).rangeTo(1f),
+    onValueChange: (Float) -> Unit,
+) {
+    Row {
+        val colors = when {
+            value < 0f -> appContext.theme.sliderNegative()
+            value > 0f -> appContext.theme.sliderPositive()
+            else -> appContext.theme.sliderNeutral()
+        }
+        Text(
+            value.toFixedString(2),
+            fontSize = 12.sp,
+            modifier = Modifier.align(Alignment.CenterVertically).width(32.dp),
+        )
+        Slider(
+            value = value,
+            valueRange = valueRange,
+            colors = colors,
+            onValueChange = onValueChange
+        )
     }
 }

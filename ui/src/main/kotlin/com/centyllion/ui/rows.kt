@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Warning
@@ -25,6 +26,7 @@ import com.centyllion.model.*
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.AngleDown
+import com.centyllion.model.Direction as ModelDirection
 
 @Composable
 fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}, ) {
@@ -40,9 +42,8 @@ fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {},
     }
 }
 
-
 @Composable
-fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {},) {
+fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
     Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
         Text(
             text = title,
@@ -55,22 +56,70 @@ fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {},) {
 }
 
 @Composable
+fun propertyRow(
+    appContext: AppContext, element: ModelElement, property: String, validationProperty: String = property,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
+    editPart: @Composable RowScope.() -> Unit,
+) {
+    val problems = appContext.problems.filter { it.source == element && it.property.equals(validationProperty, true) }
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
+        Column(modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterVertically)) {
+            Text(text = appContext.locale.i18n(property), modifier = Modifier.fillMaxWidth())
+        }
+
+        Column(modifier = Modifier
+            .fillMaxWidth(if (trailingIcon != null) 1f - trailingRatio else 1f)
+            .align(Alignment.CenterVertically),
+            content = { Row { editPart() } }
+        )
+
+        if (trailingIcon != null) {
+            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingIcon)
+        }
+    }
+    problems.forEach { ProblemItemRow(appContext, it) }
+}
+
+@Composable
+fun propertyRow(
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
+    editPart: @Composable RowScope.() -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
+        if (trailingIcon != null) {
+            Column(modifier = Modifier
+                .fillMaxWidth(1f - trailingRatio)
+                .align(Alignment.CenterVertically),
+                content = { Row { editPart() } }
+            )
+            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingIcon)
+        } else {
+            editPart()
+        }
+    }
+}
+
+@Composable
 fun SingleLineTextEditRow(
     appContext: AppContext, element: ModelElement,
     property: String, value: String,
     validationProperty: String = property,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingIcon, onValueChange)
+) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingIcon, trailingRatio, onValueChange)
 
 @Composable
 fun MultiLineTextEditRow(
     appContext: AppContext, element: ModelElement,
     property: String, value: String,
     validationProperty: String = property,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingIcon, onValueChange)
+) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingIcon, trailingRatio, onValueChange)
 
 @Composable
 fun TextEditRow(
@@ -79,23 +128,19 @@ fun TextEditRow(
     value: String,
     validationProperty: String = property,
     maxLines: Int = 1,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) {
-    val problems = problems(appContext, element, validationProperty)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-        TextField(
-            label = { Text(appContext.locale.i18n(property)) },
-            value = value,
-            trailingIcon = trailingIcon,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            isError = problems.isNotEmpty(),
-            singleLine = maxLines <= 1,
-            maxLines = maxLines
-        )
-    }
-    problems.forEach { ProblemItemRow(appContext, it) }
+) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = maxLines > 1, maxLines = maxLines,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = appContext.theme.colors.background, shape = RoundedCornerShape(3.dp))
+            .padding(4.dp)
+    )
 }
 
 @Composable
@@ -104,42 +149,18 @@ fun IntEditRow(
     property: String,
     value: Int,
     validationProperty: String = property,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (Int) -> Unit,
+) = propertyRow(
+    appContext = appContext,
+    element = element,
+    property = property,
+    validationProperty = validationProperty,
+    trailingIcon = trailingIcon,
+    trailingRatio = trailingRatio
 ) {
-    val problems = problems(appContext, element, validationProperty)
-    CustomRow(appContext, element, property) {
-        IntEdit(appContext, property, value, problems.isNotEmpty(), trailingIcon, onValueChange)
-    }
-    problems.forEach { ProblemItemRow(appContext, it) }
-}
-
-@Composable
-fun IntEdit(
-    appContext: AppContext, property: String,
-    value: Int, hasProblem: Boolean,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    onValueChange: (Int) -> Unit,
-) {
-    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
-    val newValue = if (textFieldValueState.text.toIntOrNull() != value) value.toString() else textFieldValueState.text
-    val textFieldValue = textFieldValueState.copy(text = newValue)
-
-    TextField(
-        label = if (property.isBlank()) null else { { Text(appContext.locale.i18n(property)) } },
-        value = textFieldValue,
-        trailingIcon = trailingIcon,
-        onValueChange = {
-            textFieldValueState = it
-            val new = it.text.toIntOrNull()
-            if (new != null && value != new) {
-                onValueChange(new)
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        isError = textFieldValue.text.toIntOrNull() == null || hasProblem,
-        singleLine = true,
-    )
+    IntTextField(appContext, value, onValueChange)
 }
 
 @Composable
@@ -148,33 +169,11 @@ fun DoubleEditRow(
     property: String,
     value: Double,
     validationProperty: String = property,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (Double) -> Unit,
-) {
-    val problems = problems(appContext, element, validationProperty)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-
-        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
-        val newValue = if (textFieldValueState.text.toDoubleOrNull() != value) value.toString() else textFieldValueState.text
-        val textFieldValue = textFieldValueState.copy(text = newValue)
-
-        TextField(
-            label = { Text(appContext.locale.i18n(property)) },
-            value = textFieldValue,
-            trailingIcon = trailingIcon,
-            onValueChange = {
-                textFieldValueState = it
-                val new = it.text.toDoubleOrNull()
-                if (new != null && value != new) {
-                    onValueChange(new)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = textFieldValue.text.toDoubleOrNull() == null || problems.isNotEmpty(),
-            singleLine = true,
-        )
-    }
-    problems.forEach { ProblemItemRow(appContext, it) }
+) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+    DoubleTextField(appContext, value, onValueChange)
 }
 
 @Composable
@@ -183,77 +182,42 @@ fun FloatEditRow(
     property: String,
     value: Float,
     validationProperty: String = property,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (Float) -> Unit,
-) {
-    val problems = problems(appContext, element, validationProperty)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-
-        var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
-        val newValue = if (textFieldValueState.text.toFloatOrNull() != value) value.toString() else textFieldValueState.text
-        val textFieldValue = textFieldValueState.copy(text = newValue)
-
-        TextField(
-            label = { Text(appContext.locale.i18n(property)) },
-            value = textFieldValue,
-            trailingIcon = trailingIcon,
-            onValueChange = {
-                textFieldValueState = it
-                val new = it.text.toFloatOrNull()
-                if (new != null && value != new) {
-                    onValueChange(new)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            isError = textFieldValue.text.toFloatOrNull() == null || problems.isNotEmpty(),
-            singleLine = true,
-        )
-    }
-    problems.forEach { ProblemItemRow(appContext, it) }
+) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+    FloatTextField(appContext, value, onValueChange)
 }
 
 @Composable
 fun CheckRow(
     appContext: AppContext, element: ModelElement,
     property: String, checked: Boolean,
-    extension: @Composable RowScope.() -> Unit = {},
+    validationProperty: String = property,
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onCheckedChange: (Boolean) -> Unit,
-) {
-    val diagnostics = problems(appContext, element, property)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Text(property, modifier = Modifier.align(Alignment.CenterVertically))
-        Checkbox(
-            checked = checked,
-            modifier = Modifier.align(Alignment.CenterVertically),
-            onCheckedChange = onCheckedChange
-        )
-        extension()
-    }
-    diagnostics.forEach { ProblemItemRow(appContext, it) }
+) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+    Checkbox(checked = checked, onCheckedChange = onCheckedChange)
 }
 
 @Composable
 fun ComboRow(
     appContext: AppContext, element: ModelElement,
     property: String, selected: String, values: List<String>,
+    validationProperty: String = property,
     valueContent: @Composable (String) -> Unit = { Text(it) },
     lazy: Boolean = false,
-    extension: @Composable RowScope.() -> Unit = {},
+    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) {
-    val diagnostics = problems(appContext, element, property)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Text(appContext.locale.i18n(property), modifier = Modifier.align(Alignment.CenterVertically))
-        Spacer(Modifier.width(20.dp))
-        if (lazy) LazyCombo(selected, values, Modifier, valueContent, onValueChange)
-        else Combo(selected, values, Modifier, valueContent, onValueChange)
-        extension()
-    }
-    diagnostics.forEach { ProblemItemRow(appContext, it) }
+) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+    if (lazy) LazyCombo(selected, values, Modifier, valueContent, onValueChange)
+    else Combo(selected, values, Modifier, valueContent, onValueChange)
 }
 
 @Composable
-fun <T> RowScope.LazyCombo(
+fun <T> LazyCombo(
     selected: T, values: List<T>,
     modifier: Modifier = Modifier,
     valueContent: @Composable (T) -> Unit,
@@ -265,7 +229,7 @@ fun <T> RowScope.LazyCombo(
         FontAwesomeIcons.Solid.AngleDown,
         "Expand",
         modifier = modifier
-            .size(20.dp).align(Alignment.CenterVertically)
+            .size(20.dp)
             .clickable { expanded.value = !expanded.value }
     )
 
@@ -298,15 +262,17 @@ fun <T> RowScope.Combo(
     onValueChange: (T) -> Unit,
 ) {
     val expanded = remember { mutableStateOf(false) }
-    Row(modifier.fillMaxWidth()) { valueContent(selected) }
-    Icon(
-        FontAwesomeIcons.Solid.AngleDown,
-        "Expand",
-        modifier = modifier
-            .height(20.dp).align(Alignment.CenterVertically)
-            .clickable { expanded.value = !expanded.value }
-    )
-
+    //Column(
+    //    Modifier.align(Alignment.CenterVertically).clickable { expanded.value = !expanded.value }
+    //) {
+        Row(modifier.fillMaxWidth()) { valueContent(selected) }
+        Icon(
+            FontAwesomeIcons.Solid.AngleDown, "Expand",
+            modifier = modifier
+                .height(20.dp)
+                .clickable { expanded.value = !expanded.value }
+        )
+    //}
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false }
@@ -323,83 +289,127 @@ fun <T> RowScope.Combo(
 }
 
 @Composable
-fun CustomRow(
-    appContext: AppContext, element: ModelElement, property: String,
-    content: @Composable RowScope.() -> Unit = {},
-) {
-    val diagnostics = problems(appContext, element, property)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp), content = content)
-    diagnostics.forEach { ProblemItemRow(appContext, it) }
-}
-
-@Composable
-fun CustomRow(
-    appContext: AppContext, diagnostics: List<Problem>,
-    content: @Composable RowScope.() -> Unit = {},
-) {
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp), content = content)
-    diagnostics.forEach { ProblemItemRow(appContext, it) }
-}
-
-@Composable
 fun IntPredicateRow(
     appContext: AppContext, element: ModelElement,
     predicate: Predicate<Int>, property: String,
     onValueChange: (Predicate<Int>) -> Unit
-) {
-    val diagnostics = problems(appContext, element, property)
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Text(appContext.locale.i18n(property), modifier = Modifier.align(Alignment.CenterVertically))
-        Spacer(Modifier.width(20.dp))
+) = propertyRow(appContext, element, property) {
+    Column(Modifier.fillMaxWidth(.2f)) {
         PredicateOpCombo(predicate.op) {
             onValueChange(predicate.copy(op = it))
         }
-        IntEdit(appContext, "", predicate.constant, diagnostics.isNotEmpty()) {
-            onValueChange(predicate.copy(constant = it))
-        }
     }
-    diagnostics.forEach { ProblemItemRow(appContext, it) }
+    IntTextField(appContext, predicate.constant) {
+        onValueChange(predicate.copy(constant = it))
+    }
 }
 
 @Composable
-fun RowScope.PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
-    val expanded = remember { mutableStateOf(false) }
-    Text(op.label, Modifier.align(Alignment.CenterVertically))
-    Icon(
-        FontAwesomeIcons.Solid.AngleDown,
-        "Expand",
-        modifier =
-        Modifier
-            .size(20.dp).align(Alignment.CenterVertically)
-            .clickable { expanded.value = !expanded.value }
-    )
+fun PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
+    Row {
+        val expanded = remember { mutableStateOf(false) }
+        Text(op.label)
+        Icon(
+            FontAwesomeIcons.Solid.AngleDown,
+            "Expand",
+            modifier =
+            Modifier
+                .size(20.dp)
+                .clickable { expanded.value = !expanded.value }
+        )
 
-    DropdownMenu(
-        expanded = expanded.value,
-        onDismissRequest = { expanded.value = false }
-    ) {
-        val lazyListState = rememberLazyListState()
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier.size(300.dp, 300.dp)
+        DropdownMenu(
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false }
         ) {
-            items(Operator.values()) { value ->
-                DropdownMenuItem(
-                    onClick = {
-                        onValueChange(value)
-                        expanded.value = false
-                    }
-                ) { Text(value.label) }
+            val lazyListState = rememberLazyListState()
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.size(300.dp, 300.dp)
+            ) {
+                items(Operator.values()) { value ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onValueChange(value)
+                            expanded.value = false
+                        }
+                    ) { Text(value.label) }
+                }
             }
         }
     }
 }
 
 @Composable
+fun IntTextField(
+    appContext: AppContext,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+) = GenericTextField(
+    appContext = appContext,
+    value = value,
+    toValue = String::toIntOrNull,
+    toString = Int::toString,
+    onValueChange = onValueChange
+)
+
+@Composable
+fun FloatTextField(
+    appContext: AppContext,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+) = GenericTextField(
+    appContext = appContext,
+    value = value,
+    toValue = String::toFloatOrNull,
+    toString = Float::toString,
+    onValueChange = onValueChange
+)
+@Composable
+fun DoubleTextField(
+    appContext: AppContext,
+    value: Double,
+    onValueChange: (Double) -> Unit,
+) = GenericTextField(
+    appContext = appContext,
+    value = value,
+    toValue = String::toDoubleOrNull,
+    toString = Double::toString,
+    onValueChange = onValueChange
+)
+
+@Composable
+fun <T> GenericTextField(
+    appContext: AppContext,
+    value: T,
+    toValue: String.() -> T?,
+    toString: T.() -> String,
+    onValueChange: (T) -> Unit,
+) {
+    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
+    val newValue = if (textFieldValueState.text.toValue() != value) value.toString() else textFieldValueState.text
+    val textFieldValue = textFieldValueState.copy(text = newValue)
+
+    BasicTextField(
+        value = textFieldValue,
+        onValueChange = {
+            textFieldValueState = it
+            val new = it.text.toValue()
+            if (new != null && value != new) {
+                onValueChange(new)
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .background(color = appContext.theme.colors.background, shape = RoundedCornerShape(3.dp))
+            .padding(4.dp)
+    )
+}
+
+@Composable
 fun Directions(
-    appContext: AppContext, allowedDirection: Set<Direction>,
-    size: Dp = 28.dp,
-    onValueChange: (Set<Direction>) -> Unit
+    appContext: AppContext, allowedDirection: Set<ModelDirection>,
+    size: Dp = 28.dp, onValueChange: (Set<ModelDirection>) -> Unit
 ) {
 
     firstDirections.forEachIndexed { index, direction ->
@@ -452,10 +462,6 @@ fun Directions(
 
     Spacer(Modifier.width(12.dp))
 }
-
-
-fun problems(appContext: AppContext, element: ModelElement, name: String) =
-    appContext.problems.filter { it.source == element && it.property.equals(name, true) }
 
 @Composable
 fun ProblemItemRow(

@@ -1,6 +1,7 @@
 package com.centyllion.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
@@ -30,8 +31,7 @@ fun main() = singleWindowApplication {
 }
 
 
-@Composable
-@Preview
+@Composable @Preview
 fun App(appState: AppState) {
     MaterialTheme(colors = themeColors) {
 
@@ -58,10 +58,13 @@ fun App(appState: AppState) {
 private fun MainView(appState: AppState) {
     VerticalSplitPane(
         splitPaneState = rememberSplitPaneState(.8f),
-        modifier = Modifier.padding(bottom = 20.dp)
+        modifier = Modifier.background(appState.theme.colors.background).padding(bottom = 20.dp)
     ) {
         first {
-            HorizontalSplitPane(splitPaneState = rememberSplitPaneState(.4f)) {
+            HorizontalSplitPane(
+                splitPaneState = rememberSplitPaneState(.4f),
+                modifier = Modifier.background(appState.theme.colors.background)
+            ) {
                 first {
                     ComponentTree(appState)
                 }

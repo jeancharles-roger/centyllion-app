@@ -311,10 +311,10 @@ fun RowScope.GrainSquareRow(appState: AppState, ids: List<Int>) {
 }
 
 @Composable
-fun RowScope.GrainSquare(grain: Grain?) = if (grain != null) ColoredGrain(grain) else EmptyGrain()
+fun GrainSquare(grain: Grain?) = if (grain != null) ColoredGrain(grain) else EmptyGrain()
 
 @Composable
-fun RowScope.ColoredGrain(grain: Grain) {
+fun ColoredGrain(grain: Grain) {
     val color = colorNames[grain.color]
         ?.let { Color(it.first, it.second, it.third) }
         ?: Color.Red
@@ -324,21 +324,21 @@ fun RowScope.ColoredGrain(grain: Grain) {
     Icon(
         imageVector = icon,
         contentDescription = null, tint = color,
-        modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+        modifier = Modifier.height(20.dp),
     )
 }
 
 @Composable
-fun RowScope.EmptyGrain() {
+fun EmptyGrain() {
     Icon(
         imageVector = FontAwesomeIcons.Solid.TimesCircle,
         contentDescription = null,
-        modifier = Modifier.height(16.dp).align(Alignment.CenterVertically),
+        modifier = Modifier.height(16.dp),
     )
 }
 
 @Composable
-fun RowScope.ColoredSquare(color: String) {
+fun ColoredSquare(color: String) {
     val squareColor = colorNames[color]
         ?.let { Color(it.first, it.second, it.third) }
         ?: Color.Red
@@ -346,7 +346,7 @@ fun RowScope.ColoredSquare(color: String) {
     Icon(
         imageVector = FontAwesomeIcons.Solid.SquareFull,
         contentDescription = null, tint = squareColor,
-        modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+        modifier = Modifier.height(20.dp),
     )
 }
 

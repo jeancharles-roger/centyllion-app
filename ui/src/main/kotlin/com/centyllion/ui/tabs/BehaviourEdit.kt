@@ -31,19 +31,18 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     appContext.model = appContext.model.updateBehaviour(behaviour, behaviour.copy(description = it))
                 }
 
-                CustomRow(appContext, problems(appContext, behaviour, "Speed")) {
-                    Text(appContext.locale.i18n("Speed"), Modifier.align(Alignment.CenterVertically))
-                    Label(behaviour.probability.toFixedString(3))
+                propertyRow(appContext, behaviour, "Speed") {
+                    Text(behaviour.probability.toFixedString(3), Modifier.align(Alignment.CenterVertically))
                     Slider(
                         value = behaviour.probability.toFloat(),
                         valueRange = 0f.rangeTo(1f),
-                        steps = 100,
                         onValueChange = {
                             val new = behaviour.copy(probability = it.toDouble())
                             appContext.model = appContext.model.updateBehaviour(behaviour, new)
                         }
                     )
                 }
+
 
                 IntPredicateRow(appContext, behaviour, behaviour.agePredicate, "When age") {
                     val new = behaviour.copy(agePredicate = it)
@@ -59,7 +58,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     Text(appContext.locale.i18n("Sources"), Modifier.weight(.24f), fontSize = 12.sp)
                 }
 
-                CustomRow(appContext, emptyList()) {
+                propertyRow(appContext, behaviour, "") {
                     val mainReactive = appContext.model.grainForId(behaviour.mainReactiveId)
                     GrainCombo(mainReactive, appContext.model, Modifier.weight(.24f)) {
                         if (it != null) {
@@ -97,13 +96,12 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                 }
 
                 behaviour.reaction.forEach { reaction ->
-                    CustomRow(appContext, emptyList()) {
+                    propertyRow {
                         val mainReactive = appContext.model.grainForId(reaction.reactiveId)
                         GrainCombo(mainReactive, appContext.model, Modifier.weight(.24f)) {
                             val new = behaviour.updateReaction(reaction, reaction.copy(reactiveId = it?.id ?: -1))
                             appContext.model = appContext.model.updateBehaviour(behaviour, new)
                         }
-
 
                         Row(modifier = Modifier.weight(.24f)) {
                             Directions(appContext, reaction.allowedDirection, size = 18.dp) {
@@ -135,16 +133,19 @@ fun RowScope.GrainCombo(
     modifier: Modifier = Modifier,
     onValueChange: (Grain?) -> Unit
 ) {
-    val content: @Composable (Grain?) -> Unit = {
-        if (it != null) {
-            ColoredGrain(it)
-            Spacer(Modifier.width(2.dp))
-            Text(it.name)
-        } else {
-            EmptyGrain()
-            Spacer(Modifier.width(2.dp))
-            Text("none")
-        }
-    }
-    Combo(grain, model.grains, modifier, content, onValueChange)
+    Combo(
+        selected = grain, values = model.grains, modifier = modifier,
+        valueContent = {
+            if (it != null) {
+                ColoredGrain(it)
+                Spacer(Modifier.width(2.dp))
+                Text(it.name)
+            } else {
+                EmptyGrain()
+                Spacer(Modifier.width(2.dp))
+                Text("none")
+            }
+        },
+        onValueChange = onValueChange
+    )
 }

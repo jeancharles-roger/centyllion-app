@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Colors
+import androidx.compose.material.SliderDefaults
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -70,6 +71,8 @@ class AppLog(
 val themeColors: Colors = lightColors(
     primary = Color(73, 131, 227),
     primaryVariant = Color(73, 131, 227),
+    background = Color(245, 245, 245),
+    surface = Color(240, 240, 240),
 )
 
 class AppTheme(
@@ -78,6 +81,22 @@ class AppTheme(
 ) {
     @Composable
     fun checkboxColors() = CheckboxDefaults.colors(colors.primary)
+
+    @Composable
+    fun sliderNeutral() = SliderDefaults.colors(
+        thumbColor = Color.Gray,
+        activeTrackColor = Color.LightGray,
+    )
+    @Composable
+    fun sliderPositive() = SliderDefaults.colors(
+        thumbColor = colors.primary,
+        activeTrackColor = colors.primary,
+    )
+    @Composable
+    fun sliderNegative() = SliderDefaults.colors(
+        thumbColor = Color.Yellow,
+        activeTrackColor = Color.Yellow,
+    )
 
     val iconPadding get() = 8.dp
 
@@ -91,9 +110,7 @@ class AppTheme(
 
     val toolBarIconModifier get() = Modifier
         .size(toolbarIconSize)
-        .padding(iconPadding/2)
-        .background(color = Color(0xAAEEEEEE), shape = RoundedCornerShape(4.dp))
-        .padding(iconPadding/2)
+        .padding(iconPadding)
 
     val buttonIconModifier get() = Modifier
         .size(20.dp)

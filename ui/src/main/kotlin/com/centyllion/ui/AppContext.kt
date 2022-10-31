@@ -31,8 +31,6 @@ interface AppContext {
 
     val centerTabs: List<Tab>
     var centerSelectedTab: Tab
-    val southTabs: List<Tab>
-    var southSelectedTab: Tab
 
     var currentDialog: Dialog?
 

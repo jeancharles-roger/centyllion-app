@@ -332,22 +332,12 @@ class AppState(
         }
     }
 
-    override val centerTabs = listOf(PropertiesTab, SimulationTab)
+    override val centerTabs = listOf(PropertiesTab, SimulationTab, PlotterTab, LogsTab)
 
     private val centerSelectedTabState = mutableStateOf<Tab>(PropertiesTab)
     override var centerSelectedTab: Tab
         get() = centerSelectedTabState.value
         set(value) { centerSelectedTabState.value = value }
-
-    override val southTabs: List<Tab> = listOf(GrainsPlotterTab, FieldsPlotterTab, LogsTab)
-
-    private val southSelectedTabState = mutableStateOf<Tab>(GrainsPlotterTab)
-    override var southSelectedTab: Tab
-        get() = southSelectedTabState.value
-        set(value) {
-            southSelectedTabState.value = value
-            //if (value == LogTab) unseenLogsState.value = 0
-        }
 
     private val currentDialogState = mutableStateOf<Dialog?>(null)
     override var currentDialog get() = currentDialogState.value

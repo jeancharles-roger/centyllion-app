@@ -58,7 +58,7 @@ fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
 @Composable
 fun propertyRow(
     appContext: AppContext, element: ModelElement, property: String, validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     editPart: @Composable RowScope.() -> Unit,
 ) {
@@ -69,13 +69,13 @@ fun propertyRow(
         }
 
         Column(modifier = Modifier
-            .fillMaxWidth(if (trailingIcon != null) 1f - trailingRatio else 1f)
+            .fillMaxWidth(if (trailingContent != null) 1f - trailingRatio else 1f)
             .align(Alignment.CenterVertically),
             content = { Row { editPart() } }
         )
 
-        if (trailingIcon != null) {
-            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingIcon)
+        if (trailingContent != null) {
+            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingContent)
         }
     }
     problems.forEach { ProblemItemRow(appContext, it) }
@@ -83,18 +83,18 @@ fun propertyRow(
 
 @Composable
 fun propertyRow(
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     editPart: @Composable RowScope.() -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
-        if (trailingIcon != null) {
+        if (trailingContent != null) {
             Column(modifier = Modifier
                 .fillMaxWidth(1f - trailingRatio)
                 .align(Alignment.CenterVertically),
                 content = { Row { editPart() } }
             )
-            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingIcon)
+            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingContent)
         } else {
             editPart()
         }
@@ -106,20 +106,20 @@ fun SingleLineTextEditRow(
     appContext: AppContext, element: ModelElement,
     property: String, value: String,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingIcon, trailingRatio, onValueChange)
+) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingContent, trailingRatio, onValueChange)
 
 @Composable
 fun MultiLineTextEditRow(
     appContext: AppContext, element: ModelElement,
     property: String, value: String,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingIcon, trailingRatio, onValueChange)
+) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingContent, trailingRatio, onValueChange)
 
 @Composable
 fun TextEditRow(
@@ -128,10 +128,10 @@ fun TextEditRow(
     value: String,
     validationProperty: String = property,
     maxLines: Int = 1,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -149,7 +149,7 @@ fun IntEditRow(
     property: String,
     value: Int,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (Int) -> Unit,
 ) = propertyRow(
@@ -157,7 +157,7 @@ fun IntEditRow(
     element = element,
     property = property,
     validationProperty = validationProperty,
-    trailingIcon = trailingIcon,
+    trailingContent = trailingContent,
     trailingRatio = trailingRatio
 ) {
     IntTextField(appContext, value, onValueChange)
@@ -169,10 +169,10 @@ fun DoubleEditRow(
     property: String,
     value: Double,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (Double) -> Unit,
-) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     DoubleTextField(appContext, value, onValueChange)
 }
 
@@ -182,10 +182,10 @@ fun FloatEditRow(
     property: String,
     value: Float,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (Float) -> Unit,
-) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     FloatTextField(appContext, value, onValueChange)
 }
 
@@ -194,10 +194,10 @@ fun CheckRow(
     appContext: AppContext, element: ModelElement,
     property: String, checked: Boolean,
     validationProperty: String = property,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onCheckedChange: (Boolean) -> Unit,
-) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     Checkbox(checked = checked, onCheckedChange = onCheckedChange)
 }
 
@@ -208,10 +208,10 @@ fun ComboRow(
     validationProperty: String = property,
     valueContent: @Composable (String) -> Unit = { Text(it) },
     lazy: Boolean = false,
-    trailingIcon: @Composable (ColumnScope.() -> Unit)? = null,
+    trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     onValueChange: (String) -> Unit,
-) = propertyRow(appContext, element, property, validationProperty, trailingIcon, trailingRatio) {
+) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     if (lazy) LazyCombo(selected, values, Modifier, valueContent, onValueChange)
     else Combo(selected, values, Modifier, valueContent, onValueChange)
 }

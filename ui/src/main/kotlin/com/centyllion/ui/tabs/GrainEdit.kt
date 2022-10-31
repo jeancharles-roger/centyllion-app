@@ -49,7 +49,7 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
 @Composable
 private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
     DoubleEditRow(appContext, grain, "Speed", grain.movementProbability,
-        trailingIcon = {
+        trailingContent = {
             Row {
                 Directions(appContext, grain.allowedDirection) {
                     appContext.model = appContext.model.updateGrain(

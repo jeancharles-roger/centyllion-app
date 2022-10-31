@@ -80,7 +80,7 @@ object ImportFromCentyllion: Dialog {
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            trailingIcon = {
+                            trailingContent = {
                                 if (searching.value) {
                                     val infiniteTransition = rememberInfiniteTransition()
                                     val angle = infiniteTransition.animateFloat(

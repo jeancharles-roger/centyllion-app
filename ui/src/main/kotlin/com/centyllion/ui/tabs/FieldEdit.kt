@@ -30,7 +30,7 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                 }
 
                 FloatEditRow(appContext, field, "Speed", field.speed,
-                    trailingIcon = {
+                    trailingContent = {
                         Row {
                             Directions(appContext, field.allowedDirection) {
                                 appContext.model = appContext.model.updateField(

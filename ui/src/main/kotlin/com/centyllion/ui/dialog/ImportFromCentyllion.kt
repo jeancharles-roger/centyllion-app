@@ -95,7 +95,7 @@ object ImportFromCentyllion: Dialog {
                         },
                         trailingRatio = .2f
                     ) {
-                        Text(appContext.locale.i18n("Search: "))
+                        Text(appContext.locale.i18n("Search"))
                         SimpleTextField(appContext, searchText.value) { newTextSearch ->
                             searchText.value = newTextSearch
                             foundSimulations.value = emptyList()

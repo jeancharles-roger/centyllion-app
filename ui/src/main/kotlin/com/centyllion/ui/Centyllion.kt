@@ -45,7 +45,6 @@ fun App(appState: AppState) {
             }
         }
 
-
         Column {
             ToolBar(appState = appState)
             MainView(appState)
@@ -57,7 +56,7 @@ fun App(appState: AppState) {
 @Composable
 private fun MainView(appState: AppState) {
     VerticalSplitPane(
-        splitPaneState = rememberSplitPaneState(.8f),
+        splitPaneState = rememberSplitPaneState(.9f),
         modifier = Modifier.background(appState.theme.colors.background).padding(bottom = 20.dp)
     ) {
         first {

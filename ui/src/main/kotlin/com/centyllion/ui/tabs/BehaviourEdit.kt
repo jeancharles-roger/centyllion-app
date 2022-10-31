@@ -96,7 +96,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                 }
 
                 behaviour.reaction.forEach { reaction ->
-                    propertyRow {
+                    row {
                         val mainReactive = appContext.model.grainForId(reaction.reactiveId)
                         GrainCombo(mainReactive, appContext.model, Modifier.weight(.24f)) {
                             val new = behaviour.updateReaction(reaction, reaction.copy(reactiveId = it?.id ?: -1))

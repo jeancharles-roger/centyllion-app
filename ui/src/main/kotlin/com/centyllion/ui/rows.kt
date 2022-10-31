@@ -82,7 +82,7 @@ fun propertyRow(
 }
 
 @Composable
-fun propertyRow(
+fun row(
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .5f,
     editPart: @Composable RowScope.() -> Unit,
@@ -341,6 +341,18 @@ fun PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
 }
 
 @Composable
+fun SimpleTextField(
+    appContext: AppContext,
+    value: String,
+    onValueChange: (String) -> Unit,
+) = GenericTextField(
+    appContext = appContext,
+    value = value,
+    toValue = { this },
+    toString = { this },
+    onValueChange = onValueChange
+)
+@Composable
 fun IntTextField(
     appContext: AppContext,
     value: Int,
@@ -409,7 +421,7 @@ fun <T> GenericTextField(
 @Composable
 fun Directions(
     appContext: AppContext, allowedDirection: Set<ModelDirection>,
-    size: Dp = 28.dp, onValueChange: (Set<ModelDirection>) -> Unit
+    size: Dp = 14.dp, onValueChange: (Set<ModelDirection>) -> Unit
 ) {
 
     firstDirections.forEachIndexed { index, direction ->

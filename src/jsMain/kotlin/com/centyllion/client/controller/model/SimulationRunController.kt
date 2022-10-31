@@ -523,7 +523,7 @@ class SimulationRunController(
 
         // refreshes field amounts
         val amounts = currentSimulator.lastFieldAmount().values
-            fieldsController.dataControllers.zip(amounts) { controller, amount ->
+        fieldsController.dataControllers.zip(amounts) { controller, amount ->
             val source = controller.source
             if (source is FieldRunController) source.amount = amount
         }

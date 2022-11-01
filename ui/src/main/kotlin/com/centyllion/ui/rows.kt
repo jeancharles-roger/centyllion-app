@@ -22,7 +22,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.centyllion.model.*
+import com.centyllion.model.ModelElement
+import com.centyllion.model.Operator
+import com.centyllion.model.Predicate
+import com.centyllion.model.Problem
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.AngleDown
@@ -424,11 +427,11 @@ fun Directions(
     size: Dp = 14.dp, onValueChange: (Set<ModelDirection>) -> Unit
 ) {
 
-    firstDirections.forEachIndexed { index, direction ->
+    ModelDirection.first.forEachIndexed { index, direction ->
         val selected = allowedDirection.contains(direction)
         val shape = when (index) {
             0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-            firstDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+            ModelDirection.first.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
             else -> RectangleShape
         }
         Icon(
@@ -449,11 +452,11 @@ fun Directions(
 
     Spacer(Modifier.width(12.dp))
 
-    extendedDirections.forEachIndexed { index, direction ->
+    ModelDirection.extended.forEachIndexed { index, direction ->
         val selected = allowedDirection.contains(direction)
         val shape = when (index) {
             0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-            extendedDirections.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+            ModelDirection.extended.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
             else -> RectangleShape
         }
         Icon(

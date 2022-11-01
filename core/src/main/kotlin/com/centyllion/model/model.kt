@@ -5,38 +5,6 @@ import kotlinx.serialization.Transient
 import java.util.*
 import kotlin.math.pow
 
-enum class Direction {
-    Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown;
-
-    val deltaX get() = when (this) {
-        Left, LeftUp, LeftDown -> -1
-        Right, RightUp, RightDown -> 1
-        else -> 0
-    }
-
-    val deltaY get() = when (this) {
-        Up, LeftUp, RightUp -> -1
-        Down, LeftDown, RightDown -> 1
-        else -> 0
-    }
-
-    val opposite get() = when (this) {
-        Left -> Right
-        Right -> Left
-        Up -> Down
-        Down -> Up
-        LeftUp -> RightDown
-        RightUp -> LeftDown
-        LeftDown -> RightUp
-        RightDown -> LeftUp
-    }
-}
-
-val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
-
-val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
-val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
-
 fun newModel(name: String) = GrainModel(name = name)
 
 val emptySimulation = createSimulation("")
@@ -89,7 +57,7 @@ data class Field(
     override val description: String = "",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
-    val allowedDirection: Set<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = Direction.default
 ): ModelElement {
     /** Label for grain */
     fun label(long: Boolean = false) = when {
@@ -117,7 +85,7 @@ data class Grain(
     override val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 1.0,
-    val allowedDirection: Set<Direction> = defaultDirection,
+    val allowedDirection: Set<Direction> = Direction.default,
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap()
@@ -175,7 +143,7 @@ data class Reaction(
     val reactiveId: Int = -1,
     val productId: Int = -1,
     val sourceReactive: Int = -1,
-    val allowedDirection: Set<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = Direction.default
 )
 
 @Serializable

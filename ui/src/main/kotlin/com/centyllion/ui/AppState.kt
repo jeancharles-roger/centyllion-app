@@ -40,7 +40,7 @@ class AppState(
     override val path: Path?
         get() = pathState.value
 
-    fun newModel(model: GrainModel = newModel(locale.i18n("Model"))) {
+    fun newModel(model: GrainModel = GrainModel.new(locale.i18n("Model"))) {
         pathState.value = null
         this.model = model
         selection = listOf(model)
@@ -90,7 +90,7 @@ class AppState(
     val canRedo get() = canRedoState.value
 
     private var lastModelModification: Long = Long.MIN_VALUE
-    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: newModel(locale.i18n("Model")))
+    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: GrainModel.new(locale.i18n("Model")))
 
     override var model: GrainModel
         get() = modelState.value
@@ -118,7 +118,7 @@ class AppState(
             }
         }
 
-    private val simulationState = mutableStateOf(emptySimulation)
+    private val simulationState = mutableStateOf(Simulation.empty)
     override var simulation: Simulation
         get() = simulationState.value
         set(value) {
@@ -196,7 +196,7 @@ class AppState(
         }
         catch (e: Throwable) {
             alert("Couldn't load model: $e")
-            newModel(locale.i18n("Model"))
+            GrainModel.new(locale.i18n("Model"))
         }
 
     /** Load model for given path. */
@@ -207,7 +207,7 @@ class AppState(
         }
         catch (e: Throwable) {
             alert("Couldn't load simulation: $e")
-            emptySimulation
+            Simulation.empty
         }
 
     private fun syncModelWithFile() {

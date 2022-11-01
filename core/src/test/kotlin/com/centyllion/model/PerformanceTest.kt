@@ -6,8 +6,13 @@ import kotlin.test.Test
 class PerformanceTest {
 
     @Test
-    fun testDendritePerformance() {
+    fun testDendrite100Performance() {
         val simulator = Simulator(dendriteModel(), dendriteSimulation(100, 100))
+        repeat(100) { simulator.oneStep() }
+    }
+    @Test
+    fun testDendrite200Performance() {
+        val simulator = Simulator(dendriteModel(), dendriteSimulation(200, 200))
         repeat(100) { simulator.oneStep() }
     }
 

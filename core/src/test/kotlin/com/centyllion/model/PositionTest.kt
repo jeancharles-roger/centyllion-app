@@ -6,9 +6,9 @@ import kotlin.test.assertEquals
 
 class PositionTest {
 
-    val s1 = createSimulation()
-    val s2 = createSimulation("", "", 256, 100)
-    val s3 = createSimulation("", "", 50, 20, 3)
+    val s1 = Simulation.create()
+    val s2 = Simulation.create("", "", 256, 100)
+    val s3 = Simulation.create("", "", 50, 20, 3)
 
     private fun checkPosition(position: Position, vararg tests: Pair<Simulation, Int>) = tests.forEach {
         assertEquals(it.second, it.first.toIndex(position.x, position.y, position.z))

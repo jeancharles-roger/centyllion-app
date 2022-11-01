@@ -15,7 +15,7 @@ class SimulationTest {
         )
 
         val agents = List(100*100) { if (it % 20 == 0) 0 else -1}
-        val one2oneSimulation = createSimulation("Test one 2 one", agents = agents)
+        val one2oneSimulation = Simulation.create("Test one 2 one", agents = agents)
 
         val simulator = Simulator(one2oneModel, one2oneSimulation)
         simulator.grainsCounts().let { counts ->

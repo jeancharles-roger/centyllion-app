@@ -44,7 +44,6 @@ object SimulationTab : Tab {
 
     val font = Font().also { it.size = 20f }
 
-
     @Composable
     override fun content(appContext: AppContext) {
         val model = appContext.model
@@ -62,7 +61,8 @@ object SimulationTab : Tab {
             val sixthStep = step/6
 
             // draws background TODO configurable background color or image
-            drawRect(Color.Gray)
+            val background = colorNames[simulation.settings.backgroundColor ?: "Gray"]?.color ?: Color.Gray
+            drawRect(background)
 
             var x = 0
             for (i in 0 until simulation.dataSize) {

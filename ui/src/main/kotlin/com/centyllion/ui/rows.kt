@@ -62,23 +62,28 @@ fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
 fun propertyRow(
     appContext: AppContext, element: ModelElement, property: String, validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     editPart: @Composable RowScope.() -> Unit,
 ) {
     val problems = appContext.problems.filter { it.source == element && it.property.equals(validationProperty, true) }
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Column(modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterVertically)) {
+        Column(modifier = Modifier.weight(.2f).align(Alignment.CenterVertically)) {
             Text(text = appContext.locale.i18n(property), modifier = Modifier.fillMaxWidth())
         }
 
-        Column(modifier = Modifier
-            .fillMaxWidth(if (trailingContent != null) 1f - trailingRatio else 1f)
-            .align(Alignment.CenterVertically),
+        Column(
+            modifier = Modifier
+                .weight(if (trailingContent != null) .8f - trailingRatio else .8f)
+                .align(Alignment.CenterVertically),
             content = { Row { editPart() } }
         )
 
         if (trailingContent != null) {
-            Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingContent)
+            Spacer(Modifier.width(8.dp))
+            Column(
+                modifier = Modifier.weight(trailingRatio).align(Alignment.CenterVertically),
+                content = trailingContent
+            )
         }
     }
     problems.forEach { ProblemItemRow(appContext, it) }
@@ -87,7 +92,7 @@ fun propertyRow(
 @Composable
 fun row(
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     editPart: @Composable RowScope.() -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
@@ -110,7 +115,7 @@ fun SingleLineTextEditRow(
     property: String, value: String,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingContent, trailingRatio, onValueChange)
 
@@ -120,7 +125,7 @@ fun MultiLineTextEditRow(
     property: String, value: String,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingContent, trailingRatio, onValueChange)
 
@@ -132,7 +137,7 @@ fun TextEditRow(
     validationProperty: String = property,
     maxLines: Int = 1,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     BasicTextField(
@@ -153,7 +158,7 @@ fun IntEditRow(
     value: Int,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (Int) -> Unit,
 ) = propertyRow(
     appContext = appContext,
@@ -173,7 +178,7 @@ fun DoubleEditRow(
     value: Double,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (Double) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     DoubleTextField(appContext, value, onValueChange)
@@ -186,7 +191,7 @@ fun FloatEditRow(
     value: Float,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (Float) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     FloatTextField(appContext, value, onValueChange)
@@ -198,7 +203,7 @@ fun CheckRow(
     property: String, checked: Boolean,
     validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onCheckedChange: (Boolean) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     Checkbox(checked = checked, onCheckedChange = onCheckedChange)
@@ -212,7 +217,7 @@ fun ComboRow(
     valueContent: @Composable (String) -> Unit = { Text(it) },
     lazy: Boolean = false,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
-    trailingRatio: Float = .5f,
+    trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     if (lazy) LazyCombo(selected, values, Modifier, valueContent, onValueChange)
@@ -424,58 +429,59 @@ fun <T> GenericTextField(
 @Composable
 fun Directions(
     appContext: AppContext, allowedDirection: Set<ModelDirection>,
-    size: Dp = 14.dp, onValueChange: (Set<ModelDirection>) -> Unit
+    size: Dp = 20.dp, onValueChange: (Set<ModelDirection>) -> Unit
 ) {
-
-    ModelDirection.first.forEachIndexed { index, direction ->
-        val selected = allowedDirection.contains(direction)
-        val shape = when (index) {
-            0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-            ModelDirection.first.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-            else -> RectangleShape
+    Row {
+        ModelDirection.first.forEachIndexed { index, direction ->
+            val selected = allowedDirection.contains(direction)
+            val shape = when (index) {
+                0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                ModelDirection.first.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                else -> RectangleShape
+            }
+            Icon(
+                imageVector = direction.icon(), contentDescription = null,
+                tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                modifier = Modifier.size(size)
+                    .align(Alignment.CenterVertically)
+                    .background(
+                        color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                        shape = shape
+                    )
+                    .padding(5.dp, 2.dp)
+                    .clickable {
+                        val directions = if (selected) allowedDirection - direction else allowedDirection + direction
+                        onValueChange(directions)
+                    }
+            )
         }
-        Icon(
-            imageVector = direction.icon(), contentDescription = null,
-            tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
-            modifier = Modifier.size(size)
-                .background(
-                    color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
-                    shape = shape
-                )
-                .padding(5.dp, 2.dp)
-                .clickable {
-                    val directions = if (selected) allowedDirection - direction else allowedDirection + direction
-                    onValueChange(directions)
-                },
-        )
-    }
 
-    Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(12.dp))
 
-    ModelDirection.extended.forEachIndexed { index, direction ->
-        val selected = allowedDirection.contains(direction)
-        val shape = when (index) {
-            0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-            ModelDirection.extended.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-            else -> RectangleShape
+        ModelDirection.extended.forEachIndexed { index, direction ->
+            val selected = allowedDirection.contains(direction)
+            val shape = when (index) {
+                0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+                ModelDirection.extended.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
+                else -> RectangleShape
+            }
+            Icon(
+                imageVector = direction.icon(), contentDescription = null,
+                tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                modifier = Modifier.size(size)
+                    .align(Alignment.CenterVertically)
+                    .background(
+                        color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                        shape = shape
+                    )
+                   .padding(5.dp, 2.dp)
+                    .clickable {
+                        val directions = if (selected) allowedDirection - direction else allowedDirection + direction
+                        onValueChange(directions)
+                    }
+            )
         }
-        Icon(
-            imageVector = direction.icon(), contentDescription = null,
-            tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
-            modifier = Modifier.size(size)
-                .background(
-                    color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
-                    shape = shape
-                )
-                .padding(5.dp, 2.dp)
-                .clickable {
-                    val directions = if (selected) allowedDirection - direction else allowedDirection + direction
-                    onValueChange(directions)
-                },
-        )
     }
-
-    Spacer(Modifier.width(12.dp))
 }
 
 @Composable

@@ -30,15 +30,14 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                 }
 
                 FloatEditRow(appContext, field, "Speed", field.speed,
+                    trailingRatio = .35f,
                     trailingContent = {
-                        Row {
-                            Directions(appContext, field.allowedDirection) {
-                                appContext.model = appContext.model.updateField(
-                                    field, field.copy(allowedDirection = it)
-                                )
-                            }
+                        Directions(appContext, field.allowedDirection) {
+                            appContext.model = appContext.model.updateField(
+                                field, field.copy(allowedDirection = it)
+                            )
                         }
-                    }
+                    },
                 ) {
                     appContext.model = appContext.model.updateField(field, field.copy(speed = it))
                 }

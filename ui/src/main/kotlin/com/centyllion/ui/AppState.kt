@@ -165,17 +165,23 @@ class AppState(
             scope.launch(Dispatchers.IO) {
                 while (running) {
                     step()
-                    if (speed < 1f) delay((250*(1f-speed)).roundToLong().coerceAtMost(250))
+                    if (speed < 1f) delay((250 * (1f - speed)).roundToLong().coerceAtMost(250))
                 }
             }
         }
     }
 
     fun step() {
-        simulator.oneStep()
-        grainCountsState.value = simulator.grainsCounts()
-        fieldAmountsState.value = simulator.fieldAmounts()
-        stepState.value += 1
+        try {
+            simulator.oneStep()
+            grainCountsState.value = simulator.grainsCounts()
+            fieldAmountsState.value = simulator.fieldAmounts()
+            stepState.value += 1
+        } catch (t: Throwable) {
+            // TODO localize
+            alert(t.message ?: "Unexpected error occurred")
+        }
+
     }
 
     fun stopSimulation() {
@@ -188,6 +194,7 @@ class AppState(
         grainCountsState.value = simulator.grainsCounts()
         fieldAmountsState.value = simulator.fieldAmounts()
     }
+
     /** Load model for given path. */
     private fun loadModel(path: Path): GrainModel =
         try {
@@ -273,7 +280,8 @@ class AppState(
         }
     }
 
-    val selectionState = mutableStateOf<List<ModelElement>>(listOf())
+    private val selectionState = mutableStateOf<List<ModelElement>>(listOf())
+
     override var selection
         get() = selectionState.value
         set(value) {
@@ -281,6 +289,21 @@ class AppState(
                 selectionState.value = value
             }
         }
+
+    private val toolActiveState = mutableStateOf(false)
+    override var toolActive: Boolean
+        get() = toolActiveState.value
+        set(value) { toolActiveState.value = value }
+
+    private val toolState = mutableStateOf(Tool.Line)
+    override var tool: Tool
+        get() = toolState.value
+        set(value) { toolState.value = value }
+
+    private val toolSizeState = mutableStateOf(ToolSize.Small)
+    override var toolSize: ToolSize
+        get() = toolSizeState.value
+        set(value) { toolSizeState.value = value }
 
     private val problemsState = mutableStateOf<List<Problem>>(emptyList())
     override val problems: List<Problem>

@@ -253,7 +253,7 @@ class Simulator(
                     permeableSum += (grainAtIndex(index)?.fieldPermeable?.get(field.id) ?: 1f)
                 }
 
-                if (next != null && current != null) {
+                if (count > 0 && next != null && current != null) {
                     var diffusionSum = 0f
                     for (opposite in field.oppositeDirections) {
                         val index = simulation.moveIndex(i, opposite)
@@ -309,7 +309,8 @@ class Simulator(
         initialAgents.copyInto(agents)
         for (i in ages.indices) {
             ages[i] = if (agents[i] != -1) 0 else -1
-            fields.forEach { it.value[i] = minField }
+            fields1.forEach { it.value[i] = minField }
+            fields2.forEach { it.value[i] = minField }
         }
 
         step = 0

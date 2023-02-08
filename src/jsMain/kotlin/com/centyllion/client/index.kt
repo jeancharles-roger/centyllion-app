@@ -6,16 +6,10 @@ import com.centyllion.i18n.Locale
 import com.centyllion.model.User
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.serialization.Serializable
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 import org.w3c.dom.url.URLSearchParams
 import kotlin.js.Promise
-
-@Serializable
-data class CssFile(
-    val files: List<String>
-)
 
 fun createNavBar(locale: Locale) = NavBar(
     brand = listOf(
@@ -81,7 +75,6 @@ fun index() {
 
     // creates keycloak instance
     val api = Api()
-    api.addCss()
 
     api.fetchLocales().then { locales ->
         val localeName = locales.resolve(window.navigator.language)

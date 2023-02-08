@@ -3,10 +3,8 @@ package com.centyllion.client
 import com.centyllion.i18n.Locale
 import com.centyllion.i18n.Locales
 import com.centyllion.model.*
-import kotlinx.browser.document
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import org.w3c.dom.HTMLLinkElement
 import org.w3c.files.Blob
 import org.w3c.files.File
 import org.w3c.xhr.FormData
@@ -40,16 +38,6 @@ class Api(val baseUrl: String = "") {
                 }
             }
             request.send(content)
-        }
-
-    /** Fetches css config and includes css files */
-    fun addCss() = fetch("GET", "/css/centyllion/css.config.json").then { content ->
-        Json.decodeFromString(CssFile.serializer(), content).files.forEach {
-                val link = document.createElement("link") as HTMLLinkElement
-                link.rel = "stylesheet"
-                link.href = url(it)
-                document.head?.append(link)
-            }
         }
 
     fun fetchVersion() =

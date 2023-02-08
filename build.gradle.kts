@@ -202,43 +202,6 @@ tasks {
         }
     }
 
-    val allCss by register<Copy>("allCss") {
-        group = "build"
-
-        doFirst {
-            delete(cssDir)
-        }
-        from(
-            fileTree("src/css").matching { include("*.css") }
-        )
-        into(cssDir)
-
-        doLast {
-            val files = mutableListOf<String>()
-
-            // Adds md5 sum in file name for cache purposes
-            file(cssDir).listFiles()?.forEach {
-                val base = it.nameWithoutExtension
-                val bytes = MessageDigest.getInstance("MD5").digest(it.readBytes())
-                val builder = StringBuilder()
-                for (b in bytes) builder.append(String.format("%02x", b))
-                val sum = builder.toString()
-
-                val extension = it.extension
-                if (extension == "css" && !name.contains(sum)) {
-                    val newFile = "$base.$sum.$extension"
-                    files.add(newFile)
-                    it.renameTo(file("${it.parent}/$newFile"))
-                }
-            }
-
-            // Constructs a css.files
-            val cssFiles = file("$cssDir/css.config.json")
-            val content = files.joinToString(",") { "\"/css/centyllion/$it\"" }
-            cssFiles.writeText("{ \"files\": [$content] }")
-        }
-    }
-
     val jsBrowserWebpack by existing
 
     val syncJs by register("syncJs") {
@@ -267,22 +230,8 @@ tasks {
         }
     }
 
-    val syncCss by register<Sync>("syncCss") {
-        dependsOn(allCss)
-        group = "build"
-        from(cssDir)
-        into("$webRoot/css/centyllion")
-    }
-
-    val syncAssets by register<Sync>("syncAssets") {
-        dependsOn(generateVersion)
-        group = "build"
-        from("$buildDir/resources/main")
-        into("$webRoot/assets/centyllion")
-    }
-
     val jsJar by existing
-    jsJar.get().dependsOn(syncJs, syncCss, syncAssets)
+    jsJar.get().dependsOn(syncJs)
 
     val assemble by existing
     val jvmJar by existing(Jar::class)

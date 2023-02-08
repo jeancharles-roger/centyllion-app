@@ -23,12 +23,12 @@ val exposedVersion: String = "0.32.1"
 val postgresqlVersion: String = "42.2.23"
 val keycloakVersion: String = "8.0.2"
 
-val data2vizVersion: String = "0.8.12"
+val data2vizVersion: String = "0.10.1"
 val markdownVersion: String = "0.2.4"
 
 plugins {
-    kotlin("multiplatform") version "1.5.21"
-    kotlin("plugin.serialization") version "1.5.21"
+    kotlin("multiplatform") version "1.8.10"
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
 repositories {
@@ -126,11 +126,11 @@ kotlin {
                 implementation("com.centyllion:bulma-kotlin:$bulmaKotlinVersion")
                 implementation("com.centyllion:babylon-kotlin:$babylonKotlinVersion")
 
-                implementation("io.data2viz.d2v:core-js:$data2vizVersion")
-                implementation("io.data2viz.d2v:color-js:$data2vizVersion")
-                implementation("io.data2viz.d2v:scale-js:$data2vizVersion")
-                implementation("io.data2viz.d2v:viz-js:$data2vizVersion")
-                implementation("io.data2viz.d2v:axis:$data2vizVersion")
+                implementation("io.data2viz.d2v:d2v-core:$data2vizVersion")
+                implementation("io.data2viz.d2v:d2v-color:$data2vizVersion")
+                implementation("io.data2viz.d2v:d2v-scale:$data2vizVersion")
+                implementation("io.data2viz.d2v:d2v-viz:$data2vizVersion")
+                implementation("io.data2viz.d2v:d2v-axis:$data2vizVersion")
 
                 implementation("org.jetbrains:markdown:$markdownVersion")
 
@@ -157,9 +157,6 @@ kotlin {
     }
 
     sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-        }
 
         // commonMain is required for reflection name resolution
         val commonMain by getting {

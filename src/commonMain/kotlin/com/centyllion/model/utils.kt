@@ -4,7 +4,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@UseExperimental(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class)
 fun <T>Boolean.orNull(block: () -> T): T? {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     return if (this) block() else null

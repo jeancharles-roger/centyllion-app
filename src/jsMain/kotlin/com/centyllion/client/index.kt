@@ -1,11 +1,13 @@
 package com.centyllion.client
 
-import bulma.*
+import bulma.ElementColor
+import bulma.NavBar
+import bulma.NavBarImageItem
 import com.centyllion.client.page.ShowPage
 import com.centyllion.i18n.Locale
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.HTMLBodyElement
+import org.w3c.dom.HTMLElement
 import org.w3c.dom.get
 
 fun createNavBar(locale: Locale) = NavBar(
@@ -19,7 +21,7 @@ fun createNavBar(locale: Locale) = NavBar(
     transparent = true, color = ElementColor.Primary
 )
 
-const val contentSelector = "section.cent-main"
+const val contentSelector = ".cent-main"
 
 fun main() = index()
 
@@ -41,7 +43,7 @@ fun index() {
             showVersion(context.api)
 
             // replace
-            val root = document.body as HTMLBodyElement
+            val root = document.querySelector(contentSelector) as HTMLElement
             while (root.hasChildNodes()) root.removeChild(root.childNodes[0]!!)
             root.appendChild(page.root)
         }

@@ -31,7 +31,6 @@ fun index() {
     // creates keycloak instance
     val api = Api()
 
-
     api.fetchLocales().then { locales ->
         val localeName = locales.resolve(window.navigator.language)
         console.log("Loading locale $localeName for ${window.navigator.language}")

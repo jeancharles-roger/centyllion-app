@@ -667,18 +667,7 @@ data class SimulationDescription(
 }
 
 @Serializable
-data class FeaturedDescription(
-    override val id: String,
-    val date: String,
-    val thumbnailId: String?,
-    val modelId: String,
-    val simulationId: String,
-    val authorId: String,
-    override val name: String,
-    val description: String,
-    val authorName: String
-) : Description {
-
-    @Transient
-    override val icon = "star"
-}
+data class ModelAndSimulation(
+    val model: GrainModel,
+    val simulation: Simulation
+)

@@ -1,10 +1,13 @@
 package com.centyllion.client.page
 
 import bulma.*
-import com.centyllion.client.*
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
 import com.centyllion.client.controller.utils.UndoRedoSupport
+import com.centyllion.client.download
+import com.centyllion.client.stringHref
+import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
@@ -15,12 +18,10 @@ import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
-/** ShowPage is use to present and edit (if not read-only) a model and a simulation. */
+/** ShowPage is used to present and edit (if not read-only) a model and a simulation. */
 class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private var tutorialLayer: TutorialLayer<ShowPage>? = null
-
-    val api = appContext.api
 
     private var problems: List<Problem> = emptyList()
 
@@ -117,40 +118,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         i18n("Import"), Icon("cloud-download-alt"), color = ElementColor.Primary, rounded = true
     ) { import() })
 
-    val exportButton = Button(
+    val exportControl = Control(Button(
         i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true
-    ) { export() }
+    ) { export() })
 
-    val exportControl = Control(exportButton)
-
-    val moreDropdown = Dropdown(
-        icon = Icon("cog"), color = ElementColor.Primary, right = true, rounded = true
-    ) { refreshMoreButtons() }
-
-    val moreControl = Control(moreDropdown)
-
-    val downloadModelItem = createMenuItem(
-        moreDropdown, i18n("Download Model"), "download", TextColor.Primary
-    ) { downloadModel() }
-
-    val newSimulationItem = createMenuItem(
-        moreDropdown, i18n("New Simulation"), "plus", TextColor.Primary
-    ) { newSimulation() }
-
-    val downloadScreenshotItem = createMenuItem(
-        moreDropdown, i18n("Download screenshot"), "image", TextColor.Primary
-    ) { downloadScreenshot() }
-
-    val simulationDivider = createMenuDivider()
-
-    val downloadSimulationItem = createMenuItem(
-        moreDropdown, i18n("Download Simulation"), "download", TextColor.Primary
-    ) { downloadSimulation() }
-
-    val moreDropdownItems = listOfNotNull(
-        newSimulationItem, downloadScreenshotItem, simulationDivider,
-        downloadModelItem, downloadSimulationItem
-    )
+    val tutorialControl = Control(Button(
+        i18n("Start Tutorial"), Icon("help"), color = ElementColor.Info, rounded = true
+    ) { startTutorial() })
 
     val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
     val simulationPage = TabPage(TabItem(i18n("Simulation"), "play"), simulationController)
@@ -158,14 +132,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val undoControl = Control(modelUndoRedo.undoButton)
     val redoControl = Control(modelUndoRedo.redoButton)
 
-    private val readOnlyTools = listOf(
-        moreControl,
-        newSimulationItem, downloadScreenshotItem, simulationDivider,
-        downloadModelItem, downloadSimulationItem
-    )
-
     val tools = BField(
-        importControl, undoControl, redoControl, exportControl, moreControl,
+        newControl, importControl, undoControl, redoControl, exportControl, tutorialControl,
         grouped = true, groupedMultiline = true
     )
 
@@ -208,19 +176,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         refreshButtons()
     }
 
-    fun saveCurrentThumbnail() {
-        val thumbnail =
-            simulationController.currentThumbnail?.let { Promise.resolve(it) } ?:
-            simulationController.simulationViewController.thumbnail()
-
-        thumbnail.then {
-            // saves thumbnail retrieved on last stop click if exists.
-            api.saveSimulationThumbnail(simulation.id, "${simulation.label}.webp", it)
-                .then { message("Current state saved as thumbnail.") }
-                .catch { error(it) }
-        }
-    }
-
     fun downloadScreenshot() {
         simulationController.simulationViewController.screenshotURL().then {
             val name = "${model.label} - ${simulation.label} - screenshot.webp"
@@ -246,94 +201,19 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val simulationNeedsSaving get() = simulationUndoRedo.changed(simulation) || simulation.id.isEmpty()
 
     fun export(after: () -> Unit = {}) {
-        when {
-            model.id.isEmpty() -> {
-                // The model needs to be created first
-                api.saveGrainModel(model.model)
-                    .then { newModel ->
-                        setModel(newModel)
-                        // Saves the simulation and thumbnail
-                        api.saveSimulation(newModel.id, simulation.simulation)
-                    }.then { newSimulation ->
-                        setSimulation(newSimulation)
-                        saveCurrentThumbnail()
-                        message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
-                        after()
-                    }.catch {
-                        this.error(it)
-                    }
-            }
-            else -> {
-
-                // Save the model if needed
-                if (modelUndoRedo.changed(model)) {
-                    api.updateGrainModel(model).then {
-                        setModel(model)
-                        message("Model %0 saved.", model.model.name)
-                    }.catch {
-                        this.error(it)
-                    }
-                }
-
-                // Save the simulation
-                when {
-                    simulation.id.isEmpty() -> {
-                        // simulation must be created
-                        api.saveSimulation(model.id, simulation.simulation).then { newSimulation ->
-                            setSimulation(newSimulation)
-                            saveCurrentThumbnail()
-                            message("Simulation %0 saved.", simulation.simulation.name)
-                            after()
-                        }.catch {
-                            this.error(it)
-                        }
-                    }
-                    simulationUndoRedo.changed(simulation) -> {
-                        // saves the simulation
-                        api.updateSimulation(simulation).then {
-                            setSimulation(simulation)
-                            saveCurrentThumbnail()
-                            refreshButtons()
-                            message("Simulation %0 saved.", simulation.simulation.name)
-                            after()
-                        }.catch {
-                            this.error(it)
-                        }
-                    }
-                    else -> after()
-                }
-            }
-        }
-    }
-
-
-    fun downloadModel() {
-        val href = stringHref(Json.encodeToString(GrainModel.serializer(), model.model))
-        download("${model.name}.json", href)
-    }
-
-    fun newSimulation() = changeModelOrSimulation {
-        if (it) {
-            setSimulation(emptySimulationDescription)
-            editionTab.selectedPage = simulationPage
-            message("New simulation.")
-        }
-    }
-
-    fun downloadSimulation() {
-        val href = stringHref(Json.encodeToString(Simulation.serializer(), simulation.simulation))
-        download("${simulation.name}.json", href)
+        val exported = ModelAndSimulation(model.model, simulation.simulation)
+        val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), exported))
+        download("${model.name}.centyllion", href)
+        after()
     }
 
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                setReadonlyControls(false)
                 undoControl.body = modelUndoRedo.undoButton
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
-                setReadonlyControls(false)
                 undoControl.body = simulationUndoRedo.undoButton
                 redoControl.body = simulationUndoRedo.redoButton
             }
@@ -341,16 +221,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
         modelUndoRedo.refresh()
         simulationUndoRedo.refresh()
-        exportButton.disabled = !modelNeedsSaving && !simulationNeedsSaving
-    }
-
-    private fun setReadonlyControls(readOnly: Boolean) {
-        tools.body.forEach { it.hidden = if (readOnlyTools.contains(it) ) false else readOnly }
-        moreDropdownItems.forEach { it.hidden = if (readOnlyTools.contains(it) ) false else readOnly }
-    }
-
-    fun refreshMoreButtons() {
-        moreDropdown.items = moreDropdownItems
     }
 
     fun changeModelOrSimulation(dispose: Boolean = false, after: (Boolean) -> Unit = {}) {
@@ -362,7 +232,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val modelChanged = modelNeedsSaving && model != emptyGrainModelDescription
         val simulationChanged = simulationNeedsSaving && simulation != emptySimulationDescription
         if (modelChanged || simulationChanged) {
-            modalDialog(i18n("Modifications not saved. Do you wan't to save ?"),
+            modalDialog(i18n("Modifications not saved. Do you want to save ?"),
                 listOf(p(i18n("You're about to quit the page and some modifications haven't been saved."))),
                 textButton(i18n("Save"), ElementColor.Success) { export { conclude(true) } },
                 textButton(i18n("Don't save"), ElementColor.Danger) { conclude(true) },

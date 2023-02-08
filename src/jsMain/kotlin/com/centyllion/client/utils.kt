@@ -89,17 +89,6 @@ fun BulmaElement.setTooltip(text: String) {
     root.setAttribute("data-tooltip", text)
 }
 
-fun myHost() = encodeURI(document.location?.let { "${it.protocol}://${it.host}" } ?: "")
-fun myUrl() = encodeURI(document.location?.toString() ?: "")
-
-fun twitterHref(description: String) =
-    "https://twitter.com/intent/tweet/?text=${encodeURI(description)}&url=${myUrl()}&via=centyllion"
-
-fun facebookHref() = "https://facebook.com/sharer/sharer.php?u=${myUrl()}"
-
-fun linkedInHref(description: String) =
-    "https://www.linkedin.com/shareArticle?mini=true&url=${myUrl()}&title=${encodeURI(document.title)}&summary=${encodeURI(description)}&source=${myHost()}"
-
 private val markdownFlavour = CommonMarkFlavourDescriptor()
 private val markdownParser = MarkdownParser(markdownFlavour)
 

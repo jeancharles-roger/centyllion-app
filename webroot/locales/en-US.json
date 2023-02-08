@@ -41,6 +41,7 @@
 
     "by %0": "by %0",
     "by me": "by me",
+    "New Model": "New Model",
     "Model Name": "Model Name",
     "Simulation Name": "Simulation Name",
     "Description": "Description",
@@ -165,6 +166,7 @@
     "Grid": "Grid",
     "Image URL": "Image URL",
 
+    "Tutorial": "Tutorial",
     "Tutorial '%0'": "Tutorial '%0'",
 	"Create a simple bacterias simulation": "Create a simple bacterias simulation",
 	"With this tutorial you will create a simulation bacterias division with only one grain and one behaviour.": "With this tutorial you will create a simulation bacterias division with only one grain and one behaviour.",

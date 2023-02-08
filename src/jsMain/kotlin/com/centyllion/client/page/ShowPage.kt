@@ -12,8 +12,12 @@ import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
 import com.centyllion.model.Field
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
+import org.w3c.files.FileList
+import org.w3c.files.FileReader
+import org.w3c.files.get
 import kotlin.js.Promise
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
@@ -111,19 +115,19 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     )
 
     val newControl = Control(Button(
-        i18n("New"), Icon("plus"), color = ElementColor.Primary, rounded = true
+        i18n("New Model"), Icon("plus"), color = ElementColor.Primary
     ) { new() })
 
-    val importControl = Control(Button(
-        i18n("Import"), Icon("cloud-download-alt"), color = ElementColor.Primary, rounded = true
-    ) { import() })
+    val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Primary, onChange = ::import)
+
+    val importControl = Control(fileInput)
 
     val exportControl = Control(Button(
-        i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Primary, rounded = true
+        i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Link
     ) { export() })
 
     val tutorialControl = Control(Button(
-        i18n("Start Tutorial"), Icon("help"), color = ElementColor.Info, rounded = true
+        i18n("Tutorial"), Icon("question-circle"), color = ElementColor.Link
     ) { startTutorial() })
 
     val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
@@ -192,8 +196,18 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun import() {
-        TODO("import")
+    fun import(_: FileInput, files: FileList?) {
+        val selectedFile = files?.get(0)
+        if (selectedFile != null) {
+            val reader = FileReader()
+            reader.onload = {
+                val text: String = reader.result as String
+                val result = Json.decodeFromString<ModelAndSimulation>(text)
+                setModel(GrainModelDescription("", DescriptionInfo(), "", result.model))
+                setSimulation(SimulationDescription("", DescriptionInfo(), "", null, result.simulation))
+            }
+            reader.readAsText(selectedFile)
+        }
     }
 
     val modelNeedsSaving get() = modelUndoRedo.changed(model) || model.id.isEmpty()
@@ -203,7 +217,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun export(after: () -> Unit = {}) {
         val exported = ModelAndSimulation(model.model, simulation.simulation)
         val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), exported))
-        download("${model.name}.centyllion", href)
+        download("model.centyllion", href)
         after()
     }
 

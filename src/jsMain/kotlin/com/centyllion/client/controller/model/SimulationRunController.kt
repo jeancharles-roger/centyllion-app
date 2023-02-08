@@ -34,7 +34,6 @@ class SimulationRunController(
             currentSimulator = Simulator(context, new)
             simulationViewController.data = currentSimulator
             applicables.context = currentSimulator
-            asset3dController.data = new.assets
             running = false
             grainChart.data = createGrainPlots()
             fieldChart.data = createFieldPlots()
@@ -65,8 +64,6 @@ class SimulationRunController(
     override var readOnly: Boolean by observable(readOnly) { _, old, new ->
         if (old != new) {
             simulationViewController.readOnly = new
-            asset3dController.readOnly = new
-            assetsColumn.hidden = new
         }
     }
 
@@ -257,17 +254,6 @@ class SimulationRunController(
         )
     }
 
-    val asset3dController =
-        noContextColumnsController(simulation.assets) { asset, previous ->
-            previous ?: Asset3dEditController(asset, readOnly, page).wrap { controller ->
-                controller.onUpdate = { old, new, _ ->
-                    if (old != new) data = data.updateAsset(old, new)
-                }
-                controller.onDelete = { data = data.dropAsset(it) }
-                Column(controller, size = ColumnSize.Half)
-            }
-        }
-
     val selectorColumn = Column(
         searchController,
         fieldTitle,
@@ -302,15 +288,6 @@ class SimulationRunController(
         multiline = true
     )
 
-    val assetsColumn = Column(
-        Level(
-            left = listOf(Title(page.i18n("Assets"), TextSize.S4)),
-            right = listOf(addAsset3dButton, settingsButton),
-            mobile = true
-        ),
-        asset3dController, desktopSize = ColumnSize.Full
-    ).apply { hidden = readOnly }
-
     val simulationColumn = Column(simulationColumns, size = ColumnSize.TwoThirds)
 
     val applicables = columnsController(
@@ -322,7 +299,6 @@ class SimulationRunController(
         simulationColumn,
         Column(applicables, size = ColumnSize.Full),
         Column(chartContainer, size = ColumnSize.Full),
-        assetsColumn,
         multiline = true, centered = true
     )
 

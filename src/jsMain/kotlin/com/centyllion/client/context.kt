@@ -27,10 +27,4 @@ interface AppContext {
     val events: List<ClientEvent>
 
     fun notify(event: ClientEvent)
-
-    /** Open the given [page] */
-    fun openPage(
-        page: Page, parameters: Map<String, String> = emptyMap(),
-        clearParameters: Boolean = true, register: Boolean = true
-    )
 }

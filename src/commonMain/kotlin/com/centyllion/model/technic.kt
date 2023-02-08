@@ -2,8 +2,7 @@ package com.centyllion.model
 
 import kotlinx.serialization.Serializable
 
-val emptyUser = User("", "", "", null)
-val emptyAsset = Asset("", "", emptyList(), "")
+val emptyUser = User("", "", "")
 
 fun <T> emptyResultPage() = ResultPage<T>(emptyList(), 0, 0)
 
@@ -42,15 +41,7 @@ data class User (
     override val id: String,
     val name: String,
     val username: String,
-    val details: UserDetails? = null
 ): Ided
-
-@Serializable
-data class UserDetails(
-    val keycloakId: String,
-    val email: String,
-    val tutorialDone: Boolean = false
-)
 
 @Serializable
 data class UserOptions(

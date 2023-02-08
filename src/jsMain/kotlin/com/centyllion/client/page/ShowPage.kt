@@ -159,7 +159,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         it.root.onclick = {
             modelController.edit(this.source)
             modelController.scrollToEdited()
-            Unit
         }
     }
 
@@ -193,16 +192,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val moreControl = Control(moreDropdown)
 
-    val deleteModelItem = createMenuItem(
-        moreDropdown, i18n("Delete Model"), "trash", TextColor.Danger
-    ) { deleteModel() }
-
-    val deleteSimulationItem = createMenuItem(
-        moreDropdown, i18n("Delete Simulation"), "trash", TextColor.Danger
-    ) { deleteSimulation() }
-
-    val deleteDivider = createMenuDivider()
-
     val downloadModelItem = createMenuItem(
         moreDropdown, i18n("Download Model"), "download", TextColor.Primary
     ) { downloadModel() }
@@ -230,20 +219,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ).apply { icon?.spin = true }
 
     val moreDropdownItems = listOfNotNull(
-        deleteModelItem, deleteSimulationItem, deleteDivider,
         newSimulationItem, saveThumbnailItem, downloadScreenshotItem, simulationDivider,
         downloadModelItem, downloadSimulationItem
     )
-
-    val cloneModelButton = Button(
-        i18n("Clone Model"), Icon("clone"), ElementColor.Primary,
-        rounded = true, outlined = true
-    ) {cloneModel() }
-
-    val cloneSimulationButton = Button(
-        i18n("Clone Simulation"), Icon("clone"), ElementColor.Primary,
-        rounded = true, outlined = true
-    ) {cloneSimulation() }
 
     val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
     val simulationPage = TabPage(TabItem(i18n("Simulation"), "play"), simulationController)
@@ -309,7 +287,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         mobile = true
                     )
                 ),
-                center = listOf(cloneModelButton)
+                center = listOf()
             ),
             modelDescriptionController,
             size = ColumnSize.Half
@@ -319,7 +297,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 left = listOf(
                     Level(center = listOf(Div(simulationNameController), simulationUserLabel), mobile = true)
                 ),
-                center = listOf(cloneSimulationButton)
+                center = listOf()
             ),
             simulationDescriptionController,
             size = ColumnSize.Half
@@ -347,7 +325,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         val params = URLSearchParams(window.location.search)
         val simulationId = params.get("simulation")
         val modelId = params.get("model")
-        val tutorial = params.get("tutorial")
 
         // Selects model tab if there no simulation provided
         if (simulationId == null) editionTab.selectedPage = modelPage
@@ -355,13 +332,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         // selects the pair simulation and model to run
         val result = when {
             // if there is a simulation id, use it to find the model
-            simulationId != null && simulationId.isNotEmpty() ->
+            !simulationId.isNullOrEmpty() ->
                 appContext.api.fetchSimulation(simulationId).then { simulation ->
                     appContext.api.fetchGrainModel(simulation.modelId).then { simulation to it }
                 }.then { it }
 
             // if there is a model id, use it to list all simulation and take the first one
-            modelId != null && modelId.isNotEmpty() ->
+            !modelId.isNullOrEmpty() ->
                 appContext.api.fetchGrainModel(modelId).then { model ->
                     fetchSimulations(model.id).then { simulations ->
                         (simulations.content.firstOrNull() ?: emptySimulationDescription) to model
@@ -374,12 +351,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         result.then {
             setModel(it.second)
             setSimulation(it.first)
-
-            if (
-                (tutorial != null || appContext.me?.details?.tutorialDone != true) &&
-                it.second == emptyGrainModelDescription
-            ) { startTutorial() }
-
         }.catch {
             error(it)
         }
@@ -387,8 +358,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     /** Retrieves simulation description or model description instead if blank and strips the markdown */
     fun descriptionText() = renderMarkdown(
-        if (simulationDescriptionController.data.isNotBlank()) simulationDescriptionController.data
-        else modelDescriptionController.data
+        simulationDescriptionController.data
+            .ifBlank { modelDescriptionController.data }
     ).replace(Regex("<[^>]*>"), "").trim()
 
     fun startTutorial() {
@@ -454,10 +425,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                         saveCurrentThumbnail()
                         message("Model %0 and simulation %1 saved.", model.model.name, simulation.simulation.name)
                         after()
-                        Unit
                     }.catch {
                         this.error(it)
-                        Unit
                     }
             }
             else -> {
@@ -467,10 +436,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     api.updateGrainModel(model).then {
                         setModel(model)
                         message("Model %0 saved.", model.model.name)
-                        Unit
                     }.catch {
                         this.error(it)
-                        Unit
                     }
                 }
 
@@ -483,10 +450,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                             saveCurrentThumbnail()
                             message("Simulation %0 saved.", simulation.simulation.name)
                             after()
-                            Unit
                         }.catch {
                             this.error(it)
-                            Unit
                         }
                     }
                     simulationUndoRedo.changed(simulation) -> {
@@ -497,10 +462,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                             refreshButtons()
                             message("Simulation %0 saved.", simulation.simulation.name)
                             after()
-                            Unit
                         }.catch {
                             this.error(it)
-                            Unit
                         }
                     }
                     else -> after()
@@ -509,27 +472,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun cloneModel() {
-        // checks if something needs saving before creating a new simulation
-        changeModelOrSimulation {
-            if (it) {
-                // creates cloned model and cloned simulation
-                val clonedModel = emptyGrainModelDescription.copy(
-                    model = model.model.copy(name = model.model.name + " cloned")
-                )
-                val clonedSimulation = emptySimulationDescription.copy(
-                    modelId = clonedModel.id,
-                    simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
-                )
-                setModel(clonedModel)
-                setSimulation(clonedSimulation)
-
-                // closes the action
-                editionTab.selectedPage = modelPage
-                message("Model and simulation cloned.")
-            }
-        }
-    }
 
     fun downloadModel() {
         val href = stringHref(Json.encodeToString(GrainModel.serializer(), model.model))
@@ -544,62 +486,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun cloneSimulation() = changeModelOrSimulation {
-        if (it) {
-            val cloned = emptySimulationDescription.copy(
-                modelId = model.id,
-                simulation = simulation.simulation.copy(name = simulation.simulation.name + " cloned")
-            )
-            setSimulation(cloned)
-
-            editionTab.selectedPage = simulationPage
-            message("Simulation cloned.")
-        }
-    }
-
     fun downloadSimulation() {
         val href = stringHref(Json.encodeToString(Simulation.serializer(), simulation.simulation))
         download("${simulation.name}.json", href)
-    }
-
-    fun deleteModel() {
-        modalDialog(
-            i18n("Delete model. Are you sure ?"),
-            listOf(
-                p(i18n("You're about to delete the model '%0' and its simulations.", model.label)),
-                p(i18n("This action can't be undone."), "has-text-weight-bold")
-            ),
-            textButton(i18n("Yes"), ElementColor.Danger) {
-                appContext.api.deleteGrainModel(model).then {
-                    // sets empty model and simulation to prevent the dialog to save when changed
-                    setModel(emptyGrainModelDescription)
-                    setSimulation(emptySimulationDescription)
-
-                    appContext.openPage(showPage)
-                    message("Model %0 deleted.", model.label)
-                }
-            },
-            textButton(i18n("No"))
-        )
-    }
-
-    fun deleteSimulation() {
-        modalDialog(
-            i18n("Delete simulation. Are you sure ?"),
-            listOf(
-                p(i18n("You're about to delete the simulation '%0'.", simulation.label)),
-                p(i18n("This action can't be undone."), "has-text-weight-bold")
-            ),
-            textButton(i18n("Yes"), ElementColor.Danger) {
-                appContext.api.deleteSimulation(simulation).then {
-                    message("Simulation %0 deleted.", simulation.label)
-                    fetchSimulations(model.id)
-                }.then {
-                    setSimulation(it.content.firstOrNull() ?: emptySimulationDescription)
-                }
-            },
-            textButton(i18n("No"))
-        )
     }
 
     fun refreshButtons() {
@@ -627,8 +516,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     fun refreshMoreButtons() {
-        deleteModelItem.disabled = appContext.me == null || model.id.isEmpty()
-        deleteSimulationItem.disabled = appContext.me == null || simulation.id.isEmpty()
         saveThumbnailItem.disabled = appContext.me == null
 
         if (model.id.isNotEmpty()) {
@@ -638,7 +525,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 if (it.content.isNotEmpty()) {
                     moreDropdown.items = moreDropdownItems + createMenuDivider() + it.content.map { current ->
                         createMenuItem(moreDropdown, current.label, current.icon, disabled = current == simulation) {
-                            changeModelOrSimulation() {
+                            changeModelOrSimulation {
                                 if (it) {
                                     setSimulation(current)
                                     editionTab.selectedPage = simulationPage
@@ -675,7 +562,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    override fun onExit() = Promise<Boolean> { resolve, _ ->
+    override fun onExit() = Promise { resolve, _ ->
         changeModelOrSimulation(true) {
             if (it) tutorialLayer?.stop()
             resolve(it)

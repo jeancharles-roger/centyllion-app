@@ -1,26 +1,19 @@
 package com.centyllion.client.page
 
 import bulma.*
-import com.centyllion.client.*
+import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.GrainModelEditController
 import com.centyllion.client.controller.model.SimulationRunController
-import com.centyllion.client.controller.model.TagsController
-import com.centyllion.client.controller.utils.EditableMarkdownController
-import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
+import com.centyllion.client.download
+import com.centyllion.client.stringHref
+import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
 import com.centyllion.model.Field
-import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.html.a
-import kotlinx.html.dom.create
-import kotlinx.html.i
-import kotlinx.html.js.div
-import kotlinx.html.span
 import kotlinx.serialization.json.Json
-import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
 import kotlin.js.Promise
@@ -34,30 +27,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val api = appContext.api
 
-    val isModelReadOnly get() =
-        model.id.isNotEmpty() &&
-        model.info.user?.id != appContext.me?.id
-
     private var problems: List<Problem> = emptyList()
 
     var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
         if (new != old) {
             modelUndoRedo.update(old, new)
-
-            val readonly = isModelReadOnly
-            modelController.readOnly = readonly
+            modelController.readOnly = false
             modelController.data = new.model
-            modelNameController.readOnly = readonly
-            modelNameController.data = new.model.name
-            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
-            modelUserLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
-
-            modelDescriptionController.readOnly = readonly
-            modelDescriptionController.data = new.model.description
-
-            tagsController.readOnly = readonly
-            tagsController.data = new.tags
-
             simulationController.context = new.model
 
             // handles problems display
@@ -66,61 +42,22 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             // problems box is visible is there are problems and was already open
             problemsColumn.hidden = problemsColumn.hidden || problems.isEmpty()
             problemsTable.body = problems.map { it.toBulma() }
-
             refreshButtons()
         }
     }
 
     private val modelUndoRedo = UndoRedoSupport(model) { model = it }
 
-    val isSimulationReadOnly get() =
-        simulation.id.isNotEmpty() &&
-        simulation.info.user?.id != appContext.me?.id
-
-    var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
+   var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
             simulationUndoRedo.update(old, new)
-
-            val readonly = isSimulationReadOnly
-            simulationController.readOnly = readonly
+            simulationController.readOnly = false
             simulationController.data = new.simulation
-            simulationNameController.readOnly = readonly
-            simulationNameController.data = new.simulation.name
-            val user = new.info.user?.let { if (it.id != appContext.me?.id) it.name else null }
-            simulationUserLabel.text = user?.let { i18n("by %0", it) } ?: i18n("by me")
-
-            simulationDescriptionController.readOnly = readonly
-            simulationDescriptionController.data = new.simulation.description
             refreshButtons()
-
-            twitterShare.content.href = twitterHref(descriptionText())
-            facebookShare.content.href = facebookHref()
-            linkedInShare.content.href = linkedInHref(descriptionText())
         }
     }
 
     private val simulationUndoRedo = UndoRedoSupport(simulation) { simulation = it }
-
-    val modelNameController = EditableStringController(model.model.name, i18n("Model Name")) { _, new, _ ->
-        model = model.copy(model = model.model.copy(name = new))
-    }
-
-    val modelUserLabel = Help()
-
-    val modelDescriptionController = EditableMarkdownController(model.model.description, i18n("Model Description"))
-    { _, new, _ -> model = model.copy(model = model.model.copy(description = new)) }
-
-    val tagsController = TagsController(model.tags, appContext)
-    { old, new, _ -> if (old != new) model = model.copy(tags = new) }
-
-    val simulationNameController = EditableStringController(simulation.simulation.name, i18n("Simulation Name"), isSimulationReadOnly)
-    { _, new, _ -> simulation = simulation.copy(simulation = simulation.simulation.copy(name = new)) }
-
-    val simulationDescriptionController = EditableMarkdownController(
-        simulation.simulation.description, i18n("Simulation Description"), isSimulationReadOnly
-    ) { _, new, _ -> simulation = simulation.copy(simulation = simulation.simulation.copy(description = new)) }
-
-    val simulationUserLabel = Help()
 
     val problemIcon = iconButton(
         Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
@@ -168,7 +105,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, this, isSimulationReadOnly,
+    val simulationController = SimulationRunController(emptySimulation, emptyModel, this, false,
         { behaviour, speed, _ ->
             message("Updated speed for %0 to %1.", behaviour.name, speed.toFixed())
             val newBehaviour = behaviour.copy(probability = speed)
@@ -229,45 +166,14 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val undoControl = Control(modelUndoRedo.undoButton)
     val redoControl = Control(modelUndoRedo.redoButton)
 
-    val twitterShare = ControlWrapper(document.create.a(
-        href = twitterHref(descriptionText()),
-        target = "_blank",
-        classes = "button is-rounded is-primary"
-    ) {
-        rel = "noopener"
-        attributes["style"] = "background-color: #55acee;"
-        span(classes = "icon") { i("fab fa-twitter fa-lg") }
-    } as HTMLAnchorElement)
-
-    val facebookShare = ControlWrapper(document.create.a(
-        href = facebookHref(),
-        target = "_blank",
-        classes = "button is-rounded is-primary"
-    ) {
-        rel = "noopener"
-        attributes["style"] = "background-color: #3b5998;"
-        span(classes = "icon") { i("fab fa-facebook fa-lg") }
-    } as HTMLAnchorElement)
-
-    val linkedInShare = ControlWrapper(document.create.a(
-        href = linkedInHref(descriptionText()),
-        target = "_blank",
-        classes = "button is-rounded is-primary"
-    ) {
-        rel = "noopener"
-        attributes["style"] = "background-color: #0077b5;"
-        span(classes = "icon") { i("fab fa-linkedin fa-lg") }
-    } as HTMLAnchorElement)
-
-
     private val readOnlyTools = listOf(
-        moreControl, twitterShare, facebookShare, linkedInShare,
+        moreControl,
         newSimulationItem, downloadScreenshotItem, simulationDivider,
         downloadModelItem, downloadSimulationItem
     )
 
     val tools = BField(
-        undoControl, redoControl, saveControl, twitterShare, facebookShare, linkedInShare, moreControl,
+        undoControl, redoControl, saveControl, moreControl,
         grouped = true, groupedMultiline = true
     )
 
@@ -279,29 +185,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     }
 
     val container: BulmaElement = Columns(
-        Column(
-            Level(
-                left = listOf(
-                    Level(
-                        center = listOf(problemIcon, Div(modelNameController), modelUserLabel),
-                        mobile = true
-                    )
-                ),
-                center = listOf()
-            ),
-            modelDescriptionController,
-            size = ColumnSize.Half
-        ),
-        Column(
-            Level(
-                left = listOf(
-                    Level(center = listOf(Div(simulationNameController), simulationUserLabel), mobile = true)
-                ),
-                center = listOf()
-            ),
-            simulationDescriptionController,
-            size = ColumnSize.Half
-        ),
+
         Column(Level(center = listOf(tools)), size = ColumnSize.Full),
         problemsColumn,
         Column(editionTab, size = ColumnSize.Full),
@@ -311,15 +195,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     init {
-        val modelReadonly = isModelReadOnly
-        modelNameController.readOnly = modelReadonly
-        modelDescriptionController.readOnly = modelReadonly
-        modelController.readOnly = modelReadonly
-
-        val simulationReadOnly = isSimulationReadOnly
-        simulationController.readOnly = simulationReadOnly
-        simulationNameController.readOnly = simulationReadOnly
-        simulationDescriptionController.readOnly = simulationReadOnly
+        modelController.readOnly = false
+        simulationController.readOnly = false
 
         // retrieves model and simulation to load
         val params = URLSearchParams(window.location.search)
@@ -355,12 +232,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             error(it)
         }
     }
-
-    /** Retrieves simulation description or model description instead if blank and strips the markdown */
-    fun descriptionText() = renderMarkdown(
-        simulationDescriptionController.data
-            .ifBlank { modelDescriptionController.data }
-    ).replace(Regex("<[^>]*>"), "").trim()
 
     fun startTutorial() {
         if (tutorialLayer == null) {
@@ -494,12 +365,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     fun refreshButtons() {
         when (editionTab.selectedPage) {
             modelPage -> {
-                setReadonlyControls(isModelReadOnly)
+                setReadonlyControls(false)
                 undoControl.body = modelUndoRedo.undoButton
                 redoControl.body = modelUndoRedo.redoButton
             }
             simulationPage -> {
-                setReadonlyControls(isSimulationReadOnly)
+                setReadonlyControls(false)
                 undoControl.body = simulationUndoRedo.undoButton
                 redoControl.body = simulationUndoRedo.redoButton
             }
@@ -569,10 +440,4 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-}
-
-class ControlWrapper<Html : HTMLElement>(val content: Html) : FieldElement {
-    override val root: HTMLElement = document.create.div(classes = "control").apply {
-        appendChild(content)
-    }
 }

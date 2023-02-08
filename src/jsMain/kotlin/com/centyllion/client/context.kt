@@ -4,7 +4,6 @@ import bulma.ElementColor
 import bulma.NavBar
 import com.centyllion.i18n.Locale
 import com.centyllion.model.User
-import keycloak.KeycloakInstance
 
 data class ClientEvent(
     val date: String,
@@ -17,10 +16,6 @@ interface AppContext {
     val locale: Locale
 
     val navBar: NavBar
-
-    val keycloak: KeycloakInstance
-
-    fun hasRole(role: String) = keycloak.hasRealmRole(role)
 
     val me: User?
 

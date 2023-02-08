@@ -260,8 +260,10 @@ tasks {
             centyllionWebroot.deleteRecursively()
             centyllionWebroot.mkdirs()
 
-            jsFile.copyTo(centyllionWebroot.resolve("$base.$sum.js"))
-            mapFile.copyTo(centyllionWebroot.resolve("$base.$sum.js.map"))
+            //jsFile.copyTo(centyllionWebroot.resolve("$base.$sum.js"))
+            //mapFile.copyTo(centyllionWebroot.resolve("$base.$sum.js.map"))
+            jsFile.copyTo(centyllionWebroot.resolve("$base.js"))
+            mapFile.copyTo(centyllionWebroot.resolve("$base.js.map"))
         }
     }
 

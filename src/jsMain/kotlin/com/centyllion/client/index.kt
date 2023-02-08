@@ -4,9 +4,6 @@ import bulma.*
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.i18n.Locale
 import com.centyllion.model.User
-import keycloak.BasicKeycloakInitOptions
-import keycloak.Keycloak
-import keycloak.KeycloakInstance
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.serialization.Serializable
@@ -39,28 +36,7 @@ fun createNavBar(locale: Locale) = NavBar(
     transparent = true, color = ElementColor.Primary
 )
 
-fun startApp(page: Page?, context: AppContext) {
-    val keycloak = context.keycloak
-    val navBar = context.navBar
-
-    // updates login link
-    if (keycloak.tokenParsed != null) {
-        val token = keycloak.tokenParsed.asDynamic()
-        navBar.end += NavBarLinkItem(
-            token.name as String? ?: token.preferred_username as String? ?: context.i18n("Anonymous"),
-            keycloak.createAccountUrl()
-        )
-        navBar.end += NavBarLinkItem(context.i18n("Logout"), keycloak.createLogoutUrl())
-    } else {
-        navBar.end += NavBarLinkItem(context.i18n("Register"), keycloak.createRegisterUrl())
-        navBar.end += NavBarLinkItem(context.i18n("Log In"), keycloak.createLoginUrl())
-    }
-
-    // listens to pop state
-    window.addEventListener("popstate", {
-        findPageInUrl()?.let { context.openPage(it, register = false) }
-    })
-
+fun startApp(context: AppContext) {
     // adds menu
     context.navBar.start += pages
         .filter { it.header && it.authorized(context) }
@@ -73,8 +49,7 @@ fun startApp(page: Page?, context: AppContext) {
 
     console.log("Starting function")
 
-    val selectedPage = page ?: if (context.me != null) homePage else explorePage
-    context.openPage(selectedPage, register = false)
+    context.openPage(showPage, register = false)
 }
 
 fun appendErrorMessage(root: HTMLElement, throwable: Throwable?) {
@@ -105,9 +80,7 @@ fun index() {
     val root = document.querySelector(contentSelector) as HTMLElement
 
     // creates keycloak instance
-    val keycloak = Keycloak("/keycloak.json")
-
-    val api = Api(keycloak)
+    val api = Api()
     api.addCss()
 
     api.fetchLocales().then { locales ->
@@ -118,53 +91,33 @@ fun index() {
             val navBar = createNavBar(locale)
             document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
 
-            val page = findPageInUrl()
-            val options = BasicKeycloakInitOptions(
-                promiseType = "native",
-                onLoad = if (page?.needUser == true) "login-required" else "check-sso",
-                checkLoginIframe = false,
-                timeSkew = 10
+            val user = User("root", "Me", "The Doctor")
+            // creates context
+            val context = BrowserContext(locale, navBar, user, api)
+
+            // adds add model button in navbar
+            navBar.start += NavBarContentItem(
+                Button(locale.i18n("Model"), Icon("plus"), ElementColor.Link, size = Size.Small) {
+                    context.openPage(showPage)
+                }
             )
-            val t = keycloak.init(options)
-            console.log(t)
-            t.then { api.fetchMe() }
-                .then { user ->
-                    // creates context
-                    val context = BrowserContext(locale, navBar, keycloak, user, api)
 
-                    // adds add model button in navbar
-                    navBar.start += NavBarContentItem(
-                        Button(locale.i18n("Model"), Icon("plus"), ElementColor.Link, size = Size.Small) {
-                            context.openPage(showPage)
-                        }
-                    )
+            navBar.end = listOf(NavBarIconItem(Icon("question-circle")) {
+                context.openPage(showPage, mapOf("tutorial" to ""))
+            }.apply {
+                setTooltip(locale.i18n("Start tutorial"))
+            }) + navBar.end
 
-                    navBar.end = listOf(NavBarIconItem(Icon("question-circle")) {
-                        context.openPage(showPage, mapOf("tutorial" to ""))
-                    }.apply {
-                        setTooltip(locale.i18n("Start tutorial"))
-                    }) + navBar.end
-
-                    startApp(page, context)
-
-                }.catch { appendErrorMessage(root, it) }
-
-        }.catch {
-            console.error(it)
-            appendErrorMessage(root, "Locale file for $localeName couldn't be loaded")
+            startApp(context)
         }
-
-    }.catch {appendErrorMessage(root, "Locales file couldn't be loaded") }
+    }
 }
-
-fun findPageInUrl(): Page? = pages.find { it.id == window.location.pathname }
 
 class BrowserContext(
     override val locale: Locale,
     override val navBar: NavBar,
-    override val keycloak: KeycloakInstance,
     override val me: User?,
-    override val api: Api = Api(keycloak)
+    override val api: Api = Api()
 ) : AppContext {
 
     private var addedNavbarEndItems: List<BulmaElement> = emptyList()

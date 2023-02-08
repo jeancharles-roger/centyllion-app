@@ -10,7 +10,6 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
-import com.centyllion.common.adminRole
 import com.centyllion.model.*
 import com.centyllion.model.Field
 import kotlinx.browser.document
@@ -37,8 +36,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val isModelReadOnly get() =
         model.id.isNotEmpty() &&
-        model.info.user?.id != appContext.me?.id &&
-        !appContext.hasRole(adminRole)
+        model.info.user?.id != appContext.me?.id
 
     private var problems: List<Problem> = emptyList()
 
@@ -77,8 +75,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val isSimulationReadOnly get() =
         simulation.id.isNotEmpty() &&
-        simulation.info.user?.id != appContext.me?.id &&
-        !appContext.hasRole(adminRole)
+        simulation.info.user?.id != appContext.me?.id
 
     var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
         if (new != old) {
@@ -578,7 +575,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     setModel(emptyGrainModelDescription)
                     setSimulation(emptySimulationDescription)
 
-                    appContext.openPage(homePage)
+                    appContext.openPage(showPage)
                     message("Model %0 deleted.", model.label)
                 }
             },

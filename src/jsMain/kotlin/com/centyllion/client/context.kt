@@ -1,9 +1,7 @@
 package com.centyllion.client
 
 import bulma.ElementColor
-import bulma.NavBar
 import com.centyllion.i18n.Locale
-import com.centyllion.model.User
 
 data class ClientEvent(
     val date: String,
@@ -14,10 +12,6 @@ data class ClientEvent(
 interface AppContext {
 
     val locale: Locale
-
-    val navBar: NavBar
-
-    val me: User?
 
     val api: Api
 

@@ -3,12 +3,9 @@ package com.centyllion.client
 import bulma.*
 import com.centyllion.client.page.ShowPage
 import com.centyllion.i18n.Locale
-import com.centyllion.model.User
-import com.centyllion.model.emptyGrainModelDescription
-import com.centyllion.model.emptySimulationDescription
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLBodyElement
 import org.w3c.dom.get
 
 fun createNavBar(locale: Locale) = NavBar(
@@ -21,17 +18,6 @@ fun createNavBar(locale: Locale) = NavBar(
     end = listOf(),
     transparent = true, color = ElementColor.Primary
 )
-
-fun appendErrorMessage(root: HTMLElement, message: String) {
-    root.appendChild(
-        Message(
-            listOf(span("Error")),
-            listOf(span(message)),
-            color = ElementColor.Danger
-        ).root
-    )
-    console.error("Error: $message")
-}
 
 const val contentSelector = "section.cent-main"
 
@@ -49,32 +35,13 @@ fun index() {
         console.log("Loading locale $localeName for ${window.navigator.language}")
         api.fetchLocale(localeName).then { locale ->
 
-            val navBar = createNavBar(locale)
-            document.body?.insertAdjacentElement(Position.AfterBegin.value, navBar.root)
-
-            val user = User("root", "Me", "The Doctor")
-            val context = BrowserContext(locale, navBar, user, api)
+            val context = BrowserContext(locale, api)
             val page = ShowPage(context)
 
-            // adds add model button in navbar
-            navBar.start += NavBarContentItem(
-                Button(locale.i18n("Model"), Icon("plus"), ElementColor.Link, size = Size.Small) {
-                    page.model = emptyGrainModelDescription
-                    page.simulation = emptySimulationDescription
-                }
-            )
-
-            navBar.end += NavBarIconItem(Icon("question-circle")) {
-                page.startTutorial()
-            }.apply {
-                setTooltip(locale.i18n("Start tutorial"))
-            }
-
-            showInfo(context)
             showVersion(context.api)
 
             // replace
-            val root = document.querySelector(contentSelector) as HTMLElement
+            val root = document.body as HTMLBodyElement
             while (root.hasChildNodes()) root.removeChild(root.childNodes[0]!!)
             root.appendChild(page.root)
         }
@@ -83,8 +50,6 @@ fun index() {
 
 class BrowserContext(
     override val locale: Locale,
-    override val navBar: NavBar,
-    override val me: User?,
     override val api: Api = Api(),
     private val storedEvents: MutableList<ClientEvent> = mutableListOf()
 ) : AppContext {

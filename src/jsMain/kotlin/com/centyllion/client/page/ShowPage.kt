@@ -196,7 +196,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    fun import(_: FileInput, files: FileList?) {
+    fun import(input: FileInput, files: FileList?) {
         val selectedFile = files?.get(0)
         if (selectedFile != null) {
             val reader = FileReader()

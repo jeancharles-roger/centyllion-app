@@ -115,12 +115,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     )
 
     val newControl = Control(Button(
-        i18n("New Model"), Icon("plus"), color = ElementColor.Primary
+        i18n("New Model"), Icon("plus"), color = ElementColor.Link
     ) { new() })
 
-    val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Primary, onChange = ::import)
-
-    val importControl = Control(fileInput)
+    val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Link, onChange = ::import)
 
     val exportControl = Control(Button(
         i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Link
@@ -137,7 +135,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val redoControl = Control(modelUndoRedo.redoButton)
 
     val tools = BField(
-        newControl, importControl, undoControl, redoControl, exportControl, tutorialControl,
+        newControl,
+        Control(fileInput),
+        undoControl, redoControl,
+        exportControl, tutorialControl,
         grouped = true, groupedMultiline = true
     )
 

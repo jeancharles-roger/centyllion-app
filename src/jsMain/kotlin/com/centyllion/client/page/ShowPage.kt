@@ -160,11 +160,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     override val root: HTMLElement = container.root
 
     fun startTutorial() {
-        if (tutorialLayer == null) {
-            // Activates tutorial
-            tutorialLayer = TutorialLayer(BacteriasTutorial(this)) { tutorialLayer = null }
-            tutorialLayer?.start()
-        }
+        // Activates tutorial
+        tutorialLayer = TutorialLayer(BacteriasTutorial(this)) { tutorialLayer = null }
+        tutorialLayer?.start()
     }
 
     fun setModel(model: GrainModelDescription) {

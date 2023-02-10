@@ -44,6 +44,8 @@ val emptySimulation = createSimulation("")
 val emptySimulationDescription =
     SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
+val emptyModelAndSimulation = ModelAndSimulation(emptyModel, emptySimulation)
+
 fun <T> List<T>.identityFirstIndexOf(value: T): Int {
     val identity = this.indexOfFirst { it === value }
     return if (identity < 0) this.indexOf(value) else identity
@@ -670,4 +672,35 @@ data class SimulationDescription(
 data class ModelAndSimulation(
     val model: GrainModel,
     val simulation: Simulation
-)
+) {
+
+    fun updateModel(model: GrainModel): ModelAndSimulation = copy(model = model)
+
+    fun updateGrain(old: Grain, new: Grain): ModelAndSimulation =
+        updateModel(model.updateGrain(old, new))
+
+    fun addGrain(grain: Grain): ModelAndSimulation =
+        updateModel(model.copy(grains = model.grains + grain))
+
+    fun dropGrain(grain: Grain): ModelAndSimulation =
+        updateModel(model.dropGrain(grain))
+
+    fun addField(field: Field): ModelAndSimulation =
+        updateModel(model.copy(fields = model.fields + field))
+
+    fun updateField(old: Field, new: Field): ModelAndSimulation =
+        updateModel(model.updateField(old, new))
+
+    fun dropField(field: Field): ModelAndSimulation =
+        updateModel(model.dropField(field))
+
+    fun addBehaviour(behaviour: Behaviour): ModelAndSimulation =
+        updateModel(model.copy(behaviours = model.behaviours + behaviour))
+
+    fun updateBehaviour(old: Behaviour, new: Behaviour): ModelAndSimulation =
+        updateModel(model.updateBehaviour(old, new))
+
+    fun dropBehaviour(behaviour: Behaviour): ModelAndSimulation =
+        updateModel(model.dropBehaviour(behaviour))
+
+}

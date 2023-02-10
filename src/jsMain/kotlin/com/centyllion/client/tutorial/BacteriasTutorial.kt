@@ -55,6 +55,7 @@ class BacteriasTutorial(
                 originalName = bacteriaGrain?.name
             }
         ),
+        /*
         TutorialStep(
             i18n("Change the name"), listOf(span(i18n("You can change the grain name, for instance to 'bact'."))),
             {
@@ -148,6 +149,7 @@ class BacteriasTutorial(
             { page.simulationController.simulator.step > 25 },
             { page.simulationController.stop() }
         )
+         */
     )
 
     override val conclusion: List<BulmaElement> = listOf(

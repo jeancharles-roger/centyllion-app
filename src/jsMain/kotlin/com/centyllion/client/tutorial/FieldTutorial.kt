@@ -43,8 +43,8 @@ class FieldTutorial(
     override val steps: List<TutorialStep> = listOf(
         TutorialStep(
             i18n("Go to model"), listOf(span(i18n("Open the model page to add a field."))),
-            { page.modelPage.title.root },
-            { page.editionTab.selectedPage == page.modelPage }
+            { page/*.modelPage.title*/.root },
+            { false /*page.editionTab.selectedPage == page.modelPage*/ }
         ),
         TutorialStep(
             i18n("Create a sugar field"),
@@ -57,6 +57,7 @@ class FieldTutorial(
             { page.model.model.fields.isNotEmpty() },
             { originalFieldName = page.model.model.fields.first().name }
         ),
+        /*
         TutorialStep(
             i18n("Change the name"), listOf(span(i18n("You can change the field name, for instance to 'sugar'."))),
             {
@@ -144,6 +145,7 @@ class FieldTutorial(
             { page.simulationController.simulator.step > 80 },
             { page.simulationController.stop() }
         )
+         */
     )
 
     override val conclusion: List<BulmaElement> = listOf(

@@ -35,8 +35,7 @@ import kotlin.properties.Delegates.observable
 
 class GrainModelEditController(
     val page: BulmaPage, model: GrainModel,
-    val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit =
-        { _, _, _ -> }
+    val onUpdate: (old: GrainModel, new: GrainModel, controller: GrainModelEditController) -> Unit = { _, _, _ -> }
 ) : NoContextController<GrainModel, Columns>() {
 
     override var data: GrainModel by observable(model) { _, old, new ->

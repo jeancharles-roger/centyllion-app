@@ -2,12 +2,10 @@ package com.centyllion.client.page
 
 import bulma.*
 import com.centyllion.client.AppContext
-import com.centyllion.client.controller.model.GrainModelEditController
-import com.centyllion.client.controller.model.SimulationRunController
+import com.centyllion.client.controller.model.ModelController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.download
 import com.centyllion.client.stringHref
-import com.centyllion.client.toFixed
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
@@ -29,12 +27,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private var problems: List<Problem> = emptyList()
 
-    var model: GrainModelDescription by observable(emptyGrainModelDescription) { _, old, new ->
+    var model: ModelAndSimulation by observable(emptyModelAndSimulation) { _, old, new ->
         if (new != old) {
-            modelUndoRedo.update(old, new)
-            modelController.readOnly = false
-            modelController.data = new.model
-            simulationController.context = new.model
+            undoRedo.update(old, new)
+            modelController.data = new
 
             // handles problems display
             problems = model.model.diagnose(appContext.locale)
@@ -46,18 +42,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
-    private val modelUndoRedo = UndoRedoSupport(model) { model = it }
-
-   var simulation: SimulationDescription by observable(emptySimulationDescription) { _, old, new ->
-        if (new != old) {
-            simulationUndoRedo.update(old, new)
-            simulationController.readOnly = false
-            simulationController.data = new.simulation
-            refreshButtons()
-        }
-    }
-
-    private val simulationUndoRedo = UndoRedoSupport(simulation) { simulation = it }
+    private val undoRedo = UndoRedoSupport(model) { model = it }
 
     val problemIcon = iconButton(
         Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
@@ -94,25 +79,12 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         TableCell(body = arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
     ).also {
         it.root.onclick = {
-            modelController.edit(this.source)
-            modelController.scrollToEdited()
+            modelController.selected = this.source
+            modelController.scrollToSelected()
         }
     }
 
-    val modelController = GrainModelEditController(this, model.model) { old, new, _ ->
-        if (old != new) {
-            model = model.copy(model = new)
-        }
-    }
-
-    val simulationController = SimulationRunController(emptySimulation, emptyModel, this, false,
-        { behaviour, speed, _ ->
-            message("Updated speed for %0 to %1.", behaviour.name, speed.toFixed())
-            val newBehaviour = behaviour.copy(probability = speed)
-            model = model.copy(model = model.model.updateBehaviour(behaviour, newBehaviour))
-        },
-        { old, new, _ -> if (old != new) simulation = simulation.copy(simulation = new) }
-    )
+    val modelController = ModelController(this, model) { _, new, _ -> model = new }
 
     val newControl = Control(Button(
         i18n("New Model"), Icon("plus"), color = ElementColor.Link
@@ -128,32 +100,20 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         i18n("Tutorial"), Icon("question-circle"), color = ElementColor.Link
     ) { startTutorial() })
 
-    val modelPage = TabPage(TabItem(i18n("Model"), "boxes"), modelController)
-    val simulationPage = TabPage(TabItem(i18n("Simulation"), "play"), simulationController)
-
-    val undoControl = Control(modelUndoRedo.undoButton)
-    val redoControl = Control(modelUndoRedo.redoButton)
-
     val tools = BField(
         newControl,
         Control(fileInput),
-        undoControl, redoControl,
+        Control(undoRedo.undoButton), Control(undoRedo.redoButton),
         exportControl, tutorialControl,
         grouped = true, groupedMultiline = true
     )
 
-    val tabs = Tabs(boxed = true)
-
-    val editionTab = TabPages(modelPage, simulationPage, tabs = tabs, initialTabIndex = 1) {
-        if (it == simulationPage) simulationController.resize()
-        refreshButtons()
-    }
 
     val container: BulmaElement = Div(
         Columns(
             Column(Level(center = listOf(tools)), size = ColumnSize.Full),
             problemsColumn,
-            Column(editionTab, size = ColumnSize.Full),
+            Column(modelController, size = ColumnSize.Full),
             multiline = true, centered = true
         )
     )
@@ -166,31 +126,15 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         tutorialLayer?.start()
     }
 
-    fun setModel(model: GrainModelDescription) {
-        modelUndoRedo.reset(model)
+    fun setModel(model: ModelAndSimulation) {
+        undoRedo.reset(model)
         this.model = model
         refreshButtons()
     }
 
-    fun setSimulation(simulation: SimulationDescription) {
-        val cleaned = simulation.cleaned(model)
-        simulationUndoRedo.reset(cleaned)
-        this.simulation = cleaned
-        refreshButtons()
-    }
-
-    fun downloadScreenshot() {
-        simulationController.simulationViewController.screenshotURL().then {
-            val name = "${model.label} - ${simulation.label} - screenshot.webp"
-            download(name, it)
-        }
-    }
-
     fun new() = changeModelOrSimulation {accepted ->
         if (accepted) {
-            setModel(emptyGrainModelDescription)
-            setSimulation(emptySimulationDescription)
-            editionTab.selectedPage = simulationPage
+            setModel(emptyModelAndSimulation)
             message("New model.")
         }
     }
@@ -201,50 +145,34 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             val reader = FileReader()
             reader.onload = {
                 val text: String = reader.result as String
-                val result = Json.decodeFromString<ModelAndSimulation>(text)
-                setModel(GrainModelDescription("", DescriptionInfo(), "", result.model))
-                setSimulation(SimulationDescription("", DescriptionInfo(), "", null, result.simulation))
+                setModel(Json.decodeFromString(text))
             }
             reader.readAsText(selectedFile)
         }
     }
 
-    val modelNeedsSaving get() = modelUndoRedo.changed(model) || model.id.isEmpty()
+    val needsSaving get() = undoRedo.changed(model)
 
-    val simulationNeedsSaving get() = simulationUndoRedo.changed(simulation) || simulation.id.isEmpty()
+    private val jsonExporter = Json { prettyPrint = true }
 
     fun export(after: () -> Unit = {}) {
-        val exported = ModelAndSimulation(model.model, simulation.simulation)
-        val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), exported))
+        val json = jsonExporter.encodeToString(ModelAndSimulation.serializer(), model)
+        val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), model))
         download("model.centyllion", href)
         after()
     }
 
     fun refreshButtons() {
-        when (editionTab.selectedPage) {
-            modelPage -> {
-                undoControl.body = modelUndoRedo.undoButton
-                redoControl.body = modelUndoRedo.redoButton
-            }
-            simulationPage -> {
-                undoControl.body = simulationUndoRedo.undoButton
-                redoControl.body = simulationUndoRedo.redoButton
-            }
-        }
-
-        modelUndoRedo.refresh()
-        simulationUndoRedo.refresh()
+        undoRedo.refresh()
     }
 
     fun changeModelOrSimulation(dispose: Boolean = false, after: (Boolean) -> Unit = {}) {
         fun conclude(exit: Boolean) {
-            if (exit && dispose) simulationController.dispose()
+            if (exit && dispose) modelController.dispose()
             after(exit)
         }
 
-        val modelChanged = modelNeedsSaving && model != emptyGrainModelDescription
-        val simulationChanged = simulationNeedsSaving && simulation != emptySimulationDescription
-        if (modelChanged || simulationChanged) {
+        if (needsSaving) {
             modalDialog(i18n("Modifications not saved. Do you want to save ?"),
                 listOf(p(i18n("You're about to quit the page and some modifications haven't been saved."))),
                 textButton(i18n("Save"), ElementColor.Success) { export { conclude(true) } },

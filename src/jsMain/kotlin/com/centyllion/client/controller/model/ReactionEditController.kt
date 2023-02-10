@@ -25,8 +25,7 @@ class ReactionEditController(
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
             reactiveController.data = context.second.grainForId(data.reactiveId)
-            firstDirectionController.data = data.allowedDirection
-            extendedDirectionController.data = data.allowedDirection
+            directionController.data = data.allowedDirection
             productController.data = context.second.grainForId(data.productId)
             sourceReactiveController.data = data.sourceReactive
             onUpdate(old, new, this@ReactionEditController)
@@ -39,6 +38,7 @@ class ReactionEditController(
         if (old.second != new.second) {
             reactiveController.data = context.second.grainForId(data.reactiveId)
             reactiveController.context = new.second.grains
+            directionController.context = new.second
             productController.data = context.second.grainForId(data.productId)
             productController.context = new.second.grains
             refresh()
@@ -63,6 +63,8 @@ class ReactionEditController(
     { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
+
+    val directionController = DirectionController(context.first.sourceReactive, data.allowedDirection, context.second)
 
     val firstDirectionController = DirectionSetEditController(firstDirections, data.allowedDirection)
     { _, new, _ ->
@@ -91,7 +93,7 @@ class ReactionEditController(
 
     override val container  = TileParent(
         TileChild(reactiveController),
-        TileChild(Level(center = listOf(firstDirectionController, extendedDirectionController))),
+        TileChild(directionController),
         TileChild(productController),
         TileChild(sourceReactiveController),
         TileChild(delete)

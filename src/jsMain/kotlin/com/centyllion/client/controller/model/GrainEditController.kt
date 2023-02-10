@@ -44,8 +44,8 @@ class GrainEditController(
             nameController.data = new.name
             descriptionController.data = new.description
             speedController.data = "${new.movementProbability}"
-            firstDirectionController.data = new.allowedDirection
-            extendedDirectionController.data = new.allowedDirection
+            directionController.context = new
+            directionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
             fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
@@ -76,8 +76,7 @@ class GrainEditController(
             sizeSlider.disabled = new
             descriptionController.readOnly = new
             speedController.readOnly = new
-            firstDirectionController.readOnly = new
-            extendedDirectionController.readOnly = new
+            directionController.readOnly = new
             halfLifeController.readOnly = new
             fieldProductionsController.readOnly = new
             fieldInfluencesController.readOnly = new
@@ -120,15 +119,8 @@ class GrainEditController(
         page.appContext.locale, data.movementProbability, page.i18n("Speed"), 0.0, 1.0
     ) { _, new, _ -> data = data.copy(movementProbability = new) }
 
-    val firstDirectionController: DirectionSetEditController =
-        DirectionSetEditController(firstDirections, data.allowedDirection) { _, new, _ ->
-            this.data = this.data.copy(allowedDirection = new)
-        }
-
-    val extendedDirectionController: DirectionSetEditController =
-        DirectionSetEditController(extendedDirections, data.allowedDirection) { _, new, _ ->
-            this.data = this.data.copy(allowedDirection = new)
-        }
+    val directionController = DirectionController(data.id, data.allowedDirection, context)
+        { _, new, _ -> this.data = this.data.copy(allowedDirection = new) }
 
     val fieldProductionsController =
         columnsController(
@@ -216,8 +208,7 @@ class GrainEditController(
         HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
         HorizontalField(Label(page.i18n("Movement")),
             BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
-            firstDirectionController.container,
-            extendedDirectionController.container
+            BField(Control(directionController)),
         ),
         fieldSeparator,
         fieldControls
@@ -229,8 +220,7 @@ class GrainEditController(
         descriptionController.refresh()
         halfLifeController.refresh()
         speedController.refresh()
-        firstDirectionController.refresh()
-        extendedDirectionController.refresh()
+        directionController.refresh()
         fieldProductionsController.refresh()
         fieldInfluencesController.refresh()
         fieldPermeableController.refresh()

@@ -37,6 +37,7 @@ class ModelController(
 
             if (old.simulation != new.simulation) {
                 simulationController.data = data.simulation
+                settingsController.data = data.simulation.settings
             }
 
             onUpdate(old, new, this@ModelController)
@@ -204,13 +205,16 @@ class ModelController(
 
     var editorController: Controller<*, dynamic, dynamic>? = null
 
+    val settingsController = SimulationSettingsController(model.simulation.settings, page) { _, new, _ ->
+        data = data.copy(simulation = data.simulation.copy(settings = new))
+    }
+
     val editionItem = TabPage(TabItem(page.i18n("Model"), "boxes"), editorColumn)
-
     val simulationItem = TabPage(TabItem(page.i18n("Simulation"), "play"), simulationController)
+    val environmentItem = TabPage(TabItem(page.i18n("Environment"), "cogs"), settingsController)
 
-    val editionTabs = Tabs(boxed = true)
-
-    val editionTabPages = TabPages(simulationItem, editionItem, tabs = editionTabs) {
+    val editionTabs = Tabs(fullWidth = true)
+    val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, tabs = editionTabs) {
         if (it == simulationItem) simulationController.resize()
         refresh()
     }

@@ -1,10 +1,6 @@
 package com.centyllion.client.controller.model
 
-import bulma.Control
-import bulma.Div
-import bulma.HorizontalField
-import bulma.Label
-import bulma.NoContextController
+import bulma.*
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.page.BulmaPage
@@ -47,15 +43,15 @@ class SimulationSettingsController (
     }
 
     override val container = Div(
-        HorizontalField(
+        Field(
             Label(page.i18n("Background Color")),
-            bulma.Field(Control(colorController.container))
+            Control(colorController.container)
         ),
-        HorizontalField(
+        Field(
             Label(page.i18n("Grid")),
-            bulma.Field(showGridSwitch)
+            showGridSwitch
         ),
-        HorizontalField(
+        Field(
             Label(page.i18n("Image URL")),
             gridTextureUrlController.container
         )

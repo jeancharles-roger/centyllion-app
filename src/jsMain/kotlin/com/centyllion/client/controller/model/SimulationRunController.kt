@@ -201,6 +201,7 @@ class SimulationRunController(
         if (!running) {
             currentSimulator.reset()
             refresh()
+            onReset(currentSimulator)
         }
     }
 

@@ -87,17 +87,17 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val modelController = ModelController(this, model) { _, new, _ -> model = new }
 
     val newControl = Control(Button(
-        i18n("New Model"), Icon("plus"), color = ElementColor.Link
+        i18n("New Model"), Icon("plus"), color = ElementColor.Primary
     ) { new() })
 
-    val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Link, onChange = ::import)
+    val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Primary, onChange = ::import)
 
     val exportControl = Control(Button(
-        i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Link
+        i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Primary
     ) { export() })
 
     val tutorialControl = Control(Button(
-        i18n("Tutorial"), Icon("question-circle"), color = ElementColor.Link
+        i18n("Tutorial"), Icon("question-circle"), color = ElementColor.Primary
     ) { startTutorial() })
 
     val tools = BField(

@@ -21,7 +21,7 @@ class UndoRedoSupport<T>(
         redoButton.disabled = new.isEmpty()
     }
 
-    val undoButton = iconButton(Icon("undo"), ElementColor.Link, rounded = true) {
+    val undoButton = iconButton(Icon("undo"), ElementColor.Primary, rounded = true) {
         val restoredModel = history.last()
         history = history.dropLast(1)
         undoModel = true
@@ -29,7 +29,7 @@ class UndoRedoSupport<T>(
         undoModel = false
     }
 
-    val redoButton = iconButton(Icon("redo"), ElementColor.Link, rounded = true) {
+    val redoButton = iconButton(Icon("redo"), ElementColor.Primary, rounded = true) {
         val restoredModel = future.last()
         set(restoredModel)
     }

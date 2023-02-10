@@ -4,7 +4,9 @@ import bulma.*
 import bulma.extension.Slider
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.toggleElementToFullScreen
-import com.centyllion.model.*
+import com.centyllion.model.GrainModel
+import com.centyllion.model.Simulation
+import com.centyllion.model.Simulator
 import kotlinx.browser.window
 import org.w3c.dom.MutationObserver
 import org.w3c.dom.MutationObserverInit
@@ -81,7 +83,7 @@ class SimulationRunController(
     ) { _, value ->
         fps = value.toDouble()
         setFpsColor(false)
-        fpsLabel.text = if (fps >= 200) "warp" else "$value fps"
+        fpsLabel.text = if (fps >= 200) "max" else "$value fps"
     }.apply {
         root.style.width = "100px"
     }

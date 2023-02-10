@@ -1,14 +1,7 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Controller
-import bulma.ElementColor
-import bulma.Icon
-import bulma.Level
-import bulma.Value
+import bulma.*
 import bulma.extension.Slider
-import bulma.span
 import com.centyllion.client.toFixed
 import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
@@ -82,7 +75,12 @@ class FieldChangeController(
     val valueLabel = Value(data.second.toFixed(2))
 
     override val container = Column(
-        Level(center = listOf(fieldIcon, fieldLabel, valueSlider, valueLabel), mobile = true), size = ColumnSize.Full
+        Columns(
+            Column(fieldIcon, fieldLabel, size = ColumnSize.Full),
+            Column(valueSlider, valueLabel, size = ColumnSize.Full),
+            multiline = true
+        ),
+        size = ColumnSize.Full
     ).apply {
         root.style.paddingTop = "0.2rem"
         root.style.paddingBottom = "0.1rem"

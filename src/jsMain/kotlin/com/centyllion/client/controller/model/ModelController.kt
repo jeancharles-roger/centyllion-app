@@ -110,15 +110,6 @@ class ModelController(
         selected = behaviour
     }
 
-    val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =
-        noContextColumnsController(data.model.fields, onClick = { field, _ -> selected = field })
-        { field, previous ->
-            previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.onDelete = {data = data.dropField(controller.data) }
-                Column(controller.container, size = ColumnSize.Full)
-            }
-        }
-
     val grainsController: MultipleController<Grain, GrainModel, Columns, Column, Controller<Grain, GrainModel, Column>> =
         columnsController(data.model.grains, data.model, onClick = { grain, _ -> selected = grain })
         { grain, previous ->
@@ -137,14 +128,17 @@ class ModelController(
             }
         }
 
+    val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =
+        noContextColumnsController(data.model.fields, onClick = { field, _ -> selected = field })
+        { field, previous ->
+            previous ?: FieldDisplayController(field).wrap { controller ->
+                controller.onDelete = {data = data.dropField(controller.data) }
+                Column(controller.container, size = ColumnSize.Full)
+            }
+        }
+
     val leftColumn = Column(
         searchController,
-        Level(
-            left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
-            right = listOf(addFieldButton),
-            mobile = true
-        ),
-        fieldsController,
         Level(
             left = listOf(Icon(grainIcon), Title(page.i18n("Grains"), TextSize.S4)),
             right = listOf(addGrainButton),
@@ -157,6 +151,12 @@ class ModelController(
             mobile = true
         ),
         behavioursController,
+        Level(
+            left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
+            right = listOf(addFieldButton),
+            mobile = true
+        ),
+        fieldsController,
         size = ColumnSize.S3
     ).apply {
         root.style.height = "80vh"

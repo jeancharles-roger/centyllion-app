@@ -1,33 +1,13 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
-import bulma.Control
-import bulma.Controller
-import bulma.Div
-import bulma.ElementColor
-import bulma.Help
-import bulma.HorizontalField
-import bulma.HtmlWrapper
-import bulma.Label
-import bulma.MultipleController
-import bulma.Size
-import bulma.Value
-import bulma.columnsController
+import bulma.*
 import bulma.extension.Slider
 import bulma.extension.Switch
-import com.centyllion.client.controller.utils.EditableStringController
-import com.centyllion.client.controller.utils.createHr
-import com.centyllion.client.controller.utils.editableDoubleController
-import com.centyllion.client.controller.utils.editableIntController
-import com.centyllion.client.controller.utils.editorBox
+import com.centyllion.client.controller.utils.*
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
-import com.centyllion.model.extendedDirections
-import com.centyllion.model.firstDirections
 import com.centyllion.model.grainIcon
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
@@ -44,7 +24,7 @@ class GrainEditController(
             nameController.data = new.name
             descriptionController.data = new.description
             speedController.data = "${new.movementProbability}"
-            directionController.context = new
+            directionController.centralGrainId = new.id
             directionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
             fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }

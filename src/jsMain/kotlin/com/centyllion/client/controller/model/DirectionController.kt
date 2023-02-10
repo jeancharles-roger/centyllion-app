@@ -1,23 +1,22 @@
 package com.centyllion.client.controller.model
 
-import bulma.*
-import com.centyllion.client.AppContext
+import bulma.ControlElement
+import bulma.Controller
+import bulma.HtmlWrapper
+import bulma.canvas
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.model.Direction
-import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
 import io.data2viz.color.Color
 import io.data2viz.color.Colors
 import io.data2viz.geom.Point
 import io.data2viz.viz.*
 import kotlinx.browser.window
-import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.math.roundToInt
 import kotlin.properties.Delegates.observable
 
 class DirectionController(
-    val centralGrainId: Int, initial: Set<Direction>, model: GrainModel,
+    var centralGrainId: Int, initial: Set<Direction>, model: GrainModel,
     onUpdate: (old: Set<Direction>, new: Set<Direction>, DirectionController) -> Unit = { _, _, _ -> }
 ): ControlElement, Controller<Set<Direction>, GrainModel, HtmlWrapper<HTMLCanvasElement>> {
 

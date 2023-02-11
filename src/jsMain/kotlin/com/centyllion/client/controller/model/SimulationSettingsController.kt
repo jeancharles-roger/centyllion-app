@@ -3,6 +3,7 @@ package com.centyllion.client.controller.model
 import bulma.*
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
+import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.SimulationSettings
 import kotlin.properties.Delegates.observable
@@ -42,7 +43,8 @@ class SimulationSettingsController (
         data = data.copy(gridTextureUrl = if (new.isBlank()) null else new.trim())
     }
 
-    override val container = Div(
+    override val container = editorBox(
+        page.i18n("Simulation"), "cogs",
         Field(
             Label(page.i18n("Background Color")),
             Control(colorController.container)

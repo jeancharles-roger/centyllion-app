@@ -1,19 +1,8 @@
 package com.centyllion.client.controller.model
 
-import bulma.Controller
-import bulma.ElementColor
-import bulma.Icon
-import bulma.Level
-import bulma.Size
-import bulma.TileChild
-import bulma.TileParent
-import bulma.iconButton
+import bulma.*
 import com.centyllion.client.page.BulmaPage
-import com.centyllion.model.Behaviour
-import com.centyllion.model.GrainModel
-import com.centyllion.model.Reaction
-import com.centyllion.model.extendedDirections
-import com.centyllion.model.firstDirections
+import com.centyllion.model.*
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
@@ -38,12 +27,13 @@ class ReactionEditController(
         if (old.second != new.second) {
             reactiveController.data = context.second.grainForId(data.reactiveId)
             reactiveController.context = new.second.grains
-            directionController.context = new.second
             productController.data = context.second.grainForId(data.productId)
             productController.context = new.second.grains
             refresh()
         }
+
         if (old != new) {
+            directionController.context = context.second.grainForId(context.first.mainReactiveId)?.color
             sourceReactiveController.context = context
         }
     }
@@ -64,7 +54,10 @@ class ReactionEditController(
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
     }
 
-    val directionController = DirectionController(context.first.sourceReactive, data.allowedDirection, context.second)
+    val directionController = DirectionController(
+        initial = data.allowedDirection,
+        initialContext = context.second.grainForId(context.first.mainReactiveId)?.color
+    )
 
     val firstDirectionController = DirectionSetEditController(firstDirections, data.allowedDirection)
     { _, new, _ ->

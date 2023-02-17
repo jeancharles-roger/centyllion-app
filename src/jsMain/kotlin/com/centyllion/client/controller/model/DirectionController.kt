@@ -6,7 +6,6 @@ import bulma.HtmlWrapper
 import bulma.canvas
 import com.centyllion.client.plotter.toRGB
 import com.centyllion.model.Direction
-import com.centyllion.model.GrainModel
 import io.data2viz.color.Color
 import io.data2viz.color.Colors
 import io.data2viz.geom.Point
@@ -16,9 +15,9 @@ import org.w3c.dom.HTMLCanvasElement
 import kotlin.properties.Delegates.observable
 
 class DirectionController(
-    var centralGrainId: Int, initial: Set<Direction>, model: GrainModel,
+    initial: Set<Direction>, initialContext: String?,
     onUpdate: (old: Set<Direction>, new: Set<Direction>, DirectionController) -> Unit = { _, _, _ -> }
-): ControlElement, Controller<Set<Direction>, GrainModel, HtmlWrapper<HTMLCanvasElement>> {
+): ControlElement, Controller<Set<Direction>, String?, HtmlWrapper<HTMLCanvasElement>> {
 
     private val width: Int = 50
     private val height: Int = 50
@@ -33,7 +32,7 @@ class DirectionController(
         }
     }
 
-    override var context by observable(model) { _, old, new ->
+    override var context by observable(initialContext) { _, old, new ->
         if (old != new) visual.build()
     }
 
@@ -86,10 +85,8 @@ class DirectionController(
 
         // grains
         group {
-
             // presents source of the behaviour
-            val centralGrain = context.grainForId(centralGrainId)
-            if (centralGrain != null) path { drawGrain(1, 1, centralGrain.color.toRGB()) }
+            context?.let { path { drawGrain(1, 1, it.toRGB()) } }
 
             // presents all grains from simulation for context
             Direction.values().forEach { direction ->

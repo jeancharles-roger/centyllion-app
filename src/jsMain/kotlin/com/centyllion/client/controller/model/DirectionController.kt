@@ -15,9 +15,9 @@ import org.w3c.dom.HTMLCanvasElement
 import kotlin.properties.Delegates.observable
 
 class DirectionController(
-    initial: Set<Direction>, initialContext: String?,
+    initial: Set<Direction>, initialContext: Pair<String?,String?>,
     onUpdate: (old: Set<Direction>, new: Set<Direction>, DirectionController) -> Unit = { _, _, _ -> }
-): ControlElement, Controller<Set<Direction>, String?, HtmlWrapper<HTMLCanvasElement>> {
+): ControlElement, Controller<Set<Direction>, Pair<String?,String?>, HtmlWrapper<HTMLCanvasElement>> {
 
     private val width: Int = 50
     private val height: Int = 50
@@ -67,9 +67,20 @@ class DirectionController(
             }
         }
 
-        fun PathNode.drawGrain(x: Int, y: Int, color: Color) {
-            fill = color
+        fun PathNode.drawOuterGrain(x: Int, y: Int, color: Color) {
             val delta = 2
+            strokeColor = color
+            fill = Colors.Web.darkgray
+            moveTo(x * stepX + delta, y * stepY + delta)
+            lineTo(x * stepX + stepX - delta, y * stepY + delta)
+            lineTo(x * stepX + stepX - delta, y * stepY + stepY - delta)
+            lineTo(x * stepX + delta, y * stepY + stepY - delta)
+            lineTo(x * stepX + delta, y * stepY + delta)
+        }
+
+        fun PathNode.drawInnerGrain(x: Int, y: Int, color: Color) {
+            val delta = 2
+            fill = color
             moveTo(x * stepX + delta, y * stepY + delta)
             lineTo(x * stepX + stepX - delta, y * stepY + delta)
             lineTo(x * stepX + stepX - delta, y * stepY + stepY - delta)
@@ -85,14 +96,16 @@ class DirectionController(
 
         // grains
         group {
+            val outerColor = context.first?.toRGB() ?: Colors.Web.darkgray
+            val innerColor = context.second?.toRGB()
             // presents source of the behaviour
-            context?.let { path { drawGrain(1, 1, it.toRGB()) } }
+            innerColor?.let { path { drawInnerGrain(1, 1, it) } }
 
             // presents all grains from simulation for context
             Direction.values().forEach { direction ->
                 if (data.contains(direction)) {
                     path {
-                        drawGrain(1 + direction.deltaX, 1 + direction.deltaY, Colors.Web.darkgray)
+                        drawOuterGrain(1 + direction.deltaX, 1 + direction.deltaY, outerColor)
                     }
                 }
             }

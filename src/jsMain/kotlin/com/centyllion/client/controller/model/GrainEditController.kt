@@ -25,7 +25,7 @@ class GrainEditController(
             descriptionController.data = new.description
             speedController.data = "${new.movementProbability}"
             directionController.data = new.allowedDirection
-            directionController.context = new.color
+            directionController.context = null to new.color
             halfLifeController.data = "${new.halfLife}"
             fieldProductionsController.data = context.fields.map { it.id to (data.fieldProductions[it.id] ?: 0f) }
             fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
@@ -99,7 +99,7 @@ class GrainEditController(
         page.appContext.locale, data.movementProbability, page.i18n("Speed"), 0.0, 1.0
     ) { _, new, _ -> data = data.copy(movementProbability = new) }
 
-    val directionController = DirectionController(data.allowedDirection, data.color)
+    val directionController = DirectionController(data.allowedDirection, null to data.color)
         { _, new, _ -> this.data = this.data.copy(allowedDirection = new) }
 
     val fieldProductionsController =

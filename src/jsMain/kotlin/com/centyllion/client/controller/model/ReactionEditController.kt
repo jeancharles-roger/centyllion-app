@@ -33,7 +33,7 @@ class ReactionEditController(
         }
 
         if (old != new) {
-            directionController.context = context.second.grainForId(context.first.mainReactiveId)?.color
+            directionController.context = directionColors()
             sourceReactiveController.context = context
         }
     }
@@ -55,9 +55,12 @@ class ReactionEditController(
     }
 
     val directionController = DirectionController(
-        initial = data.allowedDirection,
-        initialContext = context.second.grainForId(context.first.mainReactiveId)?.color
+        initial = data.allowedDirection, initialContext = directionColors()
     )
+
+    fun directionColors(): Pair<String?, String?> =
+        context.second.grainForId(data.reactiveId)?.color to
+            context.second.grainForId(context.first.mainReactiveId)?.color
 
     val firstDirectionController = DirectionSetEditController(firstDirections, data.allowedDirection)
     { _, new, _ ->

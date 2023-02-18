@@ -103,8 +103,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val tools = BField(
         newControl,
         Control(fileInput),
+        exportControl,
         Control(undoRedo.undoButton), Control(undoRedo.redoButton),
-        exportControl, tutorialControl,
+        tutorialControl,
         grouped = true, groupedMultiline = true
     )
 

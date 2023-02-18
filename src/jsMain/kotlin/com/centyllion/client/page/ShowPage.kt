@@ -111,7 +111,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val container: BulmaElement = Div(
         Columns(
-            Column(Level(left = listOf(Label("NetBioDyn")), center = listOf(tools)), size = ColumnSize.Full),
+            Column(Level(left = listOf(Label("NetBioDyn", size = Size.Large)), center = listOf(tools)), size = ColumnSize.Full),
             problemsColumn,
             Column(modelController, size = ColumnSize.Full),
             multiline = true, centered = true

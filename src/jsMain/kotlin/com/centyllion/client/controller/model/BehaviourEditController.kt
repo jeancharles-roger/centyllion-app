@@ -200,15 +200,19 @@ class BehaviourEditController(
         hidden = context.fields.isEmpty()
     }
 
-    val fieldsConfiguration = Columns(
+    val fieldsInfluencesConfiguration = Columns(
+        Column(Label(page.i18n("Field influences")), fieldInfluencesController, size = ColumnSize.S5)
+    ).apply {
+        hidden = context.fields.isEmpty()
+    }
+    val fieldsThresholdsConfiguration = Columns(
         Column(
             Level(
                 left= listOf(Label(page.i18n("Field thresholds"))),
                 right = listOf(addFieldPredicateButton)
             ),
             fieldPredicatesController, size = ColumnSize.S7
-        ),
-        Column(Label(page.i18n("Field influences")), fieldInfluencesController, size = ColumnSize.S5)
+        )
     ).apply {
         hidden = context.fields.isEmpty()
     }
@@ -221,7 +225,9 @@ class BehaviourEditController(
         HtmlWrapper(createHr()),
         Label(page.i18n("Reactions")), reactionsController,
         fieldSeparator,
-        fieldsConfiguration
+        fieldsThresholdsConfiguration,
+        fieldSeparator,
+        fieldsInfluencesConfiguration
     )
 
     override fun refresh() {
@@ -238,7 +244,8 @@ class BehaviourEditController(
         fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()
         fieldSeparator.hidden = context.fields.isEmpty()
-        fieldsConfiguration.hidden = context.fields.isEmpty()
+        fieldsInfluencesConfiguration.hidden = context.fields.isEmpty()
+        fieldsThresholdsConfiguration.hidden = context.fields.isEmpty()
     }
 
 }

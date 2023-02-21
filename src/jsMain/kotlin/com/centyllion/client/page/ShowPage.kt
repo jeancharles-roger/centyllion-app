@@ -93,7 +93,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val fileInput = FileInput(label = i18n("Import"), color = ElementColor.Primary, onChange = ::import)
 
     val exportControl = Control(Button(
-        i18n("Export"), Icon("cloud-upload-alt"), color = ElementColor.Primary
+        i18n("Export"), Icon("download"), color = ElementColor.Primary
     ) { export() })
 
     val tutorialControl = Control(Button(
@@ -105,7 +105,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         Control(fileInput),
         exportControl,
         Control(undoRedo.undoButton), Control(undoRedo.redoButton),
-        tutorialControl,
+        // TODO hide tutorial for now tutorialControl,
         grouped = true, groupedMultiline = true
     )
 

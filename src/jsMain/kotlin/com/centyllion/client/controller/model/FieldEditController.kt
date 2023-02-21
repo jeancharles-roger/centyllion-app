@@ -1,13 +1,6 @@
 package com.centyllion.client.controller.model
 
-import bulma.Control
-import bulma.Div
-import bulma.ElementColor
-import bulma.Help
-import bulma.HorizontalField
-import bulma.Label
-import bulma.NoContextController
-import bulma.Size
+import bulma.*
 import bulma.extension.Switch
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editableFloatController
@@ -15,9 +8,7 @@ import com.centyllion.client.controller.utils.editableIntController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Field
-import com.centyllion.model.extendedDirections
 import com.centyllion.model.fieldIcon
-import com.centyllion.model.firstDirections
 import kotlin.properties.Delegates.observable
 import bulma.Field as BField
 
@@ -32,8 +23,8 @@ class FieldEditController (
             nameController.data = new.name
             descriptionController.data = new.description
             speedController.data = "${new.speed}"
-            firstDirectionController.data = new.allowedDirection
-            extendedDirectionController.data = new.allowedDirection
+            directionController.context = null to new.color
+            directionController.data = new.allowedDirection
             halfLifeController.data = "${new.halfLife}"
             onUpdate(old, new, this@FieldEditController)
         }
@@ -47,8 +38,7 @@ class FieldEditController (
             nameController.readOnly = new
             descriptionController.readOnly = new
             speedController.readOnly = new
-            firstDirectionController.readOnly = new
-            extendedDirectionController.readOnly = new
+            directionController.readOnly = new
             halfLifeController.readOnly = new
         }
     }
@@ -74,15 +64,8 @@ class FieldEditController (
         page.appContext.locale, data.speed, page.i18n("Speed"), 0f, 1f
     ) { _, new, _ -> this.data = this.data.copy(speed = new) }
 
-    val firstDirectionController: DirectionSetEditController =
-        DirectionSetEditController(firstDirections, data.allowedDirection) { _, new, _ ->
-            this.data = this.data.copy(allowedDirection = new)
-        }
-
-    val extendedDirectionController: DirectionSetEditController =
-        DirectionSetEditController(extendedDirections, data.allowedDirection) { _, new, _ ->
-            this.data = this.data.copy(allowedDirection = new)
-        }
+    val directionController = DirectionController(data.allowedDirection, null to data.color)
+    { _, new, _ -> this.data = this.data.copy(allowedDirection = new) }
 
     val halfLifeController = editableIntController(
         page.appContext.locale, data.halfLife, page.i18n("Half-life"), 0
@@ -105,8 +88,7 @@ class FieldEditController (
         HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
         HorizontalField(Label(page.i18n("Movement")),
             BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
-            firstDirectionController.container,
-            extendedDirectionController.container
+            BField(Control(directionController)),
         )
     )
 
@@ -115,8 +97,7 @@ class FieldEditController (
         nameController.refresh()
         descriptionController.refresh()
         speedController.refresh()
-        firstDirectionController.refresh()
-        extendedDirectionController.refresh()
+        directionController.refresh()
         halfLifeController.refresh()
     }
 

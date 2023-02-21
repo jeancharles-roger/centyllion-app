@@ -2,7 +2,9 @@ package com.centyllion.client.controller.model
 
 import bulma.*
 import com.centyllion.client.page.BulmaPage
-import com.centyllion.model.*
+import com.centyllion.model.Behaviour
+import com.centyllion.model.GrainModel
+import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
@@ -41,8 +43,6 @@ class ReactionEditController(
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             reactiveController.readOnly = new
-            firstDirectionController.readOnly = new
-            extendedDirectionController.readOnly = new
             productController.readOnly = new
             sourceReactiveController.readOnly = new
             delete.hidden = new
@@ -55,22 +55,12 @@ class ReactionEditController(
     }
 
     val directionController = DirectionController(
-        initial = data.allowedDirection, initialContext = directionColors()
+        initial = data.allowedDirection, initialContext = directionColors(), errorIfEmpty = true
     )
 
     fun directionColors(): Pair<String?, String?> =
         context.second.grainForId(data.reactiveId)?.color to
             context.second.grainForId(context.first.mainReactiveId)?.color
-
-    val firstDirectionController = DirectionSetEditController(firstDirections, data.allowedDirection)
-    { _, new, _ ->
-        this.data = this.data.copy(allowedDirection = new)
-    }
-
-    val extendedDirectionController = DirectionSetEditController(extendedDirections, data.allowedDirection)
-    { _, new, _ ->
-        this.data = this.data.copy(allowedDirection = new)
-    }
 
     val productController = GrainSelectController(context.second.grainForId(data.productId), context.second.grains, page)
     { _, new, _ ->
@@ -97,12 +87,8 @@ class ReactionEditController(
 
     override fun refresh() {
         reactiveController.refresh()
-        firstDirectionController.refresh()
-        extendedDirectionController.refresh()
+        directionController.refresh()
         productController.refresh()
-
-        firstDirectionController.error = data.allowedDirection.isEmpty()
-        extendedDirectionController.error = data.allowedDirection.isEmpty()
     }
 
 }

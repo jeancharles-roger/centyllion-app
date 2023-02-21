@@ -16,6 +16,7 @@ import kotlin.properties.Delegates.observable
 
 class DirectionController(
     initial: Set<Direction>, initialContext: Pair<String?,String?>,
+    val errorIfEmpty: Boolean = false,
     onUpdate: (old: Set<Direction>, new: Set<Direction>, DirectionController) -> Unit = { _, _, _ -> }
 ): ControlElement, Controller<Set<Direction>, Pair<String?,String?>, HtmlWrapper<HTMLCanvasElement>> {
 
@@ -50,8 +51,10 @@ class DirectionController(
     private fun Viz.build() {
         clear()
 
+        val error = errorIfEmpty && data.isEmpty()
+
         fun PathNode.drawGrid() {
-            strokeColor = Colors.Web.black
+            strokeColor = if (error) Colors.Web.red else Colors.Web.black
             strokeWidth = 1.0
 
             // 3 slots, 4 lines

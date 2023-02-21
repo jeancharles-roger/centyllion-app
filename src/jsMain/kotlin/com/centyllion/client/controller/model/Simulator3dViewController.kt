@@ -30,10 +30,18 @@ class Simulator3dViewController(
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
-    enum class EditTools(val icon: String, val factor: Int = 1) {
+    enum class EditTools(val icon: String) {
         Move("arrows-alt"), Pen("pen"),
-        Line("pencil-ruler"), Spray("spray-can", 4),
+        Line("pencil-ruler"), Spray("spray-can"),
         Eraser("eraser");
+
+        fun actualSize(size: ToolSize): Int = when (this) {
+            Spray -> when (size) {
+                ToolSize.Fine -> 10
+                else -> size.size * 4
+            }
+            else -> size.size
+        }
     }
 
     @Suppress("unused")
@@ -256,7 +264,7 @@ class Simulator3dViewController(
     private var simulationY = -1
 
     fun circle(x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
-        val size = selectedSize.size * selectedTool.factor
+        val size = selectedTool.actualSize(selectedSize)
         val halfSize = (size / 2).coerceAtLeast(1)
         if (halfSize == 1) {
             block(x, y)
@@ -314,8 +322,7 @@ class Simulator3dViewController(
         }
 
         if (selectedTool != EditTools.Move) {
-            val diameter = size * selectedTool.factor
-
+            val diameter = selectedTool.actualSize(selectedSize)
             val color4 = when (selectedTool) {
                 EditTools.Eraser -> Color3.Black()
                 else -> color ?: Color3.Green()

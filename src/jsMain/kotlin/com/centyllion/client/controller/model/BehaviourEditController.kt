@@ -1,37 +1,13 @@
 package com.centyllion.client.controller.model
 
-import bulma.Column
-import bulma.ColumnSize
-import bulma.Columns
-import bulma.Controller
-import bulma.Div
-import bulma.ElementColor
-import bulma.Help
-import bulma.HorizontalField
-import bulma.HtmlWrapper
-import bulma.Icon
-import bulma.Label
-import bulma.Level
-import bulma.MultipleController
-import bulma.Size
-import bulma.TileAncestor
-import bulma.TileChild
-import bulma.TileParent
-import bulma.TileSize
-import bulma.columnsController
-import bulma.iconButton
+import bulma.*
 import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.createHr
 import com.centyllion.client.controller.utils.editableDoubleController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
-import com.centyllion.model.Behaviour
+import com.centyllion.model.*
 import com.centyllion.model.Field
-import com.centyllion.model.GrainModel
-import com.centyllion.model.Operator
-import com.centyllion.model.Predicate
-import com.centyllion.model.Reaction
-import com.centyllion.model.behaviourIcon
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
@@ -196,9 +172,12 @@ class BehaviourEditController(
             }
         }
 
-    val fieldSeparator = HtmlWrapper(createHr()).apply {
+    fun fieldSeparator() = HtmlWrapper(createHr()).apply {
         hidden = context.fields.isEmpty()
     }
+
+    val sepator1 = fieldSeparator()
+    val sepator2 = fieldSeparator()
 
     val fieldsInfluencesConfiguration = Columns(
         Column(Label(page.i18n("Field influences")), fieldInfluencesController, size = ColumnSize.S5)
@@ -224,9 +203,9 @@ class BehaviourEditController(
         HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
         HtmlWrapper(createHr()),
         Label(page.i18n("Reactions")), reactionsController,
-        fieldSeparator,
+        sepator1,
         fieldsThresholdsConfiguration,
-        fieldSeparator,
+        sepator2,
         fieldsInfluencesConfiguration
     )
 
@@ -243,7 +222,8 @@ class BehaviourEditController(
 
         fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()
-        fieldSeparator.hidden = context.fields.isEmpty()
+        sepator1.hidden = context.fields.isEmpty()
+        sepator2.hidden = context.fields.isEmpty()
         fieldsInfluencesConfiguration.hidden = context.fields.isEmpty()
         fieldsThresholdsConfiguration.hidden = context.fields.isEmpty()
     }

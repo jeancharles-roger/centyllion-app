@@ -103,7 +103,7 @@ class BehaviourEditController(
         this.data = this.data.copy(sourceReactive = new)
     }
 
-    val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
+    val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Primary, true, size = Size.Small) {
         val newReaction = Reaction()
         this.data = data.copy(reaction = data.reaction + newReaction)
     }
@@ -124,7 +124,7 @@ class BehaviourEditController(
             TileChild(),
             TileChild(mainProductController),
             TileChild(sourceReactiveController),
-            TileChild(addReactionButton)
+            TileChild(addReactionButton).apply { root.classList.add("has-text-right") }
         )
     )
 
@@ -150,7 +150,7 @@ class BehaviourEditController(
         }
     )
 
-    val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Info, true, size = Size.Small) {
+    val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Primary, true, size = Size.Small) {
         val predicate = context.fields.first().id to Predicate(Operator.GreaterThan, 0f)
         this.data = data.copy(fieldPredicates = data.fieldPredicates + predicate)
     }
@@ -176,25 +176,23 @@ class BehaviourEditController(
         hidden = context.fields.isEmpty()
     }
 
-    val sepator1 = fieldSeparator()
-    val sepator2 = fieldSeparator()
-
-    val fieldsInfluencesConfiguration = Columns(
-        Column(Label(page.i18n("Field influences")), fieldInfluencesController, size = ColumnSize.S5)
-    ).apply {
-        hidden = context.fields.isEmpty()
-    }
-    val fieldsThresholdsConfiguration = Columns(
+    val fieldsConfiguration = Columns(
+        Column(fieldSeparator(), size = ColumnSize.Full),
         Column(
             Level(
                 left= listOf(Label(page.i18n("Field thresholds"))),
                 right = listOf(addFieldPredicateButton)
             ),
-            fieldPredicatesController, size = ColumnSize.S7
-        )
-    ).apply {
-        hidden = context.fields.isEmpty()
-    }
+            fieldPredicatesController,
+            size = ColumnSize.Full
+        ),
+        Column(
+            Label(page.i18n("Field influences")),
+            fieldInfluencesController,
+            size = ColumnSize.Full
+        ),
+        multiline = true
+    ).apply { hidden = context.fields.isEmpty() }
 
     override val container = editorBox(page.i18n("Behaviour"), behaviourIcon,
         HorizontalField(Label(page.i18n("Name")), nameController.container),
@@ -203,10 +201,7 @@ class BehaviourEditController(
         HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
         HtmlWrapper(createHr()),
         Label(page.i18n("Reactions")), reactionsController,
-        sepator1,
-        fieldsThresholdsConfiguration,
-        sepator2,
-        fieldsInfluencesConfiguration
+        fieldsConfiguration,
     )
 
     override fun refresh() {
@@ -222,10 +217,7 @@ class BehaviourEditController(
 
         fieldPredicatesController.refresh()
         fieldInfluencesController.refresh()
-        sepator1.hidden = context.fields.isEmpty()
-        sepator2.hidden = context.fields.isEmpty()
-        fieldsInfluencesConfiguration.hidden = context.fields.isEmpty()
-        fieldsThresholdsConfiguration.hidden = context.fields.isEmpty()
+        fieldsConfiguration.hidden = context.fields.isEmpty()
     }
 
 }

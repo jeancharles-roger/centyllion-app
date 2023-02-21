@@ -80,7 +80,7 @@ class FieldChangeController(
             Column(valueSlider, valueLabel, size = ColumnSize.Full),
             multiline = true
         ),
-        size = ColumnSize.Full
+        size = ColumnSize.OneThird
     ).apply {
         root.style.paddingTop = "0.2rem"
         root.style.paddingBottom = "0.1rem"

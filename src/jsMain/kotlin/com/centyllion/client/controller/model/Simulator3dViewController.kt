@@ -25,6 +25,7 @@ import kotlin.random.Random
 
 class Simulator3dViewController(
     simulator: Simulator, val page: BulmaPage, readOnly: Boolean = true,
+    initialSelectedGrain: Grain? = null,
     val onPointerMove: (x: Int, y: Int) -> Unit = { _, _ -> },
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
@@ -44,6 +45,8 @@ class Simulator3dViewController(
     private var selectedTool: EditTools = EditTools.Pen
     private var selectedSize: ToolSize = ToolSize.Fine
 
+    var selectedGrain: Grain? = initialSelectedGrain
+
     class FieldSupport(val mesh: Mesh, val texture: RawTexture, val alpha: Uint8Array) {
         fun dispose() {
             texture.dispose()
@@ -54,11 +57,6 @@ class Simulator3dViewController(
     override var data: Simulator by observable(simulator) { _, old, new ->
         if (old != new) {
             onUpdate(true, new, this)
-
-            selectedGrainController.context = new.model.grains
-            if (!new.model.grains.contains(selectedGrainController.data)) {
-                selectedGrainController.data = new.model.grains.firstOrNull()
-            }
 
             // only refresh geometries and material if grains changed
             if (old.model.grains != new.model.grains) {
@@ -96,9 +94,6 @@ class Simulator3dViewController(
         this.height = "${simulator.simulation.height * canvasWidth / simulator.simulation.width}"
     }
 
-    val selectedGrainController = GrainSelectController(simulator.model.grains.firstOrNull(), simulator.model.grains, page, false)
-    { _, _, _ -> selectPointer() }
-
     val sizeDropdown = Dropdown(text = page.i18n(ToolSize.Fine.name), rounded = true).apply {
         items = ToolSize.values().map { size ->
             DropdownSimpleItem(page.i18n(size.name)) {
@@ -126,7 +121,7 @@ class Simulator3dViewController(
     }
 
     val randomAddButton = iconButton(Icon("spray-can"), ElementColor.Primary, rounded = true) {
-        val grainId = selectedGrainController.data?.id
+        val grainId = selectedGrain?.id
         val count = randomAddCountInput.value.toIntOrNull()
         if (count != null && count > 0 && grainId != null){
             repeat(count) {
@@ -157,7 +152,7 @@ class Simulator3dViewController(
     }
 
     val toolbar = Level(
-        center = listOf(toolsField, sizeDropdown, selectedGrainController, randomAddField, clearAllButton)
+        center = listOf(toolsField, sizeDropdown, randomAddField, clearAllButton)
     )
 
     override val container = Div(
@@ -373,7 +368,7 @@ class Simulator3dViewController(
     }
 
     fun selectPointer() {
-        val color = colorFromName(selectedGrainController.data?.color ?: "Green")
+        val color = colorFromName(selectedGrain?.color ?: "Gray")
         changePointer(color, selectedSize.size)
     }
 
@@ -401,13 +396,13 @@ class Simulator3dViewController(
         when (selectedTool) {
             EditTools.Pen -> {
                 if (drawStep >= 0) {
-                    selectedGrainController.data?.id?.let { idToSet ->
+                    selectedGrain?.id?.let { idToSet ->
                         circle(simulationX, simulationY) { i, j -> writeGrain(i, j, idToSet) }
                     }
                 }
             }
             EditTools.Line -> {
-                selectedGrainController.data?.id?.let { idToSet ->
+                selectedGrain?.id?.let { idToSet ->
                     if (drawStep == -1) {
                         // draw the line
                         line(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
@@ -418,7 +413,7 @@ class Simulator3dViewController(
 
             }
             EditTools.Spray -> {
-                selectedGrainController.data?.id?.let { idToSet ->
+                selectedGrain?.id?.let { idToSet ->
                     if (drawStep >= 0) {
                         val sprayDensity = 0.005
                         circle(simulationX, simulationY) { i, j ->

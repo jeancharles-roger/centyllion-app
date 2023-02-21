@@ -80,6 +80,14 @@ class ModelController(
             fieldsController.updateSelection(element)
             grainsController.updateSelection(element)
             behavioursController.updateSelection(element)
+
+            // update simulation selected grain
+            if (element is Grain) {
+                simulationController.simulationViewController.selectedGrain = element
+            } else {
+                simulationController.simulationViewController.selectedGrain = null
+            }
+
         }
     }
 

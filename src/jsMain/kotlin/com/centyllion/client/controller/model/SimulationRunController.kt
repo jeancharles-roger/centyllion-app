@@ -106,7 +106,7 @@ class SimulationRunController(
         }
     }
 
-    var simulationViewController = Simulator3dViewController(
+    val simulationViewController = Simulator3dViewController(
         currentSimulator, page, readOnly,
         onPointerMove = ::pickValuesAt,
         onUpdate = { ended, new, _ -> updatedSimulatorFromView(ended, new) }

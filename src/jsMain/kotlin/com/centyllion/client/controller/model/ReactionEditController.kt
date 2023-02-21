@@ -92,7 +92,7 @@ class ReactionEditController(
         TileChild(directionController),
         TileChild(productController),
         TileChild(sourceReactiveController),
-        TileChild(delete)
+        TileChild(delete).apply { root.classList.add("has-text-right") }
     )
 
     override fun refresh() {

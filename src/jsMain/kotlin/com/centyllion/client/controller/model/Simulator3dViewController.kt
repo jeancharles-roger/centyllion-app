@@ -40,6 +40,10 @@ class Simulator3dViewController(
         Fine(1), Small(5), Medium(10), Large(20)
     }
 
+    // simulation content edition
+    private var selectedTool: EditTools = EditTools.Pen
+    private var selectedSize: ToolSize = ToolSize.Fine
+
     class FieldSupport(val mesh: Mesh, val texture: RawTexture, val alpha: Uint8Array) {
         fun dispose() {
             texture.dispose()
@@ -109,7 +113,7 @@ class Simulator3dViewController(
     val toolButtons = EditTools.values().map { tool ->
         iconButton(
             Icon(tool.icon), ElementColor.Primary,
-            rounded = true, outlined = tool.ordinal == 0
+            rounded = true, outlined = tool.ordinal == selectedTool.ordinal
         ) { selectTool(tool) }
     }
 
@@ -228,8 +232,6 @@ class Simulator3dViewController(
 
         angularSensibilityX = - angularSensibilityX.toDouble()
         panningSensibility = 50
-
-        attachControl(simulationCanvas.root, false)
     }
 
     val plane = MeshBuilder.CreatePlane("ground", BasicPlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
@@ -244,10 +246,6 @@ class Simulator3dViewController(
     ).apply {
         isVisible = false
     }
-
-    // simulation content edition
-    private var selectedTool: EditTools = EditTools.Move
-    private var selectedSize: ToolSize = ToolSize.Fine
 
     val tool get() = selectedTool
     val size get() = selectedSize
@@ -494,7 +492,6 @@ class Simulator3dViewController(
             } else {
                 onPointerMove(-1, -1)
             }
-
         }
     }
 

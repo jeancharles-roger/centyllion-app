@@ -150,16 +150,18 @@ class GrainEditController(
 
     val fieldControls = Columns(
         Column(
-            Label(page.i18n("Productions")), fieldProductionsController,
-            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+            Label(page.i18n("Productions")),
+            fieldProductionsController,
+            size = ColumnSize.Full
         ),
         Column(
-            Label(page.i18n("Influences")), fieldInfluencesController,
-            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+            Label(page.i18n("Influences")),
+            fieldInfluencesController,
+            size = ColumnSize.Full
         ),
         Column(
             Label(page.i18n("Permeability")), fieldPermeableController,
-            desktopSize = ColumnSize.OneThird, tabletSize = ColumnSize.Half
+            size = ColumnSize.Full
         ),
         multiline = true
     ).apply { hidden = context.fields.isEmpty() }

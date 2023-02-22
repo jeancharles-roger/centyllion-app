@@ -55,7 +55,10 @@ class ReactionEditController(
     }
 
     val directionController = DirectionController(
-        initial = data.allowedDirection, initialContext = directionColors(), errorIfEmpty = true
+        initial = data.allowedDirection,
+        initialContext = directionColors(),
+        errorIfEmpty = true,
+        onUpdate = { _, new, _ -> this.data = this.data.copy(allowedDirection = new) }
     )
 
     fun directionColors(): Pair<String?, String?> =

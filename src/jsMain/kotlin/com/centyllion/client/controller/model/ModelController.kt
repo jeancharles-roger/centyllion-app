@@ -105,25 +105,34 @@ class ModelController(
         val field = data.model.newField(page.i18n("Field"))
         this.data = data.addField(field)
         selected = field
+        editionTabPages.selectedPage = editionItem
     }
 
     val addGrainButton = iconButton(Icon("plus"), ElementColor.Primary, true, size = Size.Small) {
         val grain = data.model.newGrain(page.i18n("Grain"))
         this.data = data.addGrain(grain)
         selected = grain
+        editionTabPages.selectedPage = editionItem
     }
 
     val addBehaviourButton = iconButton(Icon("plus"), ElementColor.Primary, true, size = Size.Small) {
         val behaviour = data.model.newBehaviour(page.i18n("Behaviour"))
         this.data = data.addBehaviour(behaviour)
         selected = behaviour
+        editionTabPages.selectedPage = editionItem
     }
 
     val grainsController: MultipleController<Grain, GrainModel, Columns, Column, Controller<Grain, GrainModel, Column>> =
-        columnsController(data.model.grains, data.model, onClick = { grain, _ -> selected = grain })
-        { grain, previous ->
+        columnsController(
+            initialList = data.model.grains,
+            initialContext = data.model,
+            onClick = { grain, _ -> selected = grain }
+        ) { grain, previous ->
             previous ?: GrainDisplayController(page, grain, data.model).wrap { controller ->
-                controller.onDelete = { data = data.dropGrain(controller.data) }
+                controller.onDelete = {
+                    data = data.dropGrain(controller.data)
+                    selected = null
+                }
                 Column(controller, size = ColumnSize.Full)
             }
         }
@@ -132,7 +141,10 @@ class ModelController(
         columnsController(data.model.behaviours, data.model, onClick = { behaviour, _ -> selected = behaviour })
         { behaviour, previous ->
             previous ?: BehaviourDisplayController(page, behaviour, data.model).wrap { controller ->
-                controller.onDelete = { data = data.dropBehaviour(controller.data) }
+                controller.onDelete = {
+                    data = data.dropBehaviour(controller.data)
+                    selected = null
+                }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }
@@ -141,7 +153,10 @@ class ModelController(
         noContextColumnsController(data.model.fields, onClick = { field, _ -> selected = field })
         { field, previous ->
             previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.onDelete = {data = data.dropField(controller.data) }
+                controller.onDelete = {
+                    data = data.dropField(controller.data)
+                    selected = null
+                }
                 Column(controller.container, size = ColumnSize.Full)
             }
         }

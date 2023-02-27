@@ -204,6 +204,7 @@ class SimulationRunController(
             currentSimulator.reset()
             refresh()
             onReset(currentSimulator)
+            stepLabel.text = "${currentSimulator.step}"
         }
     }
 

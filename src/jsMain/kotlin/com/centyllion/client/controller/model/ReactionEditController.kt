@@ -1,6 +1,7 @@
 package com.centyllion.client.controller.model
 
 import bulma.*
+import com.centyllion.client.controller.utils.createHr
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
@@ -11,7 +12,7 @@ class ReactionEditController(
     reaction: Reaction, behaviour: Behaviour, model: GrainModel, page: BulmaPage,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
-) : Controller<Reaction, Pair<Behaviour, GrainModel>, TileParent> {
+) : Controller<Reaction, Pair<Behaviour, GrainModel>, Column> {
 
     override var data: Reaction by observable(reaction) { _, old, new ->
         if (old != new) {
@@ -80,12 +81,17 @@ class ReactionEditController(
         onDelete(this.data, this@ReactionEditController)
     }
 
-    override val container  = TileParent(
-        TileChild(reactiveController),
-        TileChild(directionController),
-        TileChild(productController),
-        TileChild(sourceReactiveController),
-        TileChild(delete).apply { root.classList.add("has-text-right") }
+    override val container = Column(
+        Columns(
+            Column(HtmlWrapper(createHr()), size = ColumnSize.Full).apply { root.style.padding = "0rem" },
+            Column(reactiveController, size = ColumnSize.S4),
+            Column(directionController, size = ColumnSize.S1),
+            Column(productController, size = ColumnSize.S4),
+            Column(sourceReactiveController, size = ColumnSize.S2),
+            Column(delete, size = ColumnSize.S1).apply { root.classList.add("has-text-right") },
+            multiline = true
+        ),
+        size = ColumnSize.Full
     )
 
     override fun refresh() {

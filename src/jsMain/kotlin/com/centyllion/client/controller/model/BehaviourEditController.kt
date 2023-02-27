@@ -18,18 +18,19 @@ class BehaviourEditController(
 
     override var data: Behaviour by observable(initialData) { _, old, new ->
         if (old != new) {
-            nameController.data = data.name
-            descriptionController.data = data.description
-            probabilityController.data = "${data.probability}"
-            agePredicateController.data = data.agePredicate
-            mainReactiveController.data = context.grainForId(data.mainReactiveId)
-            mainProductController.data = context.grainForId(data.mainProductId)
-            sourceReactiveController.data = data.sourceReactive
-            sourceReactiveController.context = data to context
-            reactionsController.data = data.reaction
-            reactionsController.context = data to context
-            fieldPredicatesController.data = data.fieldPredicates
-            fieldInfluencesController.data = context.fields.map { it.id to (data.fieldInfluences[it.id] ?: 0f) }
+            nameController.data = new.name
+            descriptionController.data = new.description
+            probabilityController.data = "${new.probability}"
+            agePredicateController.data = new.agePredicate
+            mainReactiveController.data = context.grainForId(new.mainReactiveId)
+            mainDirection.context = null to context.grainForId(new.mainReactiveId)?.color
+            mainProductController.data = context.grainForId(new.mainProductId)
+            sourceReactiveController.data = new.sourceReactive
+            sourceReactiveController.context = new to context
+            reactionsController.data = new.reaction
+            reactionsController.context = new to context
+            fieldPredicatesController.data = new.fieldPredicates
+            fieldInfluencesController.data = context.fields.map { it.id to (new.fieldInfluences[it.id] ?: 0f) }
             onUpdate(old, new, this@BehaviourEditController)
             refresh()
         }
@@ -108,32 +109,46 @@ class BehaviourEditController(
         this.data = data.copy(reaction = data.reaction + newReaction)
     }
 
+    val mainDirection = DirectionController(
+        initial = emptySet(),
+        initialContext = null to context.grainForId(data.mainReactiveId)?.color,
+        readOnly = true
+    )
 
     val reactionHeader = listOf(
         // Header
-        TileParent(
-            TileChild(Help(page.i18n("Reactives"))),
-            TileChild(Help(page.i18n("Directions"))),
-            TileChild(Help(page.i18n("Products"))),
-            TileChild(Help(page.i18n("Sources"))),
-            TileChild()
+        Column(
+            Columns(
+                Column(Help(page.i18n("Reactives")), size = ColumnSize.S4),
+                Column(Help(page.i18n("Directions")), size = ColumnSize.S1),
+                Column(Help(page.i18n("Products")), size = ColumnSize.S4),
+                Column(Help(page.i18n("Sources")), size = ColumnSize.S2),
+                Column(size = ColumnSize.S1)
+            ),
+            size = ColumnSize.Full
         ),
         // Main reactive
-        TileParent(
-            TileChild(mainReactiveController),
-            TileChild(),
-            TileChild(mainProductController),
-            TileChild(sourceReactiveController),
-            TileChild(addReactionButton).apply { root.classList.add("has-text-right") }
+        Column(
+            Columns(
+                Column(mainReactiveController, size = ColumnSize.S4),
+                Column(mainDirection, size = ColumnSize.S1),
+                Column(mainProductController, size = ColumnSize.S4),
+                Column(sourceReactiveController, size = ColumnSize.S2),
+                Column(addReactionButton, size = ColumnSize.S1).apply { root.classList.add("has-text-right") }
+            ),
+            size = ColumnSize.Full
         )
     )
 
     val reactionEditTile = TileParent(size = TileSize.S1, vertical = true)
 
-    val reactionsController = MultipleController<Reaction, Pair<Behaviour, GrainModel>, TileAncestor, TileParent, ReactionEditController>(
-        data.reaction, data to context, reactionHeader, emptyList(),
-        TileAncestor( *Array(5) { if (it == 4) reactionEditTile else TileParent(vertical = true) } ), null,
-        { reaction, previous ->
+
+    val reactionsController = columnsController(
+        initialList = data.reaction,
+        initialContext = data to context,
+        header = reactionHeader,
+        footer = emptyList(),
+        controllerBuilder = { reaction, previous ->
             previous ?: ReactionEditController(reaction, data, context, page).also {
                 it.onUpdate = { old, new, _ ->
                     data = data.updateReaction(old, new)
@@ -143,12 +158,32 @@ class BehaviourEditController(
                 }
             }
         },
-        { parent, items ->
+    )
+    /*
+    val reactionsController = MultipleController<Reaction, Pair<Behaviour, GrainModel>, TileAncestor, TileParent, ReactionEditController>(
+        initialList = data.reaction,
+        initialContext = data to context,
+        header = reactionHeader,
+        footer = emptyList(),
+        container = TileAncestor( *Array(5) { if (it == 4) reactionEditTile else TileParent(vertical = true) } ),
+        onClick = null,
+        controllerBuilder = { reaction, previous ->
+            previous ?: ReactionEditController(reaction, data, context, page).also {
+                it.onUpdate = { old, new, _ ->
+                    data = data.updateReaction(old, new)
+                }
+                it.onDelete = { delete, _ ->
+                    data = data.dropReaction(delete)
+                }
+            }
+        },
+        updateParent = { parent, items ->
             parent.body.forEachIndexed { index, tileInner ->
                 (tileInner as TileParent).body = items.map { it.body[index] }
             }
         }
     )
+    */
 
     val addFieldPredicateButton = iconButton(Icon("plus", Size.Small), ElementColor.Primary, true, size = Size.Small) {
         val predicate = context.fields.first().id to Predicate(Operator.GreaterThan, 0f)

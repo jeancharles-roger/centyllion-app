@@ -16,7 +16,7 @@ import kotlin.properties.Delegates.observable
 
 class DirectionController(
     initial: Set<Direction>, initialContext: Pair<String?,String?>,
-    val errorIfEmpty: Boolean = false,
+    val errorIfEmpty: Boolean = false, override var readOnly: Boolean = false,
     onUpdate: (old: Set<Direction>, new: Set<Direction>, DirectionController) -> Unit = { _, _, _ -> }
 ): ControlElement, Controller<Set<Direction>, Pair<String?,String?>, HtmlWrapper<HTMLCanvasElement>> {
 
@@ -37,7 +37,6 @@ class DirectionController(
         if (old != new) visual.build()
     }
 
-    override var readOnly: Boolean = true
 
     val canvas = canvas {
         width = "${this@DirectionController.width}px"
@@ -125,12 +124,14 @@ class DirectionController(
         bindRendererOn(canvas.root)
 
         on(KPointerEvents.up) {
-            // updates directions upon click
-            val direction = pointToDirection(it.pos)
-            when {
-                direction == null -> { /* nothing to do */ }
-                data.contains(direction) -> data = data - direction
-                !data.contains(direction) -> data = data + direction
+            if (!readOnly) {
+                // updates directions upon click
+                val direction = pointToDirection(it.pos)
+                when {
+                    direction == null -> { /* nothing to do */ }
+                    data.contains(direction) -> data = data - direction
+                    !data.contains(direction) -> data = data + direction
+                }
             }
             EventPropagation.Stop
         }

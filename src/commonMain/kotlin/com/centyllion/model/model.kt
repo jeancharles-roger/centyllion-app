@@ -683,7 +683,10 @@ data class ModelAndSimulation(
         updateModel(model.copy(grains = model.grains + grain))
 
     fun dropGrain(grain: Grain): ModelAndSimulation =
-        updateModel(model.dropGrain(grain))
+        copy(
+            model = model.dropGrain(grain),
+            simulation = simulation.cleaned(model.dropGrain(grain))
+        )
 
     fun addField(field: Field): ModelAndSimulation =
         updateModel(model.copy(fields = model.fields + field))

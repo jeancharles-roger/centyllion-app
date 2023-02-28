@@ -4,8 +4,6 @@ import bulma.*
 import bulma.extension.ToastOptions
 import bulma.extension.bulmaToast
 import com.centyllion.client.AppContext
-import com.centyllion.client.ClientEvent
-import kotlin.js.Date
 import kotlin.js.Promise
 import kotlin.js.json
 
@@ -13,8 +11,6 @@ interface BulmaPage : BulmaElement {
     val appContext: AppContext
 
     fun onExit() = Promise.resolve(true)
-
-    fun navBarItem(): List<NavBarItem> = emptyList()
 
     fun i18n(key: String, vararg parameters: Any) = appContext.locale.i18n(key, *parameters)
 
@@ -33,10 +29,7 @@ interface BulmaPage : BulmaElement {
     fun message(content: String, vararg parameters: Any) = event(appContext.locale.i18n(content, *parameters), ElementColor.Info)
 
     private fun event(content: String, color: ElementColor) {
-        val date = Date().toISOString()
-        val event = ClientEvent(date, content, color)
-        appContext.notify(event)
-        notification(event.context, event.color)
+        notification(content, color)
     }
 
     fun modalDialog(title: String, body: List<BulmaElement>, vararg buttons: Button, active: Boolean = true): ModalCard {
@@ -54,25 +47,16 @@ interface BulmaPage : BulmaElement {
         modal.active = active
         return modal
     }
-
-    fun createMenuDivider() = DropdownDivider()
-
-    fun createMenuItem(
-        parent: Dropdown, text: String, icon: String, color: TextColor = TextColor.None,
-        disabled: Boolean = false, onClick: () -> Unit = {}
-    ) = DropdownSimpleItem(text, Icon(icon, color = color), disabled) {
-        onClick()
-        parent.active = false
-    }
 }
 
-private fun notification(content: String, color: ElementColor = ElementColor.None) {
+fun notification(content: String, color: ElementColor = ElementColor.None) {
     when (color) {
         ElementColor.Danger -> console.error(content)
         ElementColor.Warning -> console.warn(content)
         else -> console.log(content)
     }
 
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     val options = json(
         "message" to content,
         "type" to color.className,

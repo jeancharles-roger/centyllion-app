@@ -10,15 +10,7 @@ data class ClientEvent(
 )
 
 interface AppContext {
-
     val locale: Locale
-
     val api: Api
-
-    //fun getFont(path: String): Promise<Font>
     fun i18n(key: String, vararg parameters: String) = locale.i18n(key, *parameters)
-
-    val events: List<ClientEvent>
-
-    fun notify(event: ClientEvent)
 }

@@ -33,6 +33,8 @@ class ModelController(
 
                 grainChart.data = createGrainPlots()
                 fieldChart.data = createFieldPlots()
+
+                expertMode = expertMode || new.expert
             }
 
             if (old.simulation != new.simulation) {
@@ -42,6 +44,15 @@ class ModelController(
 
             onUpdate(old, new, this@ModelController)
             refresh()
+        }
+    }
+
+    var expertMode: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            fieldsHeader.hidden = !new
+            fieldsController.hidden = !new
+            fieldChart.hidden = !new
+            resizeCharts()
         }
     }
 
@@ -149,17 +160,26 @@ class ModelController(
             }
         }
 
+    val fieldsHeader = Level(
+        left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
+        right = listOf(addFieldButton),
+        mobile = true
+    ).apply { hidden = !expertMode }
+
     val fieldsController: MultipleController<Field, Unit, Columns, Column, Controller<Field, Unit, Column>> =
-        noContextColumnsController(data.model.fields, onClick = { field, _ -> selected = field })
-        { field, previous ->
-            previous ?: FieldDisplayController(field).wrap { controller ->
-                controller.onDelete = {
-                    data = data.dropField(controller.data)
-                    selected = null
+        noContextColumnsController(
+            initialList = data.model.fields,
+            onClick = { field, _ -> selected = field },
+            controllerBuilder = { field, previous ->
+                previous ?: FieldDisplayController(field).wrap { controller ->
+                    controller.onDelete = {
+                        data = data.dropField(controller.data)
+                        selected = null
+                    }
+                    Column(controller.container, size = ColumnSize.Full)
                 }
-                Column(controller.container, size = ColumnSize.Full)
             }
-        }
+        ).apply { hidden = !expertMode }
 
     val leftColumn = Column(
         searchController,
@@ -175,11 +195,7 @@ class ModelController(
             mobile = true
         ),
         behavioursController,
-        Level(
-            left = listOf(Icon(fieldIcon), Title(page.i18n("Fields"), TextSize.S4)),
-            right = listOf(addFieldButton),
-            mobile = true
-        ),
+        fieldsHeader,
         fieldsController,
         size = ColumnSize.S3
     ).apply {
@@ -270,7 +286,7 @@ class ModelController(
 
     val grainChart: PlotterController = PlotterController(
         page.i18n("Grains"), page.i18n("Step"),
-        createGrainPlots(), size(window.innerWidth/4.0, window.innerHeight/3.0),
+        createGrainPlots(), size(window.innerWidth/4.0, window.innerHeight * if (expertMode) 0.4 else 0.8),
         roundPoints = true,
     ).apply {
         push(0, simulationController.simulator.grainsCounts().values.map { it.toDouble() })
@@ -279,7 +295,7 @@ class ModelController(
     val fieldChart: PlotterController = PlotterController(
         page.i18n("Fields"), page.i18n("Step"),
         createFieldPlots(), size(window.innerWidth/4.0, window.innerHeight/3.0)
-    )
+    ).apply { hidden = !expertMode }
 
     val rightColumn = Column(
         grainChart, fieldChart,
@@ -322,12 +338,14 @@ class ModelController(
     fun resizeCharts() {
         val grainParent = grainChart.root.parentElement
         if (grainParent is HTMLElement) {
-            grainChart.size = size(grainParent.offsetWidth - 30.0, window.innerHeight/3.0)
+            val ratio = if (expertMode) 0.4 else 0.8
+            grainChart.size = size(grainParent.offsetWidth - 30.0, window.innerHeight * ratio)
         }
 
         val fieldParent = fieldChart.root.parentElement
         if (fieldParent is HTMLElement) {
-            fieldChart.size = size(fieldParent.offsetWidth - 30.0, window.innerHeight/3.0)
+            val ratio = 0.4
+            fieldChart.size = size(fieldParent.offsetWidth - 30.0, window.innerHeight * ratio)
         }
     }
 

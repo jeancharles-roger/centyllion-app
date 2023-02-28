@@ -674,6 +674,9 @@ data class ModelAndSimulation(
     val simulation: Simulation
 ) {
 
+    val expert: Boolean get() =
+        model.fields.isNotEmpty()
+
     fun updateModel(model: GrainModel): ModelAndSimulation = copy(model = model)
 
     fun updateGrain(old: Grain, new: Grain): ModelAndSimulation =

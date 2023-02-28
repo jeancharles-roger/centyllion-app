@@ -1,6 +1,7 @@
 package com.centyllion.client.page
 
 import bulma.*
+import bulma.extension.Switch
 import com.centyllion.client.AppContext
 import com.centyllion.client.controller.model.ModelController
 import com.centyllion.client.controller.utils.UndoRedoSupport
@@ -32,6 +33,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             undoRedo.update(old, new)
             modelController.data = new
 
+            expertModeSwitch.disabled = new.expert
+
             // handles problems display
             problems = model.model.diagnose(appContext.locale)
             problemIcon.hidden = problems.isEmpty()
@@ -39,6 +42,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             problemsColumn.hidden = problemsColumn.hidden || problems.isEmpty()
             problemsTable.body = problems.map { it.toBulma() }
             refreshButtons()
+        }
+    }
+
+    var expertMode: Boolean by observable(false) { _, old, new ->
+        if (old != new) {
+            expertModeSwitch.checked = new
+            modelController.expertMode = new
         }
     }
 
@@ -100,19 +110,33 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         i18n("Tutorial"), Icon("question-circle"), color = ElementColor.Primary
     ) { startTutorial() })
 
+    val expertModeSwitch = Switch(
+        text = i18n("Expert Mode"),
+        color =  ElementColor.Primary,
+        rounded = true,
+        checked = expertMode
+    ) { _, value -> expertMode = value }
+
     val tools = BField(
         newControl,
         Control(fileInput),
         exportControl,
         Control(undoRedo.undoButton), Control(undoRedo.redoButton),
         // TODO hide tutorial for now tutorialControl,
+        expertModeSwitch,
         grouped = true, groupedMultiline = true
     )
 
 
     val container: BulmaElement = Div(
         Columns(
-            Column(Level(left = listOf(Label("NetBioDyn", size = Size.Large)), center = listOf(tools)), size = ColumnSize.Full),
+            Column(
+                Level(
+                    left = listOf(Label("NetBioDyn", size = Size.Large)),
+                    center = listOf(tools)
+                ),
+                size = ColumnSize.Full
+            ),
             problemsColumn,
             Column(modelController, size = ColumnSize.Full),
             multiline = true, centered = true
@@ -154,10 +178,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     val needsSaving get() = undoRedo.changed(model)
 
-    private val jsonExporter = Json { prettyPrint = true }
-
     fun export(after: () -> Unit = {}) {
-        val json = jsonExporter.encodeToString(ModelAndSimulation.serializer(), model)
         val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), model))
         download("model.centyllion", href)
         after()

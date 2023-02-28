@@ -1,16 +1,6 @@
 package com.centyllion.client.plotter
 
-import bulma.Column
-import bulma.Columns
-import bulma.Controller
-import bulma.Div
-import bulma.HtmlWrapper
-import bulma.Icon
-import bulma.Label
-import bulma.Level
-import bulma.SubTitle
-import bulma.canvas
-import bulma.span
+import bulma.*
 import com.centyllion.client.toFixed
 import io.data2viz.geom.Size
 import io.data2viz.geom.size
@@ -41,9 +31,9 @@ class PlotterController(
 
     override var context: Size by observable(size) { _, old, new ->
         if (old != new) {
-            plotter.size = new
             canvas.root.width = context.width.toInt()
             canvas.root.height = context.height.toInt()
+            plotter = createPlotter(data)
         }
     }
 

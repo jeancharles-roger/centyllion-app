@@ -212,7 +212,10 @@ class BehaviourEditController(
     }
 
     val fieldsConfiguration = Columns(
-        Column(fieldSeparator(), size = ColumnSize.Full),
+        Column(
+            fieldSeparator().apply { root.style.marginTop = "0.2rem" },
+            size = ColumnSize.Full
+        ),
         Column(
             Level(
                 left= listOf(Label(page.i18n("Field thresholds"))),

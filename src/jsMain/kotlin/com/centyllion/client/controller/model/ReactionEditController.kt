@@ -50,6 +50,8 @@ class ReactionEditController(
         }
     }
 
+    val separator = HtmlWrapper(createHr()).apply { root.style.margin = "0.2rem" }
+
     val reactiveController = GrainSelectController(context.second.grainForId(data.reactiveId), context.second.grains, page)
     { _, new, _ ->
         this.data = this.data.copy(reactiveId = new?.id ?: -1)
@@ -83,7 +85,7 @@ class ReactionEditController(
 
     override val container = Column(
         Columns(
-            Column(HtmlWrapper(createHr()), size = ColumnSize.Full).apply { root.style.padding = "0rem" },
+            Column(separator, size = ColumnSize.Full).apply { root.style.padding = "0rem" },
             Column(reactiveController, size = ColumnSize.S4),
             Column(directionController, size = ColumnSize.S1),
             Column(productController, size = ColumnSize.S4),

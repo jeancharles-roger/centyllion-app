@@ -240,7 +240,7 @@ class BehaviourEditController(
     )
 
     override fun refresh() {
-        addReactionButton.disabled = data.reaction.size >= 4
+        addReactionButton.disabled = data.reaction.size >= 8
 
         nameController.refresh()
         descriptionController.refresh()

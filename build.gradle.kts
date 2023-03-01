@@ -13,16 +13,9 @@ val d = debug?.toBoolean() ?: false
 
 val serializationVersion: String = "1.2.2"
 val coroutineVersion: String = "1.4.2"
-val cliktVersion: String = "3.2.0"
-val logbackVersion: String = "1.2.3"
-val ktorVersion: String = "1.6.2"
 val kotlinxHtmlVersion: String = "0.7.3"
 val bulmaKotlinVersion: String = "0.5"
 val babylonKotlinVersion: String = "0.5.2"
-val exposedVersion: String = "0.32.1"
-val postgresqlVersion: String = "42.2.23"
-val keycloakVersion: String = "8.0.2"
-
 val data2vizVersion: String = "0.10.1"
 val markdownVersion: String = "0.2.4"
 
@@ -59,58 +52,6 @@ version = "0.0.1"
 val centyllionWebroot = file("$projectDir/webroot/js/centyllion")
 
 kotlin {
-    // Default source set for JVM-specific sources and dependencies:
-    jvm {
-        compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
-
-                // needed by ktor-auth-jwt (strange since it was included at some time ...)
-                implementation("com.google.guava:guava:27.1-jre")
-
-                if (d) implementation("ch.qos.logback:logback-classic:$logbackVersion")
-
-                implementation("io.ktor:ktor-html-builder:$ktorVersion")
-                implementation("io.ktor:ktor-client-apache:$ktorVersion")
-                implementation("io.ktor:ktor-auth:$ktorVersion")
-                implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
-                implementation("io.ktor:ktor-network-tls:$ktorVersion")
-                implementation("io.ktor:ktor-network-tls-certificates:$ktorVersion")
-                implementation("io.ktor:ktor-server-netty:$ktorVersion")
-                implementation("io.ktor:ktor-serialization:$ktorVersion")
-
-                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
-
-                // adds dependencies for postgres
-                implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-                implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-                implementation("org.jetbrains.exposed:exposed-jodatime:$exposedVersion")
-                implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-                implementation("org.postgresql:postgresql:$postgresqlVersion")
-                implementation("com.zaxxer:HikariCP:3.3.1") // Connection pool
-
-                // adds dependencies to manage keycloak users
-                implementation("org.jboss.resteasy:resteasy-client:3.6.1.Final")
-                implementation("org.jboss.resteasy:resteasy-jaxrs:3.6.1.Final")
-                implementation("org.jboss.resteasy:resteasy-jackson2-provider:3.6.1.Final")
-                implementation("org.jboss.resteasy:resteasy-multipart-provider:3.6.1.Final")
-                implementation("org.keycloak:keycloak-admin-client:$keycloakVersion")
-            }
-        }
-        // JVM-specific tests and their dependencies:
-        compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation("io.ktor:ktor-server-test-host:$ktorVersion")
-                implementation(kotlin("test-junit"))
-            }
-        }
-
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
-        }
-    }
 
     js(IR) {
         browser {
@@ -178,9 +119,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 tasks {
     val jsDir = "$buildDir/assemble/main/js"
-    val cssDir = "$buildDir/assemble/main/css"
     val webRoot = rootProject.file("webroot")
-    val deploy = rootProject.file("deploy")
 
     val mainFunction = "index()"
     val centyllionUrl = "https://127.0.0.1:8443"
@@ -232,23 +171,4 @@ tasks {
 
     val jsJar by existing
     jsJar.get().dependsOn(syncJs)
-
-    val assemble by existing
-    val jvmJar by existing(Jar::class)
-    val distribution = register<Tar>("distribution") {
-        group = "deployment"
-        dependsOn(assemble)
-
-        // web assets and javascript
-        from(webRoot) { into("webroot") }
-
-        // start/stop scripts
-        from(deploy)
-
-        // jars for server
-        from(project.configurations["jvmDefault"].resolve()) { into("libs") }
-        from(jvmJar.get().archiveFile.get()) { into("libs") }
-
-        compression = Compression.GZIP
-    }
 }

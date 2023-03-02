@@ -252,7 +252,7 @@ class ModelController(
     val simulationItem = TabPage(TabItem(page.i18n("Simulation"), "play"), simulationController)
     val environmentItem = TabPage(TabItem(page.i18n("Environment"), "cogs"), settingsController)
 
-    val editionTabs = Tabs(fullWidth = true)
+    val editionTabs = Tabs(fullWidth = true, boxed = true)
     val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, tabs = editionTabs) {
         if (it == simulationItem) simulationController.resize()
         refresh()

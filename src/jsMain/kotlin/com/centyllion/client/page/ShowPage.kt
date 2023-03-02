@@ -10,10 +10,11 @@ import com.centyllion.client.stringHref
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
-import com.centyllion.model.Field
+import kotlinx.browser.window
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.url.URLSearchParams
 import org.w3c.files.FileList
 import org.w3c.files.FileReader
 import org.w3c.files.get
@@ -213,4 +214,17 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         }
     }
 
+
+    init {
+        // retrieves parameters
+        val params = URLSearchParams(window.location.search)
+        params.get("expert")?.let { expertMode = it.toBoolean()}
+        params.get("model")?.let { url ->
+            appContext.api.fetch("GET", url)
+                .then(
+                    onFulfilled = { setModel(Json.decodeFromString(it)) },
+                    onRejected = { notification("Can't load model at $url", ElementColor.Danger) },
+                )
+        }
+    }
 }

@@ -124,7 +124,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         exportControl,
         Control(undoRedo.undoButton), Control(undoRedo.redoButton),
         // TODO hide tutorial for now tutorialControl,
-        expertModeSwitch,
         grouped = true, groupedMultiline = true
     )
 
@@ -134,7 +133,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             Column(
                 Level(
                     left = listOf(Label("NetBioDyn", size = Size.Large)),
-                    center = listOf(tools)
+                    center = listOf(tools),
+                    right = listOf(expertModeSwitch)
                 ),
                 size = ColumnSize.Full
             ),
@@ -181,7 +181,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun export(after: () -> Unit = {}) {
         val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), model))
-        download("model.centyllion", href)
+        download("model.netbiodyn", href)
         after()
     }
 

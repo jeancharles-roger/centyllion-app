@@ -128,11 +128,16 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     )
 
 
+    private val currentVersion = Help("")
+
     val container: BulmaElement = Div(
         Columns(
             Column(
                 Level(
-                    left = listOf(Label("NetBioDyn", size = Size.Large)),
+                    left = listOf(
+                        Label("NetBioDyn", size = Size.Large),
+                        currentVersion
+                    ),
                     center = listOf(tools),
                     right = listOf(expertModeSwitch)
                 ),
@@ -225,6 +230,10 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                     onFulfilled = { setModel(Json.decodeFromString(it)) },
                     onRejected = { notification("Can't load model at $url", ElementColor.Danger) },
                 )
+        }
+
+        appContext.api.fetchVersion().then {
+            currentVersion.text = i18n("version of %0", it.date)
         }
     }
 }

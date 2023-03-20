@@ -122,9 +122,6 @@ tasks {
     val webRoot = rootProject.file("webroot")
 
     val mainFunction = "index()"
-    val centyllionUrl = "https://127.0.0.1:8443"
-    //val centyllionUrl = "https://app.centyllion.com"
-    val externalFunction = "external(\"$centyllionUrl\")"
 
     val compileKotlinJs by existing(Kotlin2JsCompile::class)
 
@@ -145,6 +142,7 @@ tasks {
 
     val syncJs by register("syncJs") {
         dependsOn(jsBrowserWebpack)
+        dependsOn(generateVersion)
         group = "build"
         doLast {
             // find js distributed file

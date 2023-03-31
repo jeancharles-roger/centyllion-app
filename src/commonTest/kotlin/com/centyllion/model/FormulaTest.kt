@@ -37,11 +37,7 @@ class FormulaTest {
 
     @Test
     fun testSimulation() {
-        val simulation = createSimulation(
-            width = 10,
-            height = 1,
-            agents = listOf(0) + List(9) { -1 }
-        )
+        val simulation = createSimulation(size = 10) { if (it == 0) 0 else -1 }
         val simulator = Simulator(model, simulation)
         repeat(2) {
             simulator.oneStep()

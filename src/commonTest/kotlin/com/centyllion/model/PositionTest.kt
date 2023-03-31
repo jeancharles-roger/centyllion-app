@@ -7,8 +7,6 @@ import kotlin.test.assertEquals
 class PositionTest {
 
     val s1 = createSimulation()
-    val s2 = createSimulation("", "", 256, 100)
-    val s3 = createSimulation("", "", 50, 20, 3)
 
     private fun checkPosition(position: Position, vararg tests: Pair<Simulation, Int>) = tests.forEach {
         assertEquals(it.second, it.first.toIndex(position.x, position.y, position.z))
@@ -24,37 +22,32 @@ class PositionTest {
 
     @Test
     fun testPositionToIndex() {
-        checkPosition(Position(0, 0, 0), s1 to 0, s2 to 0, s3 to 0)
-        checkPosition(Position(50, 0, 0), s1 to 50, s2 to 50)
-        checkPosition(Position(50, 2, 0), s1 to 250, s2 to 562, s3 to 150)
-        checkPosition(Position(50, 2, 1), s3 to 1150)
+        checkPosition(Position(0, 0, 0), s1 to 0)
+        checkPosition(Position(50, 0, 0), s1 to 50)
+        checkPosition(Position(50, 2, 0), s1 to 250 )
+        checkPosition(Position(50, 2, 1))
     }
 
     @Test
     fun testIndexToPosition() {
-        Position(0, 0, 0).let { zero -> checkIndex(0, s1 to zero, s2 to zero, s3 to zero) }
+        Position(0, 0, 0).let { zero -> checkIndex(0, s1 to zero) }
         checkIndex(50,
             s1 to Position(50, 0, 0),
-            s2 to Position(50, 0, 0),
-            s3 to Position(0, 1, 0))
+        )
         checkIndex(250,
             s1 to Position(50, 2, 0),
-            s2 to Position(250, 0, 0),
-            s3 to Position(0, 5, 0)
         )
         checkIndex(562,
             s1 to Position(62, 5, 0),
-            s2 to Position(50, 2, 0),
-            s3 to Position(12, 11, 0)
         )
     }
 
     @Test
     fun testInside() {
-        checkInside(Position(0, 0, 0), s1 to true, s2 to true, s3 to true)
-        checkInside(Position(50, 0, 0), s1 to true, s2 to true, s3 to false)
-        checkInside(Position(49, 2, 0), s1 to true, s2 to true, s3 to true)
-        checkInside(Position(49, 2, 1), s1 to false, s2 to false, s3 to true)
+        checkInside(Position(0, 0, 0), s1 to true)
+        checkInside(Position(50, 0, 0), s1 to true)
+        checkInside(Position(49, 2, 0), s1 to true)
+        checkInside(Position(49, 2, 1), s1 to false)
     }
 
     @Test

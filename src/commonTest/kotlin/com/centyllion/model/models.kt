@@ -15,15 +15,11 @@ fun dendriteModel(): GrainModel {
     return GrainModel("Dendrite", "test model", listOf(ms, mc), listOf(r1))
 }
 
-fun dendriteSimulation(width: Int = 100, height: Int = 100): Simulation {
-    val size = width * height
-    val agents = (0 until size).map {
-        when (it) {
-            size/2 -> 1
-            else -> if (Random.nextDouble() < 0.15) 0 else -1
-        }
+fun dendriteSimulation(size: Int = 100) = createSimulation(size = 100) {
+    when (it) {
+        size/2 -> 1
+        else -> if (Random.nextDouble() < 0.15) 0 else -1
     }
-    return createSimulation("", "", width, height, 1, agents)
 }
 
 fun antsModel()= Json.decodeFromString(GrainModel.serializer(), """
@@ -219,18 +215,14 @@ fun antsModel()= Json.decodeFromString(GrainModel.serializer(), """
     }
 """.trimIndent())
 
-fun antsSimulation(width: Int = 100, height: Int = 100): Simulation {
-    val size = width * height
+fun antsSimulation(size: Int = 100): Simulation {
     val third = size / 3
-    return Simulation(
-        "Chaos", "", width, height, 1,
-        List(size) {
-            when (it) {
-                in 0..third -> if (Random.nextInt(10) == 0) 0 else -1
-                5000 -> 2
-                in (size-third)..size -> if (Random.nextInt(10) == 0) 1 else -1
-                else -> -1
-            }
+    return createSimulation("Chaos") {
+        when (it) {
+            in 0..third -> if (Random.nextInt(10) == 0) 0 else -1
+            5000 -> 2
+            in (size-third)..size -> if (Random.nextInt(10) == 0) 1 else -1
+            else -> -1
         }
-    )
+    }
 }

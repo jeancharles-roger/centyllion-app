@@ -6,6 +6,8 @@ import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.editorBox
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.SimulationSettings
+import com.centyllion.model.availableSimulationSizes
+import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
 class SimulationSettingsController (
@@ -15,6 +17,7 @@ class SimulationSettingsController (
 
     override var data: SimulationSettings by observable(initialData) { _, old, new ->
         if (old != new) {
+            sizeController.selectedIndex = availableSimulationSizes.indexOf(new.size)
             colorController.data = new.backgroundColor ?: "Grey"
             showGridSwitch.checked = data.showGrid
             gridTextureUrlController.data = data.gridTextureUrl ?: ""
@@ -25,11 +28,22 @@ class SimulationSettingsController (
 
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
+            sizeController.disabled = new
             colorController.readOnly = new
             showGridSwitch.disabled = new
             gridTextureUrlController.readOnly = new
         }
     }
+
+    val sizeController = Select(
+        options = availableSimulationSizes.map { Option("$it") }, rounded = true,
+        selectedIndex = availableSimulationSizes.indexOf(initialData.size)
+    ) { _: Event, value: List<Option> ->
+        value.firstOrNull()?.value?.let {
+            data = data.copy(size = it.toInt())
+        }
+    }
+
 
     val colorController = ColorSelectController(data.backgroundColor ?: "Grey") { _, new, _ ->
         data = data.copy(backgroundColor = if (new.isBlank()) null else new.trim())
@@ -45,6 +59,10 @@ class SimulationSettingsController (
 
     override val container = editorBox(
         page.i18n("Simulation"), "cogs",
+        Field(
+            Label(page.i18n("Size")),
+            Control(sizeController)
+        ),
         Field(
             Label(page.i18n("Background Color")),
             Control(colorController.container)

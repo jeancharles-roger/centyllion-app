@@ -14,8 +14,7 @@ class SimulationTest {
             behaviours = listOf(Behaviour("one2one", mainReactiveId = 0, mainProductId = 1))
         )
 
-        val agents = List(100*100) { if (it % 20 == 0) 0 else -1}
-        val one2oneSimulation = createSimulation("Test one 2 one", agents = agents)
+        val one2oneSimulation = createSimulation("Test one 2 one") { if (it % 20 == 0) 0 else -1}
 
         val simulator = Simulator(one2oneModel, one2oneSimulation)
         simulator.grainsCounts().let { counts ->

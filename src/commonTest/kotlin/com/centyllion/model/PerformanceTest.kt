@@ -7,13 +7,13 @@ class PerformanceTest {
 
     @Test
     fun testDendritePerformance() {
-        val simulator = Simulator(dendriteModel(), dendriteSimulation(100, 100))
+        val simulator = Simulator(dendriteModel(), dendriteSimulation(100))
         repeat(100) { simulator.oneStep() }
     }
 
     @Test @Ignore
     fun testAntsPerformance() {
-        val simulator = Simulator(antsModel(), antsSimulation(100, 100))
+        val simulator = Simulator(antsModel(), antsSimulation(100))
         repeat(300) { simulator.oneStep() }
     }
 

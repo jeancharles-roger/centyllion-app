@@ -68,7 +68,6 @@ class FieldChangeController(
     val valueSlider = Slider(
         data.second.toString(), "$min", "$max", "0.05", sliderColor, circle = true
     ) { _, value ->
-        console.log("Update slider for ${field?.name} to $value")
         data = data.first to value.toFloat()
     }
 

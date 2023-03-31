@@ -81,9 +81,17 @@ class Simulator3dViewController(
             }
 
             if (old.simulation.settings != new.simulation.settings) {
-                plane.material?.dispose()
-                plane.material = createPlaneMaterial()
+                plane.dispose()
+                plane = buildPlane()
                 scene.clearColor = colorFromName(data.simulation.settings.backgroundColor ?: "Grey").toColor4(1)
+
+                // clears meshes out of bounds of simulation if simulation settings where changed
+                if (old.simulation.dataSize != new.simulation.dataSize) {
+                    for (i in old.simulation.agents.indices - new.simulation.agents.indices) {
+                        transformMesh(i, -1, true)
+                    }
+                    resetCamera()
+                }
             }
 
             refresh()
@@ -237,12 +245,18 @@ class Simulator3dViewController(
         panningSensibility = 50
     }
 
-    val plane = MeshBuilder.CreatePlane("ground", BasicPlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE), scene).apply {
+    private fun buildPlane() = MeshBuilder.CreatePlane(
+        name = "ground",
+        options = BasicPlaneOptions(size = data.simulation.settings.size, sideOrientation = Mesh.DOUBLESIDE),
+        scene = scene
+    ).apply {
         rotate(Axis.X, -PI/2)
         alphaIndex = 0
 
         this.material = createPlaneMaterial()
     }
+
+    var plane = buildPlane()
 
     val pointer = MeshBuilder.CreateBox(
         "pointer", BasicBoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
@@ -444,7 +458,9 @@ class Simulator3dViewController(
         refresh(false)
     }
 
-    private fun toSimulation(value: Number?) = ((value?.toDouble()?: 0.0) - 0.5).roundToInt()
+    private fun toSimulation(value: Number?) = (
+            (value?.toDouble()?: 0.0) - (data.simulation.settings.size/200.0)
+    ).roundToInt()
 
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
@@ -458,8 +474,8 @@ class Simulator3dViewController(
                 val x = toSimulation(info.pickedPoint?.x)
                 val y = toSimulation(info.pickedPoint?.z)
 
-                simulationX = x + 50
-                simulationY = y + 50
+                simulationX = x + data.simulation.width / 2
+                simulationY = y + data.simulation.height / 2
                 sceneSourceX = x
                 sceneSourceY = y
                 simulationSourceX = simulationX
@@ -484,13 +500,13 @@ class Simulator3dViewController(
 
             if (info.hit && info.pickedMesh == plane) {
                 if (selectedTool != EditTools.Move && drawStep > 0) {
-                    simulationX = x + 50
-                    simulationY = y + 50
+                    simulationX = x + data.simulation.width / 2
+                    simulationY = y + data.simulation.height / 2
                     updatePointer()
                     drawOnSimulation()
                     drawStep += 1
                 }
-                onPointerMove(x + 50 , y + 50)
+                onPointerMove(x + data.simulation.width / 2 , y + data.simulation.height / 2)
             } else {
                 onPointerMove(-1, -1)
             }
@@ -506,8 +522,8 @@ class Simulator3dViewController(
             if (info.hit && info.pickedMesh != null) {
                 val x = toSimulation(info.pickedPoint?.x)
                 val y = toSimulation(info.pickedPoint?.z)
-                simulationX = x + 50
-                simulationY = y + 50
+                simulationX = x + data.simulation.width / 2
+                simulationY = y + data.simulation.height / 2
                 drawStep = -1
                 updatePointer()
                 drawOnSimulation()
@@ -632,8 +648,9 @@ class Simulator3dViewController(
             val alpha = Uint8Array(levels.size)
             levels.alpha(alpha)
             val texture = RawTexture.CreateAlphaTexture(
-                alpha, data.simulation.width, data.simulation.height,
-                scene, false, false, Texture.NEAREST_SAMPLINGMODE
+                data = alpha, width = data.simulation.width, height = data.simulation.height,
+                scene = scene, generateMipMaps = false,
+                invertY = false, samplingMode = Texture.NEAREST_SAMPLINGMODE
             )
             val material = StandardMaterial("${field.name} material", scene)
             val color = colorFromName(field.color)
@@ -641,9 +658,9 @@ class Simulator3dViewController(
             material.opacityTexture = texture
 
             val mesh = MeshBuilder.CreatePlane(
-                "${field.name} mesh",
-                BasicPlaneOptions(size = 100, sideOrientation = Mesh.DOUBLESIDE),
-                scene
+                name = "${field.name} mesh",
+                options = BasicPlaneOptions(size = data.simulation.settings.size, sideOrientation = Mesh.DOUBLESIDE),
+                scene = scene
             )
             mesh.material = material
             mesh.rotate(Axis.X, PI / 2)

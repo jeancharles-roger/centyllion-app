@@ -34,8 +34,8 @@ enum class Direction {
 
 val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 
-val emptyModel = GrainModel("")
-val emptySimulation = createSimulation("")
+val emptyModel = GrainModel()
+val emptySimulation = createSimulation()
 
 val emptyModelAndSimulation = ModelAndSimulation(emptyModel, emptySimulation)
 
@@ -491,57 +491,44 @@ data class GrainModel(
 private fun emptyList(size: Int): List<Int> = ArrayList<Int>(size).apply { repeat(size) { add(-1) } }
 
 fun createSimulation(
-    name: String = "",
-    description: String = "",
-    width: Int = 100,
-    height: Int = 100,
-    depth: Int = 1,
-    agents: List<Int> = emptyList(width * height * depth),
-    assets: List<Asset3d> = emptyList()
-) = Simulation(name, description, width, height, depth, agents, assets)
+    name: String = "", description: String = "", size: Int = 100,
+    agentsInit: (Int) -> Int = { -1 }
+) = Simulation(
+    name = name, description = description,
+    settings = SimulationSettings(size = size),
+    agents = List(size * size, agentsInit)
+)
+
+val availableSimulationSizes = listOf(10, 25, 50, 100)
 
 @Serializable
 data class SimulationSettings(
+    val size: Int = 100,
     val showGrid: Boolean = true,
     val gridTextureUrl: String? = null,
-    val backgroundColor: String? = null
-)
+    val backgroundColor: String? = null,
+) {
+    @Transient
+    val agentsSize = size * size
+}
 
 @Serializable
 data class Simulation(
     val name: String, val description: String,
-    val width: Int, val height: Int, val depth: Int,
-    val agents: List<Int>, val assets: List<Asset3d> = emptyList(),
-    val settings: SimulationSettings = SimulationSettings()
+    val settings: SimulationSettings = SimulationSettings(),
+    val agents: List<Int> = emptyList(settings.agentsSize),
+    val assets: List<Asset3d> = emptyList(),
+    // TODO should be removed from serialization (need migration)
+    val width: Int = settings.size,
+    val height: Int = settings.size,
+    val depth: Int = 1,
 ) {
 
-    fun assetIndex(asset: Asset3d) = assets.identityFirstIndexOf(asset)
 
-    fun updateAsset(old: Asset3d, new: Asset3d): Simulation {
-        val newAssets = assets.toMutableList()
-        newAssets[assetIndex(old)] = new
-        return copy(assets = newAssets)
-    }
 
-    fun dropAsset(asset: Asset3d): Simulation {
-        val index = assetIndex(asset)
-        if (index < 0) return this
-
-        val assets = assets.toMutableList()
-        // removes the asset
-        assets.removeAt(index)
-
-        return copy(assets = assets)
-    }
-
-    @Transient
     val levelSize = width * height
 
-    @Transient
     val dataSize = levelSize * depth
-
-    val valid
-        get() = width > 0 && height > 0 && depth > 0
 
     /** Move [index] on given [direction] of [step] cases, whatever the index, it will always remains inside the simulation. */
     fun moveIndex(index: Int, direction: Direction, step: Int = 1): Int {
@@ -602,6 +589,28 @@ data class Simulation(
     fun positionInside(x: Int, y: Int, z: Int = 0) =
         z in 0 until depth && y in 0 until height && x in 0 until width
 
+    fun assetIndex(asset: Asset3d) = assets.identityFirstIndexOf(asset)
+
+    fun updateAsset(old: Asset3d, new: Asset3d): Simulation {
+        val newAssets = assets.toMutableList()
+        newAssets[assetIndex(old)] = new
+        return copy(assets = newAssets)
+    }
+
+    fun dropAsset(asset: Asset3d): Simulation {
+        val index = assetIndex(asset)
+        if (index < 0) return this
+
+        val assets = assets.toMutableList()
+        // removes the asset
+        assets.removeAt(index)
+
+        return copy(assets = assets)
+    }
+
+    val valid
+        get() = width > 0 && height > 0 && depth > 0
+
     /** Cleans the simulation to remove non existing grains */
     fun cleaned(model: GrainModel): Simulation {
         val newAgents = agents.map {
@@ -614,6 +623,21 @@ data class Simulation(
         }
         return if (newAgents != agents) copy(agents = newAgents) else this
     }
+
+    fun updateSettings(newSettings: SimulationSettings): Simulation {
+        val currentSettings = this.settings
+        val newAgents = if (currentSettings.agentsSize == newSettings.agentsSize) agents
+         else List(newSettings.agentsSize) {-1 }
+
+        return Simulation(
+            name = name,
+            description = description,
+            settings = newSettings,
+            assets = assets,
+            agents = newAgents
+        )
+    }
+
 }
 
 @Serializable

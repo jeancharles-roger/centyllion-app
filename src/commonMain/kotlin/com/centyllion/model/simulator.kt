@@ -56,7 +56,7 @@ class Simulator(
 
     val currentAgents get() = if (step == 0) initialAgents else agents
 
-    val fieldMaxId = model.fields.map { it.id }.maxOrNull() ?: 0
+    val fieldMaxId = model.fields.maxOfOrNull { it.id } ?: 0
 
     val fields get() = if (currentFields) fields1 else fields2
 
@@ -265,7 +265,10 @@ class Simulator(
                                 diffusionSum / count
 
                     val diffused = level * (1f - field.deathProbability)
-                    val evaluated = evaluators[field.id]?.evaluateField(step, i, diffused) ?: diffused
+                    val evaluated = evaluators[field.id]
+                        ?.evaluateField(step, simulation.toPosition(i), diffused)
+                        ?: diffused
+
                     next[i] = evaluated.coerceIn(minField, 1f)
 
                     // count current field amounts

@@ -107,7 +107,8 @@ class FieldEditController (
     val parametersTable = Table(
         body = listOf(
             helpLine("step", "Current simulation step"),
-            helpLine("index", "Slot index"),
+            helpLine("x", "Slot x position"),
+            helpLine("y", "Slot y position"),
             helpLine("current", "Current field value (value if no formula is provided)"),
         ),
         fullWidth = true,

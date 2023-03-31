@@ -2,28 +2,33 @@ package com.centyllion.model
 
 import com.github.murzagalin.evaluator.DefaultFunctions
 import com.github.murzagalin.evaluator.Evaluator
-import com.github.murzagalin.evaluator.OneNumberArgumentFunction
+import com.github.murzagalin.evaluator.Function
 
 interface FieldEvaluator {
-    fun evaluateField(step: Int, index: Int, current: Float): Float
+    fun evaluateField(step: Int, position: Position, current: Float): Float
 }
 
-fun agentFunction(simulator: Simulator?) = object: OneNumberArgumentFunction("agent", 1) {
-    override fun invokeInternal(arg: Number): Double = simulator?.let {
-        val index = arg.toInt()
-        val result = if (index >= 0 && index < it.agents.size) it.agents[index] else -1
-        result.toDouble()
-    } ?: -1.0
+fun agentFunction(simulator: Simulator?) = object: Function("agent", 2) {
+    override fun invoke(vararg args: Any): Any {
+        require(args.size == 2) { "$name should be called with x and y" }
+        require(args.all { it is Int }) { "$name function requires all arguments to be integers" }
+        if (simulator == null ) return -1.0
+        val index = simulator.simulation.toIndex(args[0] as Int, args[1] as Int)
+        val result = if (index >= 0 && index < simulator.agents.size) simulator.agents[index] else -1
+        return result.toDouble()
+    }
 }
 
-fun fieldFunction(field: Field, simulator: Simulator?) = object: OneNumberArgumentFunction("field${field.id}", 1) {
-    override fun invokeInternal(arg: Number): Double = simulator?.let {
-        val index = arg.toInt()
-        // using fields that contains previous value for the field
-        val values = it.fields[field.id] ?: return 0.0
+fun fieldFunction(field: Field, simulator: Simulator?) = object: Function("field${field.id}", 2) {
+    override fun invoke(vararg args: Any): Any {
+        require(args.size == 2) { "$name should be called with x and y" }
+        require(args.all { it is Int }) { "$name function requires all arguments to be integers" }
+        if (simulator == null ) return 0.0
+        val index = simulator.simulation.toIndex(args[0] as Int, args[1] as Int)
+        val values = simulator.fields[field.id] ?: return 0.0
         val result = if (index >= 0 && index < values.size) values[index] else 0f
-        result.toDouble()
-    } ?: 0.0
+        return result.toDouble()
+    }
 }
 
 fun validateFormula(model: GrainModel, formula: String): String? {
@@ -34,7 +39,9 @@ fun validateFormula(model: GrainModel, formula: String): String? {
     )
     val variables = buildMap {
         put("step", 0)
-        put("index", 0)
+        put("x", 0)
+        put("y", 0)
+        put("z", 0)
         put("current", 0f)
     }
     return try {
@@ -47,7 +54,7 @@ fun validateFormula(model: GrainModel, formula: String): String? {
 }
 
 object SimpleFieldEvaluator: FieldEvaluator {
-    override fun evaluateField(step: Int, index: Int, current: Float): Float = current
+    override fun evaluateField(step: Int, position: Position, current: Float): Float = current
 
 }
 
@@ -64,13 +71,17 @@ class FormulaFieldEvaluator(
 
     private val parameters = mutableMapOf<String, Number>().apply {
         put("step", 0)
-        put("index", 0)
+        put("x", 0)
+        put("y", 0)
+        put("z", 0)
         put("current", 0f)
     }
 
-    override fun evaluateField(step: Int, index: Int, current: Float): Float {
+    override fun evaluateField(step: Int, position: Position, current: Float): Float {
         parameters["step"] = step
-        parameters["index"] = index
+        parameters["x"] = position.x
+        parameters["y"] = position.y
+        parameters["z"] = position.z
         parameters["current"] = current
         return evaluator.evaluateDouble(expression, parameters).toFloat()
     }

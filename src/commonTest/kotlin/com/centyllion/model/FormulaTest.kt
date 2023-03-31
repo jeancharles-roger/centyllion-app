@@ -16,17 +16,17 @@ class FormulaTest {
             )
         ),
         fields = listOf(
-            Field(0, formula = "field1(index)"),
+            Field(0, formula = "field1(x,y)"),
             Field(1),
-            Field(2, formula = "field1(index)"),
-            Field(3, formula = "agent(index) == 0 ? 1 : 0")
+            Field(2, formula = "field1(x,y)"),
+            Field(3, formula = "agent(x,y) == 0 ? 1 : 0")
         ),
     )
 
     @Test
     fun testFormulaCheck() {
-        assertNull(validateFormula(model, "field0(index)"))
-        assertNull(validateFormula(model, "agent(index)"))
+        assertNull(validateFormula(model, "field0(x, y)"))
+        assertNull(validateFormula(model, "agent(x, y)"))
         assertNull(validateFormula(model, "step"))
         assertEquals("Could not resolve variable 'toto'", validateFormula(model, "toto"))
         assertEquals("Could not resolve variable 'toto'", validateFormula(model, "0.0 + toto"))

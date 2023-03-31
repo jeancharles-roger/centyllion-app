@@ -1,5 +1,7 @@
 package com.centyllion.model
 
+import com.github.murzagalin.evaluator.DefaultFunctions
+import com.github.murzagalin.evaluator.Evaluator
 import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.random.Random
@@ -57,24 +59,39 @@ class Simulator(
     val fieldMaxId = model.fields.map { it.id }.maxOrNull() ?: 0
 
     val fields get() = if (currentFields) fields1 else fields2
+
     val nextFields get() = if (!currentFields) fields1 else fields2
 
     fun field(id: Int) = fields[id] ?: emptyFloatArray
 
     private var currentFields: Boolean = true
 
-    private val fields1: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
+    private val fields1: Map<Int, FloatArray> =
+        model.fields.associate { it.id to FloatArray(simulation.agents.size) { minField } }
 
-    private val fields2: Map<Int, FloatArray> = model.fields
-        .map { it.id to FloatArray(simulation.agents.size) { minField } }.toMap()
+    private val fields2: Map<Int, FloatArray> =
+        model.fields.associate { it.id to FloatArray(simulation.agents.size) { minField } }
 
-    val grainCountHistory = grainsCounts().let { counts ->
-        model.grains.map { it to mutableListOf(counts[it.id] ?: 0) }.toMap()
+    val formulaEvaluator = Evaluator(
+        functions = DefaultFunctions.ALL + agentFunction(this) + model.fields.map { fieldFunction(it, this) }
+    )
+
+    private val evaluators: Map<Int, FieldEvaluator> = model.fields.associate {
+        val formula = it.formula
+        it.id to when {
+            formula.isBlank() -> SimpleFieldEvaluator
+            formula.trim() == "current" -> SimpleFieldEvaluator
+            validateFormula(model, formula) != null -> SimpleFieldEvaluator
+            else -> FormulaFieldEvaluator(it, formula, formulaEvaluator)
+        }
     }
 
-    val fieldAmountHistory = fieldAmounts().let { amounts ->
-        model.fields.map { it to mutableListOf(amounts[it.id] ?: 0f) }.toMap()
+    val grainCountHistory: Map<Grain, MutableList<Int>> = grainsCounts().let { counts ->
+        model.grains.associateWith { mutableListOf(counts[it.id] ?: 0) }
+    }
+
+    val fieldAmountHistory: Map<Field, MutableList<Float>> = fieldAmounts().let { amounts ->
+        model.fields.associateWith { mutableListOf(amounts[it.id] ?: 0f) }
     }
 
     var step = 0
@@ -95,9 +112,11 @@ class Simulator(
         return if (id < 0) null else grainIdArray[id]
     }
 
-    fun lastGrainsCount(): Map<Grain, Int> = grainCountHistory.map { it.key to it.value.last() }.toMap()
+    fun lastGrainsCount(): Map<Grain, Int> =
+        grainCountHistory.map { it.key to it.value.last() }.toMap()
 
-    fun lastFieldAmount(): Map<Field, Float> = fieldAmountHistory.map { it.key to it.value.last() }.toMap()
+    fun lastFieldAmount(): Map<Field, Float> =
+        fieldAmountHistory.map { it.key to it.value.last() }.toMap()
 
     fun getSpeed(behaviour: Behaviour) = speeds[behaviour] ?: 0.0
 
@@ -105,41 +124,15 @@ class Simulator(
         speeds[behaviour] = speed
     }
 
-    fun applicableBehaviours(index: Int): List<ApplicableBehavior> {
-        // computes applicable behaviour for index
-        val grain = grainAtIndex(index)
-        return if (grain != null && reactiveGrains.contains(grain)) {
-            // a grain is present, a behaviour can be triggered
-            val age = ageAtIndex(index)
-            val fieldValues = fieldsAtIndex(index)
-
-            // find all neighbours
-            val neighbours = neighbours(index)
-            val applicable = allBehaviours.filter { it.applicable(grain, age, fieldValues, neighbours) }
-
-            // selects behaviour if any is applicable
-            applicable.flatMap { behaviour ->
-                // for each reactions, find all possible reactives
-                val possibleReactions = behaviour.reaction
-                    .map { reaction ->
-                        neighbours.filter { (d, a) ->
-                            reaction.reactiveId == a.reactiveId && reaction.allowedDirection.contains(d)
-                        }
-                    }
-
-                possibleReactions
-                    .allCombinations()
-                    .map { ApplicableBehavior(index, age, behaviour, it.map { it.second }) }
-            }
-        } else emptyList()
-    }
-
-
     /** Executes one step and returns the applied behaviours and the dead indexes. */
     fun oneStep(): Pair<Collection<ApplicableBehavior>, Collection<Int>> {
         // applies agents dying process
-        val currentCount = model.grains.map { it to 0 }.toMap().toMutableMap()
-        val currentFieldAmounts = model.fields.map { it to 0f }.toMap().toMutableMap()
+        val currentCount = mutableMapOf<Grain, Int>().apply {
+            model.grains.forEach { this[it] = 0 }
+        }
+        val currentFieldAmounts = mutableMapOf<Field, Float>().apply {
+            model.fields.forEach { this[it] = 0f }
+        }
 
         // defines values for fields to avoid dynamic call each time
         val fields = fields
@@ -147,7 +140,7 @@ class Simulator(
 
         val dead = mutableListOf<Int>()
 
-        // all will contains index of agents as keys associated to a list of applicable behaviors
+        // all will contain index of agents as keys associated to a list of applicable behaviors
         // if an agent doesn't contain any applicable behavior it will have an empty list.
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
@@ -182,7 +175,7 @@ class Simulator(
                             // selects one at random
                             val behaviour = applicable[random.nextInt(applicable.size)]
 
-                            // for each reactions, find all possible reactives
+                            // for each reaction, find all possible reactives
                             val possibleReactions = behaviour.reaction
                                 .map { reaction ->
                                     neighbours.filter { (d, a) ->
@@ -193,18 +186,22 @@ class Simulator(
                             // combines possibilities
                             val allCombinations = possibleReactions.allCombinations()
 
-                            val chosenCombination =  when {
+                            val chosenCombination = when {
                                 // optimized case when no field is used for the behaviour
                                 model.fields.isEmpty() || !behaviour.fieldInfluenced -> {
                                     random.nextInt(allCombinations.size)
                                 }
+
                                 else -> {
                                     // computes weight of each combination by adding the influence of all neighbours for a combination
                                     val influence = FloatArray(allCombinations.size) { c ->
                                         var sum = 0f
                                         allCombinations[c].forEach { (_, agent) ->
                                             behaviour.fieldInfluences.forEach { influence ->
-                                                val sourceField = fieldValues.find { it.first == influence.key }?.second ?: 0f
+                                                val sourceField = fieldValues
+                                                    .find { it.first == influence.key }?.second
+                                                    ?: 0f
+
                                                 val delta = log10(agent.fields[influence.key]) - log10(sourceField)
                                                 sum += delta * influence.value
                                             }
@@ -239,7 +236,7 @@ class Simulator(
                 }
             }
 
-            // applies field diffusion
+            // compute fields values for step
             model.fields.forEach { field ->
                 val current = fields[field.id]
                 val next = nextFields[field.id]
@@ -262,23 +259,28 @@ class Simulator(
                     val level =
                         // current value cut down
                         current[i] * (1.0f - field.speed * permeableSum / count) +
-                        // adding or removing from current agent if any
-                        (grain?.fieldProductions?.get(field.id) ?: 0f) +
-                        // diffusion from agent around using opposite directions
-                        diffusionSum / count
+                                // adding or removing from current agent if any
+                                (grain?.fieldProductions?.get(field.id) ?: 0f) +
+                                // diffusion from agent around using opposite directions
+                                diffusionSum / count
 
-                    next[i] = (level * (1f - field.deathProbability)).coerceIn(minField, 1f)
+                    val diffused = level * (1f - field.deathProbability)
+                    val evaluated = evaluators[field.id]?.evaluateField(step, i, diffused) ?: diffused
+                    next[i] = evaluated.coerceIn(minField, 1f)
+
                     // count current field amounts
                     currentFieldAmounts[field] = (currentFieldAmounts[field] ?: 0f) + next[i]
                 }
             }
         }
 
-        // filters behaviors that are concurrent
+        // filters behaviors that are concurrent to preserve the matter
         val values = all.values.asSequence()
-        val toExclude = values.filter { it.size > 1 }.flatMap { (it - it[random.nextInt(it.size)]).asSequence() }
+        val toExclude = values
+            .filter { it.size > 1 }
+            .flatMap { (it - it[random.nextInt(it.size)]).asSequence() }
+            .toSet()
         val toExecute = (values.flatten() - toExclude).toSet()
-
         toExecute.forEach { it.apply(this) }
 
         // stores count for each grain
@@ -375,5 +377,6 @@ class Simulator(
         return result
     }
 
-    fun fieldAmounts(): Map<Int, Float> = fields.map { it.key to it.value.sum() }.toMap()
+    fun fieldAmounts(): Map<Int, Float> =
+        fields.map { it.key to it.value.sum() }.toMap()
 }

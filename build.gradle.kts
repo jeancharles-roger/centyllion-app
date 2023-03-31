@@ -53,6 +53,15 @@ val centyllionWebroot = file("$projectDir/webroot/js/centyllion")
 
 kotlin {
 
+    jvm {
+        compilations["test"].defaultSourceSet {
+            dependencies {
+                implementation(kotlin("test-junit"))
+            }
+        }
+
+    }
+
     js(IR) {
         browser {
             //distribution { directory = file(centyllionWebroot) }
@@ -79,7 +88,6 @@ kotlin {
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
 
-                implementation(npm("keycloak-js", "8.0.2", generateExternals = false))
             }
         }
         compilations["test"].defaultSourceSet {
@@ -102,6 +110,8 @@ kotlin {
         // commonMain is required for reflection name resolution
         val commonMain by getting {
             dependencies {
+                implementation("io.github.murzagalin:multiplatform-expressions-evaluator:0.15.0")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
             }

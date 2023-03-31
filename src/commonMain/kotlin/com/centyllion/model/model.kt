@@ -34,15 +34,8 @@ enum class Direction {
 
 val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
 
-val firstDirections = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
-val extendedDirections = setOf(Direction.LeftUp, Direction.LeftDown, Direction.RightUp, Direction.RightDown)
-
 val emptyModel = GrainModel("")
-val emptyDescription = DescriptionInfo()
-val emptyGrainModelDescription = GrainModelDescription("", info = emptyDescription, tags = "", model = emptyModel)
 val emptySimulation = createSimulation("")
-val emptySimulationDescription =
-    SimulationDescription("", info = emptyDescription, modelId = "", thumbnailId = null, simulation = emptySimulation)
 
 val emptyModelAndSimulation = ModelAndSimulation(emptyModel, emptySimulation)
 
@@ -92,9 +85,10 @@ data class Field(
     override val description: String = "",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
-    val allowedDirection: Set<Direction> = defaultDirection
+    val allowedDirection: Set<Direction> = defaultDirection,
+    val formula: String = "",
 ): ModelElement {
-    /** Label for grain */
+    /** Label for field */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description
         name.isNotEmpty() -> name
@@ -353,7 +347,7 @@ data class GrainModel(
     val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
-    val fields: List<Field> = emptyList()
+    val fields: List<Field> = emptyList(),
 ) {
     fun grainForId(id: Int) = grains.find { it.id == id }
 
@@ -363,11 +357,14 @@ data class GrainModel(
 
     fun availableGrainId(): Int = availableId(grains.map(Grain::id))
 
-    fun availableColor() = availableColor(grains.map(Grain::color) + fields.map(Field::color))
+    fun availableColor() = availableColor(
+        grains.map(Grain::color) + fields.map(Field::color)
+    )
 
     fun grainIndex(grain: Grain) = grains.identityFirstIndexOf(grain)
 
-    fun newGrain(prefix: String = "Grain") = Grain(availableGrainId(), availableGrainName(prefix), availableColor())
+    fun newGrain(prefix: String = "Grain") =
+        Grain(availableGrainId(), availableGrainName(prefix), availableColor())
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
         val grainIndex = grainIndex(old)
@@ -407,9 +404,11 @@ data class GrainModel(
 
     fun availableFieldId(): Int = availableId(fields.map(Field::id))
 
-    fun availableFieldName(prefix: String = "Field"): String = availableName(fields.map(Field::name), prefix)
+    fun availableFieldName(prefix: String = "Field"): String =
+        availableName(fields.map(Field::name), prefix)
 
-    fun newField(prefix: String = "Field") = Field(availableFieldId(), availableFieldName(prefix), availableColor())
+    fun newField(prefix: String = "Field") =
+        Field(availableFieldId(), availableFieldName(prefix), availableColor())
 
     fun fieldIndex(field: Field) = fields.identityFirstIndexOf(field)
 
@@ -482,8 +481,8 @@ data class GrainModel(
      */
     fun doesGrainCountCanChange(grain: Grain): Boolean {
         return grain.halfLife > 0 || behaviours.map {
-            val reactiveCount = it.reaction.map { if (it.reactiveId == grain.id) 1 else 0 }.sum() + (if (it.mainReactiveId == grain.id) 1 else 0)
-            val productCount = it.reaction.map { if (it.productId == grain.id) 1 else 0 }.sum() + (if (it.mainProductId == grain.id) 1 else 0)
+            val reactiveCount = it.reaction.count { it.reactiveId == grain.id } + (if (it.mainReactiveId == grain.id) 1 else 0)
+            val productCount = it.reaction.count { it.productId == grain.id } + (if (it.mainProductId == grain.id) 1 else 0)
             reactiveCount != productCount
         }.fold(false) { a, p -> a || p }
     }
@@ -617,65 +616,13 @@ data class Simulation(
     }
 }
 
-interface Description: Ided {
-    val name: String
-    val icon: String
-
-    val label get() = if (name.isNotEmpty()) name else id.drop(id.lastIndexOf("-") + 1)
-}
-
-@Serializable
-data class DescriptionInfo(
-    val user: User? = null,
-    val createdOn: String = "",
-    val lastModifiedOn: String = "",
-    val readAccess: Boolean = true
-)
-
-@Serializable
-data class GrainModelDescription(
-    override val id: String,
-    val info: DescriptionInfo,
-    val tags: String,
-    val model: GrainModel
-) : Description {
-
-    @Transient
-    override val name = model.name
-
-    @Transient
-    override val icon = "boxes"
-}
-
-@Serializable
-data class SimulationDescription(
-    override val id: String,
-    val info: DescriptionInfo,
-    val modelId: String,
-    val thumbnailId: String?,
-    val simulation: Simulation
-) : Description {
-
-    @Transient
-    override val name = simulation.name
-
-    @Transient
-    override val icon = "play"
-
-    fun cleaned(model: GrainModelDescription): SimulationDescription {
-        val new = simulation.cleaned(model.model)
-        return if (new != simulation) copy(simulation = new) else this
-    }
-}
-
 @Serializable
 data class ModelAndSimulation(
     val model: GrainModel,
     val simulation: Simulation
 ) {
 
-    val expert: Boolean get() =
-        model.fields.isNotEmpty()
+    val expert: Boolean get() = model.fields.isNotEmpty()
 
     fun updateModel(model: GrainModel): ModelAndSimulation = copy(model = model)
 

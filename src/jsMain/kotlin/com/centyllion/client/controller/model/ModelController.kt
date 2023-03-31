@@ -74,7 +74,7 @@ class ModelController(
         if (oldSelection != newSelection) {
             val element = newSelection
             editorController = when (element) {
-                is Field -> FieldEditController(element, page) { old, new, _ ->
+                is Field -> FieldEditController(element, data.model, page) { old, new, _ ->
                     data = data.updateField(old, new)
                 }
                 is Grain -> GrainEditController(element, data.model, page) { old, new, _ ->

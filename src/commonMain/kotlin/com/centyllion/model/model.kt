@@ -112,7 +112,7 @@ data class Grain(
     val size: Double = 1.0,
     override val description: String = "",
     val halfLife: Int = 0,
-    val movementProbability: Double = 1.0,
+    val movementProbability: Double = 0.0,
     val allowedDirection: Set<Direction> = defaultDirection,
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),

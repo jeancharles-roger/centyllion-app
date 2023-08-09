@@ -20,8 +20,8 @@ val data2vizVersion: String = "0.10.1"
 val markdownVersion: String = "0.2.4"
 
 plugins {
-    kotlin("multiplatform") version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("multiplatform") version "1.9.0"
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 repositories {

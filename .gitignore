@@ -1,14 +1,14 @@
 .idea/**
 .gradle/**
-build/**
+**/build/**
 
 node_modules
 package-lock.json
 certificate.jks
 
-webroot/js/centyllion
-webroot/css/centyllion
-webroot/version.json
+web/webroot/js/centyllion
+web/webroot/css/centyllion
+web/webroot/version.json
 
 db/**
 

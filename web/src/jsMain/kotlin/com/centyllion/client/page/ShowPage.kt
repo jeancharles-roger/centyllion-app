@@ -29,7 +29,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private var problems: List<Problem> = emptyList()
 
-    var model: ModelAndSimulation by observable(emptyModelAndSimulation) { _, old, new ->
+    var model: ModelAndSimulation by observable(ModelAndSimulation.empty) { _, old, new ->
         if (new != old) {
             undoRedo.update(old, new)
             modelController.data = new
@@ -165,7 +165,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun new() = changeModelOrSimulation {accepted ->
         if (accepted) {
-            setModel(emptyModelAndSimulation)
+            setModel(ModelAndSimulation.empty)
             message("New model.")
         }
     }

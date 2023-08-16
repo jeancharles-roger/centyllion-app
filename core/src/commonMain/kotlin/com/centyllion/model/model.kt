@@ -1,6 +1,5 @@
 package com.centyllion.model
 
-import com.centyllion.i18n.Locale
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.pow
@@ -30,14 +29,14 @@ enum class Direction {
         LeftDown -> RightUp
         RightDown -> LeftUp
     }
+
+    companion object {
+
+        val default = setOf(Left, Up, Right, Down)
+        val extended = setOf(LeftUp, LeftDown, RightUp, RightDown)
+
+    }
 }
-
-val defaultDirection = setOf(Direction.Left, Direction.Up, Direction.Right, Direction.Down)
-
-val emptyModel = GrainModel()
-val emptySimulation = createSimulation()
-
-val emptyModelAndSimulation = ModelAndSimulation(emptyModel, emptySimulation)
 
 fun <T> List<T>.identityFirstIndexOf(value: T): Int {
     val identity = this.indexOfFirst { it === value }
@@ -85,7 +84,7 @@ data class Field(
     override val description: String = "",
     val speed: Float = 0.8f,
     val halfLife: Int = 10,
-    val allowedDirection: Set<Direction> = defaultDirection,
+    val allowedDirection: Set<Direction> = Direction.default,
     val formula: String = "",
 ): ModelElement {
     /** Label for field */
@@ -113,11 +112,15 @@ data class Grain(
     override val description: String = "",
     val halfLife: Int = 0,
     val movementProbability: Double = 0.0,
-    val allowedDirection: Set<Direction> = defaultDirection,
+    val allowedDirection: Set<Direction> = Direction.default,
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap()
 ): ModelElement {
+
+    @Transient
+    val iconName = icon.replace("-", "").lowercase()
+
     /** Label for grain */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description
@@ -160,41 +163,6 @@ data class Grain(
             fieldInfluences = fieldInfluences
         )
         else null
-
-    fun diagnose(model: GrainModel, locale: Locale): List<Problem> =
-        listOfNotNull(
-            (halfLife < 0).orNull { Problem(this, locale.i18n("Half-life must be positive or zero")) },
-            (movementProbability < 0.0 || movementProbability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) }
-        ) +
-        fieldProductions.map { entry ->
-            listOfNotNull(
-                (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field production for %0 must be between -1 and 1", field?.name ?: ""))
-                },
-                ((fieldPermeable[entry.key] ?: 1f) <= 0f && entry.value != 0f).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field permeability will prevent production for %0", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        fieldInfluences.map { entry ->
-            listOfNotNull(
-                (entry.value < -1 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field influence for %0 must be between -1 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        fieldPermeable.map {entry ->
-            listOfNotNull(
-                (entry.value < 0 || entry.value > 1).orNull {
-                    val field = model.fieldForId(entry.key)
-                    Problem(this, locale.i18n("Field permeability for %0 must be between 0 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten()
-
 }
 
 @Serializable
@@ -202,20 +170,8 @@ data class Reaction(
     val reactiveId: Int = -1,
     val productId: Int = -1,
     val sourceReactive: Int = -1,
-    val allowedDirection: Set<Direction> = defaultDirection
-) {
-    fun diagnose(model: GrainModel, behaviour: Behaviour, index: Int, locale: Locale): List<Problem> = listOfNotNull(
-        (reactiveId >= 0 && model.grainForId(reactiveId) == null).orNull {
-            Problem(behaviour, locale.i18n("Grain with id %0 doesn't exist for reactive %1", reactiveId, index))
-        },
-        (productId >= 0 && model.grainForId(productId) == null).orNull {
-            Problem(behaviour,locale.i18n("Grain with id %0 doesn't exist for reactive %1", productId, index))
-        },
-        (allowedDirection.isEmpty()).orNull {
-            Problem(behaviour, locale.i18n("No direction allowed for reactive %0", index))
-        }
-    )
-}
+    val allowedDirection: Set<Direction> = Direction.default
+)
 
 @Serializable
 data class Behaviour(
@@ -228,6 +184,18 @@ data class Behaviour(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList()
 ): ModelElement {
+
+    @Transient
+    val reactiveGrainIds = buildList {
+        add(mainReactiveId)
+        reaction.forEach { add(it.reactiveId) }
+    }
+
+    @Transient
+    val productGrainIds = buildList {
+        add(mainProductId)
+        reaction.forEach { add(it.productId) }
+    }
 
     @Transient
     val fieldInfluenced = fieldInfluences.any { it.value != 0f }
@@ -306,23 +274,6 @@ data class Behaviour(
         (reaction.flatMap { listOf(it.reactiveId, it.productId) } + mainReactiveId + mainProductId)
             .filter { it >= 0 }.mapNotNull { model.grainForId(it) }.toSet()
 
-    fun diagnose(model: GrainModel, locale: Locale): List<Problem> =
-        listOfNotNull(
-            (mainReactiveId < 0).orNull { Problem(this, locale.i18n("Behaviour must have a main reactive")) },
-            (probability < 0.0 || probability > 1.0).orNull { Problem(this, locale.i18n("Speed must be between 0 and 1")) },
-            (agePredicate.constant < 0).orNull { Problem(this, locale.i18n("Age predicate value must be positive or zero")) }
-        ) +
-        fieldPredicates.map { predicate ->
-            listOfNotNull(
-                (predicate.second.constant < 0f || predicate.second.constant > 1f).orNull {
-                    val field = model.fieldForId(predicate.first)
-                    Problem(this, locale.i18n("Field threshold value for %0 must be between 0 and 1", field?.name ?: ""))
-                }
-            )
-        }.flatten() +
-        reaction
-            .mapIndexed { index, reaction -> reaction.diagnose(model, this, index+1, locale) }
-            .flatten()
 }
 
 @Serializable
@@ -343,12 +294,13 @@ data class Position(
 
 @Serializable
 data class GrainModel(
-    val name: String = "",
-    val description: String = "",
+    override val name: String = "",
+    override val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList(),
-) {
+): ModelElement {
+
     fun grainForId(id: Int) = grains.find { it.id == id }
 
     fun fieldForId(id: Int) = fields.find { it.id == id }
@@ -472,10 +424,6 @@ data class GrainModel(
         return copy(behaviours = newBehaviours)
     }
 
-    fun diagnose(locale: Locale): List<Problem> =
-        grains.flatMap { it.diagnose(this, locale) } +
-        behaviours.flatMap { it.diagnose(this, locale) }
-
     /**
      * Does the given [grain] may change count over the course of a simulation ?
      */
@@ -485,6 +433,12 @@ data class GrainModel(
             val productCount = it.reaction.count { it.productId == grain.id } + (if (it.mainProductId == grain.id) 1 else 0)
             reactiveCount != productCount
         }.fold(false) { a, p -> a || p }
+    }
+
+    companion object {
+        val empty = GrainModel()
+
+        fun new(name: String) = GrainModel(name)
     }
 }
 
@@ -523,8 +477,6 @@ data class Simulation(
     val height: Int = settings.size,
     val depth: Int = 1,
 ) {
-
-
 
     val levelSize = width * height
 
@@ -638,6 +590,9 @@ data class Simulation(
         )
     }
 
+    companion object {
+        val empty = createSimulation()
+    }
 }
 
 @Serializable
@@ -680,4 +635,7 @@ data class ModelAndSimulation(
     fun dropBehaviour(behaviour: Behaviour): ModelAndSimulation =
         updateModel(model.dropBehaviour(behaviour))
 
+    companion object {
+        val empty = ModelAndSimulation(GrainModel.empty, Simulation.empty)
+    }
 }

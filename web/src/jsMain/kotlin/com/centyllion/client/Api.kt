@@ -1,7 +1,5 @@
 package com.centyllion.client
 
-import com.centyllion.i18n.Locale
-import com.centyllion.i18n.Locales
 import kotlinx.serialization.json.Json
 import org.w3c.xhr.XMLHttpRequest
 import kotlin.js.Promise
@@ -39,11 +37,5 @@ class Api(val baseUrl: String = "") {
 
     fun fetchVersion() =
         fetch("GET", "/version.json").then { Json.decodeFromString(Version.serializer(), it) }
-
-    fun fetchLocales() =
-        fetch("GET", "/locales/locales.json").then { Json.decodeFromString(Locales.serializer(), it) }
-
-    fun fetchLocale(locale: String) =
-        fetch("GET", "/locales/$locale.json").then { Json.decodeFromString(Locale.serializer(), it) }
 
 }

@@ -3,6 +3,7 @@ package com.centyllion.model
 import com.github.murzagalin.evaluator.DefaultFunctions
 import com.github.murzagalin.evaluator.Evaluator
 import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -289,11 +290,13 @@ class Simulator(
         // stores count for each grain
         currentCount.forEach {
             grainCountHistory[it.key]?.add(it.value)
+            maxGrainCount[it.key.id] = max(maxGrainCount[it.key.id] ?: 0, it.value)
         }
 
         // stores field amounts
         currentFieldAmounts.forEach {
             fieldAmountHistory[it.key]?.add(it.value)
+            maxFieldAmount[it.key.id] = max(maxFieldAmount[it.key.id] ?: 0f, it.value)
         }
 
         // swap fields
@@ -322,10 +325,16 @@ class Simulator(
             it.value.clear()
             it.value.add(counts.getOrElse(it.key.id) { 0 })
         }
+
+        maxGrainCount.clear()
+        grainsCounts().forEach { (k, v) -> maxGrainCount[k] = v }
+
         fieldAmountHistory.forEach {
             it.value.clear()
             it.value.add(0.0f)
         }
+        maxFieldAmount.clear()
+        maxFieldAmount.forEach { (k, v) -> maxFieldAmount[k] = 0f }
     }
 
     fun idAtIndex(index: Int) = currentAgents[index]
@@ -370,7 +379,7 @@ class Simulator(
         }
     }
 
-    fun grainsCounts(): Map<Int, Int> {
+    fun grainsCounts(): MutableMap<Int, Int> {
         val result = mutableMapOf<Int, Int>()
         for (i in currentAgents) {
             if (i >= 0) {
@@ -382,4 +391,9 @@ class Simulator(
 
     fun fieldAmounts(): Map<Int, Float> =
         fields.map { it.key to it.value.sum() }.toMap()
+
+    val maxGrainCount: MutableMap<Int, Int> = grainsCounts()
+
+    var maxFieldAmount: MutableMap<Int, Float> = fields.map { it.key to 0f }.toMap().toMutableMap()
+
 }

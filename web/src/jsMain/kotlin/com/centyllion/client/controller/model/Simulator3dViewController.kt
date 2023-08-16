@@ -30,27 +30,8 @@ class Simulator3dViewController(
     var onUpdate: (ended: Boolean, new: Simulator, Simulator3dViewController) -> Unit = { _, _, _ -> }
 ) : NoContextController<Simulator, BulmaElement>() {
 
-    enum class EditTools(val icon: String) {
-        Move("arrows-alt"), Pen("pen"),
-        Line("pencil-ruler"), Spray("spray-can"),
-        Eraser("eraser");
-
-        fun actualSize(size: ToolSize): Int = when (this) {
-            Spray -> when (size) {
-                ToolSize.Fine -> 10
-                else -> size.size * 4
-            }
-            else -> size.size
-        }
-    }
-
-    @Suppress("unused")
-    enum class ToolSize(val size: Int) {
-        Fine(1), Small(5), Medium(10), Large(20)
-    }
-
     // simulation content edition
-    private var selectedTool: EditTools = EditTools.Pen
+    private var selectedTool: EditTool = EditTool.Pen
     private var selectedSize: ToolSize = ToolSize.Fine
 
     var selectedGrain: Grain? = initialSelectedGrain
@@ -121,7 +102,7 @@ class Simulator3dViewController(
         }
     }
 
-    val toolButtons = EditTools.values().map { tool ->
+    val toolButtons = EditTool.values().map { tool ->
         iconButton(
             Icon(tool.icon), ElementColor.Primary,
             rounded = true, outlined = tool.ordinal == selectedTool.ordinal
@@ -335,10 +316,10 @@ class Simulator3dViewController(
             pointer.getScene().removeMesh(mesh)
         }
 
-        if (selectedTool != EditTools.Move) {
+        if (selectedTool != EditTool.Move) {
             val diameter = selectedTool.actualSize(selectedSize)
             val color4 = when (selectedTool) {
-                EditTools.Eraser -> Color3.Black()
+                EditTool.Eraser -> Color3.Black()
                 else -> color ?: Color3.Green()
             }.toColor4(1.0)
 
@@ -348,8 +329,8 @@ class Simulator3dViewController(
                 scene
             )
             child.visibility = when (selectedTool) {
-                EditTools.Eraser -> 0.1
-                EditTools.Spray -> 0.4
+                EditTool.Eraser -> 0.1
+                EditTool.Spray -> 0.4
                 else -> 0.7
             }
 
@@ -367,7 +348,7 @@ class Simulator3dViewController(
     }
 
     fun updatePointer() {
-        if (selectedTool == EditTools.Line) {
+        if (selectedTool == EditTool.Line) {
             if (drawStep == 0) {
                 val child = pointer.getChildren({ true }, true).firstOrNull()
                 if (child is Mesh) {
@@ -393,13 +374,13 @@ class Simulator3dViewController(
         changePointer(color, selectedSize.size)
     }
 
-    fun selectTool(tool: EditTools) {
+    fun selectTool(tool: EditTool) {
         toolButtons.forEach { it.outlined = false }
         toolButtons[tool.ordinal].outlined = true
         selectedTool = tool
 
         //planeBehaviour.enabled = tool != EditTools.Move
-        if (tool == EditTools.Move) {
+        if (tool == EditTool.Move) {
             camera.attachControl(simulationCanvas.root, false)
         } else {
             camera.detachControl(simulationCanvas.root)
@@ -415,14 +396,14 @@ class Simulator3dViewController(
 
     fun drawOnSimulation() {
         when (selectedTool) {
-            EditTools.Pen -> {
+            EditTool.Pen -> {
                 if (drawStep >= 0) {
                     selectedGrain?.id?.let { idToSet ->
                         circle(simulationX, simulationY) { i, j -> writeGrain(i, j, idToSet) }
                     }
                 }
             }
-            EditTools.Line -> {
+            EditTool.Line -> {
                 selectedGrain?.id?.let { idToSet ->
                     if (drawStep == -1) {
                         // draw the line
@@ -433,7 +414,7 @@ class Simulator3dViewController(
                 }
 
             }
-            EditTools.Spray -> {
+            EditTool.Spray -> {
                 selectedGrain?.id?.let { idToSet ->
                     if (drawStep >= 0) {
                         val sprayDensity = 0.005
@@ -445,12 +426,12 @@ class Simulator3dViewController(
                     }
                 }
             }
-            EditTools.Eraser -> {
+            EditTool.Eraser -> {
                 circle(simulationX, simulationY) { i, j ->
                     data.resetIdAtIndex(data.simulation.toIndex(i, j))
                 }
             }
-            EditTools.Move -> {
+            EditTool.Move -> {
             }
         }
 
@@ -465,7 +446,7 @@ class Simulator3dViewController(
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerDown(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
-        if (ray != null && selectedTool != EditTools.Move) {
+        if (ray != null && selectedTool != EditTool.Move) {
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh == plane) {
@@ -499,7 +480,7 @@ class Simulator3dViewController(
             positionPointer(x, y)
 
             if (info.hit && info.pickedMesh == plane) {
-                if (selectedTool != EditTools.Move && drawStep > 0) {
+                if (selectedTool != EditTool.Move && drawStep > 0) {
                     simulationX = x + data.simulation.width / 2
                     simulationY = y + data.simulation.height / 2
                     updatePointer()
@@ -516,7 +497,7 @@ class Simulator3dViewController(
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerUp(evt: PointerEvent, pickInfo: PickingInfo?, type: PointerEventTypes) {
         val ray = pickInfo?.ray
-        if (ray != null && selectedTool != EditTools.Move) {
+        if (ray != null && selectedTool != EditTool.Move) {
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
             if (info.hit && info.pickedMesh != null) {
@@ -709,7 +690,7 @@ class Simulator3dViewController(
 
     fun createMesh(index: Int, grainId: Int, x: Double, y: Double) {
         val agent = data.grainForId(grainId)
-        if (selectedTool != EditTools.Move || (agent?.invisible != true) ) {
+        if (selectedTool != EditTool.Move || (agent?.invisible != true) ) {
             sourceMeshes[grainId]?.createInstance("$index")?.also {
                 it.metadata = grainId
 

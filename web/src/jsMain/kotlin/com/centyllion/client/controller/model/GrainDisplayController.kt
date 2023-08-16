@@ -5,20 +5,21 @@ import com.centyllion.client.controller.utils.DeleteCallbackProperty
 import com.centyllion.client.page.BulmaPage
 import com.centyllion.model.Grain
 import com.centyllion.model.GrainModel
+import com.centyllion.model.hasNoError
 import kotlin.properties.Delegates.observable
 
 class GrainDisplayController(val page: BulmaPage, grain: Grain, model: GrainModel): Controller<Grain, GrainModel, Box> {
 
     override var data: Grain by observable(grain) { _, old, new ->
         if (old != new) {
-            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            errorIcon.hidden = data.hasNoError(context, page.appContext.locale)
             refresh()
         }
     }
 
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            errorIcon.hidden = data.hasNoError(context, page.appContext.locale)
             refresh()
         }
     }
@@ -28,7 +29,7 @@ class GrainDisplayController(val page: BulmaPage, grain: Grain, model: GrainMode
     }
 
     val errorIcon = Icon("exclamation-triangle", color = TextColor.Danger).apply {
-        hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+        hidden = data.hasNoError(context, page.appContext.locale)
     }
 
     val icon = Icon(grain.icon).apply {

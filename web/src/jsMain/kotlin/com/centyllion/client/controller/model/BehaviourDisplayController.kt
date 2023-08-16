@@ -6,20 +6,21 @@ import com.centyllion.client.page.BulmaPage
 import com.centyllion.client.toFixed
 import com.centyllion.model.Behaviour
 import com.centyllion.model.GrainModel
+import com.centyllion.model.hasNoError
 import kotlin.properties.Delegates.observable
 
 class BehaviourDisplayController(val page: BulmaPage, behaviour: Behaviour, model: GrainModel) : Controller<Behaviour, GrainModel, Box> {
 
     override var data: Behaviour by observable(behaviour) { _, old, new ->
         if (old != new) {
-            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            errorIcon.hidden = data.hasNoError(context, page.appContext.locale)
             refresh()
         }
     }
 
     override var context: GrainModel by observable(model) { _, old, new ->
         if (old != new) {
-            errorIcon.hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+            errorIcon.hidden = data.hasNoError(context, page.appContext.locale)
             refresh()
         }
     }
@@ -37,7 +38,7 @@ class BehaviourDisplayController(val page: BulmaPage, behaviour: Behaviour, mode
     var onDelete by deleteCallbackProperty
 
     val errorIcon = Icon("exclamation-triangle", color = TextColor.Danger).apply {
-        hidden = data.diagnose(context, page.appContext.locale).isEmpty()
+        hidden = data.hasNoError(context, page.appContext.locale)
     }
 
     val titleLabel = Label(behaviour.name)

@@ -26,6 +26,7 @@ interface Ided {
 
 data class Problem(
     val source: ModelElement,
+    val property: String,
     val message: String
 )
 

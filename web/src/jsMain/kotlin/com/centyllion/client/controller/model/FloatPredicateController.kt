@@ -5,6 +5,7 @@ import com.centyllion.client.controller.utils.editableFloatController
 import com.centyllion.i18n.Locale
 import com.centyllion.model.Operator
 import com.centyllion.model.Predicate
+import kotlinx.browser.window
 import org.w3c.dom.events.Event
 import kotlin.properties.Delegates.observable
 
@@ -28,7 +29,7 @@ class FloatPredicateController(
         }
     }
 
-    val select = Select(Operator.values().map { Option(it.label, it.name) }, rounded = true) { _: Event, value: List<Option> ->
+    val select = Select(Operator.entries.map { Option(it.label, it.name) }, rounded = true) { _: Event, value: List<Option> ->
         value.firstOrNull()?.value?.let {
             data = data.copy(op = Operator.valueOf(it))
         }
@@ -44,7 +45,7 @@ class FloatPredicateController(
     }
 
     override fun refresh() {
-        select.selectedIndex = data.op.ordinal
+        window.setTimeout({ select.selectedIndex = Operator.entries.indexOf(data.op) }, 0)
         value.data = "${data.constant}"
     }
 

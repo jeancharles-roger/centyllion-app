@@ -51,6 +51,8 @@ class ModelController(
         if (old != new) {
             fieldsHeader.hidden = !new
             fieldsController.hidden = !new
+            fieldsChartsHeader.hidden = !new
+            exportFieldCsvButton.hidden = !new
             fieldChart.hidden = !new
             resizeCharts()
         }
@@ -263,14 +265,39 @@ class ModelController(
         size = ColumnSize.S6
     )
 
-    var exportCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true, disabled = true) {
+    var exportGrainCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true) {
         val header = "step,${data.model.grains.map { it.name.ifBlank { it.id } }.joinToString(",")}"
         val content = (0 until simulationController.simulator.step).joinToString("\n") { step ->
             val counts = data.model.grains.map { simulationController.simulator.grainCountHistory[it]?.get(step) ?: 0 }.joinToString(",")
             "$step,$counts"
         }
-        download("counts.csv", stringHref("$header\n$content"))
+        download("agents.csv", stringHref("$header\n$content"))
     }
+
+    val fieldsChartsHeader = Label(page.i18n("Fields")).apply {
+        hidden = true
+    }
+
+    var exportFieldCsvButton = iconButton(Icon("file-csv"), ElementColor.Info, true) {
+        val header = "step,${data.model.fields.map { it.name.ifBlank { it.id } }.joinToString(",")}"
+        val content = (0 until simulationController.simulator.step).joinToString("\n") { step ->
+            val counts = data.model.fields.map { simulationController.simulator.fieldAmountHistory[it]?.get(step) ?: 0f }.joinToString(",")
+            "$step,$counts"
+        }
+        download("fields.csv", stringHref("$header\n$content"))
+    }.apply {
+        hidden = true
+    }
+
+
+
+    val chartsHeader = Level(
+        center = listOf(
+            Label(page.i18n("Grains")), exportGrainCsvButton,
+            fieldsChartsHeader, exportFieldCsvButton
+        ),
+        mobile = true
+    )
 
     private fun createGrainPlots(): List<Plot> = data.model.grains.map {
         Plot(
@@ -298,7 +325,7 @@ class ModelController(
     ).apply { hidden = !expertMode }
 
     val rightColumn = Column(
-        grainChart, fieldChart,
+        chartsHeader, grainChart, fieldChart,
         size = ColumnSize.S3
     )
 

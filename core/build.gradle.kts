@@ -4,7 +4,6 @@ val kotlinxHtmlVersion: String = "0.7.3"
 val bulmaKotlinVersion: String = "0.5"
 val babylonKotlinVersion: String = "0.5.2"
 val data2vizVersion: String = "0.10.1"
-val markdownVersion: String = "0.2.4"
 
 plugins {
     kotlin("multiplatform")

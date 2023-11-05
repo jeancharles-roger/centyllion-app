@@ -240,10 +240,10 @@ class Simulator3dViewController(
     var plane = buildPlane()
 
     val pointer = MeshBuilder.CreateBox(
-        "pointer", BasicBoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }), scene
-    ).apply {
-        isVisible = false
-    }
+        name = "pointer",
+        options = BasicBoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }),
+        scene = scene
+    )
 
     val tool get() = selectedTool
     val size get() = selectedSize
@@ -305,9 +305,30 @@ class Simulator3dViewController(
     }
 
 
+    fun square(sourceX: Int, sourceY: Int, x: Int, y: Int, block: (i: Int, j: Int) -> Unit) {
+        if (size == ToolSize.Fine) {
+            for (i in min(sourceX, x)..max(sourceX, x)) {
+                block(i, sourceY)
+                block(i, y)
+            }
+
+            for (j in min(sourceY, y)..max(sourceY, y)) {
+                block(sourceX, j)
+                block(x, j)
+            }
+        } else {
+            for (i in min(sourceX, x)..max(sourceX, x)) {
+                for (j in min(sourceY, y)..max(sourceY, y)) {
+                    block(i, j)
+                }
+            }
+        }
+    }
+
+
     val height = 6.0
 
-    fun changePointer(color: Color3?, size: Int) {
+    fun changePointer(color: Color3?) {
         // clear all children
         while (pointer.getChildMeshes().isNotEmpty()) {
             val mesh = pointer.getChildMeshes().first()
@@ -348,11 +369,11 @@ class Simulator3dViewController(
     }
 
     fun updatePointer() {
-        if (selectedTool == EditTool.Line) {
+        if (selectedTool == EditTool.Line || selectedTool == EditTool.Square) {
             if (drawStep == 0) {
                 val child = pointer.getChildren({ true }, true).firstOrNull()
                 if (child is Mesh) {
-                    val mesh = child.clone("line source", pointer)
+                    val mesh = child.clone("draw source", pointer)
                     if (mesh is Mesh) {
                         mesh.freezeWorldMatrix()
                         pointer.addChild(mesh)
@@ -360,7 +381,7 @@ class Simulator3dViewController(
                 }
             }
             if (drawStep < 0) {
-                val child = pointer.getChildren({ it.name == "line source" }, true).firstOrNull()
+                val child = pointer.getChildren({ it.name == "draw source" }, true).firstOrNull()
                 if (child is Mesh) {
                     pointer.removeChild(child)
                     child.dispose()
@@ -371,7 +392,7 @@ class Simulator3dViewController(
 
     fun selectPointer() {
         val color = colorFromName(selectedGrain?.color ?: "Gray")
-        changePointer(color, selectedSize.size)
+        changePointer(color)
     }
 
     fun selectTool(tool: EditTool) {
@@ -412,7 +433,16 @@ class Simulator3dViewController(
                         }
                     }
                 }
-
+            }
+            EditTool.Square -> {
+                selectedGrain?.id?.let { idToSet ->
+                    if (drawStep == -1) {
+                        // draw the line
+                        square(simulationSourceX, simulationSourceY, simulationX, simulationY) { i, j ->
+                            writeGrain(i, j, idToSet)
+                        }
+                    }
+                }
             }
             EditTool.Spray -> {
                 selectedGrain?.id?.let { idToSet ->

@@ -3,6 +3,7 @@ package com.centyllion.model
 
 enum class EditTool(val icon: String) {
     Move("arrows-alt"), Pen("pen"),
+    Square("square"),
     Line("pencil-ruler"), Spray("spray-can"),
     Eraser("eraser");
 
@@ -10,6 +11,11 @@ enum class EditTool(val icon: String) {
         Spray -> when (size) {
             ToolSize.Fine -> 10
             else -> size.size * 4
+        }
+        Line -> ToolSize.Fine.size
+        Square -> when (size) {
+            ToolSize.Fine -> size.size
+            else -> 20
         }
         else -> size.size
     }

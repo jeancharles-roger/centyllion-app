@@ -134,7 +134,7 @@ object English: Locale {
         "Reactives" -> "Reactives"
         "Directions" -> "Directions"
         "Products" -> "Products"
-        "Sources" -> "Sources"
+        "Sources" -> "With age from"
         "none" -> "none"
         "reactive %0" -> "reactive %0"
         "Field thresholds" -> "Field thresholds"

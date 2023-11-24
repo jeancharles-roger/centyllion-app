@@ -1,10 +1,13 @@
 package com.centyllion.client
 
 import bulma.BulmaElement
+import com.centyllion.model.ModelAndSimulation
 import com.centyllion.model.minFieldLevel
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.html.dom.create
 import kotlinx.html.js.a
+import kotlinx.serialization.json.Json
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
@@ -95,4 +98,16 @@ private val markdownParser = MarkdownParser(markdownFlavour)
 fun renderMarkdown(source: String): String {
     val parsedTree = markdownParser.buildMarkdownTreeFromString(source)
     return HtmlGenerator(source, parsedTree, markdownFlavour).generateHtml()
+}
+
+fun loadFromStorage(): ModelAndSimulation? =
+    window.localStorage.getItem("model")?.let {
+        Json.decodeFromString(ModelAndSimulation.serializer(), it)
+    }
+
+fun saveToStorage(model: ModelAndSimulation) {
+    window.setTimeout({
+        val value = Json.encodeToString(ModelAndSimulation.serializer(), model)
+        window.localStorage.setItem("model", value)
+    }, 25)
 }

@@ -2,11 +2,9 @@ package com.centyllion.client.page
 
 import bulma.*
 import bulma.extension.Switch
-import com.centyllion.client.AppContext
+import com.centyllion.client.*
 import com.centyllion.client.controller.model.ModelController
 import com.centyllion.client.controller.utils.UndoRedoSupport
-import com.centyllion.client.download
-import com.centyllion.client.stringHref
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
 import com.centyllion.model.*
@@ -43,6 +41,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             problemsColumn.hidden = problemsColumn.hidden || problems.isEmpty()
             problemsTable.body = problems.map { it.toBulma() }
             refreshButtons()
+            saveToStorage(model)
         }
     }
 
@@ -224,12 +223,18 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         // retrieves parameters
         val params = URLSearchParams(window.location.search)
         params.get("expert")?.let { expertMode = it.toBoolean()}
-        params.get("model")?.let { url ->
-            appContext.api.fetch("GET", url)
+
+
+        val modelUrl = params.get("model")
+        if (modelUrl != null) {
+            appContext.api.fetch("GET", modelUrl)
                 .then(
                     onFulfilled = { setModel(Json.decodeFromString(it)) },
-                    onRejected = { notification("Can't load model at $url", ElementColor.Danger) },
+                    onRejected = { notification("Can't load model at $modelUrl", ElementColor.Danger) },
                 )
+        } else {
+            val storage = loadFromStorage()
+            if (storage != null) model = storage
         }
 
         appContext.api.fetchVersion().then {

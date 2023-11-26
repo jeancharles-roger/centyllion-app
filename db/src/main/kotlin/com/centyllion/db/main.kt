@@ -75,6 +75,7 @@ class Export: Common(
         .convert { UUID.fromString(it) }
 
     override fun run() {
+
         val database = database()
         val result = database.databaseQueries.selectSimulation(id).executeAsOne()
         val content = buildString {
@@ -83,12 +84,14 @@ class Export: Common(
             appendLine("  \"simulation\":${result.simulation}")
             appendLine("}")
         }
+
         if (output != null) {
             // write to output
+            echo("Writing simulation $id to $output")
             output!!.writeText(content)
         } else {
             // write to stdout
-           println(content)
+           echo(content)
         }
     }
 }

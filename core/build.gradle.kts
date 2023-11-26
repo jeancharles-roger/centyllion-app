@@ -1,25 +1,11 @@
-val serializationVersion: String = "1.2.2"
-val coroutineVersion: String = "1.4.2"
-val kotlinxHtmlVersion: String = "0.7.3"
-val bulmaKotlinVersion: String = "0.5"
-val babylonKotlinVersion: String = "0.5.2"
-val data2vizVersion: String = "0.10.1"
-
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
 
-    jvm {
-        compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-junit"))
-            }
-        }
-
-    }
+    jvm()
 
     js(IR) {
         browser {
@@ -28,16 +14,6 @@ kotlin {
         }
         binaries.library()
 
-        compilations["main"].defaultSourceSet {
-            dependencies {
-
-            }
-        }
-        compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
         compilations.forEach {
             it.kotlinOptions {
                 moduleKind = "amd"
@@ -47,19 +23,28 @@ kotlin {
 
     sourceSets {
 
-        // commonMain is required for reflection name resolution
-        val commonMain by getting {
+        commonMain {
             dependencies {
-                api("io.github.murzagalin:multiplatform-expressions-evaluator:0.15.0")
-
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+                api(libs.evaluator)
+                api(libs.serialization.json)
             }
         }
-        val commonTest by getting {
+
+        commonTest {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(libs.bundles.test)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.bundles.test.jvm)
+            }
+        }
+
+        jsTest {
+            dependencies {
+                implementation(libs.bundles.test.js)
             }
         }
     }

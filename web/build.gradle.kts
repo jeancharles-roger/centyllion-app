@@ -11,17 +11,9 @@ val grpToken: String by project
 val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
-val serializationVersion: String = "1.2.2"
-val coroutineVersion: String = "1.4.2"
-val kotlinxHtmlVersion: String = "0.7.3"
-val bulmaKotlinVersion: String = "0.5"
-val babylonKotlinVersion: String = "0.5.2"
-val data2vizVersion: String = "0.10.1"
-val markdownVersion: String = "0.2.4"
-
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 repositories {
@@ -50,15 +42,6 @@ val centyllionWebroot = file("$projectDir/webroot/js/centyllion")
 
 kotlin {
 
-    jvm {
-        compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-junit"))
-            }
-        }
-
-    }
-
     js(IR) {
         browser {
             //distribution { directory = file(centyllionWebroot) }
@@ -66,32 +49,6 @@ kotlin {
         }
         binaries.executable()
 
-        compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinxHtmlVersion")
-
-                implementation("com.centyllion:bulma-kotlin:$bulmaKotlinVersion")
-                implementation("com.centyllion:babylon-kotlin:$babylonKotlinVersion")
-
-                implementation("io.data2viz.d2v:d2v-core:$data2vizVersion")
-                implementation("io.data2viz.d2v:d2v-color:$data2vizVersion")
-                implementation("io.data2viz.d2v:d2v-scale:$data2vizVersion")
-                implementation("io.data2viz.d2v:d2v-viz:$data2vizVersion")
-                implementation("io.data2viz.d2v:d2v-axis:$data2vizVersion")
-
-                implementation("org.jetbrains:markdown:$markdownVersion")
-
-                implementation(npm("babylonjs", "4.0.3", generateExternals = false))
-                implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
-                implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
-
-            }
-        }
-        compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
         compilations.forEach {
             it.kotlinOptions {
                 moduleKind = "amd"
@@ -103,17 +60,36 @@ kotlin {
     }
 
     sourceSets {
-
-        // commonMain is required for reflection name resolution
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":core"))
+                implementation(libs.kotlinx.html)
             }
         }
-        val commonTest by getting {
+
+        commonTest {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(libs.bundles.test)
+            }
+        }
+
+        jsMain {
+            dependencies {
+                implementation(libs.bulma.kotlin)
+                implementation(libs.babylon.kotlin)
+                implementation(libs.bundles.data2viz)
+                implementation(libs.markdown)
+
+                implementation(npm("babylonjs", "4.0.3", generateExternals = false))
+                implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
+                implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
+
+            }
+        }
+
+        jsTest {
+            dependencies {
+                implementation(libs.bundles.test.js)
             }
         }
     }

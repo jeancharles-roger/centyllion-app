@@ -1,10 +1,12 @@
 [versions]
 kotlin = "1.9.20"
 compose = "1.5.10"
+sqldelight = "2.0.0"
 graalvm-native-image = "1.4.1"
 
 serialization = "1.6.0"
 coroutines = "1.7.22"
+postgresql = "42.6.0"
 kotlinx-html = "0.7.3"
 bulma-kotlin = "0.5"
 babylon-kotlin = "0.5.2"
@@ -32,6 +34,8 @@ data2viz-scale = { module = "io.data2viz.d2v:d2v-scale", version.ref = "data2viz
 data2viz-viz = { module = "io.data2viz.d2v:d2v-viz", version.ref = "data2viz" }
 data2viz-axis = { module = "io.data2viz.d2v:d2v-axis", version.ref = "data2viz" }
 markdown = { module = "org.jetbrains:markdown", version.ref = "markdown" }
+sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 
 # Compose UI
@@ -53,8 +57,9 @@ test-jvm = ["test-jvm", "jupiter-api", "jupiter-engine"]
 test-js = ["test-js"]
 
 [plugins]
-compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 graalvm-native-image = { id = "org.mikeneck.graalvm-native-image", version.ref = "graalvm-native-image" }

@@ -95,7 +95,6 @@ kotlin {
     }
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_11
 
 tasks {
     val jsDir = "$buildDir/assemble/main/js"

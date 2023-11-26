@@ -1,0 +1,53 @@
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    name TEXT,
+    keycloak TEXT,
+    email TEXT,
+    username TEXT,
+    tutorialDone BOOLEAN,
+    createdOn TIMESTAMP
+);
+
+CREATE TABLE assets (
+    id UUID PRIMARY KEY,
+    name TEXT,
+    -- content BYTEA,
+    usedId UUID REFERENCES users(id),
+    entries TEXT
+);
+
+CREATE TABLE infodescriptions (
+    id UUID PRIMARY KEY,
+    usedId UUID REFERENCES users(id),
+    createdOn TIMESTAMP,
+    lastModifiedOn TIMESTAMP,
+    readAccess BOOLEAN
+);
+
+CREATE TABLE modeldescriptions (
+    id UUID PRIMARY KEY,
+    info UUID REFERENCES infodescriptions(id),
+    model TEXT,
+    type TEXT,
+    version INT,
+    -- searchable TSVECTOR,
+    tags TEXT
+    -- tags_searchable TSVECTOR
+);
+
+CREATE TABLE simulationdescriptions (
+    id UUID PRIMARY KEY,
+    info UUID REFERENCES infodescriptions(id),
+    modelid UUID REFERENCES modeldescriptions(id),
+    thumbnailId UUID REFERENCES assets(id),
+    simulation TEXT,
+    type TEXT,
+    version INT
+    -- searchable TSVECTOR
+);
+
+selectSimulation:
+SELECT simulationdescriptions.simulation, modeldescriptions.model
+FROM simulationdescriptions
+INNER JOIN modeldescriptions ON modeldescriptions.id = simulationdescriptions.modelid
+WHERE  simulationdescriptions.id = :id;

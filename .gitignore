@@ -10,6 +10,4 @@ web/webroot/js/centyllion
 web/webroot/css/centyllion
 web/webroot/version.json
 
-db/**
-
 centyllion.jks

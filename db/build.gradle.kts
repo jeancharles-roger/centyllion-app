@@ -6,11 +6,15 @@ plugins {
 }
 
 dependencies {
+    api(project(":core"))
     api(libs.serialization.json)
 
     implementation(libs.clikt)
+
     implementation(libs.postgresql)
     implementation(libs.sqldelight.jdbc)
+
+    implementation(libs.bundles.ktor)
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.bundles.test.jvm)
@@ -21,7 +25,6 @@ sqldelight {
         create("Database") {
             packageName.set("com.centyllion.db")
             dialect("app.cash.sqldelight:postgresql-dialect:2.0.0")
-
         }
     }
 }

@@ -16,6 +16,7 @@ evaluator = "0.15.0"
 clikt = "4.2.1"
 font-awesome = "1.0.0"
 mpfilepicker = "2.1.0"
+ktor = "2.3.6"
 
 junit = "5.6.0"
 
@@ -38,6 +39,13 @@ sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "s
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 
+# Ktor Server
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+
 # Compose UI
 font-awesome = { module = "br.com.devsrsouza.compose.icons.jetbrains:font-awesome", version.ref = "font-awesome" }
 mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
@@ -51,6 +59,13 @@ jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "j
 jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 
 [bundles]
+ktor = [
+    "ktor-server-core",
+    "ktor-server-cio",
+    "ktor-server-content-negotiation",
+    "ktor-server-serialization",
+    "ktor-server-cors"
+]
 data2viz = [ "data2viz-core", "data2viz-color", "data2viz-scale", "data2viz-viz", "data2viz-axis"]
 test = [ "test-common", "test-annotation"]
 test-jvm = ["test-jvm", "jupiter-api", "jupiter-engine"]

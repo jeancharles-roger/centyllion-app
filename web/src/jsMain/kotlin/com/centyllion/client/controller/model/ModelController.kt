@@ -34,6 +34,13 @@ class ModelController(
                 grainChart.data = createGrainPlots()
                 fieldChart.data = createFieldPlots()
 
+                // handles problems display
+                val problems = new.model.diagnose(page.appContext.locale)
+
+                // problems box is visible is there are problems and was already open
+                problemsMessage.hidden = problems.isEmpty()
+                problemsTable.body = problems.map { it.toBulma() }
+
                 expertMode = expertMode || new.expert
             }
 
@@ -106,6 +113,37 @@ class ModelController(
 
     fun scrollToSelected() {
         // TODO
+    }
+
+    val problemsTable = Table(
+        head = listOf(TableHeaderRow(
+            TableHeaderCell(page.i18n("Source")), TableHeaderCell(page.i18n("Message"))
+        )),
+        fullWidth = true, hoverable = true
+    ).apply {
+        root.style.backgroundColor = "transparent"
+    }
+
+    val problemsMessage = Message(body = listOf(problemsTable), color = ElementColor.Danger)
+        .apply {
+            // Problems column is always hidden when starting
+            hidden = true
+        }
+
+    private val ModelElement.icon get() = when (this) {
+        is Field -> fieldIcon
+        is Grain -> grainIcon
+        is Behaviour -> behaviourIcon
+        else -> ""
+    }
+
+    private fun Problem.toBulma() = TableRow(
+        TableCell(body = arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
+    ).also {
+        it.root.onclick = {
+            selected = this.source
+            scrollToSelected()
+        }
     }
 
     val searchController: SearchController = SearchController(page) { _, filter ->
@@ -184,6 +222,7 @@ class ModelController(
         ).apply { hidden = !expertMode }
 
     val leftColumn = Column(
+        problemsMessage,
         searchController,
         Level(
             left = listOf(Icon(grainIcon), Title(page.i18n("Grains"), TextSize.S4)),
@@ -288,8 +327,6 @@ class ModelController(
     }.apply {
         hidden = true
     }
-
-
 
     val chartsHeader = Level(
         center = listOf(

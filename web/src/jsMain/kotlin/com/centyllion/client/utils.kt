@@ -15,6 +15,8 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 
+inline fun <reified T> Any?.takeInstance(): T? = if (this is T) this else null
+
 external fun encodeURI(parameter: String): String
 external fun encodeURIComponent(parameter: String): String
 

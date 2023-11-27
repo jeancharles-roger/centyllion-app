@@ -7,9 +7,8 @@ import com.centyllion.client.controller.model.ModelController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
-import com.centyllion.model.*
+import com.centyllion.model.ModelAndSimulation
 import kotlinx.browser.window
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.url.URLSearchParams
@@ -25,8 +24,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private var tutorialLayer: TutorialLayer<ShowPage>? = null
 
-    private var problems: List<Problem> = emptyList()
-
     var model: ModelAndSimulation by observable(ModelAndSimulation.empty) { _, old, new ->
         if (new != old) {
             undoRedo.update(old, new)
@@ -34,12 +31,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
             expertModeSwitch.disabled = new.expert
 
-            // handles problems display
-            problems = model.model.diagnose(appContext.locale)
-            problemIcon.hidden = problems.isEmpty()
-            // problems box is visible is there are problems and was already open
-            problemsColumn.hidden = problemsColumn.hidden || problems.isEmpty()
-            problemsTable.body = problems.map { it.toBulma() }
             refreshButtons()
             saveToStorage(model)
         }
@@ -54,47 +45,9 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     private val undoRedo = UndoRedoSupport(model) { model = it }
 
-    val problemIcon = iconButton(
-        Icon("exclamation-triangle"), size = Size.Small, color = ElementColor.Danger, rounded = true,
-        onClick = { problemsColumn.hidden = !problemsColumn.hidden }
-    ).apply {
-        hidden = problems.isEmpty()
-    }
-
-    val problemsTable = Table(
-        head = listOf(TableHeaderRow(
-            TableHeaderCell(i18n("Source")), TableHeaderCell(i18n("Message"))
-        )),
-        fullWidth = true, hoverable = true
-    ).apply {
-        root.style.backgroundColor = "transparent"
-    }
-
-    val problemsColumn = Column(
-        Message(body = listOf(problemsTable), color = ElementColor.Danger),
-        size = ColumnSize.Full
-    ).apply {
-        // Problems column is always hidden when starting
-        hidden = true
-    }
-
-    private val ModelElement.icon get() = when (this) {
-        is Field -> fieldIcon
-        is Grain -> grainIcon
-        is Behaviour -> behaviourIcon
-        else -> ""
-    }
-
-    private fun Problem.toBulma() = TableRow(
-        TableCell(body = arrayOf(Icon(source.icon), span(source.name))), TableCell(message)
-    ).also {
-        it.root.onclick = {
-            modelController.selected = this.source
-            modelController.scrollToSelected()
-        }
-    }
-
     val modelController = ModelController(this, model) { _, new, _ -> model = new }
+
+    val simulationController get() = modelController.simulationController
 
     val newControl = Control(Button(
         i18n("New Model"), Icon("plus"), color = ElementColor.Primary
@@ -121,6 +74,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         newControl,
         Control(fileInput),
         exportControl,
+        tutorialControl,
         Control(undoRedo.undoButton), Control(undoRedo.redoButton),
         // TODO hide tutorial for now tutorialControl,
         grouped = true, groupedMultiline = true
@@ -142,7 +96,6 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
                 ),
                 size = ColumnSize.Full
             ),
-            problemsColumn,
             Column(modelController, size = ColumnSize.Full),
             multiline = true, centered = true
         )

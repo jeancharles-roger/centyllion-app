@@ -209,6 +209,8 @@ object French: Locale {
         " to add a grain to the simulation." -> " pour ajouter un agent à la simulation."
         "Change the name" -> "Changer le nom"
         "You can change the grain name, for instance to 'bact'." -> "Vous pouvez changer le nom, par exemple en 'bact'."
+        "Set the speed" -> "Changer la vitesse"
+        "Change the speed to 1 to let the bacteria move." -> "Changer la vitesse à 1 pour que la bactérie se déplace."
         "Go to simulation" -> "Aller sur simulation"
         "Open the simulation page to test the model." -> "Ouvrez la page de simulation pour tester le modèle."
         "Draw some grains" -> "Dessiner quelques agents"

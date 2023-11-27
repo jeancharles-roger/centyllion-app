@@ -19,6 +19,8 @@ interface Tutorial<P: BulmaPage> {
 
     val introduction: List<BulmaElement>
 
+    fun prepare() { }
+
     val steps: List<TutorialStep>
 
     val conclusion: List<BulmaElement>
@@ -27,14 +29,6 @@ interface Tutorial<P: BulmaPage> {
 
     fun isNotEmpty() = steps.isNotEmpty()
 
-    fun i18n(key: String, vararg parameters: Any): String = page.i18n(key, parameters)
+    fun i18n(key: String, vararg parameters: Any): String = page.i18n(key, *parameters)
 }
 
-class SimpleTutorial<P: BulmaPage>(
-    override val page: P,
-    override val name: String,
-    override val steps: List<TutorialStep>,
-    override val introduction: List<BulmaElement> = emptyList(),
-    override val conclusion: List<BulmaElement> = emptyList(),
-    override val next: Tutorial<P>? = null
-): Tutorial<P>

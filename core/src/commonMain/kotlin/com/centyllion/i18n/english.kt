@@ -208,6 +208,8 @@ object English: Locale {
         " to add a grain to the simulation." -> " to add a agent to the simulation."
         "Change the name" -> "Change the name"
         "You can change the grain name, for instance to 'bact'." -> "You can change the agent name, for instance to 'bact'."
+        "Set the speed" -> "Set the speed"
+        "Change the speed to 1 to let the bacteria move." -> "Change the speed to 1 to let the bacteria move."
         "Go to simulation" -> "Go to simulation"
         "Open the simulation page to test the model." -> "Open the simulation page to test the model."
         "Draw some grains" -> "Draw some agents"

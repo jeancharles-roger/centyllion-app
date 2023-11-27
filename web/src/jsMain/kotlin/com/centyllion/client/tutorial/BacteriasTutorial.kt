@@ -1,8 +1,13 @@
 package com.centyllion.client.tutorial
 
 import bulma.*
+import com.centyllion.client.controller.model.BehaviourEditController
+import com.centyllion.client.controller.model.GrainEditController
+import com.centyllion.client.controller.model.ReactionEditController
 import com.centyllion.client.page.ShowPage
+import com.centyllion.client.takeInstance
 import com.centyllion.model.Grain
+import com.centyllion.model.ModelAndSimulation
 import kotlinx.html.*
 
 class BacteriasTutorial(
@@ -23,6 +28,10 @@ class BacteriasTutorial(
         )
     )
 
+    override fun prepare() {
+        page.model = ModelAndSimulation.empty
+    }
+
     override val steps: List<TutorialStep> = listOf(
         TutorialStep(
             i18n("Create a bacteria grain"),
@@ -38,26 +47,37 @@ class BacteriasTutorial(
                 originalName = bacteriaGrain?.name
             }
         ),
-        /*
         TutorialStep(
             i18n("Change the name"), listOf(span(i18n("You can change the grain name, for instance to 'bact'."))),
             {
-                val editor = page.modelController.editor
-                if (editor is GrainEditController) editor.nameController.root
-                else page.modelController.addGrainButton.root
+                page.modelController.editorController
+                    .takeInstance<GrainEditController>()
+                    ?.nameController?.root
+                    ?:page.modelController.addGrainButton.root
             },
             { page.model.model.grains.first().name != originalName },
             { bacteriaGrain = page.model.model.grains.first() }
         ),
         TutorialStep(
+            i18n("Set the speed"), listOf(span(i18n("Change the speed to 1 to let the bacteria move."))),
+            {
+                page.modelController.editorController
+                    .takeInstance<GrainEditController>()
+                    ?.speedController?.root
+                    ?:page.modelController.addGrainButton.root
+            },
+            { page.model.model.grains.first().canMove },
+            { bacteriaGrain = page.model.model.grains.first() }
+        ),
+        TutorialStep(
             i18n("Go to simulation"), listOf(span(i18n("Open the simulation page to test the model."))),
-            { page.simulationPage.title.root },
-            { page.editionTab.selectedPage == page.simulationPage }
+            { page.modelController.simulationItem.title.root },
+            { page.modelController.editionTabPages.selectedPage == page.modelController.simulationItem }
         ),
         TutorialStep(
             i18n("Draw some grains"), listOf(span(i18n("Draw %0 bacterias with the random spray.", bacteriaDraw + 5))),
             { page.simulationController.simulationViewController.randomAddButton.root },
-            { page.simulationController.simulator.grainsCounts()[bacteriaGrain?.id ?: 0] ?: 0 > bacteriaDraw }
+            { (page.simulationController.simulator.grainsCounts()[bacteriaGrain?.id ?: 0] ?: 0) > bacteriaDraw }
         ),
         TutorialStep(
             i18n("Run the simulation"), listOf(span(i18n("Watch the bacterias move."))),
@@ -71,8 +91,8 @@ class BacteriasTutorial(
         ),
         TutorialStep(
             i18n("Go to model"), listOf(span(i18n("Open the model page to add a division behaviour to make them grow."))),
-            { page.modelPage.title.root },
-            { page.editionTab.selectedPage == page.modelPage }
+            { page.modelController.editionItem.title.root },
+            { page.modelController.editionTabPages.selectedPage == page.modelController.editionItem }
         ),
         TutorialStep(
             i18n("Create a division behaviour"),
@@ -87,7 +107,7 @@ class BacteriasTutorial(
         TutorialStep(
             i18n("First product"), listOf(span(i18n("Select the bacteria grain as first product."))),
             {
-                val editor = page.modelController.editor
+                val editor = page.modelController.editorController
                 if (editor is BehaviourEditController) editor.mainProductController.root
                 else page.modelController.addBehaviourButton.root
             },
@@ -101,7 +121,7 @@ class BacteriasTutorial(
                 span(i18n(" to add a second line in the behaviour"))
             ),
             {
-                val editor = page.modelController.editor
+                val editor = page.modelController.editorController
                 if (editor is BehaviourEditController) editor.addReactionButton.root
                 else page.modelController.addBehaviourButton.root
             },
@@ -110,11 +130,12 @@ class BacteriasTutorial(
         TutorialStep(
             i18n("Second product"), listOf(span(i18n("Select the bacteria grain as second product."))),
             {
-                page.modelController.editor?.let {
-                    if (it is BehaviourEditController)
-                        it.reactionsController.dataControllers.firstOrNull()?.productController?.root
-                    else null
-                } ?: page.modelController.addBehaviourButton.root
+                page.modelController.editorController
+                    .takeInstance<BehaviourEditController>()
+                    ?.reactionsController?.dataControllers?.firstOrNull()
+                    .takeInstance<ReactionEditController>()
+                    ?.productController?.root
+                    ?: page.modelController.addBehaviourButton.root
             },
             {
                 val reaction = page.model.model.behaviours.firstOrNull()?.reaction?.firstOrNull()
@@ -123,16 +144,15 @@ class BacteriasTutorial(
         ),
         TutorialStep(
             i18n("Return to simulation"), listOf(span(i18n("Go back to the simulation page."))),
-            { page.simulationPage.title.root },
-            { page.editionTab.selectedPage == page.simulationPage }
+            { page.modelController.simulationItem.title.root },
+            { page.modelController.editionTabPages.selectedPage == page.modelController.simulationItem }
         ),
         TutorialStep(
             i18n("Run the simulation"), listOf(span(i18n("Watch the bacteria colony grow."))),
             { page.simulationController.runButton.root },
-            { page.simulationController.simulator.step > 25 },
+            { page.simulationController.simulator.step > 20 },
             { page.simulationController.stop() }
         )
-         */
     )
 
     override val conclusion: List<BulmaElement> = listOf(
@@ -154,5 +174,5 @@ class BacteriasTutorial(
         }
     )
 
-    override val next: Tutorial<ShowPage>? get() = FieldTutorial(page)
+    override val next: Tutorial<ShowPage> get() = FieldTutorial(page)
 }

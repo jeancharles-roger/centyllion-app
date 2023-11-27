@@ -20,15 +20,15 @@ class TutorialLayer<P: BulmaPage>(
         val elementBox = target.getBoundingClientRect()
 
         // places help content
-        val top = (elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height)
+        val top = (elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 2)
         container.root.style.top = "${top}px"
 
-        val left = elementBox.left - (bodyBox?.left ?: 0.0) + (target.clientWidth - container.root.clientWidth) / 2
+        val left = elementBox.left - (bodyBox?.left ?: 0.0) + (target.clientWidth - container.root.clientWidth)/2
         val maximumLeft = ((bodyBox?.width ?: Double.MAX_VALUE) - container.root.clientWidth).coerceAtLeast(0.0)
         val coercedLeft = left.coerceIn(bodyBox?.left ?: 0.0, maximumLeft)
         container.root.style.left = "${coercedLeft}px"
 
-        arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height}px"
+        arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 2}px"
         arrow.root.style.left = "${elementBox.left - (bodyBox?.left ?: 0.0) + elementBox.width/2.0}px"
     }
 
@@ -53,6 +53,7 @@ class TutorialLayer<P: BulmaPage>(
         tutorial.page.modalDialog(
             tutorial.i18n("Tutorial '%0'", tutorial.i18n(tutorial.name)), tutorial.introduction,
             textButton(tutorial.i18n("Start tutorial"), color = ElementColor.Success) {
+                tutorial.prepare()
                 startSteps()
             },
             textButton(tutorial.i18n("Ok but later")) { /* nothing to do */ },

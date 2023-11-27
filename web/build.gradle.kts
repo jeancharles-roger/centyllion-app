@@ -80,10 +80,11 @@ kotlin {
                 implementation(libs.bundles.data2viz)
                 implementation(libs.markdown)
 
+                /*
                 implementation(npm("babylonjs", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-loaders", "4.0.3", generateExternals = false))
                 implementation(npm("babylonjs-materials", "4.0.3", generateExternals = false))
-
+                 */
             }
         }
 
@@ -97,7 +98,7 @@ kotlin {
 
 
 tasks {
-    val jsDir = "$buildDir/assemble/main/js"
+    val jsDir = "${project.layout.buildDirectory}/assemble/main/js"
     val webRoot = file("$projectDir/webroot")
 
     val mainFunction = "index()"
@@ -125,12 +126,12 @@ tasks {
         group = "build"
         doLast {
             // find js distributed file
-            val jsFile = project.buildDir.resolve("dist/js/productionExecutable/web.js")
-            val mapFile = project.buildDir.resolve("dist/js/productionExecutable/web.js.map")
+            val jsFile = project.layout.buildDirectory.file("dist/js/productionExecutable/web.js")
+            val mapFile = project.layout.buildDirectory.file("dist/js/productionExecutable/web.js.map")
 
             // Adds md5 sum in file name for cache purposes
             val base = "centyllion"
-            val bytes = MessageDigest.getInstance("MD5").digest(jsFile.readBytes())
+            val bytes = MessageDigest.getInstance("MD5").digest(jsFile.get().asFile.readBytes())
             val builder = StringBuilder()
             for (b in bytes) builder.append(String.format("%02x", b))
             val sum = builder.toString()
@@ -141,8 +142,8 @@ tasks {
 
             //jsFile.copyTo(centyllionWebroot.resolve("$base.$sum.js"))
             //mapFile.copyTo(centyllionWebroot.resolve("$base.$sum.js.map"))
-            jsFile.copyTo(centyllionWebroot.resolve("$base.js"))
-            mapFile.copyTo(centyllionWebroot.resolve("$base.js.map"))
+            jsFile.get().asFile.copyTo(centyllionWebroot.resolve("$base.js"))
+            mapFile.get().asFile.copyTo(centyllionWebroot.resolve("$base.js.map"))
         }
     }
 

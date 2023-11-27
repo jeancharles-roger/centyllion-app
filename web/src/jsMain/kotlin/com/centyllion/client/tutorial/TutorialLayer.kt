@@ -20,7 +20,7 @@ class TutorialLayer<P: BulmaPage>(
         val elementBox = target.getBoundingClientRect()
 
         // places help content
-        val top = (elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 2)
+        val top = (elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 1.5)
         container.root.style.top = "${top}px"
 
         val left = elementBox.left - (bodyBox?.left ?: 0.0) + (target.clientWidth - container.root.clientWidth)/2
@@ -28,7 +28,7 @@ class TutorialLayer<P: BulmaPage>(
         val coercedLeft = left.coerceIn(bodyBox?.left ?: 0.0, maximumLeft)
         container.root.style.left = "${coercedLeft}px"
 
-        arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 2}px"
+        arrow.root.style.top = "${elementBox.top - (bodyBox?.top ?: 0.0) + elementBox.height * 1.5}px"
         arrow.root.style.left = "${elementBox.left - (bodyBox?.left ?: 0.0) + elementBox.width/2.0}px"
     }
 

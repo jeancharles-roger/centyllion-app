@@ -1,7 +1,12 @@
 package com.centyllion.client.tutorial
 
 import bulma.*
+import com.centyllion.client.controller.model.BehaviourEditController
+import com.centyllion.client.controller.model.FieldEditController
+import com.centyllion.client.controller.model.GrainEditController
 import com.centyllion.client.page.ShowPage
+import com.centyllion.client.takeInstance
+import com.centyllion.model.Grain
 import kotlinx.html.*
 
 class FieldTutorial(
@@ -24,9 +29,9 @@ class FieldTutorial(
 
     override val steps: List<TutorialStep> = listOf(
         TutorialStep(
-            i18n("Go to model"), listOf(span(i18n("Open the model page to add a field."))),
-            { page/*.modelPage.title*/.root },
-            { false /*page.editionTab.selectedPage == page.modelPage*/ }
+            i18n("Expert Mode"), listOf(span(i18n("Activate expert mode to access fields."))),
+            { page.expertModeSwitch.root },
+            { page.expertMode }
         ),
         TutorialStep(
             i18n("Create a sugar field"),
@@ -39,13 +44,13 @@ class FieldTutorial(
             { page.model.model.fields.isNotEmpty() },
             { originalFieldName = page.model.model.fields.first().name }
         ),
-        /*
         TutorialStep(
             i18n("Change the name"), listOf(span(i18n("You can change the field name, for instance to 'sugar'."))),
             {
-                val editor = page.modelController.editor
-                if (editor is FieldEditController) editor.nameController.root
-                else page.modelController.addFieldButton.root
+                page.modelController.editorController
+                    .takeInstance<FieldEditController>()
+                    ?.nameController?.root
+                    ?: page.modelController.addFieldButton.root
             },
             { page.model.model.fields.first().name != originalFieldName }
         ),
@@ -63,71 +68,81 @@ class FieldTutorial(
         TutorialStep(
             i18n("Produce 'sugar'"), listOf(span(i18n("Set the production of 'sugar' field to 1."))),
             {
-                val editor = page.modelController.editor
-                if (editor is GrainEditController) editor.fieldProductionsController.dataControllers.first().root
-                else page.modelController.addGrainButton.root
+                page.modelController.editorController
+                    .takeInstance<GrainEditController>()
+                    ?.fieldProductionsController?.dataControllers?.firstOrNull()?.root
+                    ?: page.modelController.addGrainButton.root
             },
-            { page.model.model.grains[1].fieldProductions[0] ?: 0f >= 1f }
+            { (page.model.model.grains[1].fieldProductions[0] ?: 0f) >= 1f }
         ),
         TutorialStep(
             i18n("Select the bacteria grain"), listOf(span(i18n("Make the bacterias attracted to sugar."))),
             { page.modelController.grainsController.dataControllers.first().root },
-            { page.modelController.editor.let { it is GrainEditController && it.data == page.model.model.grains.first() } }
+            { (page.modelController
+                .editorController
+                .takeInstance<GrainEditController>()
+                ?.data) == page.model.model.grains.first() }
         ),
         TutorialStep(
             i18n("Influenced by 'sugar'"), listOf(span(i18n("Set the influence of 'sugar' above to 0.5."))),
             {
-                val editor = page.modelController.editor
-                if (editor is GrainEditController) editor.fieldInfluencesController.dataControllers.first().root
-                else page.modelController.addGrainButton.root
+                page.modelController.editorController
+                    .takeInstance<GrainEditController>()
+                    ?.fieldInfluencesController?.dataControllers?.first()?.root
+                    ?: page.modelController.addGrainButton.root
             },
-            { page.model.model.grains[0].fieldInfluences[0] ?: 0f >= 0.5f }
+            { (page.model.model.grains[0].fieldInfluences[0] ?: 0f) >= 0.5f }
         ),
         TutorialStep(
             i18n("Select the behavior"), listOf(span(i18n("Let's constrain the division with the 'sugar' field."))),
             { page.modelController.behavioursController.dataControllers.first().root },
-            { page.modelController.editor is BehaviourEditController }
+            { page.modelController.editorController is BehaviourEditController }
         ),
         TutorialStep(
             i18n("Adds a field threshold"), listOf(span(i18n("Add a field constrain predicate to limit the behaviour to be only executed when the field is present."))),
             {
-                val editor = page.modelController.editor
-                if (editor is BehaviourEditController) editor.addFieldPredicateButton.root
-                else page.modelController.addBehaviourButton.root
+                page.modelController.editorController
+                    .takeInstance<BehaviourEditController>()
+                    ?.addFieldPredicateButton?.root
+                    ?: page.modelController.addBehaviourButton.root
             },
             { page.model.model.behaviours.first().fieldPredicates.isNotEmpty() }
         ),
         TutorialStep(
             i18n("Sets the threshold to 0.01"), listOf(span(i18n("The field value around a grain that produces it diminishes rapidly."))),
             {
-                val editor = page.modelController.editor
-                if (editor is BehaviourEditController) editor.fieldPredicatesController.dataControllers.first().predicateController.value.root
-                else page.modelController.addBehaviourButton.root
+                page.modelController.editorController
+                    .takeInstance<BehaviourEditController>()
+                    ?.fieldPredicatesController?.dataControllers?.firstOrNull()?.predicateController?.value?.root
+                    ?: page.modelController.addBehaviourButton.root
             },
             { page.model.model.behaviours.first().fieldPredicates.first().second.constant.let { it >= 0.01f && it < 0.1f } }
         ),
         TutorialStep(
             i18n("Go to simulation"), listOf(span(i18n("Open the simulation page to test the model."))),
-            { page.simulationPage.title.root },
-            { page.editionTab.selectedPage == page.simulationPage }
+            { page.modelController.simulationItem.title.root },
+            { page.modelController.editionTabPages.selectedPage == page.modelController.simulationItem }
         ),
         TutorialStep(
             i18n("Select the source grain"), listOf(span(i18n("Let's add some sources.", sourceDraw + 5))),
-            { page.simulationController.simulationViewController.selectedGrainController.root },
-            { page.simulationController.simulationViewController.selectedGrainController.data?.id == sourceGrainId }
+            {
+                page.modelController.grainsController.dataControllers
+                    .find { it.data.id == sourceGrainId }?.root
+                    ?: page.modelController.grainsController.root
+            },
+            { page.modelController.selected?.takeInstance<Grain>()?.id == sourceGrainId }
         ),
         TutorialStep(
             i18n("Draw some source"), listOf(span(i18n("Draw %0 source with the random spray.", sourceDraw))),
             { page.simulationController.simulationViewController.randomAddButton.root },
-            { page.simulationController.simulator.grainsCounts()[sourceGrainId ?: 0] ?: 0 >= sourceDraw }
+            { (page.simulationController.simulator.grainsCounts()[sourceGrainId ?: 0] ?: 0) >= sourceDraw }
         ),
         TutorialStep(
             i18n("Run the simulation"), listOf(span(i18n("Watch the bacteria colony grow around the sugar sources."))),
             { page.simulationController.runButton.root },
-            { page.simulationController.simulator.step > 80 },
+            { page.simulationController.simulator.step > 120 },
             { page.simulationController.stop() }
         )
-         */
     )
 
     override val conclusion: List<BulmaElement> = listOf(

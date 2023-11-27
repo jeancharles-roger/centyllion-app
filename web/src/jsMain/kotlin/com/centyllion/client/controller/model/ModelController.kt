@@ -81,29 +81,31 @@ class ModelController(
 
     var selected: ModelElement? by observable(null) { _, oldSelection, newSelection ->
         if (oldSelection != newSelection) {
-            val element = newSelection
-            editorController = when (element) {
-                is Field -> FieldEditController(element, data.model, page) { old, new, _ ->
+            editorController = when (newSelection) {
+                is Field -> FieldEditController(newSelection, data.model, page) { old, new, _ ->
                     data = data.updateField(old, new)
                 }
-                is Grain -> GrainEditController(element, data.model, page) { old, new, _ ->
+
+                is Grain -> GrainEditController(newSelection, data.model, page) { old, new, _ ->
                     data = data.updateGrain(old, new)
                 }
-                is Behaviour -> BehaviourEditController(element, data.model, page) { old, new, _ ->
+
+                is Behaviour -> BehaviourEditController(newSelection, data.model, page) { old, new, _ ->
                     data = data.updateBehaviour(old, new)
                 }
+
                 else -> null
             }
             editorController?.root?.classList?.add("animated", "fadeIn", "faster")
             editorController?.readOnly = this.readOnly
             editorColumn.body = listOf(editorController ?: emptyEditor)
-            fieldsController.updateSelection(element)
-            grainsController.updateSelection(element)
-            behavioursController.updateSelection(element)
+            fieldsController.updateSelection(newSelection)
+            grainsController.updateSelection(newSelection)
+            behavioursController.updateSelection(newSelection)
 
             // update simulation selected grain
-            if (element is Grain) {
-                simulationController.simulationViewController.selectedGrain = element
+            if (newSelection is Grain) {
+                simulationController.simulationViewController.selectedGrain = newSelection
             } else {
                 simulationController.simulationViewController.selectedGrain = null
             }

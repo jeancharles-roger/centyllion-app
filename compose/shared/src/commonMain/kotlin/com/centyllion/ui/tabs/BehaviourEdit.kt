@@ -24,11 +24,11 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                 MainTitleRow(appContext.locale.i18n("Behaviour"))
 
                 SingleLineTextEditRow(appContext, behaviour, "Name", behaviour.name) {
-                    appContext.model = appContext.model.updateBehaviour(behaviour, behaviour.copy(name = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, behaviour.copy(name = it))
                 }
 
                 MultiLineTextEditRow(appContext, behaviour, "Description", behaviour.description) {
-                    appContext.model = appContext.model.updateBehaviour(behaviour, behaviour.copy(description = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, behaviour.copy(description = it))
                 }
 
                 propertyRow(appContext, behaviour, "Speed") {
@@ -38,7 +38,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                         valueRange = 0f.rangeTo(1f),
                         onValueChange = {
                             val new = behaviour.copy(probability = it.toDouble())
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
                     )
                 }
@@ -46,7 +46,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
 
                 IntPredicateRow(appContext, behaviour, behaviour.agePredicate, "When age") {
                     val new = behaviour.copy(agePredicate = it)
-                    appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                 }
 
                 MainTitleRow(appContext.locale.i18n("Reactions"))
@@ -63,7 +63,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     GrainCombo(mainReactive, appContext.model, Modifier.weight(.24f)) {
                         if (it != null) {
                             val new = behaviour.copy(mainReactiveId = it.id)
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
                     }
 
@@ -73,7 +73,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                     GrainCombo(mainProduct, appContext.model, Modifier.weight(.24f)) {
                         if (it != null) {
                             val new = behaviour.copy(mainProductId = it.id)
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
                     }
 
@@ -84,7 +84,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                         onClick =  {
                             val reaction = Reaction()
                             val new = behaviour.copy(reaction = behaviour.reaction + reaction)
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
                     ) {
                         Icon(
@@ -100,14 +100,14 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                         val mainReactive = appContext.model.grainForId(reaction.reactiveId)
                         GrainCombo(mainReactive, appContext.model, Modifier.weight(.24f)) {
                             val new = behaviour.updateReaction(reaction, reaction.copy(reactiveId = it?.id ?: -1))
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
 
                         Row(modifier = Modifier.weight(.24f)) {
                             Directions(appContext, reaction.allowedDirection, size = 18.dp) {
                                 val newReaction = reaction.copy(allowedDirection = it)
                                 val new = behaviour.updateReaction(reaction, newReaction)
-                                appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                                appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                             }
                         }
 
@@ -116,7 +116,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                         val mainProduct = appContext.model.grainForId(reaction.productId)
                         GrainCombo(mainProduct, appContext.model, Modifier.weight(.24f)) {
                             val new = behaviour.updateReaction(reaction, reaction.copy(productId = it?.id ?: -1))
-                            appContext.model = appContext.model.updateBehaviour(behaviour, new)
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateBehaviour(behaviour, new)
                         }
 
                         Text("", Modifier.weight(.24f), fontSize = 12.sp)

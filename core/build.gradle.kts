@@ -27,6 +27,7 @@ kotlin {
             dependencies {
                 api(libs.evaluator)
                 api(libs.serialization.json)
+                api(libs.kotlinx.uuid)
             }
         }
 

@@ -18,28 +18,28 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                 MainTitleRow(appContext.locale.i18n("Field"))
 
                 SingleLineTextEditRow(appContext, field, "Name", field.name) {
-                    appContext.model = appContext.model.updateField(field, field.copy(name = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, field.copy(name = it))
                 }
 
                 MultiLineTextEditRow(appContext, field, "Description", field.description) {
-                    appContext.model = appContext.model.updateField(field, field.copy(description = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, field.copy(description = it))
                 }
 
                 IntEditRow(appContext, field, "Half-life", field.halfLife) {
-                    appContext.model = appContext.model.updateField(field, field.copy(halfLife = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, field.copy(halfLife = it))
                 }
 
                 FloatEditRow(appContext, field, "Speed", field.speed,
                     trailingRatio = .35f,
                     trailingContent = {
                         Directions(appContext, field.allowedDirection) {
-                            appContext.model = appContext.model.updateField(
+                            appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(
                                 field, field.copy(allowedDirection = it)
                             )
                         }
                     },
                 ) {
-                    appContext.model = appContext.model.updateField(field, field.copy(speed = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, field.copy(speed = it))
                 }
 
                 TitleRow(appContext.locale.i18n("Display"))
@@ -52,12 +52,12 @@ fun FieldEdit(appContext: AppContext, field: Field) {
                     }, lazy = true
                 ) {
                     val new = field.copy(color = it)
-                    appContext.model = appContext.model.updateField(field, new)
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, new)
                 }
 
                 CheckRow(appContext, field, "Invisible", field.invisible) {
                     val new = field.copy(invisible = it)
-                    appContext.model = appContext.model.updateField(field, new)
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateField(field, new)
                 }
             }
         }

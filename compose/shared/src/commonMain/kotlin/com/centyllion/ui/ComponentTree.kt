@@ -33,31 +33,31 @@ fun ComponentTree(appState: AppState) {
         val listState = rememberLazyListState()
 
         LazyColumn(state = listState) {
-            item { TreeItem(appState, appState.model) }
+            item { TreeItem(appState, appState.modelAndSimulation.model) }
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
                     val field = appState.model.newField(appState.locale.i18n("Field"))
-                    appState.model = appState.model.copy(fields = appState.model.fields + field)
+                    appState.modelAndSimulation = appState.modelAndSimulation.addField(field)
                 }
             }
-            items(appState.model.fields) { FieldItem(appState, it) }
+            items(appState.modelAndSimulation.model.fields) { FieldItem(appState, it) }
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") {
                     val grain = appState.model.newGrain(appState.locale.i18n("Grain"))
-                    appState.model = appState.model.copy(grains = appState.model.grains + grain)
+                    appState.modelAndSimulation = appState.modelAndSimulation.addGrain(grain)
                 }
             }
-            items(appState.model.grains) { GrainItem(appState, it) }
+            items(appState.modelAndSimulation.model.grains) { GrainItem(appState, it) }
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") {
                     val behaviour = appState.model.newBehaviour(appState.locale.i18n("Behaviour"))
-                    appState.model = appState.model.copy(behaviours = appState.model.behaviours + behaviour)
+                    appState.modelAndSimulation = appState.modelAndSimulation.addBehaviour(behaviour)
                 }
             }
-            items(appState.model.behaviours) { BehaviourItem(appState, it) }
+            items(appState.modelAndSimulation.model.behaviours) { BehaviourItem(appState, it) }
         }
 
         VerticalScrollbar(
@@ -159,7 +159,7 @@ fun FieldItem(
             contentDescription = null, tint = Color.LightGray,
             modifier = Modifier
                 .height(14.dp).align(Alignment.CenterVertically)
-                .clickable { appState.model = appState.model.dropField(field) }
+                .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropField(field) }
         )
     }
 }
@@ -212,7 +212,7 @@ fun GrainItem(
             contentDescription = null, tint = Color.LightGray,
             modifier = Modifier
                 .height(14.dp).align(Alignment.CenterVertically)
-                .clickable { appState.model = appState.model.dropGrain(grain) }
+                .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropGrain(grain) }
         )
 
     }
@@ -266,7 +266,7 @@ fun BehaviourItem(
                 contentDescription = null, tint = Color.LightGray,
                 modifier = Modifier
                     .height(14.dp).align(Alignment.CenterVertically)
-                    .clickable { appState.model = appState.model.dropBehaviour(behaviour) }
+                    .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropBehaviour(behaviour) }
             )
         }
 
@@ -293,7 +293,7 @@ fun RowScope.GrainSquareRow(appState: AppState, ids: List<Int>) {
     ) {
         var first = true
 
-        ids.map { appState.model.grainForId(it) }
+        ids.map { appState.modelAndSimulation.model.grainForId(it) }
             .forEach {
                 if (!first) {
                     Spacer(modifier = Modifier.width(8.dp))

@@ -2,6 +2,8 @@ package com.centyllion.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import kotlin.math.pow
 
 enum class Direction {
@@ -70,13 +72,15 @@ data class Asset3d(
     val xRotation: Double = 0.0, val yRotation: Double = 0.0, val zRotation: Double = 0.0
 )
 
-interface ModelElement {
+sealed interface ModelElement {
+    val uuid: UUID
     val name: String
     val description: String
 }
 
 @Serializable
 data class Field(
+    @Transient override val uuid: UUID = UUID.generateUUID(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "SkyBlue",
@@ -103,6 +107,7 @@ data class Field(
 
 @Serializable
 data class Grain(
+    @Transient override val uuid: UUID = UUID.generateUUID(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "red",
@@ -158,7 +163,7 @@ data class Grain(
 
     fun moveBehaviour() =
         if (canMove) Behaviour(
-            "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,
+            name = "Move ${label()}", probability = movementProbability, mainReactiveId = id, sourceReactive = -1,
             reaction = listOf(Reaction(productId = id, sourceReactive = 0, allowedDirection = allowedDirection)),
             fieldInfluences = fieldInfluences
         )
@@ -175,6 +180,7 @@ data class Reaction(
 
 @Serializable
 data class Behaviour(
+    @Transient override val uuid: UUID = UUID.generateUUID(),
     override val name: String = "",
     override val description: String = "",
     val probability: Double = 1.0,
@@ -294,12 +300,19 @@ data class Position(
 
 @Serializable
 data class GrainModel(
+    @Transient override val uuid: UUID = UUID.generateUUID(),
     override val name: String = "",
     override val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList(),
 ): ModelElement {
+
+    fun findElement(uuid: UUID): ModelElement? =
+        if (uuid == this.uuid) this
+        else grains.find { it.uuid == uuid }
+            ?: behaviours.find { it.uuid == uuid }
+            ?: fields.find { it.uuid == uuid }
 
     fun grainForId(id: Int) = grains.find { it.id == id }
 
@@ -316,7 +329,7 @@ data class GrainModel(
     fun grainIndex(grain: Grain) = grains.identityFirstIndexOf(grain)
 
     fun newGrain(prefix: String = "Grain") =
-        Grain(availableGrainId(), availableGrainName(prefix), availableColor())
+        Grain(id = availableGrainId(), name = availableGrainName(prefix), color = availableColor())
 
     fun updateGrain(old: Grain, new: Grain): GrainModel {
         val grainIndex = grainIndex(old)
@@ -360,7 +373,7 @@ data class GrainModel(
         availableName(fields.map(Field::name), prefix)
 
     fun newField(prefix: String = "Field") =
-        Field(availableFieldId(), availableFieldName(prefix), availableColor())
+        Field(id = availableFieldId(), name = availableFieldName(prefix), color = availableColor())
 
     fun fieldIndex(field: Field) = fields.identityFirstIndexOf(field)
 
@@ -399,7 +412,7 @@ data class GrainModel(
     fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(behaviours.map(Behaviour::name), prefix)
 
     fun newBehaviour(prefix: String = "Behaviour") = (grains.firstOrNull()?.id ?: -1).let {
-        Behaviour(availableBehaviourName(prefix), mainReactiveId = it, mainProductId = it, sourceReactive = 0)
+        Behaviour(name = availableBehaviourName(prefix), mainReactiveId = it, mainProductId = it, sourceReactive = 0)
     }
 
     fun behaviourIndex(behaviour: Behaviour) = behaviours.identityFirstIndexOf(behaviour)
@@ -438,7 +451,7 @@ data class GrainModel(
     companion object {
         val empty = GrainModel()
 
-        fun new(name: String) = GrainModel(name)
+        fun new(name: String) = GrainModel(name = name)
     }
 }
 
@@ -603,7 +616,16 @@ data class ModelAndSimulation(
 
     val expert: Boolean get() = model.fields.isNotEmpty()
 
-    fun updateModel(model: GrainModel): ModelAndSimulation = copy(model = model)
+    fun updateInfo(name: String = model.name, description: String = model.description): ModelAndSimulation = copy(
+        model = model.copy(name = name, description = description)
+    )
+
+    fun updateModel(model: GrainModel): ModelAndSimulation = copy(
+        model = model,
+        simulation = simulation.cleaned(model)
+    )
+
+    fun updateSimulation(simulation: Simulation): ModelAndSimulation = copy(simulation = simulation)
 
     fun updateGrain(old: Grain, new: Grain): ModelAndSimulation =
         updateModel(model.updateGrain(old, new))

@@ -26,15 +26,15 @@ fun GrainEdit(appContext: AppContext, grain: Grain) {
                 MainTitleRow(appContext.locale.i18n("Grain"))
 
                 SingleLineTextEditRow(appContext, grain, "Name", grain.name) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(name = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(name = it))
                 }
 
                 MultiLineTextEditRow(appContext, grain, "Description", grain.description) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(description = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(description = it))
                 }
 
                 IntEditRow(appContext, grain, "Half-life", grain.halfLife) {
-                    appContext.model = appContext.model.updateGrain(grain, grain.copy(halfLife = it))
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(halfLife = it))
                 }
                 SpeedAndDirection(appContext, grain)
 
@@ -52,13 +52,13 @@ private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
         trailingRatio = .35f,
         trailingContent = {
             Directions(appContext, grain.allowedDirection) {
-                appContext.model = appContext.model.updateGrain(
+                appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(
                     grain, grain.copy(allowedDirection = it)
                 )
             }
         }
     ) {
-        appContext.model = appContext.model.updateGrain(grain, grain.copy(movementProbability = it))
+        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(movementProbability = it))
     }
 }
 
@@ -78,7 +78,7 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
         }, lazy = true
     ) {
         val new = grain.copy(icon = it)
-        appContext.model = appContext.model.updateGrain(grain, new)
+        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
     }
 
     ComboRow(appContext, grain, "Color", grain.color,
@@ -89,12 +89,12 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
         }, lazy = true
     ) {
         val new = grain.copy(color = it)
-        appContext.model = appContext.model.updateGrain(grain, new)
+        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
     }
 
     CheckRow(appContext, grain, "Invisible", grain.invisible) {
         val new = grain.copy(invisible = it)
-        appContext.model = appContext.model.updateGrain(grain, new)
+        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
     }
 }
 
@@ -117,7 +117,7 @@ private fun FieldInteractions(appContext: AppContext, grain: Grain) {
                         val value = if (abs(it) < .1f) 0f else it
                         val updated = grain.fieldProductions.toMutableMap().apply { this[field.id] = value }
                         val new = grain.copy(fieldProductions = updated)
-                        appContext.model = appContext.model.updateGrain(grain, new)
+                        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
                     }
                 }
                 Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
@@ -125,14 +125,14 @@ private fun FieldInteractions(appContext: AppContext, grain: Grain) {
                         val value = if (abs(it) < .1f) 0f else it
                         val updated = grain.fieldInfluences.toMutableMap().apply { this[field.id] = value }
                         val new = grain.copy(fieldInfluences = updated)
-                        appContext.model = appContext.model.updateGrain(grain, new)
+                        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
                     }
                 }
                 Column(Modifier.weight(.28f).align(Alignment.CenterVertically)) {
                     fieldInteraction(appContext, grain.fieldPermeable[field.id] ?: 0f, 0f.rangeTo(1f)) {
                         val updated = grain.fieldPermeable.toMutableMap().apply { this[field.id] = it }
                         val new = grain.copy(fieldPermeable = updated)
-                        appContext.model = appContext.model.updateGrain(grain, new)
+                        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
                     }
                 }
             }

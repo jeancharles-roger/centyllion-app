@@ -38,16 +38,15 @@ class AppState(
     override val path: Path?
         get() = pathState.value
 
-    fun newModel(model: GrainModel = GrainModel.new(locale.i18n("Model"))) {
+    fun newModel(model: ModelAndSimulation = emptyModel()) {
         pathState.value = null
-        this.model = model
-        selection = listOf(model)
+        this.modelAndSimulation = model
+        selection = listOf(model.model)
         clearPastAndFuture()
         updateWindowName()
     }
 
     fun openPath(path: Path) {
-        // TODO implement specific file for model+simulation
         importModel(path)
     }
 
@@ -58,46 +57,41 @@ class AppState(
         updateWindowName()
     }
 
-    override fun importModelAndSimulation(model: GrainModel, simulation: Simulation) {
+    override fun importModelAndSimulation(model: ModelAndSimulation) {
         pathState.value = null
-        this.model = model
-        this.simulation = simulation
-        selection = listOf(model)
+        this.modelAndSimulation = model
+        selection = listOf(model.model)
         clearPastAndFuture()
         updateWindowName()
     }
 
     fun importModel(path: Path) {
         pathState.value = path
-        model = loadModel(path)
-        selection = listOf(model)
+        modelAndSimulation = loadModel(path)
+        selection = listOf(modelAndSimulation.model)
         clearPastAndFuture()
         updateWindowName()
     }
 
-    fun importSimulation(path: Path) {
-        simulation = loadSimulation(path)
-    }
-
-    private var past: List<GrainModel> = emptyList()
+    private var past: List<ModelAndSimulation> = emptyList()
     private val canUndoState = mutableStateOf(false)
     val canUndo get() = canUndoState.value
 
-    private var future: List<GrainModel> = emptyList()
+    private var future: List<ModelAndSimulation> = emptyList()
     private val canRedoState = mutableStateOf(false)
     val canRedo get() = canRedoState.value
 
     private var lastModelModification: Long = Long.MIN_VALUE
-    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: GrainModel.new(locale.i18n("Model")))
+    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: emptyModel() )
 
-    override var model: GrainModel
+    override var modelAndSimulation: ModelAndSimulation
         get() = modelState.value
         set(value) {
             // checks if model need updating
             // synchronizes model update
             synchronized(this) {
                 // store previous model in past
-                past = past + model
+                past = past + modelAndSimulation
                 canUndoState.value = past.isNotEmpty()
                 // reset future (comparing previous value with current can be really costly)
                 future = emptyList()
@@ -108,23 +102,24 @@ class AppState(
                 modelState.value = value
 
                 // updates selection
-                // TODO selection = selection.mapNotNull { value.findWithUuid(it.uuid) }
+                selection = selection.mapNotNull { value.model.findElement(it.uuid) }
 
-                simulator = Simulator(model, simulation)
-
+                simulator = Simulator(value.model, value.simulation)
                 refresh()
             }
         }
 
-    private val simulationState = mutableStateOf(Simulation.empty)
-    override var simulation: Simulation
-        get() = simulationState.value
+
+    override var model: GrainModel
+        get() = modelAndSimulation.model
         set(value) {
-            simulationState.value = value
-            simulator = Simulator(model, value)
-            stepState.value = 0
-            grainCountsState.value = simulator.grainsCounts()
-            fieldAmountsState.value = simulator.fieldAmounts()
+            modelAndSimulation = modelAndSimulation.updateModel(value)
+        }
+
+    override var simulation: Simulation
+        get() = modelAndSimulation.simulation
+        set(value) {
+            modelAndSimulation = modelAndSimulation.updateSimulation(value)
         }
 
     private val runningState = mutableStateOf(false)
@@ -138,7 +133,7 @@ class AppState(
     var speed get() = speedState.value
         set(value) { speedState.value = value }
 
-    private val simulatorState = mutableStateOf(Simulator(model, simulation))
+    private val simulatorState = mutableStateOf(Simulator(modelAndSimulation.model, modelAndSimulation.simulation))
     override var simulator: Simulator
         get() = simulatorState.value
         set(value) {
@@ -193,16 +188,19 @@ class AppState(
         fieldAmountsState.value = simulator.fieldAmounts()
     }
 
+    fun emptyModel() = ModelAndSimulation(GrainModel.new(locale.i18n("Model")), Simulation.empty)
+
     /** Load model for given path. */
-    private fun loadModel(path: Path): GrainModel =
+    private fun loadModel(path: Path): ModelAndSimulation =
         try {
             val source = path.readText(Charsets.UTF_8)
-            Json.decodeFromString(GrainModel.serializer(), source)
+            Json.decodeFromString(ModelAndSimulation.serializer(), source)
         }
         catch (e: Throwable) {
             alert("Couldn't load model: $e")
-            GrainModel.new(locale.i18n("Model"))
+            emptyModel()
         }
+
 
     /** Load model for given path. */
     private fun loadSimulation(path: Path): Simulation =
@@ -225,7 +223,7 @@ class AppState(
                 val time = System.currentTimeMillis()
                 if (time > lastModelModification + waitTime) {
                     measureTimeMillis {
-                        val target = Json.encodeToString(GrainModel.serializer(), model)
+                        val target = Json.encodeToString(ModelAndSimulation.serializer(), modelAndSimulation)
                         destination.writeText(target)
                     }.let { log("Saving model to ${destination.fileName} in $it ms.") }
                 }
@@ -249,7 +247,7 @@ class AppState(
             canUndoState.value = past.isNotEmpty()
 
             // saves current model in future
-            future = future + model
+            future = future + modelAndSimulation
             canRedoState.value = future.isNotEmpty()
 
             // set new model (not using property set the manages undo/redo
@@ -268,7 +266,7 @@ class AppState(
             canRedoState.value = future.isNotEmpty()
 
             // saves current model in future
-            past = past + model
+            past = past + modelAndSimulation
             canUndoState.value = past.isNotEmpty()
 
             // set new model (not using property set the manages undo/redo
@@ -313,7 +311,7 @@ class AppState(
         set(value) { selectedProblemState.value = value }
 
     private fun updateProblems() {
-        problemsState.value = model.diagnose(locale)
+        problemsState.value = modelAndSimulation.model.diagnose(locale)
     }
 
     override fun showPrimarySelection() {

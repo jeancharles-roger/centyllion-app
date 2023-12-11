@@ -35,7 +35,7 @@ fun ToolBar(appState: AppState) {
                     window = appState.window,
                     title = "Select file to save",
                     preselectedFile = "${appState.model.name}.centyllion",
-                    allowedExtensions = listOf(".centyllion"),
+                    allowedExtensions = listOf(".netbiodyn"),
                     allowMultiSelection = false
                 )
                 if (files.isNotEmpty()) appState.setPath(files.first().toPath())
@@ -45,7 +45,7 @@ fun ToolBar(appState: AppState) {
 
         IconButton(
             onClick = {
-                val files = openFileDialog(appState.window, "Open model", listOf(".centyllion", ".json"), false)
+                val files = openFileDialog(appState.window, "Open model", listOf(".netbiodyn", ".json"), false)
                 if (files.isNotEmpty()) appState.openPath(files.first().toPath())
             },
             modifier = appState.theme.toolBarIconModifier

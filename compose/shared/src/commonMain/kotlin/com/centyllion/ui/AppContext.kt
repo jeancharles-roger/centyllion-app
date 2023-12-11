@@ -34,11 +34,13 @@ interface AppContext {
 
     var currentDialog: Dialog?
 
-    fun importModelAndSimulation(model: GrainModel, simulation: Simulation)
+    fun importModelAndSimulation(model: ModelAndSimulation)
 
     val path: Path?
+    var modelAndSimulation: ModelAndSimulation
     var model: GrainModel
     var simulation: Simulation
+
     var running: Boolean
     val step: Int
     var simulator: Simulator

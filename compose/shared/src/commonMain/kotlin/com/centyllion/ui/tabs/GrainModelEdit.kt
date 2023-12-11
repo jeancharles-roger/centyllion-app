@@ -21,11 +21,11 @@ fun GrainModelEdit(appContext: AppContext, model: GrainModel) {
                 MainTitleRow(appContext.locale.i18n("Model"))
 
                 SingleLineTextEditRow(appContext, model, "Name", model.name) {
-                    appContext.model = appContext.model.copy(name = it)
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateInfo(name = it)
                 }
 
                 MultiLineTextEditRow(appContext, model, "Description", model.description) {
-                    appContext.model = appContext.model.copy(description = it)
+                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateInfo(description = it)
                 }
 
             }

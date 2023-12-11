@@ -123,7 +123,7 @@ class LinePlotter(
                             plotPaths.add(path {
                                 fill = null
                                 val element = plots[plotIndex]
-                                stroke = if (!hiddenPlots[plotIndex]) element.stroke else null
+                                strokeColor = if (!hiddenPlots[plotIndex]) element.stroke else null
                                 strokeWidth = element.strokeWidth
 
                                 moveTo(xScale(points[0].step), yScale(points[0].points[plotIndex]))
@@ -148,7 +148,7 @@ class LinePlotter(
             // TODO there is a DPI problem with the position, it needs to be solved
             val step = xScale.invert(it.pos.x-margins.left).roundToInt().coerceIn(0, xMax)
             if (step != currentStep) onStepMove(step)
-            currentStep = step
+            currentStep =  step
             EventPropagation.Stop
         }
 

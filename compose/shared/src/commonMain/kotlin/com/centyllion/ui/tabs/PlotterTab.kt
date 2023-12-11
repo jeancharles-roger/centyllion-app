@@ -49,8 +49,8 @@ object PlotterTab: Tab {
     private fun grainPlot(appContext: AppContext, simulator: Simulator) {
         val visibleGrains = remember {
             mutableStateOf(
-                appContext.model.grains
-                    .filter { appContext.model.doesGrainCountCanChange(it) }
+                appContext.modelAndSimulation.model.grains
+                    .filter { appContext.modelAndSimulation.model.doesGrainCountCanChange(it) }
                     .map { it.id }
                     .toSet()
             )
@@ -75,7 +75,7 @@ object PlotterTab: Tab {
     private fun fieldPlot(appContext: AppContext, simulator: Simulator) {
         val visibleFields = remember {
             mutableStateOf(
-                appContext.model.fields.map { it.id }.toSet()
+                appContext.modelAndSimulation.model.fields.map { it.id }.toSet()
             )
         }
 

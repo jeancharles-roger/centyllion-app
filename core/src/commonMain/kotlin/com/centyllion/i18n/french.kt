@@ -72,7 +72,6 @@ object French: Locale {
         "Model %0 saved." -> "Modèle %0 enregistré."
         "Simulation %0 saved." -> "Simulation %0 enregistré."
         "Updated speed for %0 to %1." -> "Mise à jour de la vitesse de %0 à %1."
-        "Updated speed for %0 to %1." -> "Mise à jour de la vitesse de %0 à %1."
         "Current state saved as thumbnail." -> "État courant enregistré comme miniature."
         "Model %0 and simulation %1 saved." -> "Modèle %0 et simulation %1 enregistrés."
         "Model and simulation cloned." -> "Modèle et simulation clonés."

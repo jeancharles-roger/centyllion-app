@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
@@ -5,7 +6,11 @@ plugins {
 
 kotlin {
 
-    jvm()
+    jvm {
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
 
     js(IR) {
         browser {

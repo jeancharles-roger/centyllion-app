@@ -80,7 +80,6 @@ sealed interface ModelElement {
 
 @Serializable
 data class Field(
-    @Transient override val uuid: UUID = UUID.generateUUID(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "SkyBlue",
@@ -90,6 +89,7 @@ data class Field(
     val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = Direction.default,
     val formula: String = "",
+    @Transient override val uuid: UUID = UUID.generateUUID(),
 ): ModelElement {
     /** Label for field */
     fun label(long: Boolean = false) = when {
@@ -107,7 +107,6 @@ data class Field(
 
 @Serializable
 data class Grain(
-    @Transient override val uuid: UUID = UUID.generateUUID(),
     val id: Int = 0,
     override val name: String = "",
     val color: String = "red",
@@ -120,7 +119,8 @@ data class Grain(
     val allowedDirection: Set<Direction> = Direction.default,
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),
-    val fieldPermeable: Map<Int, Float> = emptyMap()
+    val fieldPermeable: Map<Int, Float> = emptyMap(),
+    @Transient override val uuid: UUID = UUID.generateUUID(),
 ): ModelElement {
 
     @Transient
@@ -180,7 +180,6 @@ data class Reaction(
 
 @Serializable
 data class Behaviour(
-    @Transient override val uuid: UUID = UUID.generateUUID(),
     override val name: String = "",
     override val description: String = "",
     val probability: Double = 1.0,
@@ -188,7 +187,8 @@ data class Behaviour(
     val fieldPredicates: List<Pair<Int, Predicate<Float>>> = emptyList(),
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
     val fieldInfluences: Map<Int, Float> = emptyMap(),
-    val reaction: List<Reaction> = emptyList()
+    val reaction: List<Reaction> = emptyList(),
+    @Transient override val uuid: UUID = UUID.generateUUID(),
 ): ModelElement {
 
     @Transient
@@ -300,12 +300,12 @@ data class Position(
 
 @Serializable
 data class GrainModel(
-    @Transient override val uuid: UUID = UUID.generateUUID(),
     override val name: String = "",
     override val description: String = "",
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList(),
+    @Transient override val uuid: UUID = UUID.generateUUID(),
 ): ModelElement {
 
     fun findElement(uuid: UUID): ModelElement? =

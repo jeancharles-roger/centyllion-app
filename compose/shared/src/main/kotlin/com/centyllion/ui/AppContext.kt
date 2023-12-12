@@ -32,6 +32,9 @@ interface AppContext {
     val centerTabs: List<Tab>
     var centerSelectedTab: Tab
 
+    val eastTabs: List<Tab>
+    var eastSelectedTab: Tab
+
     var currentDialog: Dialog?
 
     fun importModelAndSimulation(model: ModelAndSimulation)

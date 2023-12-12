@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.window.singleWindowApplication
@@ -26,13 +26,12 @@ fun main() = singleWindowApplication {
     App(appState)
 }
 
-
 @Composable
 fun App(appState: AppState) {
     MaterialTheme(colors = themeColors) {
 
         appState.currentDialog?.let { currentDialog ->
-            Dialog(
+            DialogWindow(
                 title = appState.locale.i18n(currentDialog.titleKey),
                 onCloseRequest = { appState.currentDialog = null },
                 state = rememberDialogState(position = WindowPosition(Alignment.Center))
@@ -51,20 +50,43 @@ fun App(appState: AppState) {
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 private fun MainView(appState: AppState) {
+    val west = 1f
+    val center = 2f
+    val east = 1f
+    val total = west + center + east
+
+
     HorizontalSplitPane(
-        splitPaneState = rememberSplitPaneState(.25f),
+        splitPaneState = rememberSplitPaneState(west/total),
         modifier = Modifier.background(appState.theme.colors.background)
     ) {
         first {
             ComponentTree(appState)
         }
         second {
-            Tabs(
-                appContext = appState,
-                tabs = appState.centerTabs,
-                selected = appState.centerSelectedTab,
-                onTabSelection = { appState.centerSelectedTab = it }
-            )
+
+            HorizontalSplitPane(
+                splitPaneState = rememberSplitPaneState(center/(total-west)),
+                modifier = Modifier.background(appState.theme.colors.background)
+            ) {
+                first {
+                    Tabs(
+                        appContext = appState,
+                        tabs = appState.centerTabs,
+                        selected = appState.centerSelectedTab,
+                        onTabSelection = { appState.centerSelectedTab = it }
+                    )
+                }
+                second {
+                    Tabs(
+                        appContext = appState,
+                        tabs = appState.eastTabs,
+                        selected = appState.eastSelectedTab,
+                        onTabSelection = { appState.eastSelectedTab = it }
+                    )
+                }
+                horizontalSplitter()
+            }
         }
         horizontalSplitter()
     }

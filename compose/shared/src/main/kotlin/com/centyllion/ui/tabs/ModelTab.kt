@@ -22,12 +22,12 @@ import com.centyllion.model.*
 import com.centyllion.ui.AppContext
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
-import compose.icons.fontawesomeicons.solid.ProjectDiagram
+import compose.icons.fontawesomeicons.solid.Boxes
 import compose.icons.fontawesomeicons.solid.SquareFull
 
-object PropertiesTab : Tab {
-    override val nameKey = "Properties"
-    override val icon = FontAwesomeIcons.Solid.ProjectDiagram
+object ModelTab : Tab {
+    override val nameKey = "Model"
+    override val icon = FontAwesomeIcons.Solid.Boxes
 
     @Composable
     override fun content(appContext: AppContext) {

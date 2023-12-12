@@ -32,17 +32,10 @@ fun ComponentTree(appState: AppState) {
     Box(Modifier.padding(4.dp)) {
         val listState = rememberLazyListState()
 
-        LazyColumn(state = listState) {
-            item { TreeItem(appState, appState.modelAndSimulation.model) }
-
-            item {
-                SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
-                    val field = appState.model.newField(appState.locale.i18n("Field"))
-                    appState.modelAndSimulation = appState.modelAndSimulation.addField(field)
-                }
-            }
-            items(appState.modelAndSimulation.model.fields) { FieldItem(appState, it) }
-
+        LazyColumn(
+            modifier = Modifier.background(appState.theme.colors.background),
+            state = listState
+        ) {
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") {
                     val grain = appState.model.newGrain(appState.locale.i18n("Grain"))
@@ -58,6 +51,16 @@ fun ComponentTree(appState: AppState) {
                 }
             }
             items(appState.modelAndSimulation.model.behaviours) { BehaviourItem(appState, it) }
+
+
+            item {
+                SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
+                    val field = appState.model.newField(appState.locale.i18n("Field"))
+                    appState.modelAndSimulation = appState.modelAndSimulation.addField(field)
+                }
+            }
+            items(appState.modelAndSimulation.model.fields) { FieldItem(appState, it) }
+
         }
 
         VerticalScrollbar(
@@ -123,9 +126,10 @@ fun FieldItem(
 
     Row(
         modifier = Modifier
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .clickable { appState.selection = listOf(field) }
             .padding(6.dp)
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .padding(6.dp)
+            .clickable { appState.selection = listOf(field) }
     ) {
         Spacer(modifier = Modifier.width(8.dp))
         ColoredSquare(field.color)
@@ -177,9 +181,10 @@ fun GrainItem(
 
     Row(
         modifier = Modifier
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .clickable { appState.selection = listOf(grain) }
             .padding(6.dp)
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .padding(6.dp)
+            .clickable { appState.selection = listOf(grain) }
     ) {
         Spacer(modifier = Modifier.width(8.dp))
         GrainSquare(grain)
@@ -232,9 +237,10 @@ fun BehaviourItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .clickable { appState.selection = listOf(behaviour) }
             .padding(6.dp)
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .padding(6.dp)
+            .clickable { appState.selection = listOf(behaviour) }
     ) {
 
         Row {
@@ -369,9 +375,10 @@ fun TreeItem(
 
     Row(
         modifier = Modifier
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .clickable { appState.selection = listOf(element) }
             .padding(6.dp)
+            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .padding(6.dp)
+            .clickable { appState.selection = listOf(element) }
     ) {
         Icon(
             imageVector = element.icon(), contentDescription = null,

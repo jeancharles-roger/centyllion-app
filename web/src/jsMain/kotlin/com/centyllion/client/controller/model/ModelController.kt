@@ -405,13 +405,17 @@ class ModelController(
         val grainParent = grainChart.root.parentElement
         if (grainParent is HTMLElement) {
             val ratio = if (expertMode) 0.4 else 0.8
-            grainChart.size = size(grainParent.offsetWidth - 30.0, window.innerHeight * ratio)
+            // prevent resizing if size is < 0
+            val x = grainParent.offsetWidth - 30.0
+            if (x > 0) grainChart.size = size(x, window.innerHeight * ratio)
         }
 
         val fieldParent = fieldChart.root.parentElement
         if (fieldParent is HTMLElement) {
             val ratio = 0.4
-            fieldChart.size = size(fieldParent.offsetWidth - 30.0, window.innerHeight * ratio)
+            // prevent resizing if size is < 0
+            val x = fieldParent.offsetWidth - 30.0
+            if (x > 0) fieldChart.size = size(x, window.innerHeight * ratio)
         }
     }
 

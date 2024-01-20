@@ -18,7 +18,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import java.util.*
 
-class Server: Common(
+class Server : Common(
     name = "server",
     help = """
        Run server to answer HTTP api
@@ -52,6 +52,23 @@ class Server: Common(
         }
 
         routing {
+            get("/search/{query}") {
+                val query = call.parameters["query"]
+                try {
+                    if (!query.isNullOrBlank()) {
+                        val result = database.databaseQueries.searchSimulation(query)
+                            .executeAsList()
+                            .map { it.toString() }
+                        call.respond(result)
+                    } else {
+                        // no query provided
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
+                } catch (e: Throwable) {
+                    // something wrong appended
+                    call.respond(HttpStatusCode.BadRequest, e.localizedMessage)
+                }
+            }
             get("/simulation/{id}") {
                 val id = call.parameters["id"]
                 try {

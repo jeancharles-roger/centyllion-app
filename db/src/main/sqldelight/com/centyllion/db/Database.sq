@@ -50,4 +50,11 @@ selectSimulation:
 SELECT simulationdescriptions.simulation, modeldescriptions.model
 FROM simulationdescriptions
 INNER JOIN modeldescriptions ON modeldescriptions.id = simulationdescriptions.modelid
-WHERE  simulationdescriptions.id = :id;
+WHERE simulationdescriptions.id = :id;
+
+searchSimulation:
+SELECT simulationdescriptions.id
+FROM simulationdescriptions
+INNER JOIN modeldescriptions ON modeldescriptions.id = simulationdescriptions.modelid
+WHERE simulationdescriptions.simulation LIKE '%' || :query || '%' OR
+    modeldescriptions.model LIKE '%' || :query || '%';

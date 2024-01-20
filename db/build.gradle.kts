@@ -24,7 +24,7 @@ sqldelight {
     databases {
         create("Database") {
             packageName.set("com.centyllion.db")
-            dialect("app.cash.sqldelight:postgresql-dialect:2.0.0")
+            dialect("app.cash.sqldelight:postgresql-dialect:2.0.1")
         }
     }
 }

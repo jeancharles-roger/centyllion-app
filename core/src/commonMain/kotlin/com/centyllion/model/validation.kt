@@ -5,6 +5,7 @@ import com.centyllion.i18n.Locale
 fun GrainModel.diagnose(locale: Locale): List<Problem> = buildList {
     grains.forEach { it.diagnose(this@diagnose, locale, this) }
     behaviours.forEach { it.diagnose(this@diagnose, locale, this) }
+    fields.forEach { it.diagnose(this@diagnose, locale, this) }
 }
 
 fun Grain.hasNoError(model: GrainModel, locale: Locale) =
@@ -85,3 +86,15 @@ fun Reaction.diagnose(model: GrainModel, behaviour: Behaviour, index: Int, local
         result.add(Problem(behaviour, "Direction", locale.i18n("No direction allowed for reactive %0", index)))
     }
 }
+
+fun Field.diagnose(model: GrainModel, locale: Locale, result: MutableList<Problem>) {
+    if (halfLife < 0) {
+        result.add(Problem(this, "Half-life", locale.i18n("Half-life must be positive or zero")))
+    }
+
+    if (speed < 0.0 || speed > 1.0) {
+        result.add(Problem(this, "Speed", locale.i18n("Speed must be between 0 and 1")))
+    }
+}
+
+

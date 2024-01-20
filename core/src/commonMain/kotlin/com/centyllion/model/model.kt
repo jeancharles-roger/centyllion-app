@@ -308,6 +308,12 @@ data class GrainModel(
     @Transient override val uuid: UUID = UUID.generateUUID(),
 ): ModelElement {
 
+    val label: String get() = when {
+        name.isNotBlank() -> name
+        description.isNotBlank() -> description
+        else -> ""
+    }
+
     fun findElement(uuid: UUID): ModelElement? =
         if (uuid == this.uuid) this
         else grains.find { it.uuid == uuid }
@@ -490,6 +496,11 @@ data class Simulation(
     val height: Int = settings.size,
     val depth: Int = 1,
 ) {
+    val label: String get() = when {
+        name.isNotBlank() -> name
+        description.isNotBlank() -> description
+        else -> ""
+    }
 
     val levelSize = width * height
 
@@ -611,7 +622,8 @@ data class Simulation(
 @Serializable
 data class ModelAndSimulation(
     val model: GrainModel,
-    val simulation: Simulation
+    val simulation: Simulation,
+    val thumbnail: String = ""
 ) {
 
     val expert: Boolean get() = model.fields.isNotEmpty()

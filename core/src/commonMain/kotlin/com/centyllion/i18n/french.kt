@@ -78,7 +78,7 @@ object French: Locale {
         "New simulation." -> "Nouvelle simulation."
         "Simulation cloned." -> "Simulation clonée."
         "Model %0 deleted." -> "Modèle %0 supprimé."
-        "Delete simulation. Are you sure ?" -> "Supprimer la simulation. Êtes-vous sur ?"
+        "Load new simulation. Are you sure ?" -> "Charger la nouvelle simulation. Êtes-vous sur ?"
         "You're about to delete the simulation '%0'." -> "Vous allez supprimer la simulation '%0'."
         "Delete model. Are you sure ?" -> "Supprimer le modèle. Êtes-vous sur ?"
         "You're about to delete the model '%0' and its simulations." -> "Vous allez supprimer le modèle '%0' et ses simulations."

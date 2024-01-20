@@ -78,7 +78,7 @@ object English: Locale {
         "New simulation." -> "New simulation."
         "Simulation cloned." -> "Simulation cloned."
         "Model %0 deleted." -> "Model %0 deleted."
-        "Delete simulation. Are you sure ?" -> "Delete simulation. Are you sure ?"
+        "Load new simulation. Are you sure ?" -> "Load new simulation. Are you sure ?"
         "You're about to delete the simulation '%0'." -> "You're about to delete the simulation '%0'."
         "Delete model. Are you sure ?" -> "Delete model. Are you sure ?"
         "You're about to delete the model '%0' and its simulations." -> "You're about to delete the model '%0' and its simulations."

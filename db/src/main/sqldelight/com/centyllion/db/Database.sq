@@ -11,7 +11,7 @@ CREATE TABLE users (
 CREATE TABLE assets (
     id UUID PRIMARY KEY,
     name TEXT,
-    -- content BYTEA,
+    content BYTEA,
     usedId UUID REFERENCES users(id),
     entries TEXT
 );
@@ -46,8 +46,13 @@ CREATE TABLE simulationdescriptions (
     -- searchable TSVECTOR
 );
 
+selectAsset:
+SELECT assets.content
+FROM assets
+WHERE assets.id = :id;
+
 selectSimulation:
-SELECT simulationdescriptions.simulation, modeldescriptions.model
+SELECT simulationdescriptions.simulation, modeldescriptions.model, simulationdescriptions.thumbnailId
 FROM simulationdescriptions
 INNER JOIN modeldescriptions ON modeldescriptions.id = simulationdescriptions.modelid
 WHERE simulationdescriptions.id = :id;
@@ -57,4 +62,5 @@ SELECT simulationdescriptions.id
 FROM simulationdescriptions
 INNER JOIN modeldescriptions ON modeldescriptions.id = simulationdescriptions.modelid
 WHERE simulationdescriptions.simulation LIKE '%' || :query || '%' OR
-    modeldescriptions.model LIKE '%' || :query || '%';
+    modeldescriptions.model LIKE '%' || :query || '%'
+LIMIT :limit;

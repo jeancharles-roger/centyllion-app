@@ -54,9 +54,10 @@ class Server : Common(
         routing {
             get("/search/{query}") {
                 val query = call.parameters["query"]
+                val limit = minOf(50, call.request.queryParameters.get("limit")?.toInt() ?: 10)
                 try {
                     if (!query.isNullOrBlank()) {
-                        val result = database.databaseQueries.searchSimulation(query)
+                        val result = database.databaseQueries.searchSimulation(query, limit.toLong())
                             .executeAsList()
                             .map { it.toString() }
                         call.respond(result)
@@ -69,20 +70,41 @@ class Server : Common(
                     call.respond(HttpStatusCode.BadRequest, e.localizedMessage)
                 }
             }
+            get("/asset/{id}") {
+                val id = call.parameters["id"]
+                try {
+                    // search for asset with id
+                    val (asset) = database.databaseQueries
+                        .selectAsset(UUID.fromString(id))
+                        .executeAsOne()
+
+                    if (asset != null) {
+                        // if found, construct the model to provide
+                        call.respond(asset)
+                    } else {
+                        // simulation not found
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                } catch (e: Throwable) {
+                    // something wrong appended
+                    call.respond(HttpStatusCode.BadRequest, e.localizedMessage)
+                }
+            }
             get("/simulation/{id}") {
                 val id = call.parameters["id"]
                 try {
                     // search for simulation with id
-                    val (simulation, model) = database.databaseQueries
+                    val (simulation, model, thumbnail) = database.databaseQueries
                         .selectSimulation(UUID.fromString(id))
                         .executeAsOne()
 
-                    if (simulation != null && model != null) {
+                    if (simulation != null && model != null && thumbnail != null) {
                         // if found, construct the model to provide
                         call.respond(
                             ModelAndSimulation(
                                 model = Json.decodeFromString<GrainModel>(model),
-                                simulation = Json.decodeFromString<Simulation>(simulation)
+                                simulation = Json.decodeFromString<Simulation>(simulation),
+                                thumbnail = thumbnail.toString()
                             )
                         )
                     } else {

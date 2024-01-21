@@ -27,7 +27,7 @@ object French: Locale {
         "Log In" -> "Se connecter"
         "Register" -> "Créer un compte"
 
-        "Explore" -> "Explorer"
+        "Examples" -> "Exemples"
         "Home" -> "Ma page"
         "Show" -> "Présenter"
         "Subscribe" -> "S'abonner"
@@ -95,6 +95,7 @@ object French: Locale {
         "My Recent simulation" -> "Mes simulations récentes"
 
         "Search" -> "Chercher"
+        "Searching" -> "Recherche en cours"
         "No simulation found" -> "Aucune simulation trouvée"
         "No model found" -> "Aucun modèle trouvé"
         "Recent simulations" -> "Simulations récentes"

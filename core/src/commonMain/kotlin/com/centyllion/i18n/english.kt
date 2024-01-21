@@ -27,7 +27,7 @@ object English: Locale {
         "Log In" -> "Log In"
         "Register" -> "Register"
 
-        "Explore" -> "Explore"
+        "Examples" -> "Examples"
         "Home" -> "Home"
         "Show" -> "Show"
         "Subscribe" -> "Subscribe"
@@ -95,6 +95,7 @@ object English: Locale {
         "My Recent simulation" -> "My Recent simulation"
 
         "Search" -> "Search"
+        "Searching" -> "Searching"
         "No simulation found" -> "No simulation found"
         "No model found" -> "No model found"
         "Recent simulations" -> "Recent simulations"

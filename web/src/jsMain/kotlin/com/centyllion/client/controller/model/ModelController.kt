@@ -224,7 +224,6 @@ class ModelController(
         ).apply { hidden = !expertMode }
 
     val leftColumn = Column(
-        problemsMessage,
         searchController,
         Level(
             left = listOf(Icon(grainIcon), Title(page.i18n("Grains"), TextSize.S4)),
@@ -240,6 +239,7 @@ class ModelController(
         behavioursController,
         fieldsHeader,
         fieldsController,
+        problemsMessage,
         size = ColumnSize.S3
     ).apply {
         root.style.height = "80vh"
@@ -291,12 +291,18 @@ class ModelController(
         data = data.copy(simulation = data.simulation.updateSettings(new))
     }
 
-    val editionItem = TabPage(TabItem(page.i18n("Model"), "boxes"), editorColumn)
-    val simulationItem = TabPage(TabItem(page.i18n("Simulation"), "play"), simulationController)
-    val environmentItem = TabPage(TabItem(page.i18n("Environment"), "cogs"), settingsController)
+    val modelSearchController: ModelSearchController = ModelSearchController(page) {
+        loaded -> data = loaded
+        editionTabPages.selectedPage = simulationItem
+    }
+
+    val editionItem: TabPage = TabPage(TabItem(page.i18n("Model"), "boxes"), editorColumn)
+    val simulationItem: TabPage = TabPage(TabItem(page.i18n("Simulation"), "play"), simulationController)
+    val environmentItem: TabPage = TabPage(TabItem(page.i18n("Environment"), "cogs"), settingsController)
+    val modelSearchItem: TabPage = TabPage(TabItem(page.i18n("Examples"), "search"), modelSearchController)
 
     val editionTabs = Tabs(fullWidth = true, boxed = true)
-    val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, tabs = editionTabs) {
+    val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, modelSearchItem, tabs = editionTabs) {
         if (it == simulationItem) simulationController.resize()
         refresh()
     }

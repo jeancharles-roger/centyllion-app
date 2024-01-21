@@ -16,7 +16,7 @@ fun index() {
     console.log("Starting app")
 
     // creates keycloak instance
-    val api = Api()
+    val api = Api(dbUrl = "https://api.centyllion.com")
 
     val locale = Locales.resolve(window.navigator.language)
     val context = BrowserContext(locale, api)
@@ -31,5 +31,5 @@ fun index() {
 
 class BrowserContext(
     override val locale: Locale,
-    override val api: Api = Api(),
+    override val api: Api,
 ) : AppContext

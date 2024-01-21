@@ -692,7 +692,7 @@ class Simulator3dViewController(
 
         // sets new assets
         data.simulation.assets.map { asset ->
-            val task = assetsManager.addMeshTask("Loading ${asset.url}", "", asset.url, "")
+            val task = assetsManager.addMeshTask("Loading ${asset.url}", "", page.appContext.api.translateUrl(asset.url), "")
             task.runTask(scene,
                 {
                     val mesh = task.loadedMeshes[0] as Mesh

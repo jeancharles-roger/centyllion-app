@@ -16,7 +16,9 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
+import java.io.ByteArrayInputStream
 import java.util.*
+import java.util.zip.ZipInputStream
 
 class Server : Common(
     name = "server",
@@ -74,16 +76,76 @@ class Server : Common(
                 val id = call.parameters["id"]
                 try {
                     // search for asset with id
-                    val (asset) = database.databaseQueries
+                    val (_, _, content) = database.databaseQueries
                         .selectAsset(UUID.fromString(id))
                         .executeAsOne()
 
-                    if (asset != null) {
+                    if (content != null) {
                         // if found, construct the model to provide
-                        call.respond(asset)
+                        call.respond(content)
                     } else {
                         // simulation not found
                         call.respond(HttpStatusCode.NotFound)
+                    }
+                } catch (e: Throwable) {
+                    // something wrong appended
+                    call.respond(HttpStatusCode.BadRequest, e.localizedMessage)
+                }
+            }
+            get("/asset/{id}/{name}") {
+                val id = call.parameters["id"]
+                val name = call.parameters["name"]
+                try {
+                    // search for asset with id
+                    val (actualName, _, content) = database.databaseQueries
+                        .selectAsset(UUID.fromString(id))
+                        .executeAsOne()
+
+                    if (content != null && actualName == name) {
+                        // if found, construct the model to provide
+                        call.respond(content)
+                    } else {
+                        // simulation not found
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                } catch (e: Throwable) {
+                    // something wrong appended
+                    call.respond(HttpStatusCode.BadRequest, e.localizedMessage)
+                }
+            }
+            get("/asset/{id}/{name}/{path...}") {
+                val id = call.parameters["id"]!!
+                val name = call.parameters["name"]!!
+                val path = call.parameters.getAll("path")?.joinToString("/") ?: ""
+                try {
+
+                    // search for asset with id
+                    val (actualName, entries, content) = database.databaseQueries
+                        .selectAsset(UUID.fromString(id))
+                        .executeAsOne()
+                    val nameExt = name.substringAfterLast('.', "")
+
+                    if (content != null && name == actualName && nameExt == "zip") {
+                        // retrieves the entry from the content or from the cache
+                        val entryContent = ZipInputStream(ByteArrayInputStream(content)).use {
+                            var entry = it.nextEntry
+                            while (entry != null) {
+                                if (entry.name == path) break
+                                entry = it.nextEntry
+                            }
+                            if (entry != null) it.readAllBytes() else null
+                        }
+
+
+                        if (entryContent != null) {
+                            val ext = name.substringAfterLast('.', "")
+                            val contentType = ContentType.fromFileExtension(ext)
+                            context.respondBytes(entryContent, contentType.firstOrNull() ?: ContentType.Application.OctetStream)
+                        } else {
+                            context.respond(HttpStatusCode.NotFound)
+                        }
+                    } else {
+                        context.respond(HttpStatusCode.NotFound)
                     }
                 } catch (e: Throwable) {
                     // something wrong appended

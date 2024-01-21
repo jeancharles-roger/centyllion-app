@@ -47,7 +47,7 @@ CREATE TABLE simulationdescriptions (
 );
 
 selectAsset:
-SELECT assets.content
+SELECT assets.name, assets.entries, assets.content
 FROM assets
 WHERE assets.id = :id;
 

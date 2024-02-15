@@ -10,4 +10,6 @@ web/webroot/js/centyllion
 web/webroot/css/centyllion
 web/webroot/version.json
 
+db/docker/db-*.tar
+
 centyllion.jks

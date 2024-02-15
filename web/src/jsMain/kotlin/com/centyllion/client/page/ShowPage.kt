@@ -29,7 +29,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             undoRedo.update(old, new)
             modelController.data = new
 
-            expertModeSwitch.disabled = new.expert
+            expertMode = expertMode || model.expert
 
             refreshButtons()
             saveToStorage(model)
@@ -41,6 +41,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
             expertModeSwitch.checked = new
             modelController.expertMode = new
         }
+        expertModeSwitch.disabled = model.expert
     }
 
     private val undoRedo = UndoRedoSupport(model) { model = it }

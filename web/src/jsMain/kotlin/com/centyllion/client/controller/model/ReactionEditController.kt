@@ -9,7 +9,7 @@ import com.centyllion.model.Reaction
 import kotlin.properties.Delegates.observable
 
 class ReactionEditController(
-    reaction: Reaction, behaviour: Behaviour, model: GrainModel, page: BulmaPage,
+    reaction: Reaction, behaviour: Behaviour, model: GrainModel, page: BulmaPage, expertMode: Boolean,
     var onUpdate: (old: Reaction, new: Reaction, controller: ReactionEditController) -> Unit = { _, _, _ -> },
     var onDelete: (Reaction, controller: ReactionEditController) -> Unit = { _, _ -> }
 ) : Controller<Reaction, Pair<Behaviour, GrainModel>, Column> {
@@ -41,6 +41,12 @@ class ReactionEditController(
         }
     }
 
+    var expertMode: Boolean by observable(expertMode) { _, old, new ->
+        if (old != new) {
+            sourceReactiveController.hidden = !new
+        }
+    }
+
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             reactiveController.readOnly = new
@@ -68,15 +74,26 @@ class ReactionEditController(
         context.second.grainForId(data.reactiveId)?.color to
             context.second.grainForId(context.first.mainReactiveId)?.color
 
-    val productController = GrainSelectController(context.second.grainForId(data.productId), context.second.grains, page)
-    { _, new, _ ->
-        this.data = this.data.copy(productId = new?.id ?: -1)
-    }
+    val productController = GrainSelectController(
+        grain = context.second.grainForId(data.productId),
+        grains = context.second.grains,
+        page = page,
+        onUpdate =  { _, new, _ ->
+            this.data = this.data.copy(productId = new?.id ?: -1)
+        }
+    )
 
-    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, context.first, context.second, page)
-    { _, new, _ ->
-        this.data = this.data.copy(sourceReactive = new)
-    }
+
+    val sourceReactiveController = SourceReactiveSelectController(
+        index = data.sourceReactive,
+        behaviour = context.first,
+        model = context.second,
+        page = page,
+        onUpdate = { _, new, _ ->
+            this.data = this.data.copy(sourceReactive = new)
+        }
+    ).apply { hidden = !expertMode }
+
 
     val delete = iconButton(Icon("times", Size.Small), ElementColor.Danger, true, size = Size.Small)
     {

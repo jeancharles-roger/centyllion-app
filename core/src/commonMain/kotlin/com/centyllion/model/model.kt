@@ -9,28 +9,31 @@ import kotlin.math.pow
 enum class Direction {
     Left, Right, Up, Down, LeftUp, RightUp, LeftDown, RightDown;
 
-    val deltaX get() = when (this) {
-        Left, LeftUp, LeftDown -> -1
-        Right, RightUp, RightDown -> 1
-        else -> 0
-    }
+    val deltaX
+        get() = when (this) {
+            Left, LeftUp, LeftDown -> -1
+            Right, RightUp, RightDown -> 1
+            else -> 0
+        }
 
-    val deltaY get() = when (this) {
-        Up, LeftUp, RightUp -> -1
-        Down, LeftDown, RightDown -> 1
-        else -> 0
-    }
+    val deltaY
+        get() = when (this) {
+            Up, LeftUp, RightUp -> -1
+            Down, LeftDown, RightDown -> 1
+            else -> 0
+        }
 
-    val opposite get() = when (this) {
-        Left -> Right
-        Right -> Left
-        Up -> Down
-        Down -> Up
-        LeftUp -> RightDown
-        RightUp -> LeftDown
-        LeftDown -> RightUp
-        RightDown -> LeftUp
-    }
+    val opposite
+        get() = when (this) {
+            Left -> Right
+            Right -> Left
+            Up -> Down
+            Down -> Up
+            LeftUp -> RightDown
+            RightUp -> LeftDown
+            LeftDown -> RightUp
+            RightDown -> LeftUp
+        }
 
     companion object {
 
@@ -90,7 +93,7 @@ data class Field(
     val allowedDirection: Set<Direction> = Direction.default,
     val formula: String = "",
     @Transient override val uuid: UUID = UUID.generateUUID(),
-): ModelElement {
+) : ModelElement {
     /** Label for field */
     fun label(long: Boolean = false) = when {
         long && description.isNotEmpty() -> description
@@ -121,7 +124,7 @@ data class Grain(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap(),
     @Transient override val uuid: UUID = UUID.generateUUID(),
-): ModelElement {
+) : ModelElement {
 
     @Transient
     val iconName = icon.replace("-", "").lowercase()
@@ -189,7 +192,7 @@ data class Behaviour(
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList(),
     @Transient override val uuid: UUID = UUID.generateUUID(),
-): ModelElement {
+) : ModelElement {
 
     @Transient
     val reactiveGrainIds = buildList {
@@ -270,8 +273,8 @@ data class Behaviour(
         // checks reactions
         for (r in reaction) {
             if (r.allowedDirection.none { d ->
-                neighbours.any { it.first == d && it.second.reactiveId == r.reactiveId }
-            }) return false
+                    neighbours.any { it.first == d && it.second.reactiveId == r.reactiveId }
+                }) return false
         }
         return true
     }
@@ -306,13 +309,14 @@ data class GrainModel(
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList(),
     @Transient override val uuid: UUID = UUID.generateUUID(),
-): ModelElement {
+) : ModelElement {
 
-    val label: String get() = when {
-        name.isNotBlank() -> name
-        description.isNotBlank() -> description
-        else -> ""
-    }
+    val label: String
+        get() = when {
+            name.isNotBlank() -> name
+            description.isNotBlank() -> description
+            else -> ""
+        }
 
     fun findElement(uuid: UUID): ModelElement? =
         if (uuid == this.uuid) this
@@ -415,7 +419,8 @@ data class GrainModel(
         return copy(fields = fields, grains = newGrains, behaviours = newBehaviours)
     }
 
-    fun availableBehaviourName(prefix: String = "Behaviour"): String = availableName(behaviours.map(Behaviour::name), prefix)
+    fun availableBehaviourName(prefix: String = "Behaviour"): String =
+        availableName(behaviours.map(Behaviour::name), prefix)
 
     fun newBehaviour(prefix: String = "Behaviour") = (grains.firstOrNull()?.id ?: -1).let {
         Behaviour(name = availableBehaviourName(prefix), mainReactiveId = it, mainProductId = it, sourceReactive = 0)
@@ -448,8 +453,10 @@ data class GrainModel(
      */
     fun doesGrainCountCanChange(grain: Grain): Boolean {
         return grain.halfLife > 0 || behaviours.map {
-            val reactiveCount = it.reaction.count { it.reactiveId == grain.id } + (if (it.mainReactiveId == grain.id) 1 else 0)
-            val productCount = it.reaction.count { it.productId == grain.id } + (if (it.mainProductId == grain.id) 1 else 0)
+            val reactiveCount =
+                it.reaction.count { it.reactiveId == grain.id } + (if (it.mainReactiveId == grain.id) 1 else 0)
+            val productCount =
+                it.reaction.count { it.productId == grain.id } + (if (it.mainProductId == grain.id) 1 else 0)
             reactiveCount != productCount
         }.fold(false) { a, p -> a || p }
     }
@@ -496,11 +503,12 @@ data class Simulation(
     val height: Int = settings.size,
     val depth: Int = 1,
 ) {
-    val label: String get() = when {
-        name.isNotBlank() -> name
-        description.isNotBlank() -> description
-        else -> ""
-    }
+    val label: String
+        get() = when {
+            name.isNotBlank() -> name
+            description.isNotBlank() -> description
+            else -> ""
+        }
 
     val levelSize = width * height
 
@@ -522,14 +530,17 @@ data class Simulation(
                 x = (x + width - step) % width
                 y = (y + height - step) % height
             }
+
             Direction.LeftDown -> {
                 x = (x + width - step) % width
                 y = (y + step) % height
             }
+
             Direction.RightUp -> {
                 x = (x + step) % width
                 y = (y + height - step) % height
             }
+
             Direction.RightDown -> {
                 x = (x + step) % width
                 y = (y + step) % height
@@ -603,7 +614,7 @@ data class Simulation(
     fun updateSettings(newSettings: SimulationSettings): Simulation {
         val currentSettings = this.settings
         val newAgents = if (currentSettings.agentsSize == newSettings.agentsSize) agents
-         else List(newSettings.agentsSize) {-1 }
+        else List(newSettings.agentsSize) { -1 }
 
         return Simulation(
             name = name,
@@ -626,7 +637,20 @@ data class ModelAndSimulation(
     val thumbnail: String = ""
 ) {
 
-    val expert: Boolean get() = model.fields.isNotEmpty()
+    /**
+     * Model needs expert mode if:
+     * - there are no fields,
+     * - no age predicate is specified for any behaviour and
+     * - no reaction allows to keep the age of one reactive.
+     */
+    val expert: Boolean
+        get() = model.fields.isNotEmpty() ||
+                model.behaviours.any { behaviour ->
+                    behaviour.agePredicate.op != Operator.GreaterThanOrEquals ||
+                    behaviour.agePredicate.constant != 0 ||
+                    behaviour.sourceReactive != 0 ||
+                    behaviour.reaction.any { it.sourceReactive >= 0 }
+                }
 
     fun updateInfo(name: String = model.name, description: String = model.description): ModelAndSimulation = copy(
         model = model.copy(name = name, description = description)

@@ -40,8 +40,6 @@ class ModelController(
                 // problems box is visible is there are problems and was already open
                 problemsMessage.hidden = problems.isEmpty()
                 problemsTable.body = problems.map { it.toBulma() }
-
-                expertMode = expertMode || new.expert
             }
 
             if (old.simulation != new.simulation) {
@@ -62,6 +60,7 @@ class ModelController(
             exportFieldCsvButton.hidden = !new
             fieldChart.hidden = !new
             resizeCharts()
+            (editorController as? BehaviourEditController)?.let { it.expertMode = new }
         }
     }
 
@@ -90,7 +89,7 @@ class ModelController(
                     data = data.updateGrain(old, new)
                 }
 
-                is Behaviour -> BehaviourEditController(newSelection, data.model, page) { old, new, _ ->
+                is Behaviour -> BehaviourEditController(newSelection, data.model, page, expertMode) { old, new, _ ->
                     data = data.updateBehaviour(old, new)
                 }
 

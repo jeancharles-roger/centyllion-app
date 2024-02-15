@@ -11,7 +11,7 @@ import com.centyllion.model.Field
 import kotlin.properties.Delegates.observable
 
 class BehaviourEditController(
-    initialData: Behaviour, model: GrainModel, val page: BulmaPage,
+    initialData: Behaviour, model: GrainModel, val page: BulmaPage, expertMode: Boolean,
     var onUpdate: (old: Behaviour, new: Behaviour, controller: BehaviourEditController) -> Unit =
         { _, _, _ -> }
 ) : Controller<Behaviour, GrainModel, Div> {
@@ -51,6 +51,17 @@ class BehaviourEditController(
         }
     }
 
+    var expertMode: Boolean by observable(expertMode) { _, old, new ->
+        if (old != new) {
+            agePredicateLine.hidden = !new
+            sourceHeader.hidden = !new
+            sourceReactiveController.hidden = !new
+            reactionsController.dataControllers
+                .filterIsInstance<ReactionEditController>()
+                .forEach { it.expertMode = new }
+        }
+    }
+
     override var readOnly: Boolean by observable(false) { _, old, new ->
         if (old != new) {
             addReactionButton.invisible = new
@@ -80,15 +91,29 @@ class BehaviourEditController(
     }
 
     val probabilityController = editableDoubleController(
-        page.appContext.locale, data.probability, page.i18n("Speed"), 0.0, 1.0
-    ) { _, new, _ ->
-        this.data = this.data.copy(probability = new)
-    }
+        locale = page.appContext.locale,
+        initialData = data.probability,
+        placeHolder = page.i18n("Speed"),
+        minValue = 0.0,
+        maxValue = 1.0,
+        onUpdate = { _, new, _ ->
+            this.data = this.data.copy(probability = new)
+        }
+    )
 
-    val agePredicateController = IntPredicateController(page.appContext.locale, data.agePredicate, page.i18n("Age"), 0)
-    { _, new, _ ->
-        this.data = this.data.copy(agePredicate = new)
-    }
+    val agePredicateController = IntPredicateController(
+        locale = page.appContext.locale,
+        predicate = data.agePredicate,
+        placeHolder = page.i18n("Age"),
+        minValue = 0,
+        onUpdate = { _, new, _ ->
+            this.data = this.data.copy(agePredicate = new)
+        }
+    )
+
+    val agePredicateLine = HorizontalField(Label(page.i18n("When age")), agePredicateController.container)
+        .apply { hidden = !expertMode }
+
 
     val mainReactiveController = GrainSelectController(
         context.grainForId(data.mainReactiveId), context.grains, page, allowNone = false
@@ -99,10 +124,15 @@ class BehaviourEditController(
         this.data = this.data.copy(mainProductId = new?.id ?: -1)
     }
 
-    val sourceReactiveController = SourceReactiveSelectController(data.sourceReactive, data, context, page)
-    { _, new, _ ->
-        this.data = this.data.copy(sourceReactive = new)
-    }
+    val sourceReactiveController = SourceReactiveSelectController(
+        index = data.sourceReactive,
+        behaviour = data,
+        model = context,
+        page = page,
+        onUpdate = { _, new, _ ->
+            this.data = this.data.copy(sourceReactive = new)
+        }
+    ).apply { hidden = !expertMode }
 
     val addReactionButton = iconButton(Icon("plus", Size.Small), ElementColor.Primary, true, size = Size.Small) {
         val newReaction = Reaction()
@@ -115,6 +145,9 @@ class BehaviourEditController(
         readOnly = true
     )
 
+    val sourceHeader = Column(Help(page.i18n("Sources")), size = ColumnSize.S2)
+        .apply { hidden = !expertMode }
+
     val reactionHeader = listOf(
         // Header
         Column(
@@ -122,7 +155,7 @@ class BehaviourEditController(
                 Column(Help(page.i18n("Reactives")), size = ColumnSize.S4),
                 Column(Help(page.i18n("Directions")), size = ColumnSize.S1),
                 Column(Help(page.i18n("Products")), size = ColumnSize.S4),
-                Column(Help(page.i18n("Sources")), size = ColumnSize.S2),
+                sourceHeader,
                 Column(size = ColumnSize.S1)
             ),
             size = ColumnSize.Full
@@ -149,7 +182,7 @@ class BehaviourEditController(
         header = reactionHeader,
         footer = emptyList(),
         controllerBuilder = { reaction, previous ->
-            previous ?: ReactionEditController(reaction, data, context, page).also {
+            previous ?: ReactionEditController(reaction, data, context, page, expertMode).also {
                 it.onUpdate = { old, new, _ ->
                     data = data.updateReaction(old, new)
                 }
@@ -236,7 +269,7 @@ class BehaviourEditController(
         HorizontalField(Label(page.i18n("Name")), nameController.container),
         HorizontalField(Label(page.i18n("Description")), descriptionController.container),
         HorizontalField(Label(page.i18n("Speed")), probabilityController.container),
-        HorizontalField(Label(page.i18n("When age")), agePredicateController.container),
+        agePredicateLine,
         HtmlWrapper(createHr()),
         Label(page.i18n("Reactions")), reactionsController,
         fieldsConfiguration,

@@ -299,10 +299,9 @@ class ModelController(
     val editionItem: TabPage = TabPage(TabItem(page.i18n("Model"), "boxes"), editorColumn)
     val simulationItem: TabPage = TabPage(TabItem(page.i18n("Simulation"), "play"), simulationController)
     val environmentItem: TabPage = TabPage(TabItem(page.i18n("Environment"), "cogs"), settingsController)
-    val modelSearchItem: TabPage = TabPage(TabItem(page.i18n("Examples"), "search"), modelSearchController)
 
     val editionTabs = Tabs(fullWidth = true, boxed = true)
-    val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, modelSearchItem, tabs = editionTabs) {
+    val editionTabPages = TabPages(simulationItem, editionItem, environmentItem, tabs = editionTabs) {
         if (it == simulationItem) simulationController.resize()
         refresh()
     }

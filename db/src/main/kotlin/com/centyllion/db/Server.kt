@@ -28,7 +28,7 @@ class Server : Common(
 ) {
     val serverHost: String by option(
         "--server-host", help = "Server listening host"
-    ).default("0.0.0.0")
+    ).default("127.0.0.1")
 
     val serverPort: Int by option(
         "--server-port", help = "Server listening port"
@@ -56,7 +56,7 @@ class Server : Common(
         routing {
             get("/search/{query}") {
                 val query = call.parameters["query"]
-                val limit = minOf(50, call.request.queryParameters.get("limit")?.toInt() ?: 10)
+                val limit = minOf(50, call.request.queryParameters ["limit"]?.toInt() ?: 10)
                 try {
                     if (!query.isNullOrBlank()) {
                         val result = database.databaseQueries.searchSimulation(query, limit.toLong())
@@ -118,7 +118,6 @@ class Server : Common(
                 val name = call.parameters["name"]!!
                 val path = call.parameters.getAll("path")?.joinToString("/") ?: ""
                 try {
-
                     // search for asset with id
                     val (actualName, entries, content) = database.databaseQueries
                         .selectAsset(UUID.fromString(id))
@@ -140,7 +139,10 @@ class Server : Common(
                         if (entryContent != null) {
                             val ext = name.substringAfterLast('.', "")
                             val contentType = ContentType.fromFileExtension(ext)
-                            context.respondBytes(entryContent, contentType.firstOrNull() ?: ContentType.Application.OctetStream)
+                            context.respondBytes(
+                                entryContent,
+                                contentType.firstOrNull() ?: ContentType.Application.OctetStream
+                            )
                         } else {
                             context.respond(HttpStatusCode.NotFound)
                         }

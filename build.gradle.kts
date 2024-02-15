@@ -18,8 +18,6 @@ plugins {
     // sqldelight
     alias(libs.plugins.sqldelight) apply false
 
-    // native image
-    alias(libs.plugins.graalvm.native.image) apply false
 }
 
 allprojects {

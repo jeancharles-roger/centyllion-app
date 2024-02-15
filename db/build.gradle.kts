@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
-    alias(libs.plugins.graalvm.native.image)
+    application
 }
 
 dependencies {
@@ -29,40 +29,18 @@ sqldelight {
     }
 }
 
-nativeImage {
-    val property = providers.gradleProperty("graalVmHome").orNull
-    val envGraalHome = System.getenv("GRAALVM_HOME")
-    graalVmHome = when {
-        envGraalHome != null -> {
-            System.err.println("Env variable 'GRAALVM_HOME' is set, using it")
-            envGraalHome
+application {
+    mainClass = "com.centyllion.db.MainKt"
+}
+
+tasks {
+    task<Copy>("copyForDocker") {
+        group = "distribution"
+        dependsOn("distTar")
+        from("build/distributions") {
+            include("${project.name}-${version}.tar")
         }
-        property == null -> {
-            System.err.println("Property 'graalVmHome' isn't set in gradle.properties, using JAVA_HOME")
-            System.getenv("JAVA_HOME")
-        }
-        property.isBlank() -> {
-            System.err.println("Property 'graalVmHome' is blank in gradle.properties, using JAVA_HOME")
-            System.getenv("JAVA_HOME")
-        }
-        !file(property).exists() -> {
-            System.err.println("Path '$property' from 'graalVmHome' in gradle.properties doesn't exist, using JAVA_HOME")
-            System.getenv("JAVA_HOME")
-        }
-        !file(property).isDirectory -> {
-            System.err.println("Path '$property' from 'graalVmHome' in gradle.properties isn't a directory, using JAVA_HOME")
-            System.getenv("JAVA_HOME")
-        }
-        else -> property
+        into("docker")
     }
 
-    buildType { build ->
-        build.executable(main = "com.centyllion.db.MainKt")
-    }
-
-    //jarTask = getTasksByName("jar", false).first() as Jar
-
-    executableName = "centyllion-db"
-    runtimeClasspath = configurations["runtimeClasspath"]
-    arguments("--no-fallback")
 }

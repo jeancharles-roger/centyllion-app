@@ -361,6 +361,7 @@ class Simulator3dViewController(
     }
 
     fun pointerVisibility(visible: Boolean) {
+        pointer.isVisible = visible
         pointer.getChildMeshes().forEach { it.isVisible = visible }
     }
 
@@ -576,6 +577,8 @@ class Simulator3dViewController(
         }
 
         window.addEventListener("resize", resizeCallback)
+
+        container.root.onmouseleave = { pointerVisibility(false) }
     }
 
     fun thumbnail() = screenshot(400, 267)

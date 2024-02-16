@@ -34,7 +34,12 @@ class Simulator3dViewController(
     private var selectedTool: EditTool = EditTool.Pen
     private var selectedSize: ToolSize = ToolSize.Fine
 
-    var selectedGrain: Grain? = initialSelectedGrain
+    var selectedGrain: Grain? by observable(initialSelectedGrain) { _, old, new ->
+        if (old != new) {
+            val color = new?.color?.let { colorFromName(it) }
+            changePointer(color)
+        }
+    }
 
     class FieldSupport(val mesh: Mesh, val texture: RawTexture, val alpha: Uint8Array) {
         fun dispose() {
@@ -242,8 +247,8 @@ class Simulator3dViewController(
     val pointer = MeshBuilder.CreateBox(
         name = "pointer",
         options = BasicBoxOptions(faceColors = Array(6) { Color3.Red().toColor4(0.8) }),
-        scene = scene
-    )
+        scene = scene,
+    ).apply { isVisible = false }
 
     val tool get() = selectedTool
     val size get() = selectedSize
@@ -361,7 +366,7 @@ class Simulator3dViewController(
     }
 
     fun pointerVisibility(visible: Boolean) {
-        pointer.isVisible = visible
+        //pointer.isVisible = visible
         pointer.getChildMeshes().forEach { it.isVisible = visible }
     }
 

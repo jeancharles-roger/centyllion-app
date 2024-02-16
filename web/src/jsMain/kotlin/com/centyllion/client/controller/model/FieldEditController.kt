@@ -168,7 +168,7 @@ class FieldEditController (
         HorizontalField(Label(page.i18n("Description")), descriptionController.container),
         HorizontalField(Label(page.i18n("Half-life")), halfLifeController.container),
         HorizontalField(Label(page.i18n("Movement")),
-            BField(Control(Help(page.i18n("Speed"))), speedController.container, grouped = true),
+            BField(Control(Value(page.i18n("Speed"))), speedController.container, grouped = true),
             BField(Control(directionController)),
         ),
         HorizontalField(Label(page.i18n("Formula")), formulaController.container),

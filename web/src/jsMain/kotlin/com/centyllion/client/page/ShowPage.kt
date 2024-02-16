@@ -81,7 +81,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         grouped = true, groupedMultiline = true
     )
 
-    private val currentVersion = Help("")
+    private val currentVersion = p("")
 
     val container: BulmaElement = Div(
         Columns(

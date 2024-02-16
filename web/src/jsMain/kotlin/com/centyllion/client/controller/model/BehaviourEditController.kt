@@ -152,9 +152,9 @@ class BehaviourEditController(
         // Header
         Column(
             Columns(
-                Column(Help(page.i18n("Reactives")), size = ColumnSize.S4),
-                Column(Help(page.i18n("Directions")), size = ColumnSize.S1),
-                Column(Help(page.i18n("Products")), size = ColumnSize.S4),
+                Column(p(page.i18n("Reactives")), size = ColumnSize.S4),
+                Column(p(page.i18n("Directions")), size = ColumnSize.S1),
+                Column(p(page.i18n("Products")), size = ColumnSize.S4),
                 sourceHeader,
                 Column(size = ColumnSize.S1)
             ),

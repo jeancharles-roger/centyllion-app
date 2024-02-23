@@ -38,8 +38,6 @@ class Plotter {
         return List(ticks + 1) { it * 10f.pow(digits).roundToInt() }
     }
 
-
-
     fun plot(scope: DrawScope, maxStep: Int, maxY: Number, lines: List<PlotLine>) = with(scope) {
         clipRect {
             val maxYfloat = maxY.toFloat()

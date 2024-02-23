@@ -37,7 +37,7 @@ object PlotterTab: Tab {
         val simulator = appContext.simulator
         VerticalSplitPane(
             splitPaneState = rememberSplitPaneState(.5f),
-            modifier = Modifier.background(appContext.theme.colors.background).padding(bottom = 20.dp)
+            modifier = Modifier.background(appContext.theme.colors.background)
         ) {
             first { grainPlot(appContext, simulator) }
             second { fieldPlot(appContext, simulator) }
@@ -56,7 +56,7 @@ object PlotterTab: Tab {
             )
         }
 
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.padding(10.dp).fillMaxSize()) {
             val maxGrainCount = simulator.maxGrainCount
                 .filterKeys { visibleGrains.value.contains(it) }
                 .values.maxOrNull() ?: 0
@@ -79,7 +79,7 @@ object PlotterTab: Tab {
             )
         }
 
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.padding(10.dp).fillMaxSize()) {
             val maxFieldAmount = simulator.maxFieldAmount
                 .filterKeys { visibleFields.value.contains(it) }
                 .values.maxOrNull() ?: 0f

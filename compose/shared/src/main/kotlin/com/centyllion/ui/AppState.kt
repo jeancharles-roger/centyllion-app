@@ -41,7 +41,7 @@ class AppState(
     fun newModel(model: ModelAndSimulation = emptyModel()) {
         pathState.value = null
         this.modelAndSimulation = model
-        selection = listOf(model.model)
+        selection = emptyList()
         clearPastAndFuture()
         updateWindowName()
     }
@@ -60,7 +60,7 @@ class AppState(
     override fun importModelAndSimulation(model: ModelAndSimulation) {
         pathState.value = null
         this.modelAndSimulation = model
-        selection = listOf(model.model)
+        selection = listOf()
         clearPastAndFuture()
         updateWindowName()
     }
@@ -68,7 +68,7 @@ class AppState(
     fun importModel(path: Path) {
         pathState.value = path
         modelAndSimulation = loadModel(path)
-        selection = listOf(modelAndSimulation.model)
+        selection = listOf()
         clearPastAndFuture()
         updateWindowName()
     }
@@ -351,7 +351,7 @@ class AppState(
         }
     }
 
-    override val centerTabs = listOf(ModelTab, SimulationTab)
+    override val centerTabs = listOf(ModelTab, SimulationTab, EnvironmentTab)
 
     private val centerSelectedTabState = mutableStateOf<Tab>(ModelTab)
     override var centerSelectedTab: Tab

@@ -65,15 +65,14 @@ fun propertyRow(
     trailingRatio: Float = .3f,
     editPart: @Composable RowScope.() -> Unit,
 ) {
-    val problems = appContext.problems.filter { it.source == element /*&& it.property.equals(validationProperty, true)*/ }
+    val problems = appContext.problems.filter { it.source == element && it.property.equals(validationProperty, true) }
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Column(modifier = Modifier.weight(.2f).align(Alignment.CenterVertically)) {
+        Column(modifier = Modifier.width(120.dp).align(Alignment.CenterVertically)) {
             Text(text = appContext.locale.i18n(property), modifier = Modifier.fillMaxWidth())
         }
 
         Column(
             modifier = Modifier
-                .weight(if (trailingContent != null) .8f - trailingRatio else .8f)
                 .align(Alignment.CenterVertically),
             content = { Row { editPart() } }
         )
@@ -263,24 +262,22 @@ fun <T> LazyCombo(
 }
 
 @Composable
-fun <T> RowScope.Combo(
+fun <T> Combo(
     selected: T, values: List<T>,
     modifier: Modifier = Modifier,
     valueContent: @Composable (T) -> Unit,
     onValueChange: (T) -> Unit,
 ) {
     val expanded = remember { mutableStateOf(false) }
-    //Column(
-    //    Modifier.align(Alignment.CenterVertically).clickable { expanded.value = !expanded.value }
-    //) {
-        Row(modifier.fillMaxWidth()) { valueContent(selected) }
+    Row(modifier.fillMaxWidth()) {
+        valueContent(selected)
         Icon(
             FontAwesomeIcons.Solid.AngleDown, "Expand",
             modifier = modifier
                 .height(20.dp)
                 .clickable { expanded.value = !expanded.value }
         )
-    //}
+    }
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false }
@@ -419,6 +416,7 @@ fun <T> GenericTextField(
                 onValueChange(new)
             }
         },
+        singleLine = true,
         modifier = Modifier
             .fillMaxWidth(1f)
             .background(color = appContext.theme.colors.background, shape = RoundedCornerShape(3.dp))
@@ -504,7 +502,7 @@ fun ProblemItemRow(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            color = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.onError,
+            color = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.error,
             text = AnnotatedString(diagnostic.message),
             fontSize = 12.sp,
             modifier = Modifier.weight(1F).align(Alignment.CenterVertically),

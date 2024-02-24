@@ -153,7 +153,7 @@ class BehaviourEditController(
         Column(
             Columns(
                 Column(p(page.i18n("Reactives")), size = ColumnSize.S4),
-                Column(p(page.i18n("Directions")), size = ColumnSize.S1),
+                Column(p(page.i18n("Directions")), size = ColumnSize.S1).apply { root.classList.add("has-text-centered") },
                 Column(p(page.i18n("Products")), size = ColumnSize.S4),
                 sourceHeader,
                 Column(size = ColumnSize.S1)
@@ -164,7 +164,7 @@ class BehaviourEditController(
         Column(
             Columns(
                 Column(mainReactiveController, size = ColumnSize.S4),
-                Column(mainDirection, size = ColumnSize.S1),
+                Column(mainDirection, size = ColumnSize.S1).apply { root.classList.add("has-text-centered") },
                 Column(mainProductController, size = ColumnSize.S4),
                 Column(sourceReactiveController, size = ColumnSize.S2),
                 Column(addReactionButton, size = ColumnSize.S1).apply { root.classList.add("has-text-right") }

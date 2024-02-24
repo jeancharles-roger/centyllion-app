@@ -104,7 +104,7 @@ class ReactionEditController(
         Columns(
             Column(separator, size = ColumnSize.Full).apply { root.style.padding = "0rem" },
             Column(reactiveController, size = ColumnSize.S4),
-            Column(directionController, size = ColumnSize.S1),
+            Column(directionController, size = ColumnSize.S1).apply { root.classList.add("has-text-centered") },
             Column(productController, size = ColumnSize.S4),
             Column(sourceReactiveController, size = ColumnSize.S2),
             Column(delete, size = ColumnSize.S1).apply { root.classList.add("has-text-right") },

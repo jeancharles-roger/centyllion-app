@@ -3,7 +3,7 @@ kotlin = "1.9.21"
 compose = "1.5.11"
 sqldelight = "2.0.1"
 
-serialization = "1.6.0"
+serialization = "1.6.3"
 coroutines = "1.7.22"
 postgresql = "42.6.0"
 kotlinx-html = "0.7.3"
@@ -18,7 +18,7 @@ mpfilepicker = "2.1.0"
 ktor = "2.3.6"
 logback = "1.4.14"
 junit = "5.6.0"
-kotlinx-uuid = "0.0.22"
+benasher44 = "0.8.2"
 
 [libraries]
 # Core
@@ -38,7 +38,8 @@ markdown = { module = "org.jetbrains:markdown", version.ref = "markdown" }
 sqldelight-jdbc = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
-kotlinx-uuid = { module = "app.softwork:kotlinx-uuid-core", version.ref = "kotlinx-uuid" }
+benasher44 = { module = "com.benasher44:uuid", version.ref = "benasher44" }
+
 
 # Ktor Server
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }

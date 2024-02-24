@@ -1,9 +1,9 @@
 package com.centyllion.model
 
+import com.benasher44.uuid.Uuid
+import com.benasher44.uuid.uuid4
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.uuid.UUID
-import kotlinx.uuid.generateUUID
 import kotlin.math.pow
 
 enum class Direction {
@@ -76,7 +76,7 @@ data class Asset3d(
 )
 
 sealed interface ModelElement {
-    val uuid: UUID
+    val uuid: Uuid
     val name: String
     val description: String
 }
@@ -92,7 +92,7 @@ data class Field(
     val halfLife: Int = 10,
     val allowedDirection: Set<Direction> = Direction.default,
     val formula: String = "",
-    @Transient override val uuid: UUID = UUID.generateUUID(),
+    @Transient override val uuid: Uuid = uuid4(),
 ) : ModelElement {
     /** Label for field */
     fun label(long: Boolean = false) = when {
@@ -123,7 +123,7 @@ data class Grain(
     val fieldProductions: Map<Int, Float> = emptyMap(),
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val fieldPermeable: Map<Int, Float> = emptyMap(),
-    @Transient override val uuid: UUID = UUID.generateUUID(),
+    @Transient override val uuid: Uuid = uuid4(),
 ) : ModelElement {
 
     @Transient
@@ -191,7 +191,7 @@ data class Behaviour(
     val mainReactiveId: Int = -1, val mainProductId: Int = -1, val sourceReactive: Int = -1,
     val fieldInfluences: Map<Int, Float> = emptyMap(),
     val reaction: List<Reaction> = emptyList(),
-    @Transient override val uuid: UUID = UUID.generateUUID(),
+    @Transient override val uuid: Uuid = uuid4(),
 ) : ModelElement {
 
     @Transient
@@ -308,7 +308,7 @@ data class GrainModel(
     val grains: List<Grain> = emptyList(),
     val behaviours: List<Behaviour> = emptyList(),
     val fields: List<Field> = emptyList(),
-    @Transient override val uuid: UUID = UUID.generateUUID(),
+    @Transient override val uuid: Uuid = uuid4(),
 ) : ModelElement {
 
     val label: String
@@ -318,7 +318,7 @@ data class GrainModel(
             else -> ""
         }
 
-    fun findElement(uuid: UUID): ModelElement? =
+    fun findElement(uuid: Uuid): ModelElement? =
         if (uuid == this.uuid) this
         else grains.find { it.uuid == uuid }
             ?: behaviours.find { it.uuid == uuid }

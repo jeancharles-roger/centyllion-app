@@ -97,7 +97,7 @@ class Simulator3dViewController(
     }
 
     val sizeDropdown = Dropdown(text = page.i18n(ToolSize.Fine.name), rounded = true).apply {
-        items = ToolSize.values().map { size ->
+        items = ToolSize.entries.map { size ->
             DropdownSimpleItem(page.i18n(size.name)) {
                 this.text = page.i18n(size.name)
                 selectedSize = size
@@ -107,7 +107,7 @@ class Simulator3dViewController(
         }
     }
 
-    val toolButtons = EditTool.values().map { tool ->
+    val toolButtons = EditTool.entries.map { tool ->
         iconButton(
             Icon(tool.icon), ElementColor.Primary,
             rounded = true, outlined = tool.ordinal == selectedTool.ordinal
@@ -507,7 +507,7 @@ class Simulator3dViewController(
     @Suppress("UNUSED_PARAMETER")
     private fun onPointerMove(evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
         val ray = pickInfo.ray
-        if (ray != null ) {
+        if (ray != null) {
             val info = ray.intersectsMesh(plane, true)
             pointerVisibility(info.hit)
 
@@ -526,6 +526,7 @@ class Simulator3dViewController(
                 onPointerMove(x + data.simulation.width / 2 , y + data.simulation.height / 2)
             } else {
                 onPointerMove(-1, -1)
+                drawStep = -1
             }
         }
     }
@@ -552,10 +553,7 @@ class Simulator3dViewController(
         }
     }
 
-    private val resizeCallback: (Event) -> Unit = {
-        resize()
-        Unit
-    }
+    private val resizeCallback: (Event) -> Unit = { resize() }
 
     init {
         // Force loading of GLTF loader plugin
@@ -567,8 +565,16 @@ class Simulator3dViewController(
         scene.onPointerDown = this::onPointerDown
         scene.onPointerUp = this::onPointerUp
 
-        simulationCanvas.root.onmouseenter = { animated = true; Unit }
-        simulationCanvas.root.onmouseleave = { animated = false; Unit }
+        simulationCanvas.root.onmouseenter = {
+            animated = true
+            drawStep = -1
+            asDynamic()
+        }
+        simulationCanvas.root.onmouseleave = {
+            animated = false
+            drawStep = -1
+            asDynamic()
+        }
 
         engine.runRenderLoop {
              if (
@@ -583,7 +589,14 @@ class Simulator3dViewController(
 
         window.addEventListener("resize", resizeCallback)
 
-        container.root.onmouseleave = { pointerVisibility(false) }
+        container.root.onmouseleave = {
+            drawStep = -1
+            pointerVisibility(false)
+        }
+        window.onmouseleave = {
+            drawStep = -1
+            pointerVisibility(false)
+        }
     }
 
     fun thumbnail() = screenshot(400, 267)
@@ -593,7 +606,7 @@ class Simulator3dViewController(
         Blob(arrayOf(buffer), object: BlobPropertyBag { override var type: String? = "image/webp" })
     }
 
-    fun screenshotURL(width: Int = 1200, height: Int = 800) = Promise<String> { resolve, _ ->
+    fun screenshotURL(width: Int = 1200, height: Int = 800) = Promise { resolve, _ ->
         animated = true
         Tools.CreateScreenshotUsingRenderTarget(
             engine, camera, json("width" to width, "height" to height), { resolve(it) },
@@ -623,7 +636,7 @@ class Simulator3dViewController(
     fun colorFromName(name: String) =
         colorNames[name]?.let {Color3.FromInts(it.first, it.second, it.third) } ?: Color3.Green()
 
-    private fun sourceMeshes(): Map<Int, Mesh> = data.model.grains.map { grain ->
+    private fun sourceMeshes(): Map<Int, Mesh> = data.model.grains.associate { grain ->
         val height = grain.size.coerceAtLeast(0.1)
         val color = colorFromName(grain.color)
         val color4 = color.toColor4(1)
@@ -658,9 +671,9 @@ class Simulator3dViewController(
             cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
         }
         grain.id to mesh
-    }.toMap()
+    }
 
-    private fun fieldSupports() = data.model.fields.map { field ->
+    private fun fieldSupports() = data.model.fields.associate { field ->
         if (!field.invisible) {
             val levels = data.field(field.id)
 
@@ -690,7 +703,7 @@ class Simulator3dViewController(
         } else {
             field.id to null
         }
-    }.toMap()
+    }
 
 
     private fun refreshAssets() {

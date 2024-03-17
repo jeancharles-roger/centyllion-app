@@ -226,3 +226,27 @@ fun antsSimulation(size: Int = 100): Simulation {
         }
     }
 }
+
+fun formulaModel(): GrainModel = Json.decodeFromString(GrainModel.serializer(), """
+{
+  "fields": [
+    {
+      "name": "Champ",
+      "color": "OrangeRed",
+      "formula": "(1+sin(step/25))/2"
+    },
+    {
+      "id": 1,
+      "name": "Champ 1",
+      "color": "Blue",
+      "formula": "abs((step * x * y)/1000000)"
+    },
+    {
+      "id": 2,
+      "name": "Champ 2",
+      "color": "LimeGreen",
+      "formula": "avg(field0(x, y), field0(x-1, y), field0(x+1, y))"
+    }
+  ]
+}
+""")

@@ -1,6 +1,5 @@
 package com.centyllion.model
 
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class PerformanceTest {
@@ -11,9 +10,15 @@ class PerformanceTest {
         repeat(100) { simulator.oneStep() }
     }
 
-    @Test @Ignore
+    @Test //@Ignore
     fun testAntsPerformance() {
         val simulator = Simulator(antsModel(), antsSimulation(100))
+        repeat(300) { simulator.oneStep() }
+    }
+
+    @Test
+    fun testFormulaPerformance() {
+        val simulator = Simulator(formulaModel(), createSimulation())
         repeat(300) { simulator.oneStep() }
     }
 

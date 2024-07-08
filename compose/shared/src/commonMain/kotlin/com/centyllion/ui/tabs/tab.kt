@@ -57,7 +57,9 @@ fun Tabs(
             Row(
                 modifier = Modifier
                     .padding(top = 4.dp)
-                    .horizontalScroll(rememberScrollState())
+                    .background(color = appContext.theme.backgroundLight)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 for (tab in tabs) {
                     Tab(appContext, tab, selected == tab) { onTabSelection(tab) }
@@ -79,7 +81,7 @@ fun Tabs(
 
 @Composable
 fun Tab(appContext: AppContext, tab: Tab, selected: Boolean, onClick: () -> Unit) {
-    Surface(color = if (selected) Color.LightGray else Color.Transparent) {
+    Surface(color = if (selected) appContext.theme.backgroundDark else appContext.theme.backgroundMedium) {
         Row(
             Modifier
                 .clickable(remember(::MutableInteractionSource), indication = null, onClick = onClick)

@@ -23,7 +23,7 @@ import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 
-object PlotterTab: Tab {
+object PlotterTab : Tab {
 
     override val nameKey = "Plotters"
     override val icon = FontAwesomeIcons.Solid.ChartLine
@@ -32,12 +32,13 @@ object PlotterTab: Tab {
     private val grainPlotter = Plotter()
     private val fieldPlotter = Plotter()
 
-    @Composable @OptIn(ExperimentalSplitPaneApi::class)
+    @Composable
+    @OptIn(ExperimentalSplitPaneApi::class)
     override fun content(appContext: AppContext) {
         val simulator = appContext.simulator
         VerticalSplitPane(
             splitPaneState = rememberSplitPaneState(.5f),
-            modifier = Modifier.background(appContext.theme.colors.background)
+            modifier = Modifier.background(Color.White)
         ) {
             first { grainPlot(appContext, simulator) }
             second { fieldPlot(appContext, simulator) }

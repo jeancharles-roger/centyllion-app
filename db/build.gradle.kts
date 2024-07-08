@@ -1,23 +1,36 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
     application
 }
 
-dependencies {
-    api(project(":core"))
-    api(libs.serialization.json)
+kotlin {
 
-    implementation(libs.clikt)
+    jvm()
 
-    implementation(libs.postgresql)
-    implementation(libs.sqldelight.jdbc)
+    sourceSets {
+        jvmMain {
+            dependencies {
+                api(project(":core"))
+                api(libs.serialization.json)
 
-    implementation(libs.bundles.ktor)
+                implementation(libs.clikt)
 
-    testImplementation(libs.bundles.test)
-    testImplementation(libs.bundles.test.jvm)
+                implementation(libs.postgresql)
+                implementation(libs.sqldelight.jdbc)
+
+                implementation(libs.bundles.ktor)
+
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation(libs.bundles.test)
+                implementation(libs.bundles.test.jvm)
+            }
+        }
+    }
 }
 
 sqldelight {

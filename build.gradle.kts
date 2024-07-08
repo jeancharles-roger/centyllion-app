@@ -5,15 +5,12 @@ val debug: String? by project
 val d = debug?.toBoolean() ?: false
 
 plugins {
-    // kotlin
-    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.compose.jetbrains) apply false
+    alias(libs.plugins.compose.compiler) apply false
 
     // serialization
     alias(libs.plugins.kotlin.serialization) apply false
-
-    // compose
-    alias(libs.plugins.compose) apply false
 
     // sqldelight
     alias(libs.plugins.sqldelight) apply false

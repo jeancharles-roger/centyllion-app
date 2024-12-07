@@ -1,6 +1,6 @@
 [versions]
-kotlin = "2.0.0"
-compose = "1.6.10"
+kotlin = "2.1.0"
+compose = "1.7.1"
 sqldelight = "2.0.1"
 
 serialization = "1.6.3"

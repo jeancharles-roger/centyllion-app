@@ -17,7 +17,7 @@ import kotlin.random.Random
 fun ToolBar(appState: AppState) {
 
     TopAppBar(
-        backgroundColor = appState.theme.colors.background,
+        backgroundColor = AppTheme.colors.background,
         modifier = Modifier.height(40.dp)
     ) {
 
@@ -26,39 +26,43 @@ fun ToolBar(appState: AppState) {
                   // TODO add dialog bow to confirm
                   appState.newModel()
             },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) { Icon(FontAwesomeIcons.Solid.File, "New Model") }
 
         IconButton(
             onClick = {
-                val files = newFileDialog(
-                    window = appState.window,
-                    title = "Select file to save",
-                    preselectedFile = "${appState.model.name}.centyllion",
-                    allowedExtensions = listOf(".netbiodyn"),
-                    allowMultiSelection = false
-                )
-                if (files.isNotEmpty()) appState.setPath(files.first().toPath())
+                appState.window?.let { window ->
+                    val files = newFileDialog(
+                        window = window,
+                        title = "Select file to save",
+                        preselectedFile = "${appState.model.name}.centyllion",
+                        allowedExtensions = listOf(".netbiodyn"),
+                        allowMultiSelection = false
+                    )
+                    if (files.isNotEmpty()) appState.setPath(files.first().toPath())
+                }
             },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) { Icon(FontAwesomeIcons.Solid.Save, "Export Model") }
 
         IconButton(
             onClick = {
-                val files = openFileDialog(appState.window, "Open model", listOf(".netbiodyn", ".json"), false)
-                if (files.isNotEmpty()) appState.openPath(files.first().toPath())
+                appState.window?.let { window ->
+                    val files = openFileDialog(window, "Open model", listOf(".netbiodyn", ".json"), false)
+                    if (files.isNotEmpty()) appState.openPath(files.first().toPath())
+                }
             },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(FontAwesomeIcons.Solid.FolderOpen, "Open Model")
         }
 
-        Spacer(modifier = appState.theme.toolbarSpacerModifier)
+        Spacer(modifier = AppTheme.toolbarSpacerModifier)
 
         IconButton(
             onClick = { appState.undo() },
             enabled = appState.canUndo,
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.Undo,
@@ -69,7 +73,7 @@ fun ToolBar(appState: AppState) {
         IconButton(
             onClick = { appState.redo() },
             enabled = appState.canRedo,
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.Redo,
@@ -77,7 +81,7 @@ fun ToolBar(appState: AppState) {
             )
         }
 
-        Spacer(modifier = appState.theme.toolbarSpacerModifier)
+        Spacer(modifier = AppTheme.toolbarSpacerModifier)
 
         IconButton(
             enabled = appState.selection.filterIsInstance<Grain>().isNotEmpty(),
@@ -98,7 +102,7 @@ fun ToolBar(appState: AppState) {
                 }
                 appState.simulation = appState.simulation.copy(agents = newAgents)
             },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.Random,
@@ -111,7 +115,7 @@ fun ToolBar(appState: AppState) {
                 val simulation = appState.simulation
                 appState.simulation = simulation.copy(agents = List(simulation.agents.size) { -1 })
             },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.Trash,
@@ -119,13 +123,13 @@ fun ToolBar(appState: AppState) {
             )
         }
 
-        Spacer(modifier = appState.theme.toolbarSpacerModifier)
+        Spacer(modifier = AppTheme.toolbarSpacerModifier)
 
 
         IconButton(
             enabled = appState.step > 0,
             onClick = { appState.resetSimulation() },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.FastBackward,
@@ -136,7 +140,7 @@ fun ToolBar(appState: AppState) {
         IconButton(
             enabled = true,
             onClick = { appState.startStopSimulation() },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = if (appState.running) FontAwesomeIcons.Solid.Stop else FontAwesomeIcons.Solid.Play,
@@ -147,7 +151,7 @@ fun ToolBar(appState: AppState) {
         IconButton(
             enabled = !appState.running,
             onClick = { appState.step() },
-            modifier = appState.theme.toolBarIconModifier
+            modifier = AppTheme.toolBarIconModifier
         ) {
             Icon(
                 imageVector = FontAwesomeIcons.Solid.StepForward,

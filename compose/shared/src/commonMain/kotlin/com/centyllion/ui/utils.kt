@@ -1,89 +1,17 @@
 package com.centyllion.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.Warning
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.centyllion.model.*
 import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
-import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
-import org.jetbrains.compose.splitpane.SplitPaneScope
-import java.awt.Cursor
 import java.awt.FileDialog
 import java.io.File
-
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
-fun SplitPaneScope.horizontalSplitter() {
-    splitter {
-        visiblePart {
-            Box(
-                Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colors.background)
-            )
-        }
-        handle {
-            Box(
-                Modifier
-                    .markAsHandle()
-                    .pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
-                    .background(SolidColor(Color.Gray), alpha = 0.50f)
-                    .width(10.dp)
-                    .fillMaxHeight()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
-fun SplitPaneScope.verticalSplitter() {
-    splitter {
-        visiblePart {
-            Box(
-                Modifier
-                    .height(1.dp)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colors.background)
-            )
-        }
-        handle {
-            Box(
-                Modifier
-                    .markAsHandle()
-                    .pointerHoverIcon(PointerIcon(Cursor(Cursor.N_RESIZE_CURSOR)))
-                    .background(SolidColor(Color.Gray), alpha = 0.50f)
-                    .height(10.dp)
-                    .fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-fun RowScope.Label(text: String) {
-    Text(
-        text = text, fontSize = 12.sp,
-        modifier = Modifier.padding(6.dp).align(Alignment.CenterVertically)
-    )
-}
 
 fun openFileDialog(
     window: ComposeWindow, title: String,
@@ -141,7 +69,7 @@ fun Severity.icon(): ImageVector = when (this) {
     Severity.Severe -> androidx.compose.material.icons.Icons.TwoTone.Warning
 }
 
-fun com.centyllion.model.Direction.icon(): ImageVector = when (this) {
+fun Direction.icon(): ImageVector = when (this) {
     com.centyllion.model.Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
     com.centyllion.model.Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
     com.centyllion.model.Direction.Up -> FontAwesomeIcons.Solid.ArrowUp

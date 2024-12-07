@@ -23,6 +23,7 @@ import com.centyllion.model.Field
 import com.centyllion.model.Grain
 import com.centyllion.model.colorNames
 import com.centyllion.ui.AppContext
+import com.centyllion.ui.AppTheme
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Boxes
@@ -33,24 +34,24 @@ object ModelTab : Tab {
     override val icon = FontAwesomeIcons.Solid.Boxes
 
     @Composable
-    override fun content(appContext: AppContext) {
+    override fun content(app: AppContext) {
         Box {
             val lazyListState = rememberLazyListState()
             LazyColumn(state = lazyListState) {
-                val selectedComponents = appContext.selection
+                val selectedComponents = app.selection
                 if (selectedComponents.isNotEmpty()) {
                     items(selectedComponents) { element ->
                         when (element) {
-                            is Behaviour -> Row { BehaviourEdit(appContext, element) }
-                            is Grain -> Row { GrainEdit(appContext, element) }
-                            is Field -> Row { FieldEdit(appContext, element) }
+                            is Behaviour -> Row { BehaviourEdit(app, element) }
+                            is Grain -> Row { GrainEdit(app, element) }
+                            is Field -> Row { FieldEdit(app, element) }
                             else -> Row { }
                         }
                     }
                 } else {
                     item {
-                        Surface(appContext.theme.surfaceModifier) {
-                            Text(appContext.locale.i18n("Select a element to edit it"))
+                        Surface(AppTheme.surfaceModifier) {
+                            Text(app.locale.i18n("Select a element to edit it"))
                         }
                     }
                 }

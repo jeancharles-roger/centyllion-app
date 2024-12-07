@@ -24,9 +24,7 @@ import java.nio.file.Path
 interface AppContext {
     val locale: Locale
 
-    val theme: AppTheme
-
-    val window: ComposeWindow
+    val window: ComposeWindow?
     val scope: CoroutineScope
 
     val centerTabs: List<Tab>
@@ -43,6 +41,8 @@ interface AppContext {
     var modelAndSimulation: ModelAndSimulation
     var model: GrainModel
     var simulation: Simulation
+
+    var expertMode: Boolean
 
     var running: Boolean
     val step: Int
@@ -72,19 +72,24 @@ class AppLog(
 )
 
 val themeColors: Colors = lightColors(
-    primary = Color(73, 131, 227),
+    primary = Color(0x95, 0x95, 0xf8),
     primaryVariant = Color(73, 131, 227),
-    background = Color(245, 245, 245),
+    background = Color(221, 221, 235),
     surface = Color(240, 240, 240),
 )
 
-class AppTheme(
-    val colors: Colors = themeColors,
-    val warning: Color = Color(237, 162, 0),
-    val backgroundDark: Color = Color.White,
-    val backgroundMedium: Color = Color.LightGray,
-    val backgroundLight: Color = Color.Gray,
-) {
+object AppTheme {
+
+    val colors: Colors = themeColors
+    val warning: Color = Color(237, 162, 0)
+    val backgroundDark: Color = Color.White
+    val backgroundMedium: Color = Color(
+        red = colors.background.red - .2f,
+        green = colors.background.green - .2f,
+        blue = colors.background.blue - .2f,
+    )
+    val backgroundLight: Color = Color.Gray
+
     @Composable
     fun checkboxColors() = CheckboxDefaults.colors(colors.primary)
 
@@ -93,11 +98,13 @@ class AppTheme(
         thumbColor = Color.Gray,
         activeTrackColor = Color.LightGray,
     )
+
     @Composable
     fun sliderPositive() = SliderDefaults.colors(
         thumbColor = colors.primary,
         activeTrackColor = colors.primary,
     )
+
     @Composable
     fun sliderNegative() = SliderDefaults.colors(
         thumbColor = Color.Yellow,
@@ -119,7 +126,7 @@ class AppTheme(
         .padding(iconPadding)
 
     val buttonIconModifier get() = Modifier
-        .size(20.dp)
+        .size(28.dp)
         .padding(horizontal = 4.dp)
 
     val surfaceModifier = Modifier

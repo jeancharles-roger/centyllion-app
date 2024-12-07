@@ -32,6 +32,14 @@ import compose.icons.fontawesomeicons.solid.AngleDown
 import com.centyllion.model.Direction as ModelDirection
 
 @Composable
+fun Properties(app: AppContext, content: @Composable BoxScope.() -> Unit) {
+    Surface(AppTheme.surfaceModifier) {
+        Box(modifier = Modifier.padding(4.dp), content = content)
+    }
+}
+
+
+@Composable
 fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}, ) {
     Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
         Text(
@@ -66,16 +74,20 @@ fun propertyRow(
     editPart: @Composable RowScope.() -> Unit,
 ) {
     val problems = appContext.problems.filter { it.source == element && it.property.equals(validationProperty, true) }
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
-        Column(modifier = Modifier.width(120.dp).align(Alignment.CenterVertically)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp, horizontal = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.width(120.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(text = appContext.locale.i18n(property), modifier = Modifier.fillMaxWidth())
         }
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterVertically),
-            content = { Row { editPart() } }
-        )
+        editPart()
 
         if (trailingContent != null) {
             Spacer(Modifier.width(8.dp))
@@ -145,7 +157,7 @@ fun TextEditRow(
         singleLine = maxLines > 1, maxLines = maxLines,
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = appContext.theme.colors.background, shape = RoundedCornerShape(3.dp))
+            .background(color = AppTheme.colors.background, shape = RoundedCornerShape(3.dp))
             .padding(4.dp)
     )
 }
@@ -419,7 +431,7 @@ fun <T> GenericTextField(
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth(1f)
-            .background(color = appContext.theme.colors.background, shape = RoundedCornerShape(3.dp))
+            .background(color = AppTheme.colors.background, shape = RoundedCornerShape(3.dp))
             .padding(4.dp)
     )
 }
@@ -439,11 +451,11 @@ fun Directions(
             }
             Icon(
                 imageVector = direction.icon(), contentDescription = null,
-                tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                tint = if (selected) AppTheme.colors.onPrimary else AppTheme.colors.primary,
                 modifier = Modifier.size(size)
                     .align(Alignment.CenterVertically)
                     .background(
-                        color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                        color = if (selected) AppTheme.colors.primary else AppTheme.colors.onPrimary,
                         shape = shape
                     )
                     .padding(5.dp, 2.dp)
@@ -465,11 +477,11 @@ fun Directions(
             }
             Icon(
                 imageVector = direction.icon(), contentDescription = null,
-                tint = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.primary,
+                tint = if (selected) AppTheme.colors.onPrimary else AppTheme.colors.primary,
                 modifier = Modifier.size(size)
                     .align(Alignment.CenterVertically)
                     .background(
-                        color = if (selected) appContext.theme.colors.primary else appContext.theme.colors.onPrimary,
+                        color = if (selected) AppTheme.colors.primary else AppTheme.colors.onPrimary,
                         shape = shape
                     )
                    .padding(5.dp, 2.dp)
@@ -494,7 +506,7 @@ fun ProblemItemRow(
 
         Icon(
             contentDescription = "Problem",
-            tint = if (selected) appContext.theme.colors.primary else appContext.theme.colors.error,
+            tint = if (selected) AppTheme.colors.primary else AppTheme.colors.error,
             imageVector = Icons.TwoTone.Warning,
             modifier = Modifier.fillMaxHeight().align(Alignment.CenterVertically),
         )
@@ -502,7 +514,7 @@ fun ProblemItemRow(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            color = if (selected) appContext.theme.colors.onPrimary else appContext.theme.colors.error,
+            color = if (selected) AppTheme.colors.onPrimary else AppTheme.colors.error,
             text = AnnotatedString(diagnostic.message),
             fontSize = 12.sp,
             modifier = Modifier.weight(1F).align(Alignment.CenterVertically),

@@ -45,8 +45,8 @@ object SimulationTab : Tab {
     val font = Font().also { it.size = 20f }
 
     @Composable
-    override fun content(appContext: AppContext) {
-        val model = appContext.model
+    override fun content(app: AppContext) {
+        val model = app.model
         val grainInfos = model.grains.associate {
             val color = colorNames[it.color]?.color ?: Color.Red
             val icon = allIcons[it.iconName] ?: Icons.Default.Stop
@@ -54,8 +54,8 @@ object SimulationTab : Tab {
         }
 
         Canvas(Modifier.fillMaxSize()) {
-            val simulator = appContext.simulator
-            val simulation = appContext.simulation
+            val simulator = app.simulator
+            val simulation = app.simulation
 
             val step = min(size.width/simulation.width, size.height/simulation.height)
             val sixthStep = step/6
@@ -69,7 +69,7 @@ object SimulationTab : Tab {
             for (i in 0 until simulation.dataSize) {
                 clipRect(right = step, bottom = step) {
                     // draw fields
-                    for (pair in appContext.simulator.fields) {
+                    for (pair in app.simulator.fields) {
                         val field = model.fieldForId(pair.key)
                         if (field != null && !field.invisible) {
                             val fieldValue = simulator.field(field.id)[i]
@@ -84,7 +84,7 @@ object SimulationTab : Tab {
 
                     // draw grains
                     val id = simulator.idAtIndex(i)
-                    val grain = appContext.model.grainForId(id)
+                    val grain = app.model.grainForId(id)
                     if (grain != null && !grain.invisible) {
                         val info = grainInfos[grain.id] ?: defaultInfo
 
@@ -116,7 +116,7 @@ object SimulationTab : Tab {
                 }
             }
 
-            val line = TextLine.make(appContext.step.toString(), font)
+            val line = TextLine.make(app.step.toString(), font)
             drawIntoCanvas { it.nativeCanvas.drawTextLine(line, 0f, 0f, Paint()) }
         }
     }

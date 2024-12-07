@@ -1,5 +1,6 @@
 package com.centyllion.ui
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,32 +10,41 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.centyllion.model.*
+import com.centyllion.model.Behaviour
+import com.centyllion.model.Field
+import com.centyllion.model.Grain
+import com.centyllion.model.colorNames
 import com.centyllion.ui.tabs.SimulationTab
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
+import kotlinx.coroutines.GlobalScope
+import java.nio.file.Path
 
 @Composable
-fun ComponentTree(appState: AppState) {
-    Box(Modifier.padding(4.dp)) {
+fun ComponentTree(modifier: Modifier, appState: AppState) {
+    Box(modifier = modifier) {
         val listState = rememberLazyListState()
 
         LazyColumn(
-            modifier = Modifier.background(appState.theme.colors.background),
-            state = listState
+            modifier = Modifier.padding(6.dp).background(AppTheme.colors.background),
+            state = listState,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Square, "Grains") {
@@ -42,7 +52,9 @@ fun ComponentTree(appState: AppState) {
                     appState.modelAndSimulation = appState.modelAndSimulation.addGrain(grain)
                 }
             }
-            items(appState.modelAndSimulation.model.grains) { GrainItem(appState, it) }
+            items(appState.modelAndSimulation.model.grains) {
+                Box(Modifier.padding(6.dp)) { GrainItem(appState, it) }
+            }
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.ExchangeAlt, "Behaviours") {
@@ -50,8 +62,9 @@ fun ComponentTree(appState: AppState) {
                     appState.modelAndSimulation = appState.modelAndSimulation.addBehaviour(behaviour)
                 }
             }
-            items(appState.modelAndSimulation.model.behaviours) { BehaviourItem(appState, it) }
-
+            items(appState.modelAndSimulation.model.behaviours) {
+                Box(Modifier.padding(6.dp)) { BehaviourItem(appState, it) }
+            }
 
             item {
                 SectionItem(appState, FontAwesomeIcons.Solid.Podcast, "Fields") {
@@ -59,7 +72,10 @@ fun ComponentTree(appState: AppState) {
                     appState.modelAndSimulation = appState.modelAndSimulation.addField(field)
                 }
             }
-            items(appState.modelAndSimulation.model.fields) { FieldItem(appState, it) }
+
+            items(appState.modelAndSimulation.model.fields) {
+                Box(Modifier.padding(6.dp)) { FieldItem(appState, it) }
+            }
 
         }
 
@@ -77,7 +93,7 @@ fun SectionItem(
 ) {
     Row(
         modifier = Modifier
-            .background(appState.theme.colors.surface)
+            .background(AppTheme.colors.surface)
             .padding(6.dp)
     ) {
         Icon(
@@ -88,9 +104,9 @@ fun SectionItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            color = appState.theme.colors.onSurface,
+            color = AppTheme.colors.onSurface,
             text = AnnotatedString(appState.locale.i18n(titleKey)),
-            fontSize = 16.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
@@ -98,20 +114,25 @@ fun SectionItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        IconButton(
-            //modifier = appState.theme.buttonIconModifier,
-            onClick = addCallback
-        ) {
-            Icon(
-                imageVector = FontAwesomeIcons.Solid.Plus,
-                contentDescription = "Add $titleKey",
-                modifier = appState.theme.buttonIconModifier
-            )
-        }
+        NbdButton(
+            FontAwesomeIcons.Solid.Plus,
+            "Add $titleKey",
+            addCallback
+        )
 
         Spacer(modifier = Modifier.width(8.dp))
     }
 }
+
+@Composable
+@Preview
+fun Preview() {
+    val app = AppState(null, GlobalScope, mutableStateOf(Path.of("/Users/charlie/Downloads/phalenes1.netbiodyn")))
+    //GrainItem(app, app.model.grains.first())
+    //BehaviourItem(app, app.model.behaviours.first())
+    FieldItem(app, app.model.fields.first())
+}
+
 
 @Composable
 fun FieldItem(
@@ -120,106 +141,138 @@ fun FieldItem(
 ) {
     val selected = appState.selection.contains(field)
     val color = when {
-        selected -> appState.theme.colors.onPrimary
-        else -> appState.theme.colors.onSurface
+        selected -> AppTheme.colors.onPrimary
+        else -> AppTheme.colors.onSurface
     }
 
     Row(
         modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = if (selected) AppTheme.colors.primary else AppTheme.colors.surface,
+                shape = RoundedCornerShape(10.dp)
+            )
             .padding(6.dp)
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .padding(6.dp)
-            .clickable { appState.selection = listOf(field) }
-    ) {
-        Spacer(modifier = Modifier.width(8.dp))
-        ColoredSquare(field.color)
-        Spacer(modifier = Modifier.width(8.dp))
+            .clickable { appState.selection = listOf(field) },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
 
+    ) {
+        ColoredSquare(field.color)
+
+
+        val text = buildAnnotatedString {
+            append(field.name)
+            if (appState.centerSelectedTab == SimulationTab) {
+                val count = appState.fieldAmounts[field.id]?.toFixedString(1) ?: "0.0"
+                append(" ($count)")
+            }
+        }
         Text(
-            color = color,
-            text = AnnotatedString(field.name),
-            fontSize = 12.sp,
-            maxLines = 1,
-            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+            color = color, text = text,
+            fontSize = 14.sp, overflow = TextOverflow.Ellipsis,
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier.height(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
 
-        // if simulation tab is shown
-        if (appState.centerSelectedTab == SimulationTab) {
-            val text = appState.fieldAmounts[field.id]?.toFixedString(1) ?: "0.0"
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                maxLines = 1,
-                modifier = Modifier.align(Alignment.CenterVertically)
+            if (field.invisible) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.EyeSlash,
+                contentDescription = "invisible",
+                tint = color.copy(alpha = 0.5f),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            if (field.speed > 0f) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.Walking,
+                contentDescription = "canMove",
+                tint = color.copy(alpha = 0.5f),
+            )
+            if (field.halfLife > 0) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.SkullCrossbones,
+                contentDescription = "dies",
+                tint = color.copy(alpha = 0.5f),
+            )
         }
 
 
-        Icon(
-            imageVector = FontAwesomeIcons.Solid.TimesCircle,
-            contentDescription = null, tint = Color.LightGray,
-            modifier = Modifier
-                .height(14.dp).align(Alignment.CenterVertically)
-                .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropField(field) }
+        NbdSmallRoundButton(
+            FontAwesomeIcons.Solid.Times,
+            "Remove ${field.name}",
+            { appState.modelAndSimulation = appState.modelAndSimulation.dropField(field) }
         )
+
     }
 }
 
 @Composable
-fun GrainItem(
-    appState: AppState,
-    grain: Grain,
-) {
+fun GrainItem(appState: AppState, grain: Grain, ) {
+
     val selected = appState.selection.contains(grain)
     val color = when {
-        selected -> appState.theme.colors.onPrimary
-        else -> appState.theme.colors.onSurface
+        selected -> AppTheme.colors.onPrimary
+        else -> AppTheme.colors.onSurface
     }
 
     Row(
         modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = if (selected) AppTheme.colors.primary else AppTheme.colors.surface,
+                shape = RoundedCornerShape(10.dp)
+            )
             .padding(6.dp)
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .padding(6.dp)
-            .clickable { appState.selection = listOf(grain) }
+            .clickable { appState.selection = listOf(grain) },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Spacer(modifier = Modifier.width(8.dp))
         GrainSquare(grain)
-        Spacer(modifier = Modifier.width(8.dp))
 
+        val text = buildAnnotatedString {
+            append(grain.name)
+            if (appState.centerSelectedTab == SimulationTab) {
+                val count = appState.grainCounts[grain.id]?.toString() ?: "0"
+                append(" ($count)")
+            }
+        }
         Text(
-            color = color,
-            text = AnnotatedString(grain.name),
-            fontSize = 12.sp,
-            maxLines = 1,
-            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
+            color = color, text = text,
+            fontSize = 14.sp, overflow = TextOverflow.Ellipsis,
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier.height(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
 
-        // if simulation tab is shown
-        if (appState.centerSelectedTab == SimulationTab) {
-            val text = appState.grainCounts[grain.id]?.toString() ?: "0"
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                maxLines = 1,
-                modifier = Modifier.align(Alignment.CenterVertically)
+            if (grain.invisible) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.EyeSlash,
+                contentDescription = "invisible",
+                tint = color.copy(alpha = 0.5f),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            if (grain.canMove) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.Walking,
+                contentDescription = "canMove",
+                tint = color.copy(alpha = 0.5f),
+            )
+            if (grain.halfLife > 0) Icon(
+                modifier = Modifier.height(IntrinsicSize.Max),
+                imageVector = FontAwesomeIcons.Solid.SkullCrossbones,
+                contentDescription = "dies",
+                tint = color.copy(alpha = 0.5f),
+            )
         }
 
-        Icon(
-            imageVector = FontAwesomeIcons.Solid.TimesCircle,
-            contentDescription = null, tint = Color.LightGray,
-            modifier = Modifier
-                .height(14.dp).align(Alignment.CenterVertically)
-                .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropGrain(grain) }
+        NbdSmallRoundButton(
+            FontAwesomeIcons.Solid.Times,
+            "Remove ${grain.name}",
+            { appState.modelAndSimulation = appState.modelAndSimulation.dropGrain(grain) }
         )
-
     }
 }
 
@@ -230,50 +283,53 @@ fun BehaviourItem(
 ) {
     val selected = appState.selection.contains(behaviour)
     val color = when {
-        selected -> appState.theme.colors.onPrimary
-        else -> appState.theme.colors.onSurface
+        selected -> AppTheme.colors.onPrimary
+        else -> AppTheme.colors.onSurface
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(6.dp)
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
+            .background(
+                color = if (selected) AppTheme.colors.primary else AppTheme.colors.surface,
+                shape = RoundedCornerShape(10.dp)
+            )
             .padding(6.dp)
             .clickable { appState.selection = listOf(behaviour) }
     ) {
 
-        Row {
-            Spacer(modifier = Modifier.width(8.dp))
-
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 color = color,
                 text = AnnotatedString(behaviour.name),
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier =
+                        Modifier
+                            .background(Color.Green, shape = RoundedCornerShape(16.dp))
+                            .padding(horizontal = 5.dp),
+                    text = behaviour.probability.toFixedString(3),
+                    fontSize = 14.sp,
+                )
 
-            Text(
-                text = behaviour.probability.toFixedString(3),
-                fontSize = 12.sp,
-                modifier = Modifier
-                    .padding(5.dp)
-                    .background(Color.Green, shape = RoundedCornerShape(16.dp))
-                    .padding(3.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Icon(
-                imageVector = FontAwesomeIcons.Solid.TimesCircle,
-                contentDescription = null, tint = Color.LightGray,
-                modifier = Modifier
-                    .height(14.dp).align(Alignment.CenterVertically)
-                    .clickable { appState.modelAndSimulation = appState.modelAndSimulation.dropBehaviour(behaviour) }
-            )
+                NbdSmallRoundButton(
+                    FontAwesomeIcons.Solid.Times,
+                    "Remove ${behaviour.name}",
+                    { appState.modelAndSimulation = appState.modelAndSimulation.dropBehaviour(behaviour) }
+                )
+            }
         }
 
         Row(Modifier.fillMaxWidth()) {
@@ -330,7 +386,7 @@ fun ColoredGrain(grain: Grain) {
     Icon(
         imageVector = icon,
         contentDescription = null, tint = color,
-        modifier = Modifier.height(20.dp),
+        modifier = Modifier.height(18.dp),
     )
 }
 
@@ -339,7 +395,7 @@ fun EmptyGrain() {
     Icon(
         imageVector = FontAwesomeIcons.Solid.TimesCircle,
         contentDescription = null,
-        modifier = Modifier.height(16.dp),
+        modifier = Modifier.height(18.dp),
     )
 }
 
@@ -358,46 +414,41 @@ fun ColoredSquare(color: String) {
 
 
 @Composable
-fun TreeItem(
-    appState: AppState,
-    element: ModelElement,
+fun NbdButton(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
 ) {
-    val selected = appState.selection.contains(element)
-    val colorWithError = when {
-        selected -> appState.theme.colors.onPrimary
-        else -> appState.theme.colors.onSurface
-    }
-
-    val color = when {
-        selected -> appState.theme.colors.onPrimary
-        else -> appState.theme.colors.onSurface
-    }
-
-    Row(
-        modifier = Modifier
-            .padding(6.dp)
-            .background(if (selected) appState.theme.colors.primary else appState.theme.colors.surface)
-            .padding(6.dp)
-            .clickable { appState.selection = listOf(element) }
+    Button(
+        modifier = Modifier.size(30.dp),
+        onClick = onClick,
+        contentPadding = PaddingValues(5.dp),
+        shape = RoundedCornerShape(10.dp),
     ) {
         Icon(
-            imageVector = element.icon(), contentDescription = null,
-            tint = colorWithError,
-            modifier = Modifier.height(20.dp).align(Alignment.CenterVertically),
+            modifier = Modifier.size(25.dp),
+            imageVector = icon,
+            contentDescription = text,
         )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Text(
-            color = color,
-            text = AnnotatedString(element.name),
-            fontSize = 12.sp,
-            maxLines = 1,
-            modifier = Modifier.weight(1F).align(Alignment.CenterVertically)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
     }
+}
 
+@Composable
+fun NbdSmallRoundButton(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+) {
+    Button(
+        modifier = Modifier.size(20.dp),
+        onClick = onClick,
+        contentPadding = PaddingValues(5.dp),
+        shape = RoundedCornerShape(10.dp),
+    ) {
+        Icon(
+            modifier = Modifier.size(25.dp),
+            imageVector = icon,
+            contentDescription = text,
+        )
+    }
 }

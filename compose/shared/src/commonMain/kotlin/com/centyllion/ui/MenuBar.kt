@@ -14,19 +14,23 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
                 appState.newModel()
             }
             Item(appState.locale.i18n("Save model\u2026"), mnemonic = 's') {
-                val files = newFileDialog(
-                    window = appState.window,
-                    title = "Select file to save",
-                    preselectedFile = "${appState.modelAndSimulation}.netbiodyn",
-                    allowedExtensions = listOf(".netbiodyn"),
-                    allowMultiSelection = false,
-                )
-                if (files.isNotEmpty()) appState.setPath(files.first().toPath())
+                appState.window?.let { window ->
+                    val files = newFileDialog(
+                        window = window,
+                        title = "Select file to save",
+                        preselectedFile = "${appState.modelAndSimulation}.netbiodyn",
+                        allowedExtensions = listOf(".netbiodyn"),
+                        allowMultiSelection = false,
+                    )
+                    if (files.isNotEmpty()) appState.setPath(files.first().toPath())
+                }
             }
 
             Item(text = appState.locale.i18n("Open model\u2026"), mnemonic = 'o') {
-                val files = openFileDialog(appState.window, "Open model", listOf(".netbiodyn", ".json"), false)
-                if (files.isNotEmpty()) appState.openPath(files.first().toPath())
+                appState.window?.let { window ->
+                    val files = openFileDialog(window, "Open model", listOf(".netbiodyn", ".json"), false)
+                    if (files.isNotEmpty()) appState.openPath(files.first().toPath())
+                }
             }
         }
 

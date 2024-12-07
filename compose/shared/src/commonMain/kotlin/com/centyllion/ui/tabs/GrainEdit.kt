@@ -1,8 +1,10 @@
 package com.centyllion.ui.tabs
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Slider
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,29 +21,28 @@ import compose.icons.fontawesomeicons.solid.QuestionCircle
 import kotlin.math.abs
 
 @Composable
-fun GrainEdit(appContext: AppContext, grain: Grain) {
-    Surface(appContext.theme.surfaceModifier) {
-        Box(modifier = Modifier.padding(4.dp)) {
-            Column {
-                MainTitleRow(appContext.locale.i18n("Grain"))
+fun GrainEdit(app: AppContext, grain: Grain) {
+    Properties(app) {
+        Column {
+            MainTitleRow(app.locale.i18n("Grain"))
 
-                SingleLineTextEditRow(appContext, grain, "Name", grain.name) {
-                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(name = it))
-                }
-
-                MultiLineTextEditRow(appContext, grain, "Description", grain.description) {
-                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(description = it))
-                }
-
-                IntEditRow(appContext, grain, "Half-life", grain.halfLife) {
-                    appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(halfLife = it))
-                }
-                SpeedAndDirection(appContext, grain)
-
-                GrainDisplay(appContext, grain)
-
-                FieldInteractions(appContext, grain)
+            SingleLineTextEditRow(app, grain, "Name", grain.name) {
+                app.modelAndSimulation = app.modelAndSimulation.updateGrain(grain, grain.copy(name = it))
             }
+
+            MultiLineTextEditRow(app, grain, "Description", grain.description) {
+                app.modelAndSimulation = app.modelAndSimulation.updateGrain(grain, grain.copy(description = it))
+            }
+
+            IntEditRow(app, grain, "Half-life", grain.halfLife) {
+                app.modelAndSimulation = app.modelAndSimulation.updateGrain(grain, grain.copy(halfLife = it))
+            }
+
+            SpeedAndDirection(app, grain)
+
+            GrainDisplay(app, grain)
+
+            FieldInteractions(app, grain)
         }
     }
 }
@@ -58,7 +59,8 @@ private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
             }
         }
     ) {
-        appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, grain.copy(movementProbability = it))
+        appContext.modelAndSimulation =
+            appContext.modelAndSimulation.updateGrain(grain, grain.copy(movementProbability = it))
     }
 }
 
@@ -66,7 +68,8 @@ private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
 private fun GrainDisplay(appContext: AppContext, grain: Grain) {
     TitleRow(appContext.locale.i18n("Display"))
 
-    ComboRow(appContext, grain, "Icon", grain.iconName,
+    ComboRow(
+        appContext, grain, "Icon", grain.iconName,
         allIcons.keys.toList(), valueContent = { iconName ->
             val icon = allIcons[iconName]
             if (icon != null) SimpleIcon(icon) else SimpleIcon(
@@ -81,7 +84,8 @@ private fun GrainDisplay(appContext: AppContext, grain: Grain) {
         appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(grain, new)
     }
 
-    ComboRow(appContext, grain, "Color", grain.color,
+    ComboRow(
+        appContext, grain, "Color", grain.color,
         colorNameList, valueContent = {
             ColoredSquare(it)
             Spacer(Modifier.width(4.dp))
@@ -104,10 +108,25 @@ private fun FieldInteractions(appContext: AppContext, grain: Grain) {
         TitleRow(appContext.locale.i18n("Field Interactions"))
 
         Row {
-            Column(Modifier.weight(.15f)) {  }
-            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Productions"), Modifier.align(Alignment.CenterHorizontally)) }
-            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Influences"), Modifier.align(Alignment.CenterHorizontally)) }
-            Column(Modifier.weight(.28f)) { Text(appContext.locale.i18n("Permeability"), Modifier.align(Alignment.CenterHorizontally)) }
+            Column(Modifier.weight(.15f)) { }
+            Column(Modifier.weight(.28f)) {
+                Text(
+                    appContext.locale.i18n("Productions"),
+                    Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            Column(Modifier.weight(.28f)) {
+                Text(
+                    appContext.locale.i18n("Influences"),
+                    Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            Column(Modifier.weight(.28f)) {
+                Text(
+                    appContext.locale.i18n("Permeability"),
+                    Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
         }
         appContext.model.fields.forEach { field ->
             Row {
@@ -149,9 +168,9 @@ fun fieldInteraction(
 ) {
     Row {
         val colors = when {
-            value < 0f -> appContext.theme.sliderNegative()
-            value > 0f -> appContext.theme.sliderPositive()
-            else -> appContext.theme.sliderNeutral()
+            value < 0f -> AppTheme.sliderNegative()
+            value > 0f -> AppTheme.sliderPositive()
+            else -> AppTheme.sliderNeutral()
         }
         Text(
             value.toFixedString(2),

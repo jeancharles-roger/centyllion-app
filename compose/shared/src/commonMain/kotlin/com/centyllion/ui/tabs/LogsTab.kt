@@ -15,6 +15,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.ui.AppContext
+import com.centyllion.ui.AppTheme
 import com.centyllion.ui.icon
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -41,7 +42,7 @@ object LogsTab : Tab {
 
                         Icon(
                             imageVector = log.severity.icon(), contentDescription = null,
-                            tint = appContext.theme.severityColor(log.severity),
+                            tint = AppTheme.severityColor(log.severity),
                             modifier = Modifier.fillMaxHeight().align(Alignment.CenterVertically),
                         )
 

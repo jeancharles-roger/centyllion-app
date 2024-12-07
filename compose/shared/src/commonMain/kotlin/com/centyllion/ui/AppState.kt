@@ -1,7 +1,9 @@
 package com.centyllion.ui
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.awt.ComposeWindow
 import com.centyllion.i18n.Locales
 import com.centyllion.model.*
@@ -19,12 +21,10 @@ import kotlin.math.roundToLong
 import kotlin.system.measureTimeMillis
 
 class AppState(
-    override val window: ComposeWindow,
+    override val window: ComposeWindow?,
     override val scope: CoroutineScope,
     private val pathState: MutableState<Path?>,
 ) : AppContext {
-
-    override val theme: AppTheme = AppTheme()
 
     // TODO search local from system
     private val localeState = mutableStateOf(Locales.default)
@@ -122,16 +122,11 @@ class AppState(
             modelAndSimulation = modelAndSimulation.updateSimulation(value)
         }
 
-    private val runningState = mutableStateOf(false)
-    override var running get() = runningState.value
-        set(value) { runningState.value = value }
+    override var expertMode: Boolean by mutableStateOf(false)
 
-    private val stepState = mutableStateOf(0)
-    override val step get() = stepState.value
-
-    private val speedState = mutableStateOf(.75f)
-    var speed get() = speedState.value
-        set(value) { speedState.value = value }
+    override var running: Boolean by mutableStateOf(false)
+    override var step: Int by mutableStateOf(0)
+    var speed: Float by mutableStateOf(.75f)
 
     private val simulatorState = mutableStateOf(Simulator(modelAndSimulation.model, modelAndSimulation.simulation))
     override var simulator: Simulator
@@ -143,7 +138,6 @@ class AppState(
 
     private val grainCountsState = mutableStateOf(simulator.grainsCounts())
     val grainCounts get() = grainCountsState.value
-
     private val fieldAmountsState = mutableStateOf(simulator.fieldAmounts())
     val fieldAmounts get() = fieldAmountsState.value
 
@@ -169,7 +163,7 @@ class AppState(
             simulator.oneStep()
             grainCountsState.value = simulator.grainsCounts()
             fieldAmountsState.value = simulator.fieldAmounts()
-            stepState.value += 1
+            step += 1
         } catch (t: Throwable) {
             // TODO localize
             alert(t.message ?: "Unexpected error occurred")
@@ -182,7 +176,7 @@ class AppState(
     }
 
     fun resetSimulation() {
-        stepState.value = 0
+        step = 0
         simulator.reset()
         grainCountsState.value = simulator.grainsCounts()
         fieldAmountsState.value = simulator.fieldAmounts()
@@ -344,7 +338,7 @@ class AppState(
     }
 
     private fun updateWindowName() {
-        window.title = buildString {
+        window?.title = buildString {
             append("Centyllion - ")
             if (path != null) append(path?.fileName)
             else append("<not saved>")

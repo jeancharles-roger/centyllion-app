@@ -1,53 +1,40 @@
 package com.centyllion.ui.tabs
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.centyllion.model.Simulator
 import com.centyllion.model.colorNames
 import com.centyllion.ui.AppContext
 import com.centyllion.ui.color
 import com.centyllion.ui.plotter.Plotter
-import com.centyllion.ui.verticalSplitter
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.ChartLine
-import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
-import org.jetbrains.compose.splitpane.VerticalSplitPane
-import org.jetbrains.compose.splitpane.rememberSplitPaneState
 
 object PlotterTab : Tab {
 
     override val nameKey = "Plotters"
     override val icon = FontAwesomeIcons.Solid.ChartLine
 
-
-    private val grainPlotter = Plotter()
-    private val fieldPlotter = Plotter()
-
     @Composable
-    @OptIn(ExperimentalSplitPaneApi::class)
-    override fun content(appContext: AppContext) {
-        val simulator = appContext.simulator
-        VerticalSplitPane(
-            splitPaneState = rememberSplitPaneState(.5f),
-            modifier = Modifier.background(Color.White)
-        ) {
-            first { grainPlot(appContext, simulator) }
-            second { fieldPlot(appContext, simulator) }
-            verticalSplitter()
+    override fun content(app: AppContext) {
+        Column(Modifier.fillMaxSize()) {
+            grainPlot(app, Modifier.weight(1f).fillMaxWidth(), app.simulator)
+            fieldPlot(app, Modifier.weight(1f).fillMaxWidth(), app.simulator)
         }
     }
 
     @Composable
-    private fun grainPlot(appContext: AppContext, simulator: Simulator) {
+    private fun grainPlot(appContext: AppContext, modifier: Modifier, simulator: Simulator) {
+        val grainPlotter = remember { Plotter() }
+
         val visibleGrains = remember {
             mutableStateOf(
                 appContext.modelAndSimulation.model.grains
@@ -57,7 +44,7 @@ object PlotterTab : Tab {
             )
         }
 
-        Canvas(Modifier.padding(10.dp).fillMaxSize()) {
+        Canvas(modifier) {
             val maxGrainCount = simulator.maxGrainCount
                 .filterKeys { visibleGrains.value.contains(it) }
                 .values.maxOrNull() ?: 0
@@ -73,14 +60,16 @@ object PlotterTab : Tab {
     }
 
     @Composable
-    private fun fieldPlot(appContext: AppContext, simulator: Simulator) {
+    private fun fieldPlot(appContext: AppContext, modifier: Modifier, simulator: Simulator) {
+        val fieldPlotter = remember { Plotter() }
+
         val visibleFields = remember {
             mutableStateOf(
                 appContext.modelAndSimulation.model.fields.map { it.id }.toSet()
             )
         }
 
-        Canvas(Modifier.padding(10.dp).fillMaxSize()) {
+        Canvas(modifier) {
             val maxFieldAmount = simulator.maxFieldAmount
                 .filterKeys { visibleFields.value.contains(it) }
                 .values.maxOrNull() ?: 0f

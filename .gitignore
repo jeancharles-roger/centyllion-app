@@ -5,7 +5,10 @@
 
 node_modules
 package-lock.json
+kotlin-js-store/yarn.lock
+
 certificate.jks
+centyllion.jks
 
 web/webroot/js/centyllion
 web/webroot/css/centyllion
@@ -14,4 +17,3 @@ web/webroot/netbiodyn23.tar.gz
 
 db/docker/db-*.tar
 
-centyllion.jks

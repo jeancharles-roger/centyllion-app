@@ -28,7 +28,7 @@ class Plotter {
 
     val font = Font().also { it.size = 20f }
 
-    val leftMargin: Float = 50f
+    val leftMargin: Float = 20f
     val bottomMargin: Float = 20f
 
     fun ticksFor(max: Int): List<Int> {

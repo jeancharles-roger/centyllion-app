@@ -25,9 +25,6 @@ kotlin {
                 implementation(libs.markdown)
                 implementation(libs.font.awesome)
                 implementation(libs.clikt)
-
-                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.desktop.components.splitPane)
             }
 
         }

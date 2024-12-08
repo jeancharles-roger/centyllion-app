@@ -14,8 +14,10 @@ import androidx.compose.material.icons.twotone.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
@@ -32,9 +34,12 @@ import compose.icons.fontawesomeicons.solid.AngleDown
 import com.centyllion.model.Direction as ModelDirection
 
 @Composable
-fun Properties(app: AppContext, content: @Composable BoxScope.() -> Unit) {
+fun Properties(app: AppContext, titleKey: String, content: @Composable ColumnScope.() -> Unit) {
     Surface(AppTheme.surfaceModifier) {
-        Box(modifier = Modifier.padding(4.dp), content = content)
+        Column(modifier = Modifier.padding(4.dp)) {
+            MainTitleRow(app.locale.i18n(titleKey))
+            content()
+        }
     }
 }
 
@@ -75,17 +80,13 @@ fun propertyRow(
 ) {
     val problems = appContext.problems.filter { it.source == element && it.property.equals(validationProperty, true) }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 18.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
+        Text(
             modifier = Modifier.width(120.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = appContext.locale.i18n(property), modifier = Modifier.fillMaxWidth())
-        }
+            text = appContext.locale.i18n(property),
+        )
 
         editPart()
 
@@ -179,7 +180,7 @@ fun IntEditRow(
     trailingContent = trailingContent,
     trailingRatio = trailingRatio
 ) {
-    IntTextField(appContext, value, onValueChange)
+    IntTextField(value, onValueChange)
 }
 
 @Composable
@@ -192,7 +193,7 @@ fun DoubleEditRow(
     trailingRatio: Float = .3f,
     onValueChange: (Double) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
-    DoubleTextField(appContext, value, onValueChange)
+    DoubleTextField(value, onValueChange)
 }
 
 @Composable
@@ -205,7 +206,7 @@ fun FloatEditRow(
     trailingRatio: Float = .3f,
     onValueChange: (Float) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
-    FloatTextField(appContext, value, onValueChange)
+    FloatTextField(value, onValueChange)
 }
 
 @Composable
@@ -242,32 +243,52 @@ fun <T> LazyCombo(
     valueContent: @Composable (T) -> Unit,
     onValueChange: (T) -> Unit,
 ) {
-    val expanded = remember { mutableStateOf(false) }
-    valueContent(selected)
-    Icon(
-        FontAwesomeIcons.Solid.AngleDown,
-        "Expand",
-        modifier = modifier
-            .size(20.dp)
-            .clickable { expanded.value = !expanded.value }
-    )
-
-    DropdownMenu(
-        expanded = expanded.value,
-        onDismissRequest = { expanded.value = false }
+    Row(
+        modifier = Modifier.background(
+            color = AppTheme.colors.background,
+            shape = RoundedCornerShape(15.dp)
+        ).padding(vertical = 4.dp, horizontal = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        val lazyListState = rememberLazyListState()
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier.size(300.dp, 300.dp)
+        val expanded = remember { mutableStateOf(false) }
+
+        // selected element
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) { valueContent(selected) }
+
+        Icon(
+            FontAwesomeIcons.Solid.AngleDown,
+            "Expand",
+            modifier = modifier
+                .size(20.dp)
+                .clickable { expanded.value = !expanded.value }
+        )
+
+        DropdownMenu(
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false }
         ) {
-            items(values) { value ->
-                DropdownMenuItem(
-                    onClick = {
-                        onValueChange(value)
-                        expanded.value = false
+            val lazyListState = rememberLazyListState()
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.size(300.dp, 300.dp)
+            ) {
+                items(values) { value ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onValueChange(value)
+                            expanded.value = false
+                        }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) { valueContent(value) }
                     }
-                ) { valueContent(value) }
+                }
             }
         }
     }
@@ -280,8 +301,15 @@ fun <T> Combo(
     valueContent: @Composable (T) -> Unit,
     onValueChange: (T) -> Unit,
 ) {
-    val expanded = remember { mutableStateOf(false) }
-    Row(modifier.fillMaxWidth()) {
+    Row(
+        modifier = Modifier.background(
+            color = AppTheme.colors.background,
+            shape = RoundedCornerShape(15.dp)
+        ).padding(vertical = 4.dp, horizontal = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        val expanded = remember { mutableStateOf(false) }
         valueContent(selected)
         Icon(
             FontAwesomeIcons.Solid.AngleDown, "Expand",
@@ -289,18 +317,23 @@ fun <T> Combo(
                 .height(20.dp)
                 .clickable { expanded.value = !expanded.value }
         )
-    }
-    DropdownMenu(
-        expanded = expanded.value,
-        onDismissRequest = { expanded.value = false }
-    ) {
-        for (value in values) {
-            DropdownMenuItem(
-                onClick = {
-                    onValueChange(value)
-                    expanded.value = false
+        DropdownMenu(
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false }
+        ) {
+            for (value in values) {
+                DropdownMenuItem(
+                    onClick = {
+                        onValueChange(value)
+                        expanded.value = false
+                    }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) { valueContent(value) }
                 }
-            ) { valueContent(value) }
+            }
         }
     }
 }
@@ -316,7 +349,7 @@ fun IntPredicateRow(
             onValueChange(predicate.copy(op = it))
         }
     }
-    IntTextField(appContext, predicate.constant) {
+    IntTextField(predicate.constant) {
         onValueChange(predicate.copy(constant = it))
     }
 }
@@ -359,11 +392,9 @@ fun PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
 
 @Composable
 fun SimpleTextField(
-    appContext: AppContext,
     value: String,
     onValueChange: (String) -> Unit,
 ) = GenericTextField(
-    appContext = appContext,
     value = value,
     toValue = { this },
     toString = { this },
@@ -371,11 +402,9 @@ fun SimpleTextField(
 )
 @Composable
 fun IntTextField(
-    appContext: AppContext,
     value: Int,
     onValueChange: (Int) -> Unit,
 ) = GenericTextField(
-    appContext = appContext,
     value = value,
     toValue = String::toIntOrNull,
     toString = Int::toString,
@@ -384,11 +413,9 @@ fun IntTextField(
 
 @Composable
 fun FloatTextField(
-    appContext: AppContext,
     value: Float,
     onValueChange: (Float) -> Unit,
 ) = GenericTextField(
-    appContext = appContext,
     value = value,
     toValue = String::toFloatOrNull,
     toString = Float::toString,
@@ -396,11 +423,9 @@ fun FloatTextField(
 )
 @Composable
 fun DoubleTextField(
-    appContext: AppContext,
     value: Double,
     onValueChange: (Double) -> Unit,
 ) = GenericTextField(
-    appContext = appContext,
     value = value,
     toValue = String::toDoubleOrNull,
     toString = Double::toString,
@@ -409,28 +434,22 @@ fun DoubleTextField(
 
 @Composable
 fun <T> GenericTextField(
-    appContext: AppContext,
     value: T,
     toValue: String.() -> T?,
     toString: T.() -> String,
     onValueChange: (T) -> Unit,
 ) {
-    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = value.toString())) }
-    val newValue = if (textFieldValueState.text.toValue() != value) value.toString() else textFieldValueState.text
-    val textFieldValue = textFieldValueState.copy(text = newValue)
-
+    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = toString(value))) }
+    val new = textFieldValueState.text.toValue()
     BasicTextField(
-        value = textFieldValue,
+        value = textFieldValueState,
         onValueChange = {
             textFieldValueState = it
-            val new = it.text.toValue()
-            if (new != null && value != new) {
-                onValueChange(new)
-            }
+            if (new != null && value != new) onValueChange(new)
         },
         singleLine = true,
+        textStyle = if (new != null) TextStyle(color = Color.Unspecified) else TextStyle(color = Color.Red),
         modifier = Modifier
-            .fillMaxWidth(1f)
             .background(color = AppTheme.colors.background, shape = RoundedCornerShape(3.dp))
             .padding(4.dp)
     )

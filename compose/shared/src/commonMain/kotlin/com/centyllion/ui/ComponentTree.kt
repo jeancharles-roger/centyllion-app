@@ -1,6 +1,5 @@
 package com.centyllion.ui
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +13,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,8 +31,6 @@ import com.centyllion.ui.tabs.SimulationTab
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
-import kotlinx.coroutines.GlobalScope
-import java.nio.file.Path
 
 @Composable
 fun ComponentTree(modifier: Modifier, appState: AppState) {
@@ -123,16 +119,6 @@ fun SectionItem(
         Spacer(modifier = Modifier.width(8.dp))
     }
 }
-
-@Composable
-@Preview
-fun Preview() {
-    val app = AppState(null, GlobalScope, mutableStateOf(Path.of("/Users/charlie/Downloads/phalenes1.netbiodyn")))
-    //GrainItem(app, app.model.grains.first())
-    //BehaviourItem(app, app.model.behaviours.first())
-    FieldItem(app, app.model.fields.first())
-}
-
 
 @Composable
 fun FieldItem(

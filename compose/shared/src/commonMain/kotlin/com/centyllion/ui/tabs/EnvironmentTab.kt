@@ -1,6 +1,5 @@
 package com.centyllion.ui.tabs
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import com.centyllion.ui.*
 import compose.icons.FontAwesomeIcons
@@ -13,22 +12,16 @@ object EnvironmentTab : Tab {
 
     @Composable
     override fun content(app: AppContext) {
-        Properties(app) {
-            Column {
-                MainTitleRow(app.locale.i18n("Model"))
-
-                SingleLineTextEditRow(app, app.model, "Name", app.model.name) {
-                    app.modelAndSimulation = app.modelAndSimulation.updateInfo(name = it)
-                }
-
-                MultiLineTextEditRow(app, app.model, "Description", app.model.description) {
-                    app.modelAndSimulation = app.modelAndSimulation.updateInfo(description = it)
-                }
-
-                TitleRow(app.locale.i18n("Simulation"))
-
-
+        Properties(app, "Model") {
+            SingleLineTextEditRow(app, app.model, "Name", app.model.name) {
+                app.modelAndSimulation = app.modelAndSimulation.updateInfo(name = it)
             }
+
+            MultiLineTextEditRow(app, app.model, "Description", app.model.description) {
+                app.modelAndSimulation = app.modelAndSimulation.updateInfo(description = it)
+            }
+
+            TitleRow(app.locale.i18n("Simulation"))
         }
     }
 }

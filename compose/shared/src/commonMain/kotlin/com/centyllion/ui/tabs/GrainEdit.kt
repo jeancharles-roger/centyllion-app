@@ -48,7 +48,8 @@ fun GrainEdit(app: AppContext, grain: Grain) {
         }
 
         IntEditRow(app, grain, "Half-life", grain.halfLife) {
-            app.modelAndSimulation = app.modelAndSimulation.updateGrain(grain, grain.copy(halfLife = it))
+            app.modelAndSimulation = app.modelAndSimulation
+                .updateGrain(grain, grain.copy(halfLife = it))
         }
 
         SpeedAndDirection(app, grain)
@@ -65,15 +66,15 @@ private fun SpeedAndDirection(appContext: AppContext, grain: Grain) {
         appContext, grain, "Speed", grain.movementProbability,
         trailingRatio = .35f,
         trailingContent = {
-            Directions(appContext, grain.allowedDirection) {
+            Directions(grain.allowedDirection, @Composable { GrainSquare(grain) }) {
                 appContext.modelAndSimulation = appContext.modelAndSimulation.updateGrain(
-                    grain, grain.copy(allowedDirection = it)
+                    old = grain, new = grain.copy(allowedDirection = it)
                 )
             }
         }
     ) {
-        appContext.modelAndSimulation =
-            appContext.modelAndSimulation.updateGrain(grain, grain.copy(movementProbability = it))
+        appContext.modelAndSimulation = appContext.modelAndSimulation
+            .updateGrain(grain, grain.copy(movementProbability = it))
     }
 }
 
@@ -139,6 +140,7 @@ private fun FieldInteractions(appContext: AppContext, grain: Grain) {
                 )
             }
         }
+
         appContext.model.fields.forEach { field ->
             Row {
                 Column(Modifier.weight(.15f).align(Alignment.CenterVertically)) { Text(field.name) }
@@ -186,7 +188,7 @@ fun fieldInteraction(
         Text(
             value.toFixedString(2),
             fontSize = 12.sp,
-            modifier = Modifier.align(Alignment.CenterVertically).width(32.dp),
+            modifier = Modifier.align(Alignment.CenterVertically).width(36.dp),
         )
         Slider(
             value = value,

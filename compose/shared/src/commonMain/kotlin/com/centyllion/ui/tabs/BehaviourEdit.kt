@@ -105,7 +105,7 @@ fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {
                 }
 
                 Row(modifier = Modifier.weight(.24f)) {
-                    Directions(appContext, reaction.allowedDirection, size = 18.dp) {
+                    Directions(reaction.allowedDirection, @Composable { GrainSquare(mainReactive) }) {
                         val newReaction = reaction.copy(allowedDirection = it)
                         val new = behaviour.updateReaction(reaction, newReaction)
                         appContext.modelAndSimulation =

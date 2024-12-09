@@ -27,7 +27,7 @@ fun FieldEdit(app: AppContext, field: Field) {
             app, field, "Speed", field.speed,
             trailingRatio = .35f,
             trailingContent = {
-                Directions(app, field.allowedDirection) {
+                Directions(field.allowedDirection, @Composable { ColoredSquare(field.color) }) {
                     app.modelAndSimulation = app.modelAndSimulation.updateField(
                         field, field.copy(allowedDirection = it)
                     )

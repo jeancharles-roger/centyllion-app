@@ -75,7 +75,7 @@ fun ColoredSquare(color: String) {
     Icon(
         imageVector = FontAwesomeIcons.Solid.SquareFull,
         contentDescription = null, tint = squareColor,
-        modifier = Modifier.height(20.dp),
+        modifier = Modifier.height(18.dp),
     )
 }
 
@@ -83,6 +83,6 @@ fun ColoredSquare(color: String) {
 fun SimpleIcon(icon: ImageVector, color: Color = Color.Black, ) {
     Icon(
         imageVector = icon, contentDescription = null,
-        modifier = Modifier.height(20.dp), tint = color
+        modifier = Modifier.height(18.dp), tint = color
     )
 }

@@ -1,6 +1,7 @@
 package com.centyllion.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,13 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centyllion.model.ModelElement
@@ -45,7 +44,7 @@ fun Properties(app: AppContext, titleKey: String, content: @Composable ColumnSco
 
 
 @Composable
-fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}, ) {
+fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
     Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
         Text(
             text = title,
@@ -73,7 +72,8 @@ fun TitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
 
 @Composable
 fun propertyRow(
-    appContext: AppContext, element: ModelElement, property: String, validationProperty: String = property,
+    appContext: AppContext, element: ModelElement,
+    property: String, validationProperty: String = property,
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .3f,
     editPart: @Composable RowScope.() -> Unit,
@@ -82,6 +82,7 @@ fun propertyRow(
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             modifier = Modifier.width(120.dp),
@@ -109,9 +110,10 @@ fun row(
 ) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 18.dp)) {
         if (trailingContent != null) {
-            Column(modifier = Modifier
-                .fillMaxWidth(1f - trailingRatio)
-                .align(Alignment.CenterVertically),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(1f - trailingRatio)
+                    .align(Alignment.CenterVertically),
                 content = { Row { editPart() } }
             )
             Column(modifier = Modifier.fillMaxWidth(trailingRatio), content = trailingContent)
@@ -129,7 +131,17 @@ fun SingleLineTextEditRow(
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 1, trailingContent, trailingRatio, onValueChange)
+) = TextEditRow(
+    appContext,
+    element,
+    property,
+    value,
+    validationProperty,
+    1,
+    trailingContent,
+    trailingRatio,
+    onValueChange
+)
 
 @Composable
 fun MultiLineTextEditRow(
@@ -139,7 +151,17 @@ fun MultiLineTextEditRow(
     trailingContent: @Composable (ColumnScope.() -> Unit)? = null,
     trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
-) = TextEditRow(appContext, element, property, value, validationProperty, 10, trailingContent, trailingRatio, onValueChange)
+) = TextEditRow(
+    appContext,
+    element,
+    property,
+    value,
+    validationProperty,
+    10,
+    trailingContent,
+    trailingRatio,
+    onValueChange
+)
 
 @Composable
 fun TextEditRow(
@@ -349,9 +371,10 @@ fun IntPredicateRow(
             onValueChange(predicate.copy(op = it))
         }
     }
-    IntTextField(predicate.constant) {
-        onValueChange(predicate.copy(constant = it))
-    }
+    IntTextField(
+        value = predicate.constant,
+        onValueChange = { onValueChange(predicate.copy(constant = it)) }
+    )
 }
 
 @Composable
@@ -363,9 +386,9 @@ fun PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
             FontAwesomeIcons.Solid.AngleDown,
             "Expand",
             modifier =
-            Modifier
-                .size(20.dp)
-                .clickable { expanded.value = !expanded.value }
+                Modifier
+                    .size(20.dp)
+                    .clickable { expanded.value = !expanded.value }
         )
 
         DropdownMenu(
@@ -400,6 +423,7 @@ fun SimpleTextField(
     toString = { this },
     onValueChange = onValueChange
 )
+
 @Composable
 fun IntTextField(
     value: Int,
@@ -421,6 +445,7 @@ fun FloatTextField(
     toString = Float::toString,
     onValueChange = onValueChange
 )
+
 @Composable
 fun DoubleTextField(
     value: Double,
@@ -437,10 +462,15 @@ fun <T> GenericTextField(
     value: T,
     toValue: String.() -> T?,
     toString: T.() -> String,
+    modifier: Modifier = Modifier,
     onValueChange: (T) -> Unit,
 ) {
-    var textFieldValueState by remember { mutableStateOf(TextFieldValue(text = toString(value))) }
+    var textFieldValueState by remember {
+        mutableStateOf(TextFieldValue(text = toString(value)))
+    }
     val new = textFieldValueState.text.toValue()
+    val stroke = if (new != null) Color.Unspecified else Color.Red
+
     BasicTextField(
         value = textFieldValueState,
         onValueChange = {
@@ -448,67 +478,59 @@ fun <T> GenericTextField(
             if (new != null && value != new) onValueChange(new)
         },
         singleLine = true,
-        textStyle = if (new != null) TextStyle(color = Color.Unspecified) else TextStyle(color = Color.Red),
-        modifier = Modifier
-            .background(color = AppTheme.colors.background, shape = RoundedCornerShape(3.dp))
+        textStyle = TextStyle(color = stroke),
+        modifier = modifier
+            .background(
+                color = AppTheme.colors.background,
+                shape = RoundedCornerShape(3.dp)
+            )
             .padding(4.dp)
     )
 }
 
 @Composable
-fun Directions(
-    appContext: AppContext, allowedDirection: Set<ModelDirection>,
-    size: Dp = 20.dp, onValueChange: (Set<ModelDirection>) -> Unit
+fun DirectionCell(
+    direction: ModelDirection?,
+    allowedDirection: Set<ModelDirection>,
+    active: @Composable () -> Unit,
+    onValueChange: (Set<ModelDirection>) -> Unit
 ) {
-    Row {
-        ModelDirection.default.forEachIndexed { index, direction ->
-            val selected = allowedDirection.contains(direction)
-            val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                ModelDirection.default.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                else -> RectangleShape
-            }
-            Icon(
-                imageVector = direction.icon(), contentDescription = null,
-                tint = if (selected) AppTheme.colors.onPrimary else AppTheme.colors.primary,
-                modifier = Modifier.size(size)
-                    .align(Alignment.CenterVertically)
-                    .background(
-                        color = if (selected) AppTheme.colors.primary else AppTheme.colors.onPrimary,
-                        shape = shape
-                    )
-                    .padding(5.dp, 2.dp)
-                    .clickable {
-                        val directions = if (selected) allowedDirection - direction else allowedDirection + direction
-                        onValueChange(directions)
-                    }
-            )
+    val modifier = if (direction != null) Modifier
+        .border(2.dp, AppTheme.colors.background)
+        .clickable {
+            val new = if (allowedDirection.contains(direction)) allowedDirection - direction
+            else allowedDirection + direction
+            onValueChange(new)
         }
+    else Modifier
+        .background(Color.DarkGray)
 
-        Spacer(Modifier.width(12.dp))
+    Box(modifier.size(20.dp)) {
+        if (allowedDirection.contains(direction)) active()
+    }
+}
 
-        ModelDirection.extended.forEachIndexed { index, direction ->
-            val selected = allowedDirection.contains(direction)
-            val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
-                ModelDirection.extended.size - 1 -> RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
-                else -> RectangleShape
-            }
-            Icon(
-                imageVector = direction.icon(), contentDescription = null,
-                tint = if (selected) AppTheme.colors.onPrimary else AppTheme.colors.primary,
-                modifier = Modifier.size(size)
-                    .align(Alignment.CenterVertically)
-                    .background(
-                        color = if (selected) AppTheme.colors.primary else AppTheme.colors.onPrimary,
-                        shape = shape
-                    )
-                   .padding(5.dp, 2.dp)
-                    .clickable {
-                        val directions = if (selected) allowedDirection - direction else allowedDirection + direction
-                        onValueChange(directions)
-                    }
-            )
+@Composable
+fun Directions(
+    allowedDirection: Set<ModelDirection>,
+    active: @Composable () -> Unit,
+    onValueChange: (Set<ModelDirection>) -> Unit
+) {
+    Column {
+        Row {
+            DirectionCell(ModelDirection.LeftUp, allowedDirection, active, onValueChange)
+            DirectionCell(ModelDirection.Up, allowedDirection, active, onValueChange)
+            DirectionCell(ModelDirection.RightUp, allowedDirection, active, onValueChange)
+        }
+        Row {
+            DirectionCell(ModelDirection.Left, allowedDirection, active, onValueChange)
+            DirectionCell(null, allowedDirection, active, onValueChange)
+            DirectionCell(ModelDirection.Right, allowedDirection, active, onValueChange)
+        }
+        Row {
+            DirectionCell(ModelDirection.LeftDown, allowedDirection, active, onValueChange)
+            DirectionCell(ModelDirection.Down, allowedDirection, active, onValueChange)
+            DirectionCell(ModelDirection.RightDown, allowedDirection, active, onValueChange)
         }
     }
 }

@@ -394,7 +394,7 @@ fun ColoredSquare(color: String) {
     Icon(
         imageVector = FontAwesomeIcons.Solid.SquareFull,
         contentDescription = null, tint = squareColor,
-        modifier = Modifier.height(20.dp),
+        modifier = Modifier.height(18.dp),
     )
 }
 

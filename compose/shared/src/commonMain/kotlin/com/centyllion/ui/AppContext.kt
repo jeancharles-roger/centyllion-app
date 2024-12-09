@@ -82,13 +82,11 @@ object AppTheme {
 
     val colors: Colors = themeColors
     val warning: Color = Color(237, 162, 0)
-    val backgroundDark: Color = Color.White
     val backgroundMedium: Color = Color(
         red = colors.background.red - .2f,
         green = colors.background.green - .2f,
         blue = colors.background.blue - .2f,
     )
-    val backgroundLight: Color = Color.Gray
 
     @Composable
     fun checkboxColors() = CheckboxDefaults.colors(colors.primary)

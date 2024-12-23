@@ -141,15 +141,15 @@ fun SingleLineTextEditRow(
     trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = TextEditRow(
-    appContext,
-    element,
-    property,
-    value,
-    validationProperty,
-    1,
-    trailingContent,
-    trailingRatio,
-    onValueChange
+    appContext = appContext,
+    element = element,
+    property = property,
+    value = value,
+    validationProperty = validationProperty,
+    maxLines = 1,
+    trailingContent = trailingContent,
+    trailingRatio = trailingRatio,
+    onValueChange = onValueChange
 )
 
 @Composable
@@ -161,15 +161,15 @@ fun MultiLineTextEditRow(
     trailingRatio: Float = .3f,
     onValueChange: (String) -> Unit,
 ) = TextEditRow(
-    appContext,
-    element,
-    property,
-    value,
-    validationProperty,
-    10,
-    trailingContent,
-    trailingRatio,
-    onValueChange
+    appContext = appContext,
+    element = element,
+    property = property,
+    value = value,
+    validationProperty = validationProperty,
+    maxLines = 10,
+    trailingContent = trailingContent,
+    trailingRatio = trailingRatio,
+    onValueChange = onValueChange
 )
 
 @Composable
@@ -184,13 +184,13 @@ fun TextEditRow(
     onValueChange: (String) -> Unit,
 ) = propertyRow(appContext, element, property, validationProperty, trailingContent, trailingRatio) {
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        singleLine = maxLines > 1, maxLines = maxLines,
         modifier = Modifier
             .fillMaxWidth()
             .background(color = AppTheme.colors.background, shape = RoundedCornerShape(3.dp))
-            .padding(4.dp)
+            .padding(4.dp),
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = maxLines > 1, maxLines = maxLines,
     )
 }
 
@@ -476,7 +476,7 @@ fun <T> GenericTextField(
     modifier: Modifier = Modifier,
     onValueChange: (T) -> Unit,
 ) {
-    var textFieldValueState by remember {
+    var textFieldValueState by remember(value) {
         mutableStateOf(TextFieldValue(text = toString(value)))
     }
     val new = textFieldValueState.text.toValue()

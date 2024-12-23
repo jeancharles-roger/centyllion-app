@@ -411,7 +411,7 @@ fun PredicateOpCombo(op: Operator, onValueChange: (Operator) -> Unit) {
                 state = lazyListState,
                 modifier = Modifier.size(300.dp, 300.dp)
             ) {
-                items(Operator.values()) { value ->
+                items(Operator.entries) { value ->
                     DropdownMenuItem(
                         onClick = {
                             onValueChange(value)
@@ -548,7 +548,7 @@ fun Directions(
 
 @Composable
 fun ProblemItemRow(
-    appContext: AppContext,
+    app: AppContext,
     diagnostic: Problem,
     selected: Boolean = false,
     modifier: Modifier = Modifier,

@@ -12,7 +12,9 @@ object EnvironmentTab : Tab {
 
     @Composable
     override fun content(app: AppContext) {
-        Properties(app, "Model") {
+        Properties(
+            title = { MainTitleRow(app.locale.i18n("Model")) }
+        ) {
             SingleLineTextEditRow(app, app.model, "Name", app.model.name) {
                 app.modelAndSimulation = app.modelAndSimulation.updateInfo(name = it)
             }

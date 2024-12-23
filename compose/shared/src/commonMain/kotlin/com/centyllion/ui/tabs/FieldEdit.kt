@@ -9,7 +9,9 @@ import com.centyllion.ui.*
 
 @Composable
 fun FieldEdit(app: AppContext, field: Field) {
-    Properties(app, "Field") {
+    Properties(
+        title = { MainTitleRow(app.locale.i18n("Field")) }
+    ) {
 
         SingleLineTextEditRow(app, field, "Name", field.name) {
             app.modelAndSimulation = app.modelAndSimulation.updateField(field, field.copy(name = it))

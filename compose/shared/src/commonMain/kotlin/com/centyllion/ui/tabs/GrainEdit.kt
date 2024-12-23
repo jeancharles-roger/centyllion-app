@@ -1,13 +1,11 @@
 package com.centyllion.ui.tabs
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,26 +17,14 @@ import com.centyllion.ui.*
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.QuestionCircle
-import kotlinx.coroutines.GlobalScope
-import java.nio.file.Path
 import kotlin.math.abs
 
 
 @Composable
-@Preview
-fun Preview() {
-    val app = AppState(null, GlobalScope, mutableStateOf(Path.of("/Users/charlie/Downloads/phalenes1.netbiodyn")))
-    //GrainItem(app, app.model.grains.first())
-    GrainEdit(app, app.model.grains.first())
-
-    //BehaviourItem(app, app.model.behaviours.first())
-
-    //FieldItem(app, app.model.fields.first())
-}
-
-@Composable
 fun GrainEdit(app: AppContext, grain: Grain) {
-    Properties(app, "Grain") {
+    Properties(
+        title = { MainTitleRow(app.locale.i18n("Grain")) }
+    ) {
         SingleLineTextEditRow(app, grain, "Name", grain.name) {
             app.modelAndSimulation = app.modelAndSimulation.updateGrain(grain, grain.copy(name = it))
         }

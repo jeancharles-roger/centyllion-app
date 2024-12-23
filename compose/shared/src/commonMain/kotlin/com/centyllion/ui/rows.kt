@@ -33,10 +33,10 @@ import compose.icons.fontawesomeicons.solid.AngleDown
 import com.centyllion.model.Direction as ModelDirection
 
 @Composable
-fun Properties(app: AppContext, titleKey: String, content: @Composable ColumnScope.() -> Unit) {
+fun Properties(title: @Composable () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     Surface(AppTheme.surfaceModifier) {
         Column(modifier = Modifier.padding(4.dp)) {
-            MainTitleRow(app.locale.i18n(titleKey))
+            title()
             content()
         }
     }
@@ -44,8 +44,17 @@ fun Properties(app: AppContext, titleKey: String, content: @Composable ColumnSco
 
 
 @Composable
-fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {}) {
-    Row(Modifier.padding(vertical = 4.dp, horizontal = 18.dp)) {
+fun MainTitleRow(
+    title: String,
+    prefix: @Composable RowScope.() -> Unit = {},
+    suffix: @Composable RowScope.() -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        prefix()
         Text(
             text = title,
             fontWeight = FontWeight.W800,
@@ -53,7 +62,7 @@ fun MainTitleRow(title: String, extension: @Composable RowScope.() -> Unit = {})
             fontSize = 20.sp,
             modifier = Modifier.weight(1f)
         )
-        extension()
+        suffix()
     }
 }
 
@@ -265,15 +274,18 @@ fun <T> LazyCombo(
     valueContent: @Composable (T) -> Unit,
     onValueChange: (T) -> Unit,
 ) {
+    val expanded = remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.background(
             color = AppTheme.colors.background,
             shape = RoundedCornerShape(15.dp)
-        ).padding(vertical = 4.dp, horizontal = 6.dp),
+            )
+            .padding(vertical = 4.dp, horizontal = 6.dp)
+            .clickable { expanded.value = !expanded.value },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        val expanded = remember { mutableStateOf(false) }
 
         // selected element
         Row(
@@ -284,16 +296,14 @@ fun <T> LazyCombo(
         Icon(
             FontAwesomeIcons.Solid.AngleDown,
             "Expand",
-            modifier = modifier
-                .size(20.dp)
-                .clickable { expanded.value = !expanded.value }
+            modifier = modifier.size(20.dp)
         )
 
         DropdownMenu(
             expanded = expanded.value,
             onDismissRequest = { expanded.value = false }
         ) {
-            val lazyListState = rememberLazyListState()
+            val lazyListState = rememberLazyListState(values.indexOf(selected))
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier.size(300.dp, 300.dp)
@@ -323,21 +333,22 @@ fun <T> Combo(
     valueContent: @Composable (T) -> Unit,
     onValueChange: (T) -> Unit,
 ) {
+    val expanded = remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.background(
             color = AppTheme.colors.background,
             shape = RoundedCornerShape(15.dp)
-        ).padding(vertical = 4.dp, horizontal = 6.dp),
+            )
+            .padding(vertical = 4.dp, horizontal = 6.dp)
+            .clickable { expanded.value = !expanded.value },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        val expanded = remember { mutableStateOf(false) }
         valueContent(selected)
         Icon(
             FontAwesomeIcons.Solid.AngleDown, "Expand",
-            modifier = modifier
-                .height(20.dp)
-                .clickable { expanded.value = !expanded.value }
+            modifier = modifier.height(20.dp)
         )
         DropdownMenu(
             expanded = expanded.value,

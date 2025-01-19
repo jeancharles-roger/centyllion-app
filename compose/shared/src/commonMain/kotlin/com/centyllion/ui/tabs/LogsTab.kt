@@ -20,8 +20,6 @@ import com.centyllion.ui.icon
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.AlignJustify
-import java.text.DateFormat
-import java.util.*
 
 object LogsTab : Tab {
     override val nameKey = "Logs"
@@ -36,9 +34,10 @@ object LogsTab : Tab {
             LazyColumn(state = listState) {
                 items(appContext.logs) { log ->
 
-                    Row(modifier = Modifier.padding(6.dp)) {
-
-                        Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier.padding(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
 
                         Icon(
                             imageVector = log.severity.icon(), contentDescription = null,
@@ -46,25 +45,11 @@ object LogsTab : Tab {
                             modifier = Modifier.fillMaxHeight().align(Alignment.CenterVertically),
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-
                         Text(
                             text = AnnotatedString(log.message),
                             softWrap = true,
                             fontSize = 12.sp,
                             modifier = Modifier.weight(1F).align(Alignment.CenterVertically),
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = DateFormat.getInstance().format(Date(log.timestamp)),
-                            softWrap = true,
-                            fontSize = 10.sp,
-                            modifier = Modifier
-                                .weight(0.15f)
-                                .align(Alignment.CenterVertically)
                         )
                     }
                 }

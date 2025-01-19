@@ -13,6 +13,7 @@ import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.PlatformFile
+import kotlin.math.floor
 
 suspend fun openFileDialog(
     title: String,
@@ -38,14 +39,14 @@ fun Severity.icon(): ImageVector = when (this) {
 }
 
 fun Direction.icon(): ImageVector = when (this) {
-    com.centyllion.model.Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
-    com.centyllion.model.Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
-    com.centyllion.model.Direction.Up -> FontAwesomeIcons.Solid.ArrowUp
-    com.centyllion.model.Direction.Down -> FontAwesomeIcons.Solid.ArrowDown
-    com.centyllion.model.Direction.LeftUp -> FontAwesomeIcons.Solid.Question
-    com.centyllion.model.Direction.LeftDown -> FontAwesomeIcons.Solid.Question
-    com.centyllion.model.Direction.RightUp -> FontAwesomeIcons.Solid.Question
-    com.centyllion.model.Direction.RightDown -> FontAwesomeIcons.Solid.Question
+    Direction.Left -> FontAwesomeIcons.Solid.ArrowLeft
+    Direction.Right -> FontAwesomeIcons.Solid.ArrowRight
+    Direction.Up -> FontAwesomeIcons.Solid.ArrowUp
+    Direction.Down -> FontAwesomeIcons.Solid.ArrowDown
+    Direction.LeftUp -> FontAwesomeIcons.Solid.Question
+    Direction.LeftDown -> FontAwesomeIcons.Solid.Question
+    Direction.RightUp -> FontAwesomeIcons.Solid.Question
+    Direction.RightDown -> FontAwesomeIcons.Solid.Question
 }
 
 
@@ -58,7 +59,11 @@ val allIcons = buildMap {
         .forEach { put(it.name.lowercase(), it) }
 }
 
-fun Double.toFixedString(decimals: Int = 2): String = String.format("%.${decimals}f", this)
+fun Double.toFixedString(decimals: Int = 2): String {
+    val intPart = floor(this).toInt()
+    val decimalPart = this - intPart
+    return "$intPart.${decimalPart.toString().substring(2, 2+decimals)}"
+}
 
 fun Float.toFixedString(decimals: Int = 2): String = toDouble().toFixedString(decimals)
 

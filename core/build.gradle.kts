@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
@@ -24,18 +26,18 @@ kotlin {
             }
         }
     }
-/*
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "netbiodyn-core"
+        browser {} 
         binaries.library()
     }
-*/
+
     sourceSets {
 
         commonMain {
             dependencies {
-                api(libs.evaluator)
                 api(libs.serialization.json)
                 api(libs.benasher44)
             }

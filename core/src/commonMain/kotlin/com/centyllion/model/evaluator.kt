@@ -1,89 +1,86 @@
 package com.centyllion.model
 
-import com.github.murzagalin.evaluator.DefaultFunctions
-import com.github.murzagalin.evaluator.Evaluator
-import com.github.murzagalin.evaluator.Function
+import com.centyllion.expression.*
 
 interface FieldEvaluator {
-    fun evaluateField(step: Int, position: Position, current: Float): Float
+    fun evaluateField(current: Float): Float
 }
 
-fun agentFunction(simulator: Simulator?) = object: Function("agent", 2) {
-    override fun invoke(vararg args: Any): Any {
-        require(args.size == 2) { "$name should be called with x and y" }
-        require(args.all { it is Int }) { "$name function requires all arguments to be integers" }
-        if (simulator == null ) return -1.0
-        val index = simulator.simulation.toIndex(args[0] as Int, args[1] as Int)
-        val result = if (index >= 0 && index < simulator.agents.size) simulator.agents[index] else -1
-        return result.toDouble()
+class NetbioDynEvaluator(
+    val simulator: Simulator?,
+    variables: Map<String, Value> = defaultConstants(),
+    functions: Map<String, (values: List<Value>) -> Value> = defaultFunctions()
+): Evaluator(variables, functions) {
+
+    var step: Value = 0.v
+    var x: Value = 0.v
+    var y: Value = 0.v
+    var z: Value = 0.v
+    var current: Value = 0f.v
+
+    override fun variable(name: String): Value = when (name) {
+        "step" -> step
+        "x" -> x
+        "y" -> y
+        "z" -> z
+        "current" -> current
+        else -> super.variable(name)
+    }
+
+    override fun function(name: String, args: List<Value>): Value = when (name) {
+        "agent" ->  {
+            if (simulator != null) {
+                val index = simulator.simulation.toIndex(args[0].int, args[1].int)
+                val result = if (index >= 0 && index < simulator.agents.size) simulator.agents[index] else -1
+                result.v
+            } else Value.Zero
+        }
+        "field" -> {
+            if (simulator != null) {
+                val id = args[0].int
+                val index = simulator.simulation.toIndex(args[1].int, args[2].int)
+                simulator.fields[id]?.let { values ->
+                    val result = if (index >= 0 && index < values.size) values[index] else 0f
+                    result.v
+                } ?: Value.Zero
+            } else Value.Zero
+        }
+        else -> super.function(name, args)
     }
 }
 
-fun fieldFunction(field: Field, simulator: Simulator?) = object: Function("field${field.id}", 2) {
-    override fun invoke(vararg args: Any): Any {
-        require(args.size == 2) { "$name should be called with x and y" }
-        require(args.all { it is Int }) { "$name function requires all arguments to be integers" }
-        if (simulator == null ) return 0.0
-        val index = simulator.simulation.toIndex(args[0] as Int, args[1] as Int)
-        val values = simulator.fields[field.id] ?: return 0.0
-        val result = if (index >= 0 && index < values.size) values[index] else 0f
-        return result.toDouble()
-    }
-}
+fun createEvaluator(simulator: Simulator) = NetbioDynEvaluator(simulator)
 
-fun validateFormula(model: GrainModel, formula: String): String? {
-    val evaluator = Evaluator(
-        functions = DefaultFunctions.ALL
-                + agentFunction(null)
-                + model.fields.map { fieldFunction(it, null) }
-    )
-    val variables = buildMap {
-        put("step", 0)
-        put("x", 0)
-        put("y", 0)
-        put("z", 0)
-        put("current", 0f)
-    }
+fun createEvaluator() = NetbioDynEvaluator(null)
+
+fun validateFormula(formula: String): String? {
+    val evaluator = createEvaluator()
     return try {
-        val parsed = evaluator.preprocessExpression(formula)
-        evaluator.evaluateDouble(parsed, variables)
+        val parsed = formula.parseExpression()
+        evaluator.check(parsed)
+        evaluator.evaluate(parsed)
         null
-    } catch (e: IllegalArgumentException) {
+    } catch (e: Exception) {
         e.message
     }
 }
 
-object SimpleFieldEvaluator: FieldEvaluator {
-    override fun evaluateField(step: Int, position: Position, current: Float): Float = current
+object SimpleFieldEvaluator : FieldEvaluator {
+    override fun evaluateField(/*step: Int, position: Position, */current: Float): Float = current
 
 }
 
-/**
- * Using project: https://github.com/murzagalin/multiplatform-expressions-evaluator
- */
 class FormulaFieldEvaluator(
     val field: Field,
     val formula: String,
-    val evaluator: Evaluator
-): FieldEvaluator {
+    val evaluator: NetbioDynEvaluator
+) : FieldEvaluator {
 
-    private val expression = evaluator.preprocessExpression(formula)
+    private val expression = formula.parseExpression()
 
-    private val parameters = mutableMapOf<String, Number>().apply {
-        put("step", 0)
-        put("x", 0)
-        put("y", 0)
-        put("z", 0)
-        put("current", 0f)
-    }
-
-    override fun evaluateField(step: Int, position: Position, current: Float): Float {
-        parameters["step"] = step
-        parameters["x"] = position.x
-        parameters["y"] = position.y
-        parameters["z"] = position.z
-        parameters["current"] = current
-        return evaluator.evaluateDouble(expression, parameters).toFloat()
+    override fun evaluateField(/*step: Int, position: Position, */current: Float): Float {
+        evaluator.current = current.v
+        return evaluator.evaluate(expression).float
     }
 
 }

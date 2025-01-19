@@ -1,7 +1,6 @@
 package com.centyllion.model
 
-import com.github.murzagalin.evaluator.DefaultFunctions
-import com.github.murzagalin.evaluator.Evaluator
+import com.centyllion.expression.v
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.pow
@@ -73,17 +72,15 @@ class Simulator(
     private val fields2: Map<Int, FloatArray> =
         model.fields.associate { it.id to FloatArray(simulation.agents.size) { minField } }
 
-    val formulaEvaluator = Evaluator(
-        functions = DefaultFunctions.ALL + agentFunction(this) + model.fields.map { fieldFunction(it, this) }
-    )
+    private val expressionEvaluator = createEvaluator(this)
 
     private val evaluators: Map<Int, FieldEvaluator> = model.fields.associate {
         val formula = it.formula
         it.id to when {
             formula.isBlank() -> SimpleFieldEvaluator
             formula.trim() == "current" -> SimpleFieldEvaluator
-            validateFormula(model, formula) != null -> SimpleFieldEvaluator
-            else -> FormulaFieldEvaluator(it, formula, formulaEvaluator)
+            validateFormula(formula) != null -> SimpleFieldEvaluator
+            else -> FormulaFieldEvaluator(it, formula, expressionEvaluator)
         }
     }
 
@@ -99,12 +96,13 @@ class Simulator(
 
     private val allBehaviours = model.behaviours + model.grains.mapNotNull { it.moveBehaviour() }
 
-    private val speeds = allBehaviours.map { it to it.probability }.toMap().toMutableMap()
+    private val speeds = allBehaviours.associateWith { it.probability }.toMutableMap()
 
     private val reactiveGrains = allBehaviours.mapNotNull { model.grainForId(it.mainReactiveId) }.toSet()
 
     // Caches an array of Grain placed with their id for fast grain resolution
-    private val grainIdArray = Array((model.grains.map { it.id }.maxOrNull() ?: -1) + 1) { id -> model.grains.find { it.id == id } }
+    private val grainIdArray = Array((model.grains.maxOfOrNull { it.id } ?: -1) + 1)
+        { id -> model.grains.find { it.id == id } }
 
     fun grainForId(id: Int): Grain? = if (id < 0) null else grainIdArray[id]
 
@@ -135,6 +133,9 @@ class Simulator(
             model.fields.forEach { this[it] = 0f }
         }
 
+        // updates evaluator
+        expressionEvaluator.step = step.v
+
         // defines values for fields to avoid dynamic call each time
         val fields = fields
         val nextFields = nextFields
@@ -146,6 +147,14 @@ class Simulator(
         // if an agent can't move and doesn't contain any applicable behavior, it won't be present in the map
         val all = mutableMapOf<Int, MutableList<ApplicableBehavior>>()
         for (i in 0 until simulation.dataSize) {
+
+
+            val position = simulation.toPosition(i)
+            expressionEvaluator.x = position.x.v
+            expressionEvaluator.y = position.y.v
+            expressionEvaluator.z = position.z.v
+
+
             val grain = grainAtIndex(i)
             if (grain != null) {
                 // does the grain dies ?
@@ -267,7 +276,7 @@ class Simulator(
 
                     val diffused = level * (1f - field.deathProbability)
                     val evaluated = evaluators[field.id]
-                        ?.evaluateField(step, simulation.toPosition(i), diffused)
+                        ?.evaluateField(diffused)
                         ?: diffused
 
                     next[i] = evaluated.coerceIn(minField, 1f)
@@ -369,7 +378,7 @@ class Simulator(
 
     /** Returns all neighbours agents in all directions */
     fun neighbours(index: Int): List<Pair<Direction, Agent>> {
-        val all = Direction.values()
+        val all = Direction.entries.toTypedArray()
         return List(all.size) { i ->
             val direction = all[i]
             direction to simulation.moveIndex(index, direction).let { id ->

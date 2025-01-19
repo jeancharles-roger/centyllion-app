@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.centyllion.i18n.Locale
 import com.centyllion.model.*
-import com.centyllion.ui.dialog.Dialog
 import com.centyllion.ui.tabs.Tab
 import io.github.vinceglb.filekit.core.PlatformFile
 import org.jetbrains.skia.Font
@@ -27,10 +26,6 @@ interface AppContext {
 
     val eastTabs: List<Tab>
     var eastSelectedTab: Tab
-
-    var currentDialog: Dialog?
-
-    fun importModelAndSimulation(model: ModelAndSimulation)
 
     val path: PlatformFile?
     var modelAndSimulation: ModelAndSimulation
@@ -61,7 +56,6 @@ enum class Severity {
 }
 
 class AppLog(
-    val timestamp: Long,
     val message: String,
     val severity: Severity
 )

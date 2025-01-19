@@ -1,8 +1,3 @@
-val grpUser: String by project
-val grpToken: String by project
-
-val debug: String? by project
-val d = debug?.toBoolean() ?: false
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false

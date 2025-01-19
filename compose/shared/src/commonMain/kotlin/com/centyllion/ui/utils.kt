@@ -2,7 +2,6 @@ package com.centyllion.ui
 
 import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.Warning
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.centyllion.model.*
@@ -10,50 +9,19 @@ import compose.icons.AllIcons
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.*
-import java.awt.FileDialog
-import java.io.File
+import io.github.vinceglb.filekit.core.FileKit
+import io.github.vinceglb.filekit.core.PickerMode
+import io.github.vinceglb.filekit.core.PickerType
+import io.github.vinceglb.filekit.core.PlatformFile
 
-fun openFileDialog(
-    window: ComposeWindow, title: String,
-    allowedExtensions: List<String>, allowMultiSelection: Boolean = false
-): Set<File> {
-    return FileDialog(window, title, FileDialog.LOAD).apply {
-        isMultipleMode = allowMultiSelection
-
-        // windows
-        file = allowedExtensions.joinToString(";") { "*$it" } // e.g. '*.jpg'
-
-        // linux
-        setFilenameFilter { _, name ->
-            allowedExtensions.any {
-                name.endsWith(it)
-            }
-        }
-
-        isVisible = true
-    }.files.toSet()
-}
-
-fun newFileDialog(
-    window: ComposeWindow, title: String,
-    preselectedFile: String? = null,
-    allowedExtensions: List<String> = emptyList(),
-    allowMultiSelection: Boolean = false
-): Set<File> {
-    return FileDialog(window, title, FileDialog.SAVE).apply {
-        isMultipleMode = allowMultiSelection
-
-        // windows
-        preselectedFile?.let { file = it }
-
-        // linux
-        setFilenameFilter { _, name ->
-            allowedExtensions.any { name.endsWith(it) }
-        }
-
-        isVisible = true
-    }.files.toSet()
-}
+suspend fun openFileDialog(
+    title: String,
+    allowedExtensions: List<String>? = null,
+): PlatformFile? = FileKit.pickFile(
+    type = PickerType.File(allowedExtensions),
+    mode = PickerMode.Single,
+    title = title,
+)
 
 fun ModelElement.icon(): ImageVector = when (this) {
     is GrainModel -> FontAwesomeIcons.Solid.Boxes

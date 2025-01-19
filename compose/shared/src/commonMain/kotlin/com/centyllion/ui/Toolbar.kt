@@ -31,6 +31,7 @@ fun ToolBar(appState: AppState) {
 
         IconButton(
             onClick = {
+                /* TODO
                 appState.window?.let { window ->
                     val files = newFileDialog(
                         window = window,
@@ -41,16 +42,19 @@ fun ToolBar(appState: AppState) {
                     )
                     if (files.isNotEmpty()) appState.setPath(files.first().toPath())
                 }
+                 */
             },
             modifier = AppTheme.toolBarIconModifier
         ) { Icon(FontAwesomeIcons.Solid.Save, "Export Model") }
 
         IconButton(
             onClick = {
+                /* TODO
                 appState.window?.let { window ->
                     val files = openFileDialog(window, "Open model", listOf(".netbiodyn", ".json"), false)
                     if (files.isNotEmpty()) appState.openPath(files.first().toPath())
                 }
+                 */
             },
             modifier = AppTheme.toolBarIconModifier
         ) {

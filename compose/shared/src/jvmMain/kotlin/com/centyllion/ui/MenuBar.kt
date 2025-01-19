@@ -1,12 +1,14 @@
 package com.centyllion.ui
 
+import JvmAppState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
 import com.centyllion.i18n.Locales
+import kotlinx.coroutines.launch
 
 @Composable
-fun FrameWindowScope.MenuBar(appState: AppState) {
+fun FrameWindowScope.MenuBar(appState: JvmAppState) {
     MenuBar {
         Menu(appState.locale.i18n("Project"), 'p') {
             Item(appState.locale.i18n("New model"), mnemonic = 'n') {
@@ -14,22 +16,19 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
                 appState.newModel()
             }
             Item(appState.locale.i18n("Save model\u2026"), mnemonic = 's') {
-                appState.window?.let { window ->
-                    val files = newFileDialog(
-                        window = window,
+                appState.scope.launch {
+                    val file = openFileDialog(
                         title = "Select file to save",
-                        preselectedFile = "${appState.modelAndSimulation}.netbiodyn",
-                        allowedExtensions = listOf(".netbiodyn"),
-                        allowMultiSelection = false,
+                        allowedExtensions = listOf("netbiodyn"),
                     )
-                    if (files.isNotEmpty()) appState.setPath(files.first().toPath())
+                    if (file != null) appState.setPath(file)
                 }
             }
 
             Item(text = appState.locale.i18n("Open model\u2026"), mnemonic = 'o') {
-                appState.window?.let { window ->
-                    val files = openFileDialog(window, "Open model", listOf(".netbiodyn", ".json"), false)
-                    if (files.isNotEmpty()) appState.openPath(files.first().toPath())
+                appState.scope.launch {
+                    val file = openFileDialog("Open model", listOf("netbiodyn", "json"))
+                    if (file != null) appState.openPath(file)
                 }
             }
         }
@@ -45,7 +44,7 @@ fun FrameWindowScope.MenuBar(appState: AppState) {
             Separator()
             Locales.locales.forEach { locale ->
                 CheckboxItem(text = locale.label, checked = locale.name == appState.locale.name)
-                    { appState.locale = locale }
+                { appState.locale = locale }
             }
 
         }

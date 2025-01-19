@@ -4,26 +4,22 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.awt.ComposeWindow
 import com.centyllion.i18n.Locales
 import com.centyllion.model.*
 import com.centyllion.ui.dialog.Dialog
 import com.centyllion.ui.tabs.*
+import io.github.vinceglb.filekit.core.PlatformFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import java.nio.file.Path
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
 import kotlin.math.roundToLong
-import kotlin.system.measureTimeMillis
 
-class AppState(
-    override val window: ComposeWindow?,
-    override val scope: CoroutineScope,
-    private val pathState: MutableState<Path?>,
+open class AppState(
+    val scope: CoroutineScope,
+    private val pathState: MutableState<PlatformFile?>,
 ) : AppContext {
 
     // TODO search local from system
@@ -35,26 +31,28 @@ class AppState(
     private val logsState = mutableStateOf(listOf<AppLog>())
     override val logs: List<AppLog> get() = logsState.value
 
-    override val path: Path?
+    override val path: PlatformFile?
         get() = pathState.value
-
+       
+    open fun updateName() { }
+    
     fun newModel(model: ModelAndSimulation = emptyModel()) {
         pathState.value = null
         this.modelAndSimulation = model
         selection = emptyList()
         clearPastAndFuture()
-        updateWindowName()
+        updateName()
     }
 
-    fun openPath(path: Path) {
+    suspend fun openPath(path: PlatformFile) {
         importModel(path)
     }
 
-    fun setPath(path: Path) {
+    fun setPath(path: PlatformFile) {
         pathState.value = path
         // keep model as is to be saved in new path
-        syncModelWithFile()
-        updateWindowName()
+        //syncModelWithFile()
+        updateName()
     }
 
     override fun importModelAndSimulation(model: ModelAndSimulation) {
@@ -62,15 +60,15 @@ class AppState(
         this.modelAndSimulation = model
         selection = listOf()
         clearPastAndFuture()
-        updateWindowName()
+        updateName()
     }
 
-    fun importModel(path: Path) {
+    suspend fun importModel(path: PlatformFile) {
         pathState.value = path
         modelAndSimulation = loadModel(path)
         selection = listOf()
         clearPastAndFuture()
-        updateWindowName()
+        updateName()
     }
 
     private var past: List<ModelAndSimulation> = emptyList()
@@ -82,7 +80,9 @@ class AppState(
     val canRedo get() = canRedoState.value
 
     private var lastModelModification: Long = Long.MIN_VALUE
-    private val modelState = mutableStateOf(path?.let { loadModel(it) } ?: emptyModel() )
+    private val modelState = mutableStateOf(path?.let {
+        runBlocking { loadModel(it) }
+    } ?: emptyModel())
 
     override var modelAndSimulation: ModelAndSimulation
         get() = modelState.value
@@ -185,21 +185,20 @@ class AppState(
     fun emptyModel() = ModelAndSimulation(GrainModel.new(locale.i18n("Model")), Simulation.empty)
 
     /** Load model for given path. */
-    private fun loadModel(path: Path): ModelAndSimulation =
+    private suspend fun loadModel(path: PlatformFile): ModelAndSimulation =
         try {
-            val source = path.readText(Charsets.UTF_8)
+            val source = path.readBytes().toString(Charsets.UTF_8)
             Json.decodeFromString(ModelAndSimulation.serializer(), source)
-        }
-        catch (e: Throwable) {
+        } catch (e: Throwable) {
             alert("Couldn't load model: $e")
             emptyModel()
         }
 
 
     /** Load model for given path. */
-    private fun loadSimulation(path: Path): Simulation =
+    private suspend fun loadSimulation(path: PlatformFile): Simulation =
         try {
-            val source = path.readText(Charsets.UTF_8)
+            val source = path.readBytes().toString(Charsets.UTF_8)
             Json.decodeFromString(Simulation.serializer(), source)
         }
         catch (e: Throwable) {
@@ -207,6 +206,7 @@ class AppState(
             Simulation.empty
         }
 
+    /* TODO support export file depending on target
     private fun syncModelWithFile() {
         // saves value to file
         path?.let { destination ->
@@ -224,6 +224,7 @@ class AppState(
             }
         }
     }
+    */
 
     fun clearPastAndFuture() {
         past = emptyList()
@@ -337,14 +338,6 @@ class AppState(
         logsState.value = emptyList()
     }
 
-    private fun updateWindowName() {
-        window?.title = buildString {
-            append("Centyllion - ")
-            if (path != null) append(path?.fileName)
-            else append("<not saved>")
-        }
-    }
-
     override val centerTabs = listOf(ModelTab, SimulationTab, EnvironmentTab)
 
     private val centerSelectedTabState = mutableStateOf<Tab>(ModelTab)
@@ -365,10 +358,6 @@ class AppState(
 
     private fun refresh() {
         updateProblems()
-        syncModelWithFile()
-    }
-
-    init {
-        updateWindowName()
+        //syncModelWithFile()
     }
 }

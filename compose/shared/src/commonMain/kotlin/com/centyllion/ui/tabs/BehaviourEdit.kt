@@ -1,13 +1,11 @@
 package com.centyllion.ui.tabs
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,21 +19,6 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Minus
 import compose.icons.fontawesomeicons.solid.Plus
-import kotlinx.coroutines.GlobalScope
-import java.nio.file.Path
-
-@Composable
-@Preview
-fun Preview() {
-    val app = AppState(null, GlobalScope, mutableStateOf(Path.of("/Users/charlie/Downloads/phalenes1.netbiodyn")))
-    //GrainItem(app, app.model.grains.first())
-    //GrainEdit(app, app.model.grains.first())
-
-    //BehaviourItem(app, app.model.behaviours.first())
-    BehaviourEdit(app, app.model.behaviours.first())
-
-    //FieldItem(app, app.model.fields.first())
-}
 
 @Composable
 fun BehaviourEdit(appContext: AppContext, behaviour: Behaviour) {

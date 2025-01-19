@@ -5,24 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import androidx.compose.ui.window.singleWindowApplication
 import com.centyllion.ui.tabs.Tabs
-
-fun main() = singleWindowApplication {
-    val scope = rememberCoroutineScope()
-    val appState = remember { AppState(window, scope, mutableStateOf(null)) }
-    MenuBar(appState)
-    App(appState)
-}
 
 @Composable
 fun App(appState: AppState) {

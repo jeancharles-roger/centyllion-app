@@ -10,22 +10,17 @@ import androidx.compose.material.SliderDefaults
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.centyllion.i18n.Locale
 import com.centyllion.model.*
 import com.centyllion.ui.dialog.Dialog
 import com.centyllion.ui.tabs.Tab
-import kotlinx.coroutines.CoroutineScope
+import io.github.vinceglb.filekit.core.PlatformFile
 import org.jetbrains.skia.Font
-import java.nio.file.Path
 
 interface AppContext {
     val locale: Locale
-
-    val window: ComposeWindow?
-    val scope: CoroutineScope
 
     val centerTabs: List<Tab>
     var centerSelectedTab: Tab
@@ -37,7 +32,7 @@ interface AppContext {
 
     fun importModelAndSimulation(model: ModelAndSimulation)
 
-    val path: Path?
+    val path: PlatformFile?
     var modelAndSimulation: ModelAndSimulation
     var model: GrainModel
     var simulation: Simulation

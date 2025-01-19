@@ -24,14 +24,13 @@ kotlin {
             }
         }
     }
-
-    /*
+/*
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        moduleName = "netbiodyn-core"
+        binaries.library()
     }
-    */
-
+*/
     sourceSets {
 
         commonMain {

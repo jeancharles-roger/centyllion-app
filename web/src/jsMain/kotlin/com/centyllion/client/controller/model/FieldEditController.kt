@@ -84,7 +84,7 @@ class FieldEditController (
         initialData = data.formula,
         placeHolder = page.i18n("Formula"),
         columns = 40,
-        isValid = { validateFormula(context, it) },
+        isValid = { validateFormula(it) },
         onUpdate =  { _, new, _ ->
             data = data.copy(formula = new)
         }

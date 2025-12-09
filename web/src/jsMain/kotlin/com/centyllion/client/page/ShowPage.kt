@@ -4,6 +4,7 @@ import bulma.*
 import bulma.extension.Switch
 import com.centyllion.client.*
 import com.centyllion.client.controller.model.ModelController
+import com.centyllion.client.controller.utils.EditableStringController
 import com.centyllion.client.controller.utils.UndoRedoSupport
 import com.centyllion.client.tutorial.BacteriasTutorial
 import com.centyllion.client.tutorial.TutorialLayer
@@ -28,6 +29,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
         if (new != old) {
             undoRedo.update(old, new)
             modelController.data = new
+            modelName.data = new.model.name
 
             expertMode = expertMode || model.expert
 
@@ -49,6 +51,13 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     val modelController = ModelController(this, model) { _, new, _ -> model = new }
 
     val simulationController get() = modelController.simulationController
+
+    val modelName = EditableStringController(
+        initialData = model.model.name,
+        placeHolder = i18n("Model Name"),
+    ) { old: String, new: String, controller: EditableStringController ->
+        model = model.updateModel(model.model.copy(name = new ) )
+    }
 
     val newControl = Control(Button(
         i18n("New Model"), Icon("plus"), color = ElementColor.Primary
@@ -72,6 +81,7 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
     ) { _, value -> expertMode = value }
 
     val tools = BField(
+        modelName.container,
         newControl,
         Control(fileInput),
         exportControl,
@@ -138,7 +148,8 @@ class ShowPage(override val appContext: AppContext) : BulmaPage {
 
     fun export(after: () -> Unit = {}) {
         val href = stringHref(Json.encodeToString(ModelAndSimulation.serializer(), model))
-        download("model.netbiodyn", href)
+        val name = if (model.model.name.isNotBlank()) model.model.name else "model"
+        download("$name.netbiodyn", href)
         after()
     }
 

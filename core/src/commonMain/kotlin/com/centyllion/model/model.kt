@@ -479,7 +479,7 @@ fun createSimulation(
     agents = List(size * size, agentsInit)
 )
 
-val availableSimulationSizes = listOf(10, 25, 50, 100)
+val availableSimulationSizes = listOf(10, 25, 50, 100, 200)
 
 @Serializable
 data class SimulationSettings(

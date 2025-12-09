@@ -13,7 +13,7 @@ kotlin {
         }
     }
 
-    js(IR) {
+    js() {
         browser {
             //distribution { directory = file(centyllionWebroot) }
             //webpackTask { outputFileName = "centyllion.[contenthash].js" }
@@ -25,13 +25,6 @@ kotlin {
                 moduleKind = "amd"
             }
         }
-    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "netbiodyn-core"
-        browser {} 
-        binaries.library()
     }
 
     sourceSets {

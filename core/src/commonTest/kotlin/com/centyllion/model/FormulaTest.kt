@@ -25,13 +25,13 @@ class FormulaTest {
 
     @Test
     fun testFormulaCheck() {
-        assertNull(validateFormula(model, "field0(x, y)"))
-        assertNull(validateFormula(model, "agent(x, y)"))
-        assertNull(validateFormula(model, "step"))
-        assertEquals("Could not resolve variable 'toto'", validateFormula(model, "toto"))
-        assertEquals("Could not resolve variable 'toto'", validateFormula(model, "0.0 + toto"))
-        assertEquals("Expression expected", validateFormula(model, "agent +"))
-        assertEquals("malformed expression", validateFormula(model, "agent )"))
+        assertNull(validateFormula("field0(x, y)"))
+        assertNull(validateFormula("agent(x, y)"))
+        assertNull(validateFormula( "step"))
+        assertEquals("Could not resolve variable 'toto'", validateFormula("toto"))
+        assertEquals("Could not resolve variable 'toto'", validateFormula("0.0 + toto"))
+        assertEquals("Expression expected", validateFormula("agent +"))
+        assertEquals("malformed expression", validateFormula("agent )"))
     }
 
 
